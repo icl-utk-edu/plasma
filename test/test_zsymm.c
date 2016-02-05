@@ -13,8 +13,8 @@
  *
  **/
 #include "test.h"
+
 #include <stddef.h>
-#include <stdio.h>
 
 void test_zsymm(param_value_t param[])
 {
@@ -28,7 +28,6 @@ void test_zsymm(param_value_t param[])
         print_usage(PARAM_LDC);
         return;
     }
-    printf("\ttesting zsymm...\n");
 
 
 

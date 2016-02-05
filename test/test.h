@@ -37,16 +37,16 @@ typedef enum {
 
 /* parameter descriptions */
 static const char *ParamUsage[][2] = {
-    {"--transa=[t|n]", "transposition of A"},
-    {"--transb=[t|n]", "transposition of B"},
+    {"--transa=[n|t|c]", "transposition of A"},
+    {"--transb=[n|t|c]", "transposition of B"},
     {"--side=[l|r]", "left/right side (operation)"},
     {"--uplo=[l|u]", "lower/upper (triangular) matrix"},
     {"--m=", "M dimension (number of rows)"},
     {"--n=", "N dimension (number of columns)"},
     {"--k=", "K dimension (number of rows or columns)"},
-    {"--lda=", "leading dimension of A"},
-    {"--ldb=", "leading dimension of B"},
-    {"--ldc=", "leading dimension of C"}
+    {"--lda=", "leading dimension of A minus number of rows"},
+    {"--ldb=", "leading dimension of B minus number of rows"},
+    {"--ldc=", "leading dimension of C minus number of rows"}
 };
 
 /* parameter value */
