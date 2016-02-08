@@ -77,10 +77,13 @@ void print_routine_usage(char *name)
            "\ttest %s [-h|--help]\n"
            "\ttest %s (parameter1, parameter2, ...)\n\n"
            "Options:\n"
-           "\t%*sShow this screen.\n",
+           "\t%*sshow this screen\n",
            name, name,
            DescriptionIndent, "-h --help");
     print_usage(PARAM_OUTER);
+    print_usage(PARAM_TEST);
+    print_usage(PARAM_TOL);
+    printf("\n");
 
     if (strcmp(name, "zgemm") == 0)
         test_zgemm(NULL);
@@ -148,17 +151,18 @@ void param_read(int argc, char **argv, param_t param[])
 {
     for (int i = 1; i < argc && argv[i]; i++) {
 
-        /* Scan type of iteration. */
+        /* Scan character parameters. */
         if (param_starts_with(argv[i], "--outer="))
             param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_OUTER]);
+        else if (param_starts_with(argv[i], "--test="))
+            param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TEST]);
 
-        /* Scan integer parameters. */
         else if (param_starts_with(argv[i], "--transa="))
             param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANSA]);
         else if (param_starts_with(argv[i], "--transb="))
             param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANSB]);
 
-        /* Scan character parameters. */
+        /* Scan integer parameters. */
         else if (param_starts_with(argv[i], "--m="))
             param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_M]);
         else if (param_starts_with(argv[i], "--n="))
@@ -172,6 +176,18 @@ void param_read(int argc, char **argv, param_t param[])
             param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_LDB]);
         else if (param_starts_with(argv[i], "--ldc="))
             param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_LDC]);
+
+        else if (param_starts_with(argv[i], "--pada="))
+            param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_PADA]);
+        else if (param_starts_with(argv[i], "--padb="))
+            param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_PADB]);
+        else if (param_starts_with(argv[i], "--padc="))
+            param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_PADC]);
+
+        /* Scan double precision parameters. */
+        else if (param_starts_with(argv[i], "--tol="))
+            param_scan_double(strchr(argv[i], '=')+1, &param[PARAM_TOL]);
+
     }
 }
 
@@ -217,6 +233,26 @@ void param_scan_char(char *str, param_t *param)
 }
 
 /******************************************************************************/
+void param_scan_double(char *str, param_t *param)
+{
+    char *endptr;
+    do {
+        double start = strtod(str, &endptr);
+        if (*endptr == ':') {
+            double stop = strtod(endptr+1, &endptr);
+            double step = strtod(endptr+1, &endptr);
+            for (double d = start; d <= stop; d += step)
+                param_add_double(d, param);
+        }
+        else {
+            param_add_double(start, param);
+        }
+        str = endptr+1;
+    }
+    while (*endptr != '\0');
+}
+
+/******************************************************************************/
 void param_add_int(int ival, param_t *param)
 {
     param->val[param->num].i = ival;
@@ -232,6 +268,18 @@ void param_add_int(int ival, param_t *param)
 void param_add_char(char cval, param_t *param)
 {
     param->val[param->num].c = cval;
+    param->num++;
+    if (param->num == param->size) {
+        param->size *= 2;
+        param->val = realloc(param->val, param->size*sizeof(param_value_t));
+        assert(param->val != NULL);
+    }
+}
+
+/******************************************************************************/
+void param_add_double(double dval, param_t *param)
+{
+    param->val[param->num].d = dval;
     param->num++;
     if (param->num == param->size) {
         param->size *= 2;

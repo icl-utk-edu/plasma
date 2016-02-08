@@ -18,6 +18,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef PLASMA_WITH_MKL
     #include <mkl_cblas.h>
@@ -37,9 +38,9 @@ void test_zgemm(param_value_t param[])
         print_usage(PARAM_M);
         print_usage(PARAM_N);
         print_usage(PARAM_K);
-        print_usage(PARAM_LDA);
-        print_usage(PARAM_LDB);
-        print_usage(PARAM_LDC);
+        print_usage(PARAM_PADA);
+        print_usage(PARAM_PADB);
+        print_usage(PARAM_PADC);
         return;
     }
 
@@ -87,25 +88,30 @@ void test_zgemm(param_value_t param[])
     Cm = m;
     Cn = n;
 
-    int lda = Am + param[PARAM_LDA].i;
-    int ldb = Bm + param[PARAM_LDB].i;
-    int ldc = Cm + param[PARAM_LDC].i;
+    int lda = Am + param[PARAM_PADA].i;
+    int ldb = Bm + param[PARAM_PADB].i;
+    int ldc = Cm + param[PARAM_PADC].i;
+
+    int test = param[PARAM_TEST].i;
 
     PLASMA_Complex64_t *A =
-        (PLASMA_Complex64_t*)malloc(lda*An*sizeof(PLASMA_Complex64_t));
+        (PLASMA_Complex64_t*)malloc((size_t)lda*An*sizeof(PLASMA_Complex64_t));
     assert(A != NULL);
 
     PLASMA_Complex64_t *B =
-        (PLASMA_Complex64_t*)malloc(ldb*An*sizeof(PLASMA_Complex64_t));
+        (PLASMA_Complex64_t*)malloc((size_t)ldb*An*sizeof(PLASMA_Complex64_t));
     assert(B != NULL);
 
     PLASMA_Complex64_t *C1 =
-        (PLASMA_Complex64_t*)malloc(ldc*Cn*sizeof(PLASMA_Complex64_t));
+        (PLASMA_Complex64_t*)malloc((size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
     assert(C1 != NULL);
 
-    PLASMA_Complex64_t *C2 =
-        (PLASMA_Complex64_t*)malloc(ldc*Cn*sizeof(PLASMA_Complex64_t));
-    assert(C2 != NULL);
+    PLASMA_Complex64_t *C2;
+    if (test) {
+        C2 = (PLASMA_Complex64_t*)malloc(
+            (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
+        assert(C2 != NULL);
+    }
 
     PLASMA_Complex64_t alpha = -1.0;
     PLASMA_Complex64_t beta = 1.0;
@@ -120,6 +126,21 @@ void test_zgemm(param_value_t param[])
          CBLAS_SADDR(beta), C1, ldc);
     double stop = omp_get_wtime();
 
+    if (test) {
+        memcpy(C2, C1, (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
 
+        cblas_zgemm(
+            CblasColMajor,
+            (CBLAS_TRANSPOSE)transa, (CBLAS_TRANSPOSE)transb,
+            m, n, k,
+            CBLAS_SADDR(alpha), A, lda,
+                    B, ldb,
+             CBLAS_SADDR(beta), C2, ldc);
+
+
+
+
+
+    }
 
 }
