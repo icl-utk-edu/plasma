@@ -93,28 +93,42 @@ void test_zgemm(param_value_t param[])
     int ldc = Cm + param[PARAM_PADC].i;
 
     int test = param[PARAM_TEST].i;
+    int tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
 
     PLASMA_Complex64_t *A =
         (PLASMA_Complex64_t*)malloc((size_t)lda*An*sizeof(PLASMA_Complex64_t));
     assert(A != NULL);
 
     PLASMA_Complex64_t *B =
-        (PLASMA_Complex64_t*)malloc((size_t)ldb*An*sizeof(PLASMA_Complex64_t));
+        (PLASMA_Complex64_t*)malloc((size_t)ldb*Bn*sizeof(PLASMA_Complex64_t));
     assert(B != NULL);
 
     PLASMA_Complex64_t *C1 =
         (PLASMA_Complex64_t*)malloc((size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
     assert(C1 != NULL);
 
+    int seed[] = {0, 1, 2, 3};
+    lapack_int retval;
+    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*An, A);
+    assert(retval == 0);
+
+    retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*Bn, B);
+    assert(retval == 0);
+
+    retval = LAPACKE_zlarnv(1, seed, (size_t)ldc*Cn, C1);
+    assert(retval == 0);
+
     PLASMA_Complex64_t *C2;
     if (test) {
         C2 = (PLASMA_Complex64_t*)malloc(
             (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
         assert(C2 != NULL);
+
+        memcpy(C2, C1, (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
     }
 
-    PLASMA_Complex64_t alpha = -1.0;
-    PLASMA_Complex64_t beta = 1.0;
+    PLASMA_Complex64_t alpha = (PLASMA_Complex64_t)1.234;
+    PLASMA_Complex64_t beta = (PLASMA_Complex64_t)-5.678;
 
     double start = omp_get_wtime();
     cblas_zgemm(
@@ -122,25 +136,32 @@ void test_zgemm(param_value_t param[])
         (CBLAS_TRANSPOSE)transa, (CBLAS_TRANSPOSE)transb,
         m, n, k,
         CBLAS_SADDR(alpha), A, lda,
-                B, ldb,
+                            B, ldb,
          CBLAS_SADDR(beta), C1, ldc);
     double stop = omp_get_wtime();
 
     if (test) {
-        memcpy(C2, C1, (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
-
         cblas_zgemm(
             CblasColMajor,
             (CBLAS_TRANSPOSE)transa, (CBLAS_TRANSPOSE)transb,
             m, n, k,
             CBLAS_SADDR(alpha), A, lda,
-                    B, ldb,
+                                B, ldb,
              CBLAS_SADDR(beta), C2, ldc);
 
+        double Cnorm = LAPACKE_zlange(LAPACK_COL_MAJOR, 'F', Cm, Cn, C1, ldc);
 
+        PLASMA_Complex64_t zmone = (PLASMA_Complex64_t)-1.0;
+        cblas_zaxpy((size_t)ldc*Cn, &zmone, C1, 1, C2, 1);
 
-
-
+        double error = LAPACKE_zlange(LAPACK_COL_MAJOR, 'F', Cm, Cn, C2, ldc);
+        error /= Cnorm;
     }
+
+
+
+
+
+
 
 }
