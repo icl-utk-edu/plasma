@@ -22,6 +22,7 @@ static const int DescriptionIndent = -20;
 
 /* parameter labels */
 typedef enum {
+    PARAM_OUTER,  /* outer product iteration */
     PARAM_TRANSA, /* transposition of A */
     PARAM_TRANSB, /* transposition of B */
     PARAM_SIDE,   /* left/right side */
@@ -37,6 +38,7 @@ typedef enum {
 
 /* parameter descriptions */
 static const char *ParamUsage[][2] = {
+    {"--outer=[y|n]", "outer product iteration"},
     {"--transa=[n|t|c]", "transposition of A"},
     {"--transb=[n|t|c]", "transposition of B"},
     {"--side=[l|r]", "left/right side (operation)"},
@@ -75,7 +77,8 @@ void param_scan_int(char *str, param_t *param);
 void param_scan_char(char *str, param_t *param);
 void param_add_int(int val, param_t *param);
 void param_add_char(char cval, param_t *param);
-int param_step(param_t param[], int idx);
+int param_step_inner(param_t param[]);
+int param_step_outer(param_t param[], int idx);
 int param_snap(param_t param[], param_value_t value[]);
 
 /* testing routines */

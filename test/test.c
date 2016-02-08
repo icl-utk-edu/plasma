@@ -41,12 +41,23 @@ int main(int argc, char **argv)
     param_value_t value[PARAM_SIZEOF]; /* snapshot of values */
     param_init(param);
     param_read(argc, argv, param);
-    do {
-        param_snap(param, value);
-        test_routine(argv[1], value);
-    }
-    while (param_step(param, 0));
 
+    if (param[PARAM_OUTER].val[0].c == 'y') {
+        // outer product iteration
+        do {
+            param_snap(param, value);
+            test_routine(argv[1], value);
+        }
+        while (param_step_outer(param, 0));
+    }
+    else {
+        // inner product iteration
+        do {
+            param_snap(param, value);
+            test_routine(argv[1], value);
+        }
+        while (param_step_inner(param));
+    }
     return EXIT_SUCCESS;
 }
 
@@ -69,6 +80,7 @@ void print_routine_usage(char *name)
            "\t%*sShow this screen.\n",
            name, name,
            DescriptionIndent, "-h --help");
+    print_usage(PARAM_OUTER);
 
     if (strcmp(name, "zgemm") == 0)
         test_zgemm(NULL);
@@ -136,8 +148,12 @@ void param_read(int argc, char **argv, param_t param[])
 {
     for (int i = 1; i < argc && argv[i]; i++) {
 
+        /* Scan type of iteration. */
+        if (param_starts_with(argv[i], "--outer="))
+            param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_OUTER]);
+
         /* Scan integer parameters. */
-        if (param_starts_with(argv[i], "--transa="))
+        else if (param_starts_with(argv[i], "--transa="))
             param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANSA]);
         else if (param_starts_with(argv[i], "--transb="))
             param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANSB]);
@@ -225,7 +241,20 @@ void param_add_char(char cval, param_t *param)
 }
 
 /******************************************************************************/
-int param_step(param_t param[], int idx)
+int param_step_inner(param_t param[])
+{
+    int finished = 1;
+    for (int i = 0; i < PARAM_SIZEOF; i++) {
+        if (param[i].pos < param[i].num-1) {
+            param[i].pos++;
+            finished = 0;
+        }
+    }
+    return !finished;
+}
+
+/******************************************************************************/
+int param_step_outer(param_t param[], int idx)
 {
     while (param[idx].num == 0)
         if (++idx == PARAM_SIZEOF)
@@ -233,7 +262,7 @@ int param_step(param_t param[], int idx)
 
     if (++param[idx].pos == param[idx].num) {
         param[idx].pos = 0;
-        return param_step(param, idx+1);
+        return param_step_outer(param, idx+1);
     }
     return 1;
 }
