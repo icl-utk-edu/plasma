@@ -43,9 +43,6 @@ void test_zgemm(param_value_t param[])
         return;
     }
 
-    printf("\t%d\t%d\t%c\n", param[PARAM_M].i, param[PARAM_N].i, param[PARAM_TRANSA].c);
-    return;
-
     PLASMA_enum transa;
     PLASMA_enum transb;
 
