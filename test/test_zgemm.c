@@ -30,10 +30,22 @@
 #include <omp.h>
 #include <plasma.h>
 
+/***************************************************************************//**
+ *
+ * @brief Tests ZGEMM.
+ *
+ * @param[in] param - array of parameters
+ * @param[out] info - string of column labels or column values
+ *
+ ******************************************************************************/
 void test_zgemm(param_value_t param[], char *info)
 {
+    //================================================================
+    // Print usage info or return column labels or values.
+    //================================================================
     if (param == NULL) {
         if (info == NULL) {
+            // Print usage info.
             print_usage(PARAM_TRANSA);
             print_usage(PARAM_TRANSB);
             print_usage(PARAM_M);
@@ -44,6 +56,7 @@ void test_zgemm(param_value_t param[], char *info)
             print_usage(PARAM_PADC);
         }
         else {
+            // Return column labels.
             snprintf(info, InfoLen,
                    "%*s%*s%*s%*s%*s%*s%*s%*s",
                    InfoSpacing, "TransA",
@@ -57,6 +70,7 @@ void test_zgemm(param_value_t param[], char *info)
         }
         return;
     }
+    // Return column values.
     snprintf(info, InfoLen,
              "%*c%*c%*d%*d%*d%*d%*d%*d",
              InfoSpacing, param[PARAM_TRANSA].c,
@@ -68,9 +82,9 @@ void test_zgemm(param_value_t param[], char *info)
              InfoSpacing, param[PARAM_PADB].i,
              InfoSpacing, param[PARAM_PADC].i);
 
-    //==========================================================================
+    //================================================================
     // Set parameters.
-    //==========================================================================
+    //================================================================
     PLASMA_enum transa;
     PLASMA_enum transb;
 
@@ -122,9 +136,9 @@ void test_zgemm(param_value_t param[], char *info)
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
 
-    //==========================================================================
+    //================================================================
     // Allocate and initialize arrays.
-    //==========================================================================
+    //================================================================
     PLASMA_Complex64_t *A =
         (PLASMA_Complex64_t*)malloc((size_t)lda*An*sizeof(PLASMA_Complex64_t));
     assert(A != NULL);
@@ -160,9 +174,9 @@ void test_zgemm(param_value_t param[], char *info)
     PLASMA_Complex64_t alpha = (PLASMA_Complex64_t)1.234;
     PLASMA_Complex64_t beta = (PLASMA_Complex64_t)-5.678;
 
-    //==========================================================================
+    //================================================================
     // Run and time PLASMA.
-    //==========================================================================
+    //================================================================
     double start = omp_get_wtime();
     cblas_zgemm(
         CblasColMajor,
@@ -177,9 +191,9 @@ void test_zgemm(param_value_t param[], char *info)
     param[PARAM_TIME].d = time;
     param[PARAM_GFLOPS].d = flops_zgemm(m, n, k) / time / 1e9;
 
-    //==========================================================================
+    //================================================================
     // Test results by comparing to a reference implementation.
-    //==========================================================================
+    //================================================================
     if (test) {
         cblas_zgemm(
             CblasColMajor,
