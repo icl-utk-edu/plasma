@@ -3,7 +3,7 @@ SRC = $(wildcard *.c)
 OBJ = $(SRC:.c=.o)
 EXE	= test
 
-CFLAGS = -std=c99 -fopenmp -O3 -DPLASMA_WITH_MKL
+CFLAGS = -std=c99 -fopenmp -O3 -DPLASMA_WITH_MKL -w
 
 MKL = /opt/intel/mkl
 

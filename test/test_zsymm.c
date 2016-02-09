@@ -16,18 +16,8 @@
 
 #include <stddef.h>
 
-void test_zsymm(param_value_t param[])
+void test_zsymm(param_value_t param[], char *info)
 {
-    if (param == NULL) {
-        print_usage(PARAM_SIDE);
-        print_usage(PARAM_UPLO);
-        print_usage(PARAM_M);
-        print_usage(PARAM_N);
-        print_usage(PARAM_LDA);
-        print_usage(PARAM_LDB);
-        print_usage(PARAM_LDC);
-        return;
-    }
 
 
 

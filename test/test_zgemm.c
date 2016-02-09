@@ -30,33 +30,60 @@
 #include <omp.h>
 #include <plasma.h>
 
-void test_zgemm(param_value_t param[])
+void test_zgemm(param_value_t param[], char *info)
 {
     if (param == NULL) {
-        print_usage(PARAM_TRANSA);
-        print_usage(PARAM_TRANSB);
-        print_usage(PARAM_M);
-        print_usage(PARAM_N);
-        print_usage(PARAM_K);
-        print_usage(PARAM_PADA);
-        print_usage(PARAM_PADB);
-        print_usage(PARAM_PADC);
+        if (info == NULL) {
+            print_usage(PARAM_TRANSA);
+            print_usage(PARAM_TRANSB);
+            print_usage(PARAM_M);
+            print_usage(PARAM_N);
+            print_usage(PARAM_K);
+            print_usage(PARAM_PADA);
+            print_usage(PARAM_PADB);
+            print_usage(PARAM_PADC);
+        }
+        else {
+            snprintf(info, InfoLen,
+                   "%*s%*s%*s%*s%*s%*s%*s%*s",
+                   InfoSpacing, "TransA",
+                   InfoSpacing, "TransB",
+                   InfoSpacing, "M",
+                   InfoSpacing, "N",
+                   InfoSpacing, "K",
+                   InfoSpacing, "PadA",
+                   InfoSpacing, "PadB",
+                   InfoSpacing, "PadC");
+        }
         return;
     }
+    snprintf(info, InfoLen,
+             "%*c%*c%*d%*d%*d%*d%*d%*d",
+             InfoSpacing, param[PARAM_TRANSA].c,
+             InfoSpacing, param[PARAM_TRANSB].c,
+             InfoSpacing, param[PARAM_M].i,
+             InfoSpacing, param[PARAM_N].i,
+             InfoSpacing, param[PARAM_K].i,
+             InfoSpacing, param[PARAM_PADA].i,
+             InfoSpacing, param[PARAM_PADB].i,
+             InfoSpacing, param[PARAM_PADC].i);
 
+    //==========================================================================
+    // Set parameters.
+    //==========================================================================
     PLASMA_enum transa;
     PLASMA_enum transb;
 
-    if (param[PARAM_TRANSA].i == 'n')
+    if (param[PARAM_TRANSA].c == 'n')
         transa = PlasmaNoTrans;
-    else if (param[PARAM_TRANSA].i == 't')
+    else if (param[PARAM_TRANSA].c == 't')
         transa = PlasmaTrans;
     else
         transa = PlasmaConjTrans;
 
-    if (param[PARAM_TRANSB].i == 'n')
+    if (param[PARAM_TRANSB].c == 'n')
         transb = PlasmaNoTrans;
-    else if (param[PARAM_TRANSB].i == 't')
+    else if (param[PARAM_TRANSB].c == 't')
         transb = PlasmaTrans;
     else
         transb = PlasmaConjTrans;
@@ -92,9 +119,12 @@ void test_zgemm(param_value_t param[])
     int ldb = Bm + param[PARAM_PADB].i;
     int ldc = Cm + param[PARAM_PADC].i;
 
-    int test = param[PARAM_TEST].i;
-    int tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
+    int test = param[PARAM_TEST].c == 'y';
+    double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
 
+    //==========================================================================
+    // Allocate and initialize arrays.
+    //==========================================================================
     PLASMA_Complex64_t *A =
         (PLASMA_Complex64_t*)malloc((size_t)lda*An*sizeof(PLASMA_Complex64_t));
     assert(A != NULL);
@@ -107,7 +137,7 @@ void test_zgemm(param_value_t param[])
         (PLASMA_Complex64_t*)malloc((size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
     assert(C1 != NULL);
 
-    int seed[] = {0, 1, 2, 3};
+    int seed[] = {0, 0, 0, 1};
     lapack_int retval;
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*An, A);
     assert(retval == 0);
@@ -130,6 +160,9 @@ void test_zgemm(param_value_t param[])
     PLASMA_Complex64_t alpha = (PLASMA_Complex64_t)1.234;
     PLASMA_Complex64_t beta = (PLASMA_Complex64_t)-5.678;
 
+    //==========================================================================
+    // Run and time PLASMA.
+    //==========================================================================
     double start = omp_get_wtime();
     cblas_zgemm(
         CblasColMajor,
@@ -139,7 +172,14 @@ void test_zgemm(param_value_t param[])
                             B, ldb,
          CBLAS_SADDR(beta), C1, ldc);
     double stop = omp_get_wtime();
+    double time = stop-start;
 
+    param[PARAM_TIME].d = time;
+    param[PARAM_GFLOPS].d = flops_zgemm(m, n, k) / time / 1e9;
+
+    //==========================================================================
+    // Test results by comparing to a reference implementation.
+    //==========================================================================
     if (test) {
         cblas_zgemm(
             CblasColMajor,
@@ -154,14 +194,10 @@ void test_zgemm(param_value_t param[])
         PLASMA_Complex64_t zmone = (PLASMA_Complex64_t)-1.0;
         cblas_zaxpy((size_t)ldc*Cn, &zmone, C1, 1, C2, 1);
 
-        double error = LAPACKE_zlange(LAPACK_COL_MAJOR, 'F', Cm, Cn, C2, ldc);
-        error /= Cnorm;
+        double error =
+            LAPACKE_zlange(LAPACK_COL_MAJOR, 'F', Cm, Cn, C2, ldc) / Cnorm;
+
+        param[PARAM_ERROR].d = error;
+        param[PARAM_SUCCESS].i = error < tol;
     }
-
-
-
-
-
-
-
 }
