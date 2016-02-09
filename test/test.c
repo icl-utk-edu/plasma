@@ -87,20 +87,20 @@ void print_routine_usage(char *name)
 
     if (strcmp(name, "zgemm") == 0)
         test_zgemm(NULL);
-    // else if (strcmp(name, "dgemm") == 0)
-    //     test_dgemm(NULL);
-    // else if (strcmp(name, "cgemm") == 0)
-    //     test_cgemm(NULL);
-    // else if (strcmp(name, "sgemm") == 0)
-    //     test_sgemm(NULL);
+    else if (strcmp(name, "dgemm") == 0)
+        test_dgemm(NULL);
+    else if (strcmp(name, "cgemm") == 0)
+        test_cgemm(NULL);
+    else if (strcmp(name, "sgemm") == 0)
+        test_sgemm(NULL);
     else if (strcmp(name, "zsymm") == 0)
         test_zsymm(NULL);
-    // else if (strcmp(name, "dsymm") == 0)
-    //     test_dsymm(NULL);
-    // else if (strcmp(name, "csymm") == 0)
-    //     test_csymm(NULL);
-    // else if (strcmp(name, "ssymm") == 0)
-    //     test_ssymm(NULL);
+    else if (strcmp(name, "dsymm") == 0)
+        test_dsymm(NULL);
+    else if (strcmp(name, "csymm") == 0)
+        test_csymm(NULL);
+    else if (strcmp(name, "ssymm") == 0)
+        test_ssymm(NULL);
 }
 
 /******************************************************************************/
@@ -117,20 +117,20 @@ void test_routine(char *name, param_value_t value[])
 {
     if (strcmp(name, "zgemm") == 0)
         test_zgemm(value);
-    // else if (strcmp(name, "dgemm") == 0)
-    //     test_dgemm(value);
-    // else if (strcmp(name, "cgemm") == 0)
-    //     test_cgemm(value);
-    // else if (strcmp(name, "sgemm") == 0)
-    //     test_sgemm(value);
+    else if (strcmp(name, "dgemm") == 0)
+        test_dgemm(value);
+    else if (strcmp(name, "cgemm") == 0)
+        test_cgemm(value);
+    else if (strcmp(name, "sgemm") == 0)
+        test_sgemm(value);
     else if (strcmp(name, "zsymm") == 0)
         test_zsymm(value);
-    // else if (strcmp(name, "dsymm") == 0)
-    //     test_dsymm(value);
-    // else if (strcmp(name, "csymm") == 0)
-    //     test_csymm(value);
-    // else if (strcmp(name, "ssymm") == 0)
-    //     test_ssymm(value);
+    else if (strcmp(name, "dsymm") == 0)
+        test_dsymm(value);
+    else if (strcmp(name, "csymm") == 0)
+        test_csymm(value);
+    else if (strcmp(name, "ssymm") == 0)
+        test_ssymm(value);
 }
 
 /******************************************************************************/
@@ -298,7 +298,7 @@ int param_step_inner(param_t param[])
             finished = 0;
         }
     }
-    return !finished;
+    return ! finished;
 }
 
 /******************************************************************************/
@@ -320,4 +320,5 @@ int param_snap(param_t param[], param_value_t value[])
 {
     for (int i = 0; i < PARAM_SIZEOF; i++)
         value[i] = param[i].val[param[i].pos];
+    return 0;
 }

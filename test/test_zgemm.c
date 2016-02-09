@@ -152,7 +152,7 @@ void test_zgemm(param_value_t param[])
         double Cnorm = LAPACKE_zlange(LAPACK_COL_MAJOR, 'F', Cm, Cn, C1, ldc);
 
         PLASMA_Complex64_t zmone = (PLASMA_Complex64_t)-1.0;
-        cblas_zaxpy((size_t)ldc*Cn, &zmone, C1, 1, C2, 1);
+        cblas_zaxpy((size_t)ldc*Cn, CBLAS_SADDR(zmone), C1, 1, C2, 1);
 
         double error = LAPACKE_zlange(LAPACK_COL_MAJOR, 'F', Cm, Cn, C2, ldc);
         error /= Cnorm;

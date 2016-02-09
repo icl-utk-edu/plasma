@@ -14,6 +14,8 @@
  **/
 // #include "common.h"
 
+#include "plasma.h"
+
 /***************************************************************************//**
  *
  * @ingroup CORE_PLASMA_Complex64_t
@@ -82,9 +84,9 @@
  *          The leading dimension of the array C. ldc >= max(1,m).
  *
  ******************************************************************************/
-#pragma weak CORE_zgemm = PCORE_zgemm
-#define CORE_zgemm PCORE_zgemm
-void CORE_zgemm(PLASMA_enum transA, int transB,
+// #pragma weak CORE_zgemm = PCORE_zgemm
+// #define CORE_zgemm PCORE_zgemm
+void CORE_zgemm(PLASMA_enum transA, PLASMA_enum transB,
                 int m, int n, int k,
                 PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                                           const PLASMA_Complex64_t *B, int ldb,
@@ -93,7 +95,7 @@ void CORE_zgemm(PLASMA_enum transA, int transB,
     cblas_zgemm(
         CblasColMajor,
         (CBLAS_TRANSPOSE)transA, (CBLAS_TRANSPOSE)transB,
-        m, n, k
+        m, n, k,
         CBLAS_SADDR(alpha), A, lda,
                             B, ldb,
         CBLAS_SADDR(beta),  C, ldc);
