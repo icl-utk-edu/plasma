@@ -117,11 +117,10 @@ int param_step_inner(param_t param[]);
 int param_step_outer(param_t param[], int idx);
 int param_snap(param_t param[], param_value_t value[]);
 
-//==============================================================================
-// testing routines
-//==============================================================================
-void test_zgemm(param_value_t param[], char *info);
-void test_zsymm(param_value_t param[], char *info);
+#include "test_s.h"
+#include "test_d.h"
+#include "test_c.h"
+#include "test_z.h"
 
 
 

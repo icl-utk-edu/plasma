@@ -1,3 +1,6 @@
+#ifndef PLASMA_H
+#define PLASMA_H
+
 /**
  *
  * @file plasma.h
@@ -12,6 +15,7 @@
  *
  **/
 #include <complex.h>
+#include <cblas.h>
 
 /******************************************************************************/
 typedef int PLASMA_enum;
@@ -37,4 +41,25 @@ enum {
 };
 
 /******************************************************************************/
+#ifndef CBLAS_SADDR
 #define CBLAS_SADDR(var) &(var)
+#endif
+
+typedef enum CBLAS_SIDE      CBLAS_SIDE;
+typedef enum CBLAS_TRANSPOSE CBLAS_TRANSPOSE;
+typedef enum CBLAS_UPLO      CBLAS_UPLO;
+
+/******************************************************************************/
+typedef struct {
+    
+} PLASMA_desc;
+
+typedef struct {
+    
+} PLASMA_sequence;
+
+typedef struct {
+    
+} PLASMA_request;
+
+#endif        //  #ifndef PLASMA_H

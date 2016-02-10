@@ -224,20 +224,20 @@ void run_routine(char *name, param_value_t pval[], char *info)
 {
     if (strcmp(name, "zgemm") == 0)
         test_zgemm(pval, info);
-    // else if (strcmp(name, "dgemm") == 0)
-    //     test_dgemm(pval, info);
-    // else if (strcmp(name, "cgemm") == 0)
-    //     test_cgemm(pval, info);
-    // else if (strcmp(name, "sgemm") == 0)
-    //     test_sgemm(pval, info);
+    else if (strcmp(name, "dgemm") == 0)
+        test_dgemm(pval, info);
+    else if (strcmp(name, "cgemm") == 0)
+        test_cgemm(pval, info);
+    else if (strcmp(name, "sgemm") == 0)
+        test_sgemm(pval, info);
     else if (strcmp(name, "zsymm") == 0)
         test_zsymm(pval, info);
-    // else if (strcmp(name, "dsymm") == 0)
-    //     test_dsymm(pval, info);
-    // else if (strcmp(name, "csymm") == 0)
-    //     test_csymm(pval, info);
-    // else if (strcmp(name, "ssymm") == 0)
-    //     test_ssymm(pval, info);
+    else if (strcmp(name, "dsymm") == 0)
+        test_dsymm(pval, info);
+    else if (strcmp(name, "csymm") == 0)
+        test_csymm(pval, info);
+    else if (strcmp(name, "ssymm") == 0)
+        test_ssymm(pval, info);
     else
         assert(0);
 }
@@ -360,7 +360,7 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_double(50.0, &param[PARAM_TOL]);
 
     return iter;
-}
+    }
 
 /***************************************************************************//**
  *
@@ -536,7 +536,7 @@ int param_step_inner(param_t param[])
             finished = 0;
         }
     }
-    return !finished;
+    return ! finished;
 }
 
 /***************************************************************************//**
@@ -571,4 +571,5 @@ int param_snap(param_t param[], param_value_t pval[])
 {
     for (int i = 0; i < PARAM_SIZEOF; i++)
         pval[i] = param[i].val[param[i].pos];
+    return 0;
 }
