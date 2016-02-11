@@ -1,4 +1,3 @@
-
 **Parallel Linear Algebra Software for Multicore Architectures**
 
 ~~~~
