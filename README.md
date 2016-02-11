@@ -35,6 +35,18 @@ Feel free to use the following publications to reference PLASMA:
   of Gaussian elimination**,
   *Concurrency and Computation: Practice and Experience*,
   [Volume 27, Issue 5, April 2015, Pages 1292–1309](http://dx.doi.org/10.1002/cpe.3306).
+~~~~
+  @article{donfack2015survey,
+    title={A survey of recent developments in parallel implementations of Gaussian elimination},
+    author={Donfack, Simplice and Dongarra, Jack and Faverge, Mathieu and Gates, Mark and Kurzak, Jakub and Luszczek, Piotr and Yamazaki, Ichitaro},
+    journal={Concurrency and Computation: Practice and Experience},
+    volume={27},
+    number={5},
+    pages={1292--1309},
+    year={2015},
+    publisher={Wiley Online Library}
+  }
+~~~~
 
 * Azzam Haidar, Jakub Kurzak, Piotr Luszczek,
   **An improved parallel singular value algorithm and its implementation
