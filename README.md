@@ -71,7 +71,8 @@ Feel free to use the following publications to reference PLASMA:
     year={2015},
     publisher={Wiley Online Library}
   }
-
+~~~~
+~~~~
 @inproceedings{haidar2013improved,
   title={An improved parallel singular value algorithm and its implementation for multicore hardware},
   author={Haidar, Azzam and Kurzak, Jakub and Luszczek, Piotr},
@@ -80,7 +81,8 @@ Feel free to use the following publications to reference PLASMA:
   year={2013},
   organization={ACM}
 }
-
+~~~~
+~~~~
 @article{kurzak2010scheduling,
   title={Scheduling dense linear algebra operations on multicore processors},
   author={Kurzak, Jakub and Ltaief, Hatem and Dongarra, Jack and Badia, Rosa M},
@@ -91,7 +93,8 @@ Feel free to use the following publications to reference PLASMA:
   year={2010},
   publisher={Wiley Online Library}
 }
-
+~~~~
+~~~~
 @inproceedings{agullo2009numerical,
   title={Numerical linear algebra on emerging architectures: The PLASMA and MAGMA projects},
   author={Agullo, Emmanuel and Demmel, Jim and Dongarra, Jack and Hadri, Bilel and Kurzak, Jakub and Langou, Julien and Ltaief, Hatem and Luszczek, Piotr and Tomov, Stanimire},
@@ -102,7 +105,8 @@ Feel free to use the following publications to reference PLASMA:
   year={2009},
   organization={IOP Publishing}
 }
-
+~~~~
+~~~~
 @article{buttari2009class,
   title={A class of parallel tiled linear algebra algorithms for multicore architectures},
   author={Buttari, Alfredo and Langou, Julien and Kurzak, Jakub and Dongarra, Jack},
