@@ -1,11 +1,11 @@
 
+**Parallel Linear Algebra Software for Multicore Architectures**
+
 ~~~~
  _ \ |      \    __|  \  |   \
  __/ |     _ \ \__ \ |\/ |  _ \
 _|  ____|_/  _\____/_|  _|_/  _\
 ~~~~
-
-**Parallel Linear Algebra Software for Multicore Architectures**
 
 **University of Tennessee, University of Colorado Denver, University of California, Berkeley**
 
