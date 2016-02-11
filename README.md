@@ -1,8 +1,4 @@
 
-**University of Tennessee,
-University of Colorado Denver,
-University of California, Berkeley**
-
 ~~~~
  _ \ |      \    __|  \  |   \
  __/ |     _ \ \__ \ |\/ |  _ \
@@ -10,6 +6,8 @@ _|  ____|_/  _\____/_|  _|_/  _\
 ~~~~
 
 **Parallel Linear Algebra Software for Multicore Architectures**
+
+**University of Tennessee, University of Colorado Denver, University of California, Berkeley**
 
 PLASMA is a dense linear algebra package at the forefront of multicore computing.
 PLASMA is designed to deliver the highest possible performance from a system with
@@ -32,4 +30,3 @@ DOI: 10.1145/2503210.2503292
 DOI: 10.1002/cpe.1467
 DOI: 10.1088/1742-6596/180/1/012037
 DOI: 10.1016/j.parco.2008.10.002
-
