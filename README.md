@@ -1,10 +1,10 @@
 Parallel Linear Algebra Software for Multicore Architectures
 =====
-,
- _ \ |      \    __|  \  |   \
- __/ |     _ \ \__ \ |\/ |  _ \
-_|  ____|_/  _\____/_|  _|_/  _\
-,
+
+>  _ \ |      \    __|  \  |   \
+>  __/ |     _ \ \__ \ |\/ |  _ \
+> _|  ____|_/  _\____/_|  _|_/  _\
+
 PLASMA is a dense linear algebra package at the forefront of multicore computing.
 PLASMA is designed to deliver the highest possible performance from a system with
 multiple sockets of multicore processors. PLASMA achieves this objective
