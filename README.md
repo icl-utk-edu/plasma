@@ -35,18 +35,6 @@ Feel free to use the following publications to reference PLASMA:
   of Gaussian elimination**,
   *Concurrency and Computation: Practice and Experience*,
   [Volume 27, Issue 5, April 2015, Pages 1292–1309](http://dx.doi.org/10.1002/cpe.3306).
-~~~~
-  @article{donfack2015survey,
-    title={A survey of recent developments in parallel implementations of Gaussian elimination},
-    author={Donfack, Simplice and Dongarra, Jack and Faverge, Mathieu and Gates, Mark and Kurzak, Jakub and Luszczek, Piotr and Yamazaki, Ichitaro},
-    journal={Concurrency and Computation: Practice and Experience},
-    volume={27},
-    number={5},
-    pages={1292--1309},
-    year={2015},
-    publisher={Wiley Online Library}
-  }
-~~~~
 
 * Azzam Haidar, Jakub Kurzak, Piotr Luszczek,
   **An improved parallel singular value algorithm and its implementation
@@ -71,3 +59,58 @@ Feel free to use the following publications to reference PLASMA:
   **A class of parallel tiled linear algebra algorithms for multicore architectures**,
   *Parallel Computing*,
   [Volume 35, Issue 1, January 2009, Pages 38–53](http://dx.doi.org/10.1016/j.parco.2008.10.002).
+
+~~~~
+  @article{donfack2015survey,
+    title={A survey of recent developments in parallel implementations of Gaussian elimination},
+    author={Donfack, Simplice and Dongarra, Jack and Faverge, Mathieu and Gates, Mark and Kurzak, Jakub and Luszczek, Piotr and Yamazaki, Ichitaro},
+    journal={Concurrency and Computation: Practice and Experience},
+    volume={27},
+    number={5},
+    pages={1292--1309},
+    year={2015},
+    publisher={Wiley Online Library}
+  }
+
+@inproceedings{haidar2013improved,
+  title={An improved parallel singular value algorithm and its implementation for multicore hardware},
+  author={Haidar, Azzam and Kurzak, Jakub and Luszczek, Piotr},
+  booktitle={Proceedings of the International Conference on High Performance Computing, Networking, Storage and Analysis},
+  pages={90},
+  year={2013},
+  organization={ACM}
+}
+
+@article{kurzak2010scheduling,
+  title={Scheduling dense linear algebra operations on multicore processors},
+  author={Kurzak, Jakub and Ltaief, Hatem and Dongarra, Jack and Badia, Rosa M},
+  journal={Concurrency and Computation: Practice and Experience},
+  volume={22},
+  number={1},
+  pages={15--44},
+  year={2010},
+  publisher={Wiley Online Library}
+}
+
+@inproceedings{agullo2009numerical,
+  title={Numerical linear algebra on emerging architectures: The PLASMA and MAGMA projects},
+  author={Agullo, Emmanuel and Demmel, Jim and Dongarra, Jack and Hadri, Bilel and Kurzak, Jakub and Langou, Julien and Ltaief, Hatem and Luszczek, Piotr and Tomov, Stanimire},
+  booktitle={Journal of Physics: Conference Series},
+  volume={180},
+  number={1},
+  pages={012037},
+  year={2009},
+  organization={IOP Publishing}
+}
+
+@article{buttari2009class,
+  title={A class of parallel tiled linear algebra algorithms for multicore architectures},
+  author={Buttari, Alfredo and Langou, Julien and Kurzak, Jakub and Dongarra, Jack},
+  journal={Parallel Computing},
+  volume={35},
+  number={1},
+  pages={38--53},
+  year={2009},
+  publisher={Elsevier}
+}
+~~~~
