@@ -16,7 +16,7 @@ using multicore processors and Xeon Phi coprocessors.
 PLASMA provides implementations of state-of-the-art algorithms
 using cutting-edge task scheduling techniques.
 PLASMA currently offers a collection of routines
-for solving linear systems of equations, least square problems,
+for solving linear systems of equations, least squares problems,
 eigenvalue problems, and singular value problems.
 
 PLASMA is in the process of porting form [QUARK](http://icl.cs.utk.edu/quark/)
