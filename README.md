@@ -37,15 +37,28 @@ Feel free to use the following publications to reference PLASMA:
   **A survey of recent developments in parallel implementations
   of Gaussian elimination**,
   *Concurrency and Computation: Practice and Experience*,
-  [Volume 27, Issue 5, Pages 1292–1309](http://dx.doi.org/10.1002/cpe.3306).
+  [Volume 27, Issue 5, April 2015, Pages 1292–1309](http://dx.doi.org/10.1002/cpe.3306).
 
-*
-*
-*
-*
+* Azzam Haidar, Jakub Kurzak, Piotr Luszczek,
+  **An improved parallel singular value algorithm and its implementation
+  for multicore hardware**,
+  *Proceedings of the International Conference on High Performance Computing,
+  Networking, Storage and Analysis*
+  [Article No. 90](http://dx.doi.org/10.1145/2503210.2503292), ACM, 2013.
 
-DOI: 10.1002/cpe.3306
-DOI: 10.1145/2503210.2503292
-DOI: 10.1002/cpe.1467
-DOI: 10.1088/1742-6596/180/1/012037
-DOI: 10.1016/j.parco.2008.10.002
+* Jakub Kurzak, Hatem Ltaief, Jack Dongarra, Rosa M. Badia,
+  **Scheduling dense linear algebra operations on multicore processors**,
+  *Concurrency and Computation: Practice and Experience*,
+  [Volume 22, Issue 1, January 2010, Pages 15–44](http://dx.doi.org/10.1002/cpe.1467).
+
+* Emmanuel Agullo, Jim Demmel, Jack Dongarra, Bilel Hadri, Jakub Kurzak, Julien Langou,
+  Hatem Ltaief, Piotr Luszczek and Stanimire Tomov,
+  **Numerical linear algebra on emerging architectures: The PLASMA and MAGMA projects**,
+  *Journal of Physics: Conference Series*,
+  [Volume 180, Number 1](http://dx.doi.org/10.1088/1742-6596/180/1/012037),
+  IOP Publishing, 2009.
+
+* Alfredo Buttari, Julien Langou, Jakub Kurzak, Jack Dongarra,
+  **A class of parallel tiled linear algebra algorithms for multicore architectures**,
+  *Parallel Computing*,
+  [Volume 35, Issue 1, January 2009, Pages 38–53](http://dx.doi.org/10.1016/j.parco.2008.10.002).
