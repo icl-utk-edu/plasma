@@ -22,7 +22,7 @@ PLASMA currently offers a collection of routines
 for solving linear systems of equations, least square problems,
 eigenvalue problems, and singular value problems.
 
-PLASMA is in the process of porting form [QUARK](icl.cs.utk.edu/quark/)
+PLASMA is in the process of porting form [QUARK](http://icl.cs.utk.edu/quark/)
 to [OpenMP](http://openmp.org/wp/).
 At the same time, it is moved from its ICL SVN repository
 to this Bitbucket Mercurial repository.
@@ -36,7 +36,7 @@ Feel free to use the following publications to reference PLASMA:
   Jakub Kurzak, Piotr Luszczek, Ichitaro Yamazaki,
   **A survey of recent developments in parallel implementations
   of Gaussian elimination**,
-  _Concurrency and Computation: Practice and Experience,
+  *Concurrency and Computation: Practice and Experience*,
   [Volume 27, Issue 5, Pages 1292–1309](http://dx.doi.org/10.1002/cpe.3306).
 
 *
