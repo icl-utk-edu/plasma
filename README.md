@@ -21,7 +21,7 @@ eigenvalue problems, and singular value problems.
 
 PLASMA is in the process of porting form [QUARK](http://icl.cs.utk.edu/quark/)
 to [OpenMP](http://openmp.org/wp/).
-At the same time, it is moved from its ICL SVN repository
+At the same time, it is moving from its ICL SVN repository
 to this Bitbucket Mercurial repository.
 The content of this repository reflects the progress of the transition.
 Before the transition is complete, the old releases of PLASMA are available at
