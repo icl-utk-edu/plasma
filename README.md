@@ -15,9 +15,6 @@ PLASMA is a software package for solving problems in dense linear algebra
 using multicore processors and Xeon Phi coprocessors.
 PLASMA provides implementations of state-of-the-art algorithms
 using cutting-edge task scheduling techniques.
-PLASMA offers routines for solving linear systems of equations,
-linear least squares problems, singular value problems, eigenvalue
-problems, routines for computing an inverse of a matrix,
 PLASMA currently offers a collection of routines
 for solving linear systems of equations, least square problems,
 eigenvalue problems, and singular value problems.
