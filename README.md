@@ -1,4 +1,6 @@
-**University of Tennessee, University of Colorado Denver, University of California, Berkeley**
+**University of Tennessee,
+University of Colorado Denver,
+University of California, Berkeley**
 ~~~~
  _ \ |      \    __|  \  |   \
  __/ |     _ \ \__ \ |\/ |  _ \
