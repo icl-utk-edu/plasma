@@ -14,18 +14,6 @@
 #ifndef TEST_H
 #define TEST_H
 
-// initial size of values array
-static const int InitValArraySize = 1024;
-
-// indentation of option descriptions
-static const int DescriptionIndent = -20;
-
-// maximum length of info string
-static const int InfoLen = 1024;
-
-// spacing in info output string
-static const int InfoSpacing = 12;
-
 //==============================================================================
 // parameter labels
 //==============================================================================
@@ -96,6 +84,21 @@ typedef struct {
     param_value_t *val; // array of values for a parameter
 } param_t;
 
+// hiding double from precision translation when used for taking time
+typedef double plasma_time_t;
+
+// initial size of values array
+static const int InitValArraySize = 1024;
+
+// indentation of option descriptions
+static const int DescriptionIndent = -20;
+
+// maximum length of info string
+static const int InfoLen = 1024;
+
+// spacing in info output string
+static const int InfoSpacing = 12;
+
 // function declarations
 void print_main_usage();
 void print_routine_usage(char *name);
@@ -116,9 +119,9 @@ int param_step_inner(param_t param[]);
 int param_step_outer(param_t param[], int idx);
 int param_snap(param_t param[], param_value_t value[]);
 
-// #include "test_s.h"
-// #include "test_d.h"
-// #include "test_c.h"
+#include "test_s.h"
+#include "test_d.h"
+#include "test_c.h"
 #include "test_z.h"
 
 #endif // TEST_H

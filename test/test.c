@@ -224,20 +224,20 @@ void run_routine(char *name, param_value_t pval[], char *info)
 {
     if (strcmp(name, "zgemm") == 0)
         test_zgemm(pval, info);
-    // else if (strcmp(name, "dgemm") == 0)
-    //     test_dgemm(pval, info);
-    // else if (strcmp(name, "cgemm") == 0)
-    //     test_cgemm(pval, info);
-    // else if (strcmp(name, "sgemm") == 0)
-    //     test_sgemm(pval, info);
+    else if (strcmp(name, "dgemm") == 0)
+        test_dgemm(pval, info);
+    else if (strcmp(name, "cgemm") == 0)
+        test_cgemm(pval, info);
+    else if (strcmp(name, "sgemm") == 0)
+        test_sgemm(pval, info);
     else if (strcmp(name, "zsymm") == 0)
         test_zsymm(pval, info);
-    // else if (strcmp(name, "dsymm") == 0)
-    //     test_dsymm(pval, info);
-    // else if (strcmp(name, "csymm") == 0)
-    //     test_csymm(pval, info);
-    // else if (strcmp(name, "ssymm") == 0)
-    //     test_ssymm(pval, info);
+    else if (strcmp(name, "dsymm") == 0)
+        test_dsymm(pval, info);
+    else if (strcmp(name, "csymm") == 0)
+        test_csymm(pval, info);
+    else if (strcmp(name, "ssymm") == 0)
+        test_ssymm(pval, info);
     else
         assert(0);
 }
