@@ -13,6 +13,7 @@
  *
  **/
 #include "test.h"
+#include "flops.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -214,4 +215,13 @@ void test_zgemm(param_value_t param[], char *info)
         param[PARAM_ERROR].d = error;
         param[PARAM_SUCCESS].i = error < tol;
     }
+
+    //================================================================
+    // Free arrays.
+    //================================================================
+    free(A);
+    free(B);
+    free(C1);
+    if (test)
+        free(C2);
 }

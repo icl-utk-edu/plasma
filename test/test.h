@@ -86,7 +86,6 @@ typedef union {
     int i;          // integer
     char c;         // character
     double d;       // double precision
-    char *s;        // string
 } param_value_t;
 
 // parameter type
@@ -117,19 +116,9 @@ int param_step_inner(param_t param[]);
 int param_step_outer(param_t param[], int idx);
 int param_snap(param_t param[], param_value_t value[]);
 
-#include "test_s.h"
-#include "test_d.h"
-#include "test_c.h"
+// #include "test_s.h"
+// #include "test_d.h"
+// #include "test_c.h"
 #include "test_z.h"
-
-
-
-//==============================================================================
-// FLOPS counts
-//==============================================================================
-static double flops_zgemm(int m, int n, int k) { return 8.0*m*n*k; }
-static double flops_cgemm(int m, int n, int k) { return 8.0*m*n*k; }
-static double flops_dgemm(int m, int n, int k) { return 2.0*m*n*k; }
-static double flops_sgemm(int m, int n, int k) { return 2.0*m*n*k; }
 
 #endif // TEST_H

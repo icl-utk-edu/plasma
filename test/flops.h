@@ -1,6 +1,6 @@
 /**
  *
- * @file test_z.h
+ * @file flops.h
  *
  *  PLASMA test routines.
  *  PLASMA is a software package provided by Univ. of Tennessee,
@@ -9,16 +9,17 @@
  * @version 3.0.0
  * @author Jakub Kurzak
  * @date 2016-01-01
- * @precisions normal z -> s d c
  *
  **/
-#ifndef TEST_Z_H
-#define TEST_Z_H
+#ifndef FLOPS_H
+#define FLOPS_H
 
 //==============================================================================
-// test routines
+// FLOPS counts
 //==============================================================================
-void test_zgemm(param_value_t param[], char *info);
-void test_zsymm(param_value_t param[], char *info);
+static double flops_zgemm(int m, int n, int k) { return 8.0*m*n*k; }
+static double flops_cgemm(int m, int n, int k) { return 8.0*m*n*k; }
+static double flops_dgemm(int m, int n, int k) { return 2.0*m*n*k; }
+static double flops_sgemm(int m, int n, int k) { return 2.0*m*n*k; }
 
-#endif // TEST_Z_H
+#endif // FLOPS_H
