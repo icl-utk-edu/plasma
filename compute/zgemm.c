@@ -2,7 +2,7 @@
  *
  * @file zgemm.c
  *
- *  PLASMA computational routines.
+ *  PLASMA computational routine.
  *  PLASMA is a software package provided by Univ. of Tennessee,
  *  Univ. of California Berkeley and Univ. of Colorado Denver.
  *
@@ -12,9 +12,10 @@
  * @precisions normal z -> s d c
  *
  **/
-// #include "common.h"
-
-#include "plasma.h"
+#include "../include/plasma.h"
+#include "../control/context.h"
+#include "../control/descriptor.h"
+#include "../control/tune.h"
 
 /***************************************************************************//**
  *
@@ -102,7 +103,6 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
                                            PLASMA_Complex64_t *B, int ldb,
                  PLASMA_Complex64_t beta,  PLASMA_Complex64_t *C, int ldc)
 {
-#if 0 // ==========
     int nb;
     int Am, An, Bm, Bn;
     int status;
@@ -184,19 +184,19 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
 
     if (plasma->translation == PLASMA_OUTOFPLACE) {
         plasma_zooplap2tile(descA, A, nb, nb, lda, An, 0, 0, Am, An,
-                            sequence, &request,
-                            plasma_desc_mat_free(&(descA)) );
+                            sequence, &request);
+        plasma_desc_mat_free(&descA);
 
         plasma_zooplap2tile(descB, B, nb, nb, ldb, Bn, 0, 0, Bm, Bn,
-                            sequence, &request,
-                            plasma_desc_mat_free(&(descA));
-                            plasma_desc_mat_free(&(descB)));
+                            sequence, &request);
+        plasma_desc_mat_free(&descA);
+        plasma_desc_mat_free(&descB);
 
         plasma_zooplap2tile(descC, C, nb, nb, ldc, n,  0, 0, m,  n,
-                            sequence, &request,
-                            plasma_desc_mat_free(&(descA));
-                            plasma_desc_mat_free(&(descB));
-                            plasma_desc_mat_free(&(descC)));
+                            sequence, &request);
+        plasma_desc_mat_free(&descA);
+        plasma_desc_mat_free(&descB);
+        plasma_desc_mat_free(&descC);
     }
     else {
         plasma_ziplap2tile(descA, A, nb, nb, lda, An, 0, 0, Am, An,
@@ -205,7 +205,7 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
         plasma_ziplap2tile(descB, B, nb, nb, ldb, Bn, 0, 0, Bm, Bn,
                            sequence, &request);
 
-        plasma_ziplap2tile(descC, C, nb, nb, ldc, n,  0, 0, M,  n,
+        plasma_ziplap2tile(descC, C, nb, nb, ldc, n,  0, 0, m,  n,
                            sequence, &request);
     }
 
@@ -231,9 +231,6 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
     status = sequence->status;
     plasma_sequence_destroy(plasma, sequence);
     return status;
-#else
-    return 0;
-#endif // ========== #if 0
 }
 
 /***************************************************************************//**
@@ -275,7 +272,6 @@ int PLASMA_zgemm_Tile(PLASMA_enum transA, PLASMA_enum transB,
                                                 PLASMA_desc *B,
                       PLASMA_Complex64_t beta,  PLASMA_desc *C)
 {
-#if 0 // ==========
     plasma_context_t *plasma;
     PLASMA_sequence *sequence = NULL;
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
@@ -294,9 +290,6 @@ int PLASMA_zgemm_Tile(PLASMA_enum transA, PLASMA_enum transB,
     status = sequence->status;
     plasma_sequence_destroy(plasma, sequence);
     return status;
-#else
-    return 0;
-#endif // ========== #if 0
 }
 
 /***************************************************************************//**
@@ -332,7 +325,6 @@ int PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
                             PLASMA_Complex64_t beta,  PLASMA_desc *C,
                             PLASMA_sequence *sequence, PLASMA_request *request)
 {
-#if 0 // ==========
     plasma_context_t *plasma;
     PLASMA_desc descA;
     PLASMA_desc descB;
@@ -458,7 +450,4 @@ int PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
                   sequence, request);
 
     return PLASMA_SUCCESS;
-#else
-    return 0;
-#endif // ========== #if 0
 }

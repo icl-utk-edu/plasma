@@ -2,7 +2,7 @@
  *
  * @file pzgemm.c
  *
- *  PLASMA auxiliary routines.
+ *  PLASMA computational routine.
  *  PLASMA is a software package provided by Univ. of Tennessee,
  *  Univ. of California Berkeley and Univ. of Colorado Denver.
  *
@@ -12,13 +12,13 @@
  * @precisions normal z -> s d c
  *
  **/
-// #include "common.h"
+#include "../include/plasma.h"
+#include "../control/context.h"
+#include "../control/descriptor.h"
 
-#include "plasma.h"
-
-// #define A(m, n) BLKADDR(A, PLASMA_Complex64_t, m, n)
-// #define B(m, n) BLKADDR(B, PLASMA_Complex64_t, m, n)
-// #define C(m, n) BLKADDR(C, PLASMA_Complex64_t, m, n)
+#define A(m, n) plasma_getaddr(A, m, n)
+#define B(m, n) plasma_getaddr(B, m, n)
+#define C(m, n) plasma_getaddr(C, m, n)
 /***************************************************************************//**
  *  Parallel tile matrix-matrix multiplication.
  **/
@@ -28,7 +28,6 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                    PLASMA_Complex64_t beta,  PLASMA_desc C,
                    PLASMA_sequence *sequence, PLASMA_request *request)
 {
-#if 0 // ==========
     int m, n, k;
     int ldam, ldak, ldbn, ldbk, ldcm;
     int tempmm, tempnn, tempkn, tempkm;
@@ -39,7 +38,7 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
     if (sequence->status != PLASMA_SUCCESS)
         return;
 
-    plasma_context_t plasma = plasma_context_self();
+    // plasma_context_t plasma = plasma_context_self();
 
     for (m = 0; m < C.mt; m++) {
         tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
@@ -119,5 +118,4 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
             }
         }
     }
-#endif  // ========== #if 0
 }

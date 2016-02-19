@@ -2,7 +2,7 @@
  *
  * @file test.h
  *
- *  PLASMA test routines.
+ *  PLASMA testing harness.
  *  PLASMA is a software package provided by Univ. of Tennessee,
  *  Univ. of California Berkeley and Univ. of Colorado Denver.
  *
