@@ -75,6 +75,8 @@ libs := \
 # ----------------------------------------
 # Build libraries
 
+.DELETE_ON_ERROR:
+
 .PHONY: lib
 
 lib: $(libs)
