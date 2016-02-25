@@ -52,4 +52,4 @@ typedef struct {
     int nt;           ///< number of tile columns of the submatrix
 } PLASMA_desc;
 
-#endif DESCRIPTOR_H
+#endif // DESCRIPTOR_H

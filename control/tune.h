@@ -21,4 +21,4 @@ enum {
     PLASMA_FUNC_ZGEMM
 };
 
-#endif TUNE_H
+#endif // TUNE_H

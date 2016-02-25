@@ -22,4 +22,4 @@ typedef struct {
     PLASMA_enum translation; ///< in-place or out-of-place layout translation
 } plasma_context_t;
 
-#endif CONTEXT_H
+#endif // CONTEXT_H

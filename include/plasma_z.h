@@ -41,4 +41,4 @@ int PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
                             PLASMA_Complex64_t beta,  PLASMA_desc *C,
                             PLASMA_sequence *sequence, PLASMA_request *request);
 
-#endif PLASMA_Z_H
+#endif // PLASMA_Z_H
