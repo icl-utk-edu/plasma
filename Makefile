@@ -21,17 +21,17 @@ all: lib test
 
 include make.inc
 
-CC        ?= gcc
+CC        ?= cc
 
 ARCH      ?= ar
 ARCHFLAGS ?= cr
 RANLIB    ?= ranlib
 
-CFLAGS    ?= -fopenmp -O3 -Wall -Wno-unused-variable -Wno-unused-function -std=c99
+CFLAGS    ?= -std=c99 -fopenmp -O3 -Wall -Wno-unused-variable -Wno-unused-function
 LDFLAGS   ?= -fopenmp
 
 # INC and LIBS indicate where to find LAPACK, and LAPACKE, and CBLAS
-INC       ?= -I$(LAPACKDIR)/LAPACKE/include -I$(CBLASDIR)/include 
+INC       ?= -I$(LAPACKDIR)/LAPACKE/include -I$(CBLASDIR)/include
 LIBS      ?= -L$(LAPACKDIR) -llapack -llapacke -L$(CBLASDIR)/lib -lcblas -lblas
 
 

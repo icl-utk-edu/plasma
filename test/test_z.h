@@ -16,7 +16,7 @@
 #define TEST_Z_H
 
 //==============================================================================
-// testing routines
+// test routines
 //==============================================================================
 void test_zgemm(param_value_t param[], char *info);
 void test_zsymm(param_value_t param[], char *info);

@@ -1,11 +1,8 @@
-#ifndef PLASMA_H
-#define PLASMA_H
-
 /**
  *
  * @file plasma.h
  *
- *  PLASMA headers.
+ *  PLASMA header.
  *  PLASMA is a software package provided by Univ. of Tennessee,
  *  Univ. of California Berkeley and Univ. of Colorado Denver.
  *
@@ -14,11 +11,20 @@
  * @date 2016-01-01
  *
  **/
+#ifndef PLASMA_H
+#define PLASMA_H
+
 #include <complex.h>
-#include <cblas.h>
+
+#ifdef PLASMA_WITH_MKL
+    #include <mkl_cblas.h>
+#else
+    #include <cblas.h>
+#endif
 
 /******************************************************************************/
 typedef int PLASMA_enum;
+typedef int PLASMA_bool;
 
 typedef float  complex PLASMA_Complex32_t;
 typedef double complex PLASMA_Complex64_t;
@@ -40,26 +46,43 @@ enum {
     PlasmaRight      = 142
 };
 
+enum {
+    PLASMA_SUCCESS = 0,
+    PLASMA_ERR_ILLEGAL_VALUE,
+    PLASMA_ERR_NOT_INITIALIZED,
+    PLASMA_ERR_SEQUENCE_FLUSHED,
+    PLASMA_ERR_UNALLOCATED
+};
+
+enum {
+    PLASMA_INPLACE,
+    PLASMA_OUTOFPLACE
+};
+
 /******************************************************************************/
 #ifndef CBLAS_SADDR
 #define CBLAS_SADDR(var) &(var)
 #endif
 
-typedef enum CBLAS_SIDE      CBLAS_SIDE;
-typedef enum CBLAS_TRANSPOSE CBLAS_TRANSPOSE;
-typedef enum CBLAS_UPLO      CBLAS_UPLO;
-
 /******************************************************************************/
 typedef struct {
-    
-} PLASMA_desc;
-
-typedef struct {
-    
-} PLASMA_sequence;
-
-typedef struct {
-    
+    PLASMA_bool status; ///< error code
 } PLASMA_request;
 
-#endif        //  #ifndef PLASMA_H
+static const PLASMA_request PLASMA_REQUEST_INITIALIZER = {PLASMA_SUCCESS};
+
+typedef struct {
+    PLASMA_bool status;      ///< error code
+    PLASMA_request *request; ///< failed request
+} PLASMA_sequence;
+
+/******************************************************************************/
+
+#include "../control/descriptor.h"
+
+#include "plasma_s.h"
+#include "plasma_d.h"
+#include "plasma_c.h"
+#include "plasma_z.h"
+
+#endif //  #ifndef PLASMA_H

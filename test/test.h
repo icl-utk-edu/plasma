@@ -2,7 +2,7 @@
  *
  * @file test.h
  *
- *  PLASMA test routines.
+ *  PLASMA testing harness.
  *  PLASMA is a software package provided by Univ. of Tennessee,
  *  Univ. of California Berkeley and Univ. of Colorado Denver.
  *
@@ -13,18 +13,6 @@
  **/
 #ifndef TEST_H
 #define TEST_H
-
-// initial size of values array
-static const int InitValArraySize = 1024;
-
-// indentation of option descriptions
-static const int DescriptionIndent = -20;
-
-// maximum length of info string
-static const int InfoLen = 1024;
-
-// spacing in info output string
-static const int InfoSpacing = 12;
 
 //==============================================================================
 // parameter labels
@@ -86,7 +74,6 @@ typedef union {
     int i;          // integer
     char c;         // character
     double d;       // double precision
-    char *s;        // string
 } param_value_t;
 
 // parameter type
@@ -96,6 +83,21 @@ typedef struct {
     int size;           // size of parameter values array
     param_value_t *val; // array of values for a parameter
 } param_t;
+
+// hiding double from precision translation when used for taking time
+typedef double plasma_time_t;
+
+// initial size of values array
+static const int InitValArraySize = 1024;
+
+// indentation of option descriptions
+static const int DescriptionIndent = -20;
+
+// maximum length of info string
+static const int InfoLen = 1024;
+
+// spacing in info output string
+static const int InfoSpacing = 12;
 
 // function declarations
 void print_main_usage();
@@ -121,15 +123,5 @@ int param_snap(param_t param[], param_value_t value[]);
 #include "test_d.h"
 #include "test_c.h"
 #include "test_z.h"
-
-
-
-//==============================================================================
-// FLOPS counts
-//==============================================================================
-static double flops_zgemm(int m, int n, int k) { return 8.0*m*n*k; }
-static double flops_cgemm(int m, int n, int k) { return 8.0*m*n*k; }
-static double flops_dgemm(int m, int n, int k) { return 2.0*m*n*k; }
-static double flops_sgemm(int m, int n, int k) { return 2.0*m*n*k; }
 
 #endif // TEST_H

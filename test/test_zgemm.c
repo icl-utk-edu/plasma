@@ -2,7 +2,7 @@
  *
  * @file test_zgemm.c
  *
- *  PLASMA test routines.
+ *  PLASMA test routine.
  *  PLASMA is a software package provided by Univ. of Tennessee,
  *  Univ. of California Berkeley and Univ. of Colorado Denver.
  *
@@ -13,6 +13,7 @@
  *
  **/
 #include "test.h"
+#include "flops.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -177,7 +178,7 @@ void test_zgemm(param_value_t param[], char *info)
     //================================================================
     // Run and time PLASMA.
     //================================================================
-    double start = omp_get_wtime();
+    plasma_time_t start = omp_get_wtime();
     cblas_zgemm(
         CblasColMajor,
         (CBLAS_TRANSPOSE)transa, (CBLAS_TRANSPOSE)transb,
@@ -185,8 +186,8 @@ void test_zgemm(param_value_t param[], char *info)
         CBLAS_SADDR(alpha), A, lda,
                             B, ldb,
          CBLAS_SADDR(beta), C1, ldc);
-    double stop = omp_get_wtime();
-    double time = stop-start;
+    plasma_time_t stop = omp_get_wtime();
+    plasma_time_t time = stop-start;
 
     param[PARAM_TIME].d = time;
     param[PARAM_GFLOPS].d = flops_zgemm(m, n, k) / time / 1e9;
@@ -214,4 +215,13 @@ void test_zgemm(param_value_t param[], char *info)
         param[PARAM_ERROR].d = error;
         param[PARAM_SUCCESS].i = error < tol;
     }
+
+    //================================================================
+    // Free arrays.
+    //================================================================
+    free(A);
+    free(B);
+    free(C1);
+    if (test)
+        free(C2);
 }
