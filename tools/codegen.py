@@ -1,50 +1,109 @@
 #!/usr/bin/env python
 #
-# Generates different precisions of files based on substitutions in subs.py
-# Also generates the Makefile rules used to invoke it as needed.
-# Usage:
-#
-#   codegen.py zgemm.c zherk.c
-#       generates sgemm.c, dgemm.c, cgemm.c, ssyrk.c, dsyrk.c, cherk.c
-#
-#   codegen.py -p s zgemm.c zherk.c
-#       generates sgemm.c, ssyrk.c
-#
-#   codegen.py --output zgemm.c zherk.c
-#       prints "sgemm.c dgemm.c cgemm.c ssyrk.c dsyrk.c cherk.c"
-#
-#   codegen.py --make --prefix core zgemm.c
-#       prints Makefile.gen, using "core" as prefix on Makefile variables
-#
 # ===========================================================================
 # PLASMA's codegen.py is considered the definitive source.
-# Please make changes in PLASMA, then propogate them to other projects.
+# Please make changes in PLASMA, then propogate to other projects.
 # ===========================================================================
+#
+# Tested with python 2.7.9 and 3.4.3.
 #
 # @author Mark Gates
 
 from __future__ import print_function
 
+description = '''\
+Generates different precisions of files based on substitutions in subs.py
+Also generates the Makefile rules used to invoke it as needed.'''
+
+help = '''\
+----------------------------------------------------------------------
+Example uses:
+
+  codegen.py zgemm.c zherk.c
+      generates sgemm.c, dgemm.c, cgemm.c, ssyrk.c, dsyrk.c, cherk.c
+
+  codegen.py -p s zgemm.c zherk.c
+      generates sgemm.c, ssyrk.c
+
+  codegen.py --output zgemm.c zherk.c
+      prints "sgemm.c dgemm.c cgemm.c ssyrk.c dsyrk.c cherk.c"
+
+  codegen.py --make --prefix blas zgemm.c
+      prints Makefile.gen, using "blas" as prefix on Makefile variables
+
+----------------------------------------------------------------------
+Example use in Makefile:
+
+default: all
+
+codegen = tools/codegen.py
+
+-include Makefile.blas.gen  # defines $(blas_all)
+
+blas_obj = $(addsuffix .o, $(basename $(blas_all)))
+
+all: $(blas_obj)
+
+clean:
+	-rm -f $(blas_obj)
+
+distclean: clean cleangen
+	-rm -f Makefile.blas.gen
+
+.DELETE_ON_ERROR:
+
+# ----------
+# Create rules to do precision generation.
+blas_src = src/zgemm.c
+
+Makefile.blas.gen:
+	$(codegen) --make --prefix blas $(blas_src) > $@
+
+# force re-generating Makefile.blas.gen if $(blas_src) changes
+ifneq ($(blas_src),$(blas_old))
+ifneq ($(filter-out $(blas_generated),$(blas_src)),$(blas_templates))
+Makefile.blas.gen: force_gen
+endif
+endif
+							
+force_gen: ;
+
+----------------------------------------------------------------------
+There can be multiple Makefile.xyz.gen files using different prefixes.
+
+Makefile.gen defines several variables; the default prefix is "src":
+  src_old        # Files that "codegen --make" was called with, e.g., $(blas_src) above.
+                 # This can include generated files.
+  src_templates  # Files that are not generated (whether or not it has @precision).
+  src_generated  # Files that are generated.
+  src_all        # $(src_templates) $(src_generated)
+
+Makefile.gen defines two Makefile rules:
+  make generate  # Generates all precisions (sgemm.c, dgemm.c, cgemm.c)
+  make cleangen  # Removes generated files  (sgemm.c, dgemm.c, cgemm.c)
+'''
+
 import os
 import re
 import sys
+import traceback
+import argparse
 from datetime import datetime
-from argparse import ArgumentParser
 
 
 # ------------------------------------------------------------
 # command line options
-parser = ArgumentParser()
+parser = argparse.ArgumentParser(
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+    description=description,
+    epilog=help )
 parser.add_argument( '-v', '--verbose',   action='store_true', help='Print verbose output to stderr' )
 parser.add_argument( '-o', '--output',    action='store_true', help='Generate list of output files' )
 parser.add_argument( '-m', '--make',      action='store_true', help='Generate Makefile rules' )
 parser.add_argument(       '--prefix',    action='store',      help='Prefix for variables in Makefile', default='src')
-parser.add_argument( '-p', '--precision', action='store',      help='Generate only given precisions (s d c z ds zc ...). Space delimited.' )
+parser.add_argument( '-p', '--precision', action='append',     help='Generate only given precision (s d c z ds zc ...). Repeatable.' )
 parser.add_argument( 'args', nargs='*',   action='store',      help='Files to process' )
 opts = parser.parse_args()
-
-if opts.precision:
-    opts.precision = opts.precision.split()
 
 if opts.verbose:
     print( "opts", opts, file=sys.stderr )
@@ -65,25 +124,26 @@ try:
     for key in subs.keys():
         nrow = len( subs[key]    )
         ncol = len( subs[key][0] )
-        subs_search [key] = map( lambda x: [None]*ncol, xrange(nrow) )
-        subs_replace[key] = map( lambda x: [None]*ncol, xrange(nrow) )
+        subs_search [key] = [ [ None for j in range(ncol) ] for i in range(nrow) ]
+        subs_replace[key] = [ [ None for j in range(ncol) ] for i in range(nrow) ]
         for (i, row) in enumerate( subs[key] ):
             for (j, sub) in enumerate( row ):
-                #try:
                 sub = sub.replace( r'\b',  r''  )
                 sub = sub.replace( r'\*',  r'*' )
                 sub = sub.replace( r'\(',  r'(' )
                 sub = sub.replace( r'\)',  r')' )
                 sub = sub.replace( r'\.',  r'.' )
-                #except:
-                #    pass
                 subs_replace[key][i][j] = sub
             # end
         # end
     # end
-except Exception, e:
-    print( "Error: in subs:", e, file=sys.stderr )
+except Exception as err:
+    print( "Error: in subs:", file=sys.stderr )
+    if 'key' in locals() and 'i' in locals():
+        print( "row %d of substitution table '%s': %s" %
+               (i, key, row), file=sys.stderr )
     traceback.print_exc()
+    exit(1)
 
 
 # ------------------------------------------------------------
@@ -219,10 +279,11 @@ class SourceFile( object ):
             header = subs_o[0]
             jfrom = header.index( self._src )
             jto   = header.index( precision )
-        except Exception, e:
+        except Exception as err:
             print( "Error: bad table or precision in '%s', @precisions %s %s -> %s:" %
                    (self._filename, self._table, self._src, self._dsts), file=sys.stderr )
-            raise e
+            traceback.print_exc()
+            exit(1)
         
         # Apply substitutions
         try:
@@ -233,10 +294,11 @@ class SourceFile( object ):
                     search[jfrom] = re.compile( orig[jfrom] )
                 text = re.sub( search[jfrom], replace[jto], text )
             # end
-        except Exception, e:
-            print( "Error: in row %d of substitution table '%s'" %
-                   (line, self._table), file=sys.stderr )
-            raise e
+        except Exception as err:
+            print( "Error: in row %d of substitution table '%s': %s" %
+                   (line, self._table, subs_o[line]), file=sys.stderr )
+            traceback.print_exc()
+            exit(1)
         
         # Replace @precision with @generated, file, rule, and timestamp
         gen = "@generated from %s, %s %s -> %s, %s" % (

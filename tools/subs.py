@@ -18,41 +18,41 @@
 # utilitiy functions
 
 # ----------------------------------------
-def upper( txt ):
+def upper( table ):
     '''
     Maps double-nested list of strings to upper case.
     [ ['Foo', 'bar'], ['baz', 'ZAB'] ]
     becomes
     [ ['FOO', 'BAR'], ['BAZ', 'ZAB'] ]
     '''
-    ucase = map( lambda outer: map( lambda inner: inner.upper(), outer ), txt )
+    ucase = [ [ x.upper() for x in row ] for row in table ]
     return ucase
 # end
 
 
 # ----------------------------------------
-def lower( txt ):
+def lower( table ):
     '''
     Maps double-nested list of strings to lower case.
     [ ['Foo', 'BAR'], ['BAZ', 'zab'] ]
     becomes
     [ ['foo', 'bar'], ['baz', 'zab'] ]
     '''
-    lcase = map( lambda outer: map( lambda inner: inner.lower(), outer ), txt )
+    lcase = [ [ x.lower() for x in row ] for row in table ]
     return lcase
 # end
 
 
 # ----------------------------------------
-def title( txt ):
+def title( table ):
     '''
     Maps double-nested list of strings to Title case. Useful for cuBLAS.
     [ ['FOO', 'bar'], ['Baz', 'Zab'] ]
     becomes
     [ ['Foo', 'Bar'], ['Baz', 'Zab'] ]
     '''
-    lcase = map( lambda outer: map( lambda inner: inner.title(), outer ), txt )
-    return lcase
+    tcase = [ [ x.title() for x in row ] for row in table ]
+    return tcase
 # end
 
 
