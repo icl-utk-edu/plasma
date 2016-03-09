@@ -14,12 +14,27 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
-/***************************************************************************//**
- *  PLASMA context.
- **/
+#include "../include/plasmatypes.h"
+
+#include <pthread.h>
+
+/******************************************************************************/
 typedef struct {
     int nb;                  ///< tile size
     PLASMA_enum translation; ///< in-place or out-of-place layout translation
 } plasma_context_t;
+
+typedef struct {
+    pthread_t thread_id;       ///< thread id
+    plasma_context_t *context; ///< pointer to associated context
+} plasma_context_map_t;
+
+/******************************************************************************/
+int PLASMA_Init();
+int PLASMA_Finalize();
+
+int plasma_context_attach();
+int plasma_context_detach();
+plasma_context_t *plasma_context_self();
 
 #endif // CONTEXT_H

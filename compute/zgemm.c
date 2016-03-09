@@ -12,10 +12,12 @@
  * @precisions normal z -> s d c
  *
  **/
-#include "../include/plasma.h"
+
 #include "../control/context.h"
 #include "../control/descriptor.h"
-#include "../control/tune.h"
+#include "../control/internal.h"
+#include "../include/plasma_z.h"
+#include "../include/plasmatypes.h"
 
 /***************************************************************************//**
  *
@@ -154,15 +156,15 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
         plasma_error("PLASMA_zgemm", "illegal value of N");
         return -5;
     }
-    if (lda < max(1, Am)) {
+    if (lda < imax(1, Am)) {
         plasma_error("PLASMA_zgemm", "illegal value of lda");
         return -8;
     }
-    if (ldb < max(1, Bm)) {
+    if (ldb < imax(1, Bm)) {
         plasma_error("PLASMA_zgemm", "illegal value of ldb");
         return -10;
     }
-    if (ldc < max(1, m)) {
+    if (ldc < imax(1, m)) {
         plasma_error("PLASMA_zgemm", "illegal value of ldc");
         return -13;
     }
@@ -172,16 +174,16 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
         beta == (PLASMA_Complex64_t)1.0))
         return PLASMA_SUCCESS;
 
-    /* Tune nb. */
-    status = plasma_tune(PLASMA_FUNC_ZGEMM, m, n, 0);
-    if (status != PLASMA_SUCCESS) {
-        plasma_error("PLASMA_zgemm", "plasma_tune() failed");
-        return status;
-    }
-    nb = plasma->nb;
+    // /* Tune nb. */
+    // status = plasma_tune(PLASMA_FUNC_ZGEMM, m, n, 0);
+    // if (status != PLASMA_SUCCESS) {
+    //     plasma_error("PLASMA_zgemm", "plasma_tune() failed");
+    //     return status;
+    // }
+    // nb = plasma->nb;
 
     plasma_sequence_create(plasma, &sequence);
-
+/*
     if (plasma->translation == PLASMA_OUTOFPLACE) {
         plasma_zooplap2tile(descA, A, nb, nb, lda, An, 0, 0, Am, An,
                             sequence, &request);
@@ -208,12 +210,12 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
         plasma_ziplap2tile(descC, C, nb, nb, ldc, n,  0, 0, m,  n,
                            sequence, &request);
     }
-
+*/
     /* Call the tile interface. */
     PLASMA_zgemm_Tile_Async(transA, transB,
                             alpha, &descA, &descB, beta, &descC,
                             sequence, &request);
-
+/*
     if (plasma->translation == PLASMA_OUTOFPLACE) {
         plasma_zooptile2lap(descC, C, nb, nb, ldc, n, sequence, &request);
         plasma_dynamic_sync();
@@ -227,7 +229,7 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
         plasma_ziptile2lap(descC, C, nb, nb, ldc, n,  sequence, &request);
         plasma_dynamic_sync();
     }
-
+*/
     status = sequence->status;
     plasma_sequence_destroy(plasma, sequence);
     return status;

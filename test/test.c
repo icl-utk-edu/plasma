@@ -62,6 +62,7 @@ int main(int argc, char **argv)
     else
         time_routine(argv[1], NULL);
 
+    PLASMA_Init();
     if (outer) {
         // outer product iteration
         do {
@@ -86,6 +87,7 @@ int main(int argc, char **argv)
         }
         while (param_step_inner(param));
     }
+    PLASMA_Finalize();
     printf("\n");
     return EXIT_SUCCESS;
 }

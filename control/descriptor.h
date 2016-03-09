@@ -14,6 +14,11 @@
 #ifndef DESCRIPTOR_H
 #define DESCRIPTOR_H
 
+#include "plasmatypes.h"
+
+#include <stdlib.h>
+#include <assert.h>
+
 /***************************************************************************//**
  *  Tile matrix descriptor.
  *
@@ -51,5 +56,66 @@ typedef struct {
     int mt;           ///< number of tile rows of the submatrix
     int nt;           ///< number of tile columns of the submatrix
 } PLASMA_desc;
+
+/******************************************************************************/
+static inline int plasma_element_size(int type)
+{
+    switch(type) {
+    case PlasmaByte:          return          1;
+    case PlasmaInteger:       return   sizeof(int);
+    case PlasmaRealFloat:     return   sizeof(float);
+    case PlasmaRealDouble:    return   sizeof(double);
+    case PlasmaComplexFloat:  return 2*sizeof(float);
+    case PlasmaComplexDouble: return 2*sizeof(double);
+    default: assert(0);
+    }
+}
+
+/******************************************************************************/
+static inline int BLKLDD(PLASMA_desc A, int k)
+{
+    if (k+A.i/A.mb < A.lm1)
+        return A.mb;
+    else
+        return A.lm%A.mb;
+}
+
+/******************************************************************************/
+inline static void *plasma_getaddr(PLASMA_desc A, int m, int n)
+{
+    size_t mm = m+A.i/A.mb;
+    size_t nn = n+A.j/A.nb;
+    size_t eltsize = plasma_element_size(A.dtyp);
+    size_t offset = 0;
+
+    if (mm < A.lm1)
+        if (nn < A.ln1)
+            offset = A.bsiz*(mm + (size_t)A.lm1 * nn);
+        else
+            offset = A.A12 + ((size_t)A.mb * (A.ln%A.nb) * mm);
+    else
+        if (nn < A.ln1)
+            offset = A.A21 + ((size_t)A.nb * (A.lm%A.mb) * nn);
+        else
+            offset = A.A22;
+
+    return (void*)((char*)A.mat + (offset*eltsize));
+}
+
+/******************************************************************************/
+int PLASMA_Desc_Create(PLASMA_desc **desc, void *mat, PLASMA_enum dtyp,
+                       int mb, int nb, int bsiz, int lm, int ln, int i,
+                       int j, int m, int n);
+
+int PLASMA_Desc_Destroy(PLASMA_desc **desc);
+
+PLASMA_desc plasma_desc_init(PLASMA_enum dtyp, int mb, int nb, int bsiz,
+                             int lm, int ln, int i, int j, int m, int n);
+
+PLASMA_desc plasma_desc_submatrix(PLASMA_desc descA, int i, int j, int m, int n);
+
+int plasma_desc_check(PLASMA_desc *desc);
+int plasma_desc_mat_alloc(PLASMA_desc *desc);
+int plasma_desc_mat_free(PLASMA_desc *desc);
 
 #endif // DESCRIPTOR_H

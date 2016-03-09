@@ -12,9 +12,15 @@
  * @precisions normal z -> c d s
  *
  **/
-// #include "common.h"
 
-#include "plasma.h"
+#include "../include/plasmatypes.h"
+
+#ifdef PLASMA_WITH_MKL
+    #include <mkl.h>
+#else
+    #include <cblas.h>
+    #include <lapacke.h>
+#endif
 
 /***************************************************************************//**
  *
@@ -84,13 +90,12 @@
  *          The leading dimension of the array C. ldc >= max(1,m).
  *
  ******************************************************************************/
-// #pragma weak CORE_zgemm = PCORE_zgemm
-// #define CORE_zgemm PCORE_zgemm
-void CORE_zgemm(PLASMA_enum transA, PLASMA_enum transB,
-                int m, int n, int k,
-                PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
-                                          const PLASMA_Complex64_t *B, int ldb,
-                PLASMA_Complex64_t beta, PLASMA_Complex64_t *C, int ldc)
+void CORE_zgemm(
+    PLASMA_enum transA, PLASMA_enum transB,
+    int m, int n, int k,
+    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+                              const PLASMA_Complex64_t *B, int ldb,
+           PLASMA_Complex64_t beta, PLASMA_Complex64_t *C, int ldc)
 {
     cblas_zgemm(
         CblasColMajor,
@@ -99,4 +104,20 @@ void CORE_zgemm(PLASMA_enum transA, PLASMA_enum transB,
         CBLAS_SADDR(alpha), A, lda,
                             B, ldb,
         CBLAS_SADDR(beta),  C, ldc);
+}
+
+/******************************************************************************/
+void CORE_OMP_zgemm(
+    PLASMA_enum transA, PLASMA_enum transB,
+    int m, int n, int k, int nb,
+    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+                              const PLASMA_Complex64_t *B, int ldb,
+           PLASMA_Complex64_t beta, PLASMA_Complex64_t *C, int ldc)
+{
+    CORE_zgemm(
+        transA, transB,
+        m, n, k,
+        alpha, A, lda,
+               B, ldb,
+         beta, C, ldc);
 }

@@ -12,9 +12,9 @@
  * @precisions normal z -> s d c
  *
  **/
-#include "../include/plasma.h"
-#include "../control/context.h"
+
 #include "../control/descriptor.h"
+#include "../include/plasmatypes.h"
 
 #define A(m, n) plasma_getaddr(A, m, n)
 #define B(m, n) plasma_getaddr(B, m, n)
