@@ -13,6 +13,7 @@
  *
  **/
 
+#include "../control/async.h"
 #include "../control/descriptor.h"
 #include "../include/plasmatypes.h"
 

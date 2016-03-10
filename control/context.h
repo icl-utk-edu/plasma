@@ -36,5 +36,6 @@ int PLASMA_Finalize();
 int plasma_context_attach();
 int plasma_context_detach();
 plasma_context_t *plasma_context_self();
+void plasma_context_init(plasma_context_t *context);
 
 #endif // CONTEXT_H

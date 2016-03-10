@@ -74,16 +74,4 @@ typedef int PLASMA_bool;
 typedef float  complex PLASMA_Complex32_t;
 typedef double complex PLASMA_Complex64_t;
 
-/******************************************************************************/
-typedef struct {
-    PLASMA_bool status; ///< error code
-} PLASMA_request;
-
-static const PLASMA_request PLASMA_REQUEST_INITIALIZER = {PLASMA_SUCCESS};
-
-typedef struct {
-    PLASMA_bool status;      ///< error code
-    PLASMA_request *request; ///< failed request
-} PLASMA_sequence;
-
 #endif // PLASMATYPES_H

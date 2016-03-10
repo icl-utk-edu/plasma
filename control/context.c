@@ -13,6 +13,7 @@
  **/
 
 #include "context.h"
+#include "internal.h"
 
 static int max_contexts = 1024;
 static int num_contexts = 0;
@@ -60,7 +61,7 @@ int plasma_context_attach()
         realloc(&context_map, max_contexts*sizeof(plasma_context_map_t));
         if (context_map == NULL) {
             pthread_mutex_unlock(&context_map_lock);
-            plasma_fatal_error("plasma_context_insert", "realloc() failed");
+            plasma_fatal_error("plasma_context_attach", "realloc() failed");
             return PLASMA_ERR_OUT_OF_RESOURCES;
         }
     }
@@ -72,6 +73,8 @@ int plasma_context_attach()
         plasma_fatal_error("plasma_context_attach", "malloc() failed");
         return PLASMA_ERR_OUT_OF_RESOURCES;
     }
+    // Initialize the context.
+    plasma_context_init(context);
 
     // Find and empty slot and insert the context.
     for (int i = 0; i < max_contexts; i++) {
@@ -85,7 +88,7 @@ int plasma_context_attach()
     }
     // This should never happen.
     pthread_mutex_unlock(&context_map_lock);
-    plasma_fatal_error("plasma_context_insert", "empty slot not found");
+    plasma_fatal_error("plasma_context_attach", "empty slot not found");
     return PLASMA_ERR_UNEXPECTED;
 }
 
@@ -126,4 +129,11 @@ plasma_context_t *plasma_context_self()
     pthread_mutex_unlock(&context_map_lock);
     plasma_fatal_error("plasma_context_self", "context not found");
     return NULL;
+}
+
+/******************************************************************************/
+void plasma_context_init(plasma_context_t *context)
+{
+    context->nb = 256;
+    context->translation = PLASMA_OUTOFPLACE;
 }

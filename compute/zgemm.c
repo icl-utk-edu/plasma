@@ -13,6 +13,7 @@
  *
  **/
 
+#include "../control/async.h"
 #include "../control/context.h"
 #include "../control/descriptor.h"
 #include "../control/internal.h"
@@ -180,9 +181,9 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
     //     plasma_error("PLASMA_zgemm", "plasma_tune() failed");
     //     return status;
     // }
-    // nb = plasma->nb;
+    nb = plasma->nb;
 
-    plasma_sequence_create(plasma, &sequence);
+    plasma_sequence_create(&sequence);
 /*
     if (plasma->translation == PLASMA_OUTOFPLACE) {
         plasma_zooplap2tile(descA, A, nb, nb, lda, An, 0, 0, Am, An,
@@ -218,7 +219,6 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
 /*
     if (plasma->translation == PLASMA_OUTOFPLACE) {
         plasma_zooptile2lap(descC, C, nb, nb, ldc, n, sequence, &request);
-        plasma_dynamic_sync();
         plasma_desc_mat_free(&descA);
         plasma_desc_mat_free(&descB);
         plasma_desc_mat_free(&descC);
@@ -227,11 +227,10 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
         plasma_ziptile2lap(descA, A, nb, nb, lda, An, sequence, &request);
         plasma_ziptile2lap(descB, B, nb, nb, ldb, Bn, sequence, &request);
         plasma_ziptile2lap(descC, C, nb, nb, ldc, n,  sequence, &request);
-        plasma_dynamic_sync();
     }
 */
     status = sequence->status;
-    plasma_sequence_destroy(plasma, sequence);
+    plasma_sequence_destroy(sequence);
     return status;
 }
 
@@ -284,13 +283,13 @@ int PLASMA_zgemm_Tile(PLASMA_enum transA, PLASMA_enum transB,
         plasma_fatal_error("PLASMA_zgemm_Tile", "PLASMA not initialized");
         return PLASMA_ERR_NOT_INITIALIZED;
     }
-    plasma_sequence_create(plasma, &sequence);
+    plasma_sequence_create(&sequence);
     PLASMA_zgemm_Tile_Async(transA, transB,
                             alpha, A, B, beta, C,
                             sequence, &request);
-    plasma_dynamic_sync();
+
     status = sequence->status;
-    plasma_sequence_destroy(plasma, sequence);
+    plasma_sequence_destroy(sequence);
     return status;
 }
 
