@@ -106,21 +106,14 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
                                            PLASMA_Complex64_t *B, int ldb,
                  PLASMA_Complex64_t beta,  PLASMA_Complex64_t *C, int ldc)
 {
-    int nb;
-    int Am, An, Bm, Bn;
-    int status;
-    PLASMA_desc descA, descB, descC;
-    plasma_context_t *plasma;
-    PLASMA_sequence *sequence = NULL;
-    PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
-
-    plasma = plasma_context_self();
+    // Get PLASMA context.
+    plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
-        plasma_fatal_error("PLASMA_zgemm", "PLASMA not initialized");
+        plasma_error("PLASMA_zgemm", "PLASMA not initialized");
         return PLASMA_ERR_NOT_INITIALIZED;
     }
 
-    /* Check input arguments */
+    // Check input arguments
     if ((transA != PlasmaNoTrans) &&
         (transA != PlasmaTrans) &&
         (transA != PlasmaConjTrans)) {
@@ -132,18 +125,6 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
         (transB != PlasmaConjTrans)) {
         plasma_error("PLASMA_zgemm", "illegal value of transB");
         return -2;
-    }
-    if (transA == PlasmaNoTrans) {
-        Am = m; An = k;
-    }
-    else {
-        Am = k; An = m;
-    }
-    if (transB == PlasmaNoTrans) {
-        Bm = k; Bn = n;
-    }
-    else {
-        Bm = n; Bn = k;
     }
     if (m < 0) {
         plasma_error("PLASMA_zgemm", "illegal value of M");
@@ -157,6 +138,24 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
         plasma_error("PLASMA_zgemm", "illegal value of N");
         return -5;
     }
+    int Am, An;
+    int Bm, Bn;
+    if (transA == PlasmaNoTrans) {
+        Am = m;
+        An = k;
+    }
+    else {
+        Am = k;
+        An = m;
+    }
+    if (transB == PlasmaNoTrans) {
+        Bm = k;
+        Bn = n;
+    }
+    else {
+        Bm = n;
+        Bn = k;
+    }
     if (lda < imax(1, Am)) {
         plasma_error("PLASMA_zgemm", "illegal value of lda");
         return -8;
@@ -169,54 +168,61 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
         plasma_error("PLASMA_zgemm", "illegal value of ldc");
         return -13;
     }
-
-    /* Quick return */
+    // Quick return
     if (m == 0 || n == 0 || ((alpha == (PLASMA_Complex64_t)0.0 || k == 0) &&
         beta == (PLASMA_Complex64_t)1.0))
         return PLASMA_SUCCESS;
 
-    // /* Tune nb. */
-    // status = plasma_tune(PLASMA_FUNC_ZGEMM, m, n, 0);
-    // if (status != PLASMA_SUCCESS) {
+    // Tune nb.
+    // if (plasma_tune(PLASMA_FUNC_ZGEMM, m, n, 0) != PLASMA_SUCCESS) {
     //     plasma_error("PLASMA_zgemm", "plasma_tune() failed");
     //     return status;
     // }
-    nb = plasma->nb;
+    int nb = plasma->nb;
 
+    // Create sequence, initialize request.
+    PLASMA_sequence *sequence = NULL;
     plasma_sequence_create(&sequence);
-/*
+    PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
+
+    PLASMA_desc descA;
+    PLASMA_desc descB;
+    PLASMA_desc descC;
+
     if (plasma->translation == PLASMA_OUTOFPLACE) {
+
         plasma_zooplap2tile(descA, A, nb, nb, lda, An, 0, 0, Am, An,
                             sequence, &request);
-        plasma_desc_mat_free(&descA);
 
         plasma_zooplap2tile(descB, B, nb, nb, ldb, Bn, 0, 0, Bm, Bn,
                             sequence, &request);
-        plasma_desc_mat_free(&descA);
-        plasma_desc_mat_free(&descB);
 
         plasma_zooplap2tile(descC, C, nb, nb, ldc, n,  0, 0, m,  n,
                             sequence, &request);
-        plasma_desc_mat_free(&descA);
-        plasma_desc_mat_free(&descB);
-        plasma_desc_mat_free(&descC);
+
+        if (descA.mat == NULL || descB.mat == NULL || descC.mat == NULL) {
+            plasma_desc_mat_free(&descA);
+            plasma_desc_mat_free(&descB);
+            plasma_desc_mat_free(&descC);
+            return PLASMA_ERR_OUT_OF_RESOURCES;
+        }
     }
     else {
-        plasma_ziplap2tile(descA, A, nb, nb, lda, An, 0, 0, Am, An,
-                           sequence, &request);
+        // plasma_ziplap2tile(descA, A, nb, nb, lda, An, 0, 0, Am, An,
+        //                    sequence, &request);
 
-        plasma_ziplap2tile(descB, B, nb, nb, ldb, Bn, 0, 0, Bm, Bn,
-                           sequence, &request);
+        // plasma_ziplap2tile(descB, B, nb, nb, ldb, Bn, 0, 0, Bm, Bn,
+        //                    sequence, &request);
 
-        plasma_ziplap2tile(descC, C, nb, nb, ldc, n,  0, 0, m,  n,
-                           sequence, &request);
+        // plasma_ziplap2tile(descC, C, nb, nb, ldc, n,  0, 0, m,  n,
+        //                    sequence, &request);
     }
-*/
+
     /* Call the tile interface. */
     PLASMA_zgemm_Tile_Async(transA, transB,
                             alpha, &descA, &descB, beta, &descC,
                             sequence, &request);
-/*
+
     if (plasma->translation == PLASMA_OUTOFPLACE) {
         plasma_zooptile2lap(descC, C, nb, nb, ldc, n, sequence, &request);
         plasma_desc_mat_free(&descA);
@@ -224,12 +230,12 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
         plasma_desc_mat_free(&descC);
     }
     else {
-        plasma_ziptile2lap(descA, A, nb, nb, lda, An, sequence, &request);
-        plasma_ziptile2lap(descB, B, nb, nb, ldb, Bn, sequence, &request);
-        plasma_ziptile2lap(descC, C, nb, nb, ldc, n,  sequence, &request);
+        // plasma_ziptile2lap(descA, A, nb, nb, lda, An, sequence, &request);
+        // plasma_ziptile2lap(descB, B, nb, nb, ldb, Bn, sequence, &request);
+        // plasma_ziptile2lap(descC, C, nb, nb, ldc, n,  sequence, &request);
     }
-*/
-    status = sequence->status;
+
+    int status = sequence->status;
     plasma_sequence_destroy(sequence);
     return status;
 }
@@ -280,7 +286,7 @@ int PLASMA_zgemm_Tile(PLASMA_enum transA, PLASMA_enum transB,
 
     plasma = plasma_context_self();
     if (plasma == NULL) {
-        plasma_fatal_error("PLASMA_zgemm_Tile", "PLASMA not initialized");
+        plasma_error("PLASMA_zgemm_Tile", "PLASMA not initialized");
         return PLASMA_ERR_NOT_INITIALIZED;
     }
     plasma_sequence_create(&sequence);
@@ -336,15 +342,15 @@ int PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
 
     plasma = plasma_context_self();
     if (plasma == NULL) {
-        plasma_fatal_error("PLASMA_zgemm_Tile_Async", "PLASMA not initialized");
+        plasma_error("PLASMA_zgemm_Tile_Async", "PLASMA not initialized");
         return PLASMA_ERR_NOT_INITIALIZED;
     }
     if (sequence == NULL) {
-        plasma_fatal_error("PLASMA_zgemm_Tile_Async", "NULL sequence");
+        plasma_error("PLASMA_zgemm_Tile_Async", "NULL sequence");
         return PLASMA_ERR_UNALLOCATED;
     }
     if (request == NULL) {
-        plasma_fatal_error("PLASMA_zgemm_Tile_Async", "NULL request");
+        plasma_error("PLASMA_zgemm_Tile_Async", "NULL request");
         return PLASMA_ERR_UNALLOCATED;
     }
     /* Check sequence status */

@@ -305,42 +305,42 @@ subs = {
     # double/single,         double/single-complex
     #'12345678901234567890', '12345678901234567890')
     ('ds',                   'zc'                  ),
-    
+
     # ----- preprocessor
     ('#define REAL',         '#define COMPLEX'     ),
     ('#undef REAL',          '#undef COMPLEX'      ),
-    
-    # ----- Text                                  
+
+    # ----- Text
     ('symmetric',            'hermitian'           ),
     ('symmetric',            'Hermitian'           ),
     ('orthogonal',           'unitary'             ),
-    
+
     # ----- CBLAS
     ('',                     'CBLAS_SADDR'         ),
-    
+
     # ----- Complex numbers
     # See note in "normal" section below about regexps
     (r'',                   r'\bconj\b'            ),
-    
+
     # ----- Constants
     # See note in "normal" section below about ConjTrans
     ('MagmaTrans',           'Magma_ConjTrans'     ),
-    
+
     # ----- BLAS & LAPACK
     ]
     + title( blas_mixed )  # e.g., Dgemm, as in cuBLAS, before lowercase (e.g., for Zdrot)
     + lower( blas_mixed )  # e.g., dgemm
     + upper( blas_mixed )  # e.g., DGEMM
     + [
-    
+
     # ----- PLASMA / MAGMA data types
     ('double',               'magmaDoubleComplex'  ),
     ('float',                'magmaFloatComplex'   ),
     ('double',               'PLASMA_Complex64_t'  ),
     ('float',                'PLASMA_Complex32_t'  ),
-    
+
     # ----- PLASMA / MAGMA functions, alphabetic order
-    
+
     # ----- Prefixes
     # See note in "normal" section below
     ('LAPACKE_d',            'LAPACKE_z'           ),
@@ -349,7 +349,7 @@ subs = {
     ('PLASMA_s',             'PLASMA_c'            ),
     ('plasma_d',             'plasma_z'            ),
     ('plasma_s',             'plasma_c'            ),
-    
+
   ],  # end mixed
 
   # ------------------------------------------------------------
@@ -359,7 +359,7 @@ subs = {
     # single                  double                  single-complex          double-complex
     #'12345678901234567890', '12345678901234567890', '12345678901234567890', '12345678901234567890')
     ('s',                    'd',                    'c',                    'z'                   ),
-    
+
     # ----- preprocessor
     ('#define PRECISION_s',  '#define PRECISION_d',  '#define PRECISION_c',  '#define PRECISION_z' ),
     ('#undef PRECISION_s',   '#undef PRECISION_d',   '#undef PRECISION_c',   '#undef PRECISION_z'  ),
@@ -367,7 +367,7 @@ subs = {
     ('#undef REAL',          '#undef REAL',          '#undef COMPLEX',       '#undef COMPLEX'      ),
     ('#define SINGLE',       '#define DOUBLE',       '#define SINGLE',       '#define DOUBLE'      ),
     ('#undef SINGLE',        '#undef DOUBLE',        '#undef SINGLE',        '#undef DOUBLE'       ),
-    
+
     # ----- Text
     ('symmetric',            'symmetric',            'hermitian',            'hermitian'           ),
     ('symmetric',            'symmetric',            'Hermitian',            'Hermitian'           ),
@@ -376,7 +376,7 @@ subs = {
 
     # ----- CBLAS
     ('',                     '',                     'CBLAS_SADDR',          'CBLAS_SADDR'         ),
-    
+
     # ----- Complex numbers
     # \b regexp here avoids conjugate -> conjfugate, and fabs -> fabsf -> fabsff.
     # Note r for raw string literals, otherwise \b is a bell character.
@@ -385,7 +385,7 @@ subs = {
     (r'',                   r'',                    r'\bconjf\b',           r'\bconj\b'            ),
     (r'\bfabsf\b',          r'\bfabs\b',            r'\bfabsf\b',           r'\bfabs\b'            ),
     (r'\bfabsf\b',          r'\bfabs\b',            r'\bcabsf\b',           r'\bcabs\b'            ),
-    
+
     # ----- Constants
     # Do not convert ConjTrans to Trans, since in most cases ConjTrans
     # must be a valid option to real-precision functions.
@@ -393,7 +393,7 @@ subs = {
     # converted, then dgemm will have 2 Trans cases and no ConjTrans case.
     # Only for zlarfb and zunm*, convert it using special Magma_ConjTrans alias.
     ('MagmaTrans',           'MagmaTrans',           'Magma_ConjTrans',      'Magma_ConjTrans'     ),
-    
+
     # ----- BLAS & LAPACK
     ]
     + title( blas )    # e.g., Dgemm, as in cuBLAS, before lowercase (e.g., for Zdrot)
@@ -402,15 +402,19 @@ subs = {
     + lower( lapack )  # e.g., dgetrf
     + upper( lapack )  # e.g., DGETRF
     + [
-    
+
+    # ----- PLASMA / MAGMA constants
+    ('PlasmaRealFloat',      'PlasmaRealDouble',     'PlasmaComplexFloat',   'PlasmaComplexDouble' ),
+
     # ----- PLASMA / MAGMA data types
     ('float',                'double',               'magmaFloatComplex',    'magmaDoubleComplex'  ),
     ('float',                'double',               'PLASMA_Complex32_t',   'PLASMA_Complex64_t'  ),
     ('float',                'double',               'float',                'double'              ),
-    
+
     # ----- PLASMA / MAGMA functions, alphabetic order
     ('sy2sb',                'sy2sb',                'he2hb',                'he2hb'               ),
-    
+    ('stile',                'dtile',                'ctile',                'ztile'               ),
+
     # ----- Prefixes
     # Most routines have already been renamed by above BLAS/LAPACK rules.
     # Functions where real == complex name can be handled here;
@@ -421,6 +425,6 @@ subs = {
     ('plasma_s',             'plasma_d',             'plasma_c',             'plasma_z'            ),
     ('TEST_S',               'TEST_D',               'TEST_C',               'TEST_Z'              ),
     ('test_s',               'test_d',               'test_c',               'test_z'              ),
-    
+
   ],  # end normal
 } # end subs

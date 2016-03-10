@@ -33,7 +33,7 @@ int PLASMA_Init()
                                           sizeof(plasma_context_map_t));
         if (context_map == NULL) {
             pthread_mutex_unlock(&context_map_lock);
-            plasma_fatal_error("PLASMA_Init", "calloc() failed");
+            plasma_error("PLASMA_Init", "calloc() failed");
             return PLASMA_ERR_OUT_OF_RESOURCES;
         }
     }
@@ -61,7 +61,7 @@ int plasma_context_attach()
         realloc(&context_map, max_contexts*sizeof(plasma_context_map_t));
         if (context_map == NULL) {
             pthread_mutex_unlock(&context_map_lock);
-            plasma_fatal_error("plasma_context_attach", "realloc() failed");
+            plasma_error("plasma_context_attach", "realloc() failed");
             return PLASMA_ERR_OUT_OF_RESOURCES;
         }
     }
@@ -70,7 +70,7 @@ int plasma_context_attach()
     context = (plasma_context_t*)malloc(sizeof(plasma_context_t));
     if (context == NULL) {
         pthread_mutex_unlock(&context_map_lock);
-        plasma_fatal_error("plasma_context_attach", "malloc() failed");
+        plasma_error("plasma_context_attach", "malloc() failed");
         return PLASMA_ERR_OUT_OF_RESOURCES;
     }
     // Initialize the context.
@@ -88,7 +88,7 @@ int plasma_context_attach()
     }
     // This should never happen.
     pthread_mutex_unlock(&context_map_lock);
-    plasma_fatal_error("plasma_context_attach", "empty slot not found");
+    plasma_error("plasma_context_attach", "empty slot not found");
     return PLASMA_ERR_UNEXPECTED;
 }
 
@@ -109,7 +109,7 @@ int plasma_context_detach()
         }
     }
     pthread_mutex_unlock(&context_map_lock);
-    plasma_fatal_error("plasma_context_detach", "context not found");
+    plasma_error("plasma_context_detach", "context not found");
     return PLASMA_ERR_UNEXPECTED;
 }
 
@@ -127,7 +127,7 @@ plasma_context_t *plasma_context_self()
         }
     }
     pthread_mutex_unlock(&context_map_lock);
-    plasma_fatal_error("plasma_context_self", "context not found");
+    plasma_error("plasma_context_self", "context not found");
     return NULL;
 }
 
