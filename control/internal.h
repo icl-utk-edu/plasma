@@ -26,21 +26,40 @@ static inline int imax(int a, int b)
 }
 
 /******************************************************************************/
-static inline void plasma_warning(const char *func_name, char* msg_text)
+#define plasma_warning(msg) \
+        plasma_warning_func_line_file(__func__, __LINE__, __FILE__, msg)
+
+#define plasma_error(msg) \
+        plasma_warning_func_line_file(__func__, __LINE__, __FILE__, msg)
+
+#define plasma_fatal_error(msg) \
+        plasma_warning_func_line_file(__func__, __LINE__, __FILE__, msg)
+
+/******************************************************************************/
+static inline void plasma_warning_func_line_file(
+    char *func, char *line, char *file, char *msg)
 {
-    fprintf(stderr, "PLASMA WARNING: %s(): %s\n", func_name, msg_text);
+    fprintf(stderr,
+            "PLASMA WARNING: %s - at %s of %s() in %s\n",
+            line, func, file, msg);
 }
 
 /******************************************************************************/
-static inline void plasma_error(const char *func_name, char* msg_text)
+static inline void plasma_error_func_line_file(
+    char *func, char *line, char *file, char *msg)
 {
-    fprintf(stderr, "PLASMA ERROR: %s(): %s\n", func_name, msg_text);
+    fprintf(stderr,
+            "PLASMA ERROR: %s - at %s of %s() in %s\n",
+            line, func, file, msg);
 }
 
 /******************************************************************************/
-static inline void plasma_fatal_error(const char *func_name, char* msg_text)
+static inline void plasma_fatal_error_func_line_file(
+    char *func, char *line, char *file, char *msg)
 {
-    fprintf(stderr, "PLASMA FATAL ERROR: %s(): %s\n", func_name, msg_text);
+    fprintf(stderr,
+            "PLASMA FATAL ERROR: %s - at %s of %s() in %s\n",
+            line, func, file, msg);
     exit(0);
 }
 

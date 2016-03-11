@@ -12,21 +12,3 @@
  * @precisions normal z -> s d c
  *
  **/
-
-#include "async.h"
-#include "descriptor.h"
-
-/******************************************************************************/
-void plasma_zooplap2tile(PLASMA_desc *descA, PLASMA_Complex64_t *A,
-                        int mb, int nb, int lm, int ln,
-                        int i, int j, int m, int n,
-                        PLASMA_sequence sequence, PLASMA_request request)
-{
-    // Create the descriptor.
-    *descA = plasma_desc_init(PlasmaComplexDouble,
-                              mb, nb, mb*nb, lm, ln, i, j, m, n);
-
-    // Allocate and call the translation.
-    if (plasma_desc_mat_alloc(descA) == PLASMA_SUCCESS)
-        plasma_pzlapack_to_tile(A, lm, descA, sequence, request);
-}

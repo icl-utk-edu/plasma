@@ -31,7 +31,7 @@ int plasma_request_fail(
 int plasma_sequence_create(PLASMA_sequence **sequence)
 {
     if ((*sequence = malloc(sizeof(PLASMA_sequence))) == NULL) {
-        plasma_error("plasma_sequence_create", "malloc() failed");
+        plasma_error("malloc() failed");
         return PLASMA_ERR_OUT_OF_RESOURCES;
     }
     (*sequence)->status = PLASMA_SUCCESS;

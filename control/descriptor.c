@@ -23,20 +23,20 @@ int PLASMA_Desc_Create(PLASMA_desc **desc, void *mat, PLASMA_enum dtyp,
 {
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
-        plasma_error("PLASMA_Desc_Create", "PLASMA not initialized");
+        plasma_error("PLASMA not initialized");
         return PLASMA_ERR_NOT_INITIALIZED;
     }
     /* Allocate memory and initialize the descriptor */
     *desc = (PLASMA_desc*)malloc(sizeof(PLASMA_desc));
     if (*desc == NULL) {
-        plasma_error("PLASMA_Desc_Create", "malloc() failed");
+        plasma_error("malloc() failed");
         return PLASMA_ERR_OUT_OF_RESOURCES;
     }
     **desc = plasma_desc_init(dtyp, mb, nb, bsiz, lm, ln, i, j, m, n);
     (**desc).mat = mat;
     int status = plasma_desc_check(*desc);
     if (status != PLASMA_SUCCESS) {
-        plasma_error("PLASMA_Desc_Create", "invalid descriptor");
+        plasma_error("invalid descriptor");
         return status;
     }
     return PLASMA_SUCCESS;
@@ -49,12 +49,11 @@ int PLASMA_Desc_Destroy(PLASMA_desc **desc)
 
     plasma = plasma_context_self();
     if (plasma == NULL) {
-        plasma_error("PLASMA_Desc_Destroy", "PLASMA not initialized");
+        plasma_error("PLASMA not initialized");
         return PLASMA_ERR_NOT_INITIALIZED;
     }
     if (*desc == NULL) {
-        plasma_error("PLASMA_Desc_Destroy",
-                     "attempting to destroy a NULL descriptor");
+        plasma_error("NULL descriptor");
         return PLASMA_ERR_UNALLOCATED;
     }
     free(*desc);
@@ -111,10 +110,10 @@ PLASMA_desc plasma_desc_init(PLASMA_enum dtyp, int mb, int nb, int bsiz,
 PLASMA_desc plasma_desc_submatrix(PLASMA_desc descA, int i, int j, int m, int n)
 {
     if ((descA.i+i+m) > descA.lm)
-        plasma_error("plasma_desc_submatrix", "rows out of bounds");
+        plasma_error("rows out of bounds");
 
     if ((descA.j+j+n) > descA.ln)
-        plasma_error("plasma_desc_submatrix", "columns out of bounds");
+        plasma_error("columns out of bounds");
 
     PLASMA_desc descB = descA;
     int mb = descA.mb;
@@ -137,51 +136,47 @@ PLASMA_desc plasma_desc_submatrix(PLASMA_desc descA, int i, int j, int m, int n)
 int plasma_desc_check(PLASMA_desc *desc)
 {
     if (desc == NULL) {
-        plasma_error("plasma_desc_check", "NULL descriptor");
+        plasma_error("NULL descriptor");
         return PLASMA_ERR_NOT_INITIALIZED;
     }
     if (desc->mat == NULL) {
-        plasma_error("plasma_desc_check", "NULL matrix pointer");
+        plasma_error("NULL matrix pointer");
         return PLASMA_ERR_UNALLOCATED;
     }
     if (desc->dtyp != PlasmaRealFloat &&
         desc->dtyp != PlasmaRealDouble &&
         desc->dtyp != PlasmaComplexFloat &&
         desc->dtyp != PlasmaComplexDouble  ) {
-        plasma_error("plasma_desc_check", "invalid matrix type");
+        plasma_error("invalid matrix type");
         return PLASMA_ERR_ILLEGAL_VALUE;
     }
     if (desc->mb <= 0 || desc->nb <= 0) {
-        plasma_error("plasma_desc_check", "negative tile dimension");
+        plasma_error("negative tile dimension");
         return PLASMA_ERR_ILLEGAL_VALUE;
     }
     if (desc->bsiz < desc->mb*desc->nb) {
-        plasma_error("plasma_desc_check",
-                     "tile memory size smaller than the product of dimensions");
+        plasma_error("invalid tile memory size");
         return PLASMA_ERR_ILLEGAL_VALUE;
     }
     if ((desc->m < 0) || (desc->n < 0)) {
-        plasma_error("plasma_desc_check", "negative matrix dimension");
+        plasma_error("negative matrix dimension");
         return PLASMA_ERR_ILLEGAL_VALUE;
     }
     if ((desc->lm < desc->m) || (desc->ln < desc->n)) {
-        plasma_error("plasma_desc_check",
-                     "matrix dimensions larger than leading dimensions");
+        plasma_error("invalid leading dimensions");
         return PLASMA_ERR_ILLEGAL_VALUE;
     }
     if ((desc->i > 0 && desc->i >= desc->lm) ||
         (desc->j > 0 && desc->j >= desc->ln)) {
-        plasma_error("plasma_desc_check",
-                     "beginning of the matrix out of scope");
+        plasma_error("beginning of the matrix out of bounds");
         return PLASMA_ERR_ILLEGAL_VALUE;
     }
     if (desc->i+desc->m > desc->lm || desc->j+desc->n > desc->ln) {
-        plasma_error("plasma_desc_check", "submatrix out of scope");
+        plasma_error("submatrix out of bounds");
         return PLASMA_ERR_ILLEGAL_VALUE;
     }
     if ((desc->i % desc->mb != 0) || (desc->j % desc->nb != 0)) {
-        plasma_error("plasma_desc_check",
-                     "submatrix has to start in the corner of a tile");
+        plasma_error("submatrix not aligned to a tile");
         return PLASMA_ERR_ILLEGAL_VALUE;
     }
     return PLASMA_SUCCESS;
@@ -194,7 +189,7 @@ int plasma_desc_mat_alloc(PLASMA_desc *desc)
                   (size_t)plasma_element_size(desc->dtyp);
 
     if ((desc->mat = malloc(size)) == NULL) {
-        plasma_error("plasma_desc_mat_alloc", "malloc() failed");
+        plasma_error("malloc() failed");
         return PLASMA_ERR_OUT_OF_RESOURCES;
     }
     return PLASMA_SUCCESS;
