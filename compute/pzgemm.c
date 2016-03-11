@@ -20,9 +20,7 @@
 #define A(m, n) plasma_getaddr(A, m, n)
 #define B(m, n) plasma_getaddr(B, m, n)
 #define C(m, n) plasma_getaddr(C, m, n)
-/***************************************************************************//**
- *  Parallel tile matrix-matrix multiplication.
- **/
+/******************************************************************************/
 void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                    PLASMA_Complex64_t alpha, PLASMA_desc A,
                                              PLASMA_desc B,
@@ -39,16 +37,14 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
     if (sequence->status != PLASMA_SUCCESS)
         return;
 
-    // plasma_context_t plasma = plasma_context_self();
-
     for (m = 0; m < C.mt; m++) {
         tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
         ldcm = BLKLDD(C, m);
         for (n = 0; n < C.nt; n++) {
             tempnn = n == C.nt-1 ? C.n-n*C.nb : C.nb;
-            /*
-             *  A: PlasmaNoTrans / B: PlasmaNoTrans
-             */
+            //=======================================
+            // A: PlasmaNoTrans / B: PlasmaNoTrans
+            //=======================================
             if (transA == PlasmaNoTrans) {
                 ldam = BLKLDD(A, m);
                 if (transB == PlasmaNoTrans) {
@@ -59,14 +55,14 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                         CORE_OMP_zgemm(
                             transA, transB,
                             tempmm, tempnn, tempkn, A.mb,
-                            alpha, A(m, k), ldam,  /* lda * Z */
-                                   B(k, n), ldbk,  /* ldb * Y */
-                            zbeta, C(m, n), ldcm); /* ldc * Y */
+                            alpha, A(m, k), ldam,
+                                   B(k, n), ldbk,
+                            zbeta, C(m, n), ldcm);
                     }
                 }
-                /*
-                 *  A: PlasmaNoTrans / B: Plasma[Conj]Trans
-                 */
+                //==========================================
+                // A: PlasmaNoTrans / B: Plasma[Conj]Trans
+                //==========================================
                 else {
                     ldbn = BLKLDD(B, n);
                     for (k = 0; k < A.nt; k++) {
@@ -75,15 +71,15 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                         CORE_OMP_zgemm(
                             transA, transB,
                             tempmm, tempnn, tempkn, A.mb,
-                            alpha, A(m, k), ldam,  /* lda * Z */
-                                   B(n, k), ldbn,  /* ldb * Z */
-                            zbeta, C(m, n), ldcm); /* ldc * Y */
+                            alpha, A(m, k), ldam,
+                                   B(n, k), ldbn,
+                            zbeta, C(m, n), ldcm);
                     }
                 }
             }
-            /*
-             *  A: Plasma[Conj]Trans / B: PlasmaNoTrans
-             */
+            //==========================================
+            // A: Plasma[Conj]Trans / B: PlasmaNoTrans
+            //==========================================
             else {
                 if (transB == PlasmaNoTrans) {
                     for (k = 0; k < A.mt; k++) {
@@ -94,14 +90,14 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                         CORE_OMP_zgemm(
                             transA, transB,
                             tempmm, tempnn, tempkm, A.mb,
-                            alpha, A(k, m), ldak,  /* lda * X */
-                                   B(k, n), ldbk,  /* ldb * Y */
-                            zbeta, C(m, n), ldcm); /* ldc * Y */
+                            alpha, A(k, m), ldak,
+                                   B(k, n), ldbk,
+                            zbeta, C(m, n), ldcm);
                     }
                 }
-                /*
-                 *  A: Plasma[Conj]Trans / B: Plasma[Conj]Trans
-                 */
+                //==============================================
+                // A: Plasma[Conj]Trans / B: Plasma[Conj]Trans
+                //==============================================
                 else {
                     ldbn = BLKLDD(B, n);
                     for (k = 0; k < A.mt; k++) {
