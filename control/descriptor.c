@@ -26,12 +26,13 @@ int PLASMA_Desc_Create(PLASMA_desc **desc, void *mat, PLASMA_enum dtyp,
         plasma_error("PLASMA not initialized");
         return PLASMA_ERR_NOT_INITIALIZED;
     }
-    /* Allocate memory and initialize the descriptor */
+    // Allocate the descriptor.
     *desc = (PLASMA_desc*)malloc(sizeof(PLASMA_desc));
     if (*desc == NULL) {
         plasma_error("malloc() failed");
         return PLASMA_ERR_OUT_OF_RESOURCES;
     }
+    // Initialize the descriptor.
     **desc = plasma_desc_init(dtyp, mb, nb, bsiz, lm, ln, i, j, m, n);
     (**desc).mat = mat;
     int status = plasma_desc_check(*desc);
@@ -119,13 +120,13 @@ PLASMA_desc plasma_desc_submatrix(PLASMA_desc descA, int i, int j, int m, int n)
     int mb = descA.mb;
     int nb = descA.nb;
 
-    // Submatrix parameters
+    // submatrix parameters
     descB.i = descA.i + i;
     descB.j = descA.j + j;
     descB.m = m;
     descB.n = n;
 
-    // Submatrix derived parameters
+    // submatrix derived parameters
     descB.mt = (m == 0) ? 0 : (descB.i+m-1)/mb - descB.i/mb + 1;
     descB.nt = (n == 0) ? 0 : (descB.j+n-1)/nb - descB.j/nb + 1;
 
@@ -137,7 +138,7 @@ int plasma_desc_check(PLASMA_desc *desc)
 {
     if (desc == NULL) {
         plasma_error("NULL descriptor");
-        return PLASMA_ERR_NOT_INITIALIZED;
+        return PLASMA_ERR_ILLEGAL_VALUE;
     }
     if (desc->mat == NULL) {
         plasma_error("NULL matrix pointer");
@@ -185,8 +186,7 @@ int plasma_desc_check(PLASMA_desc *desc)
 /******************************************************************************/
 int plasma_desc_mat_alloc(PLASMA_desc *desc)
 {
-    size_t size = (size_t)desc->lm * (size_t)desc->ln *
-                  (size_t)plasma_element_size(desc->dtyp);
+    size_t size = (size_t)desc->lm * desc->ln * plasma_element_size(desc->dtyp);
 
     if ((desc->mat = malloc(size)) == NULL) {
         plasma_error("malloc() failed");

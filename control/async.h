@@ -29,8 +29,9 @@ typedef struct {
 } PLASMA_sequence;
 
 /******************************************************************************/
-int plasma_request_fail(
-    PLASMA_sequence *sequence, PLASMA_request *request, int status);
+int plasma_request_fail(PLASMA_sequence *sequence,
+                        PLASMA_request *request,
+                        int status);
 
 int plasma_sequence_create(PLASMA_sequence **sequence);
 int plasma_sequence_destroy(PLASMA_sequence *sequence);

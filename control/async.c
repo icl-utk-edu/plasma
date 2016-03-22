@@ -18,8 +18,9 @@
 #include <stdlib.h>
 
 /******************************************************************************/
-int plasma_request_fail(
-    PLASMA_sequence *sequence, PLASMA_request *request, int status)
+int plasma_request_fail(PLASMA_sequence *sequence,
+                        PLASMA_request *request,
+                        int status)
 {
     sequence->request = request;
     sequence->status = status;

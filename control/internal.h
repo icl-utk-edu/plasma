@@ -30,10 +30,10 @@ static inline int imax(int a, int b)
         plasma_warning_func_line_file(__func__, __LINE__, __FILE__, msg)
 
 #define plasma_error(msg) \
-        plasma_warning_func_line_file(__func__, __LINE__, __FILE__, msg)
+        plasma_error_func_line_file(__func__, __LINE__, __FILE__, msg)
 
 #define plasma_fatal_error(msg) \
-        plasma_warning_func_line_file(__func__, __LINE__, __FILE__, msg)
+        plasma_fatal_error_func_line_file(__func__, __LINE__, __FILE__, msg)
 
 /******************************************************************************/
 static inline void plasma_warning_func_line_file(
