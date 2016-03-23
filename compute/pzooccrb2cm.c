@@ -13,6 +13,12 @@
  *
  **/
 
+#include "../control/async.h"
+#include "../control/descriptor.h"
+#include "../include/plasmatypes.h"
+
+#define BLKADDR(A, type, m, n)  (type *)plasma_getaddr(A, m, n)
+
 #define AF77(m, n) &(Af77[ ((int64_t)A.nb*(int64_t)lda*(int64_t)(n)) + (int64_t)(A.mb*(m)) ])
 #define ABDL(m, n) BLKADDR(A, PLASMA_Complex64_t, m, n)
 
@@ -22,6 +28,7 @@ void plasma_pzooccrb2cm(PLASMA_desc A, PLASMA_Complex64_t *Af77, int lda,
 {
     PLASMA_Complex64_t *f77;
     PLASMA_Complex64_t *bdl;
+
     int x1, y1;
     int x2, y2;
     int n, m, ldt;

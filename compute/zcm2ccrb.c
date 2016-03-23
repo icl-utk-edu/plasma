@@ -13,6 +13,13 @@
  *
  **/
 
+#include "../control/async.h"
+#include "../control/context.h"
+#include "../control/descriptor.h"
+#include "../control/internal.h"
+#include "../include/plasma_z.h"
+#include "../include/plasmatypes.h"
+
 /******************************************************************************/
 int PLASMA_zcm2ccrb(PLASMA_Complex64_t *Af77, int lda, PLASMA_desc *A)
 {
@@ -100,7 +107,7 @@ int PLASMA_zcm2ccrb_Async(PLASMA_Complex64_t *Af77, int lda, PLASMA_desc *A,
         return PLASMA_SUCCESS;
 
     // Call the parallel function.
-    plasma_pzoocm2ccrb(Af77, lda, A, sequence, request)
+    plasma_pzoocm2ccrb(Af77, lda, *A, sequence, request);
 
     return PLASMA_SUCCESS;
 }

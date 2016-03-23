@@ -13,6 +13,7 @@
  *
  **/
 
+#include "../include/core_blas.h"
 #include "../include/plasmatypes.h"
 
 #ifdef PLASMA_WITH_MKL
@@ -77,8 +78,7 @@ void CORE_OMP_zlacpy(PLASMA_enum uplo,
                      const PLASMA_Complex64_t *A, int lda,
                            PLASMA_Complex64_t *B, int ldb)
 {
-    CORE_zlacpy(LAPACK_COL_MAJOR,
-                uplo,
+    CORE_zlacpy(uplo,
                 m, n,
                 A, lda,
                 B, ldb);

@@ -413,7 +413,10 @@ subs = {
 
     # ----- PLASMA / MAGMA functions, alphabetic order
     ('sy2sb',                'sy2sb',                'he2hb',                'he2hb'               ),
-    ('stile',                'dtile',                'ctile',                'ztile'               ),
+    ('psooccrb2cm',          'pdooccrb2cm',          'pcooccrb2cm',          'pzooccrb2cm'         ),
+    ('psoocm2ccrb',          'pdoocm2ccrb',          'pcoocm2ccrb',          'pzoocm2ccrb'         ),
+    ('sccrb2cm',             'dccrb2cm',             'cccrb2cm',             'zccrb2cm'            ),
+    ('scm2ccrb',             'dcm2ccrb',             'ccm2ccrb',             'zcm2ccrb'            ),
 
     # ----- Prefixes
     # Most routines have already been renamed by above BLAS/LAPACK rules.

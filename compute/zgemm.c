@@ -108,6 +108,7 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
 {
     int Am, An;
     int Bm, Bn;
+    int Cm;
     int nb;
     int retval;
     int status;
@@ -172,6 +173,7 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
         Bm = n;
         Bn = k;
     }
+    Cm = m;
 
     if (lda < imax(1, Am)) {
         plasma_error("illegal value of lda");
@@ -248,7 +250,7 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
 
     // Translate to tile layout.
-    retavl = PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
+    retval = PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
     if (retval != PLASMA_SUCCESS) {
         plasma_error("PLASMA_zcm2ccrb_Async() failed");
         return retval;
@@ -276,7 +278,7 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
     }
 
     // Translate back to LAPACK layout.
-    retval = PLASMA_zccrb2cm_Async(C, ldc, &descC, sequence, &request);
+    retval = PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
     if (retval != PLASMA_SUCCESS) {
         plasma_error("PLASMA_zccrb2cm_Async() failed");
         return retval;

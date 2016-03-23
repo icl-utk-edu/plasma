@@ -41,4 +41,19 @@ int PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
                             PLASMA_Complex64_t beta,  PLASMA_desc *descC,
                             PLASMA_sequence *sequence, PLASMA_request *request);
 
+/***************************************************************************//**
+ *  Layout translation sync.
+ **/
+int PLASMA_zcm2ccrb(PLASMA_Complex64_t *Af77, int lda, PLASMA_desc *A);
+int PLASMA_zccrb2cm(PLASMA_desc *A, PLASMA_Complex64_t *Af77, int lda);
+
+/***************************************************************************//**
+ *  Layout translation async.
+ **/
+int PLASMA_zcm2ccrb_Async(PLASMA_Complex64_t *Af77, int lda, PLASMA_desc *A,
+                          PLASMA_sequence *sequence, PLASMA_request *request);
+
+int PLASMA_zccrb2cm_Async(PLASMA_desc *A, PLASMA_Complex64_t *Af77, int lda,
+                          PLASMA_sequence *sequence, PLASMA_request *request);
+
 #endif // PLASMA_Z_H

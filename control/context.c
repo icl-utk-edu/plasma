@@ -105,6 +105,7 @@ int plasma_context_detach()
             free(context_map[i].context);
             context_map[i].context = NULL;
             num_contexts--;
+            pthread_mutex_unlock(&context_map_lock);
             return PLASMA_SUCCESS;
         }
     }
@@ -123,6 +124,7 @@ plasma_context_t *plasma_context_self()
         if (context_map[i].context != NULL &&
             pthread_equal(context_map[i].thread_id, pthread_self())) {
 
+            pthread_mutex_unlock(&context_map_lock);
             return context_map[i].context;
         }
     }
