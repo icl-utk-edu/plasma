@@ -63,4 +63,9 @@ static inline void plasma_fatal_error_func_line_file(
     exit(0);
 }
 
+#include "internal_s.h"
+#include "internal_d.h"
+#include "internal_c.h"
+#include "internal_z.h"
+
 #endif // INTERNAL_H

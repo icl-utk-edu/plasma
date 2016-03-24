@@ -50,4 +50,9 @@ static inline char lapack_const(int plasma_const) {
     return lapack_constants[plasma_const][0];
 }
 
+#include "core_blas_s.h"
+#include "core_blas_d.h"
+#include "core_blas_c.h"
+#include "core_blas_z.h"
+
 #endif // CORE_BLAS_H

@@ -223,14 +223,12 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
         plasma_error("plasma_desc_mat_alloc() failed");
         return retval;
     }
-
     retval = plasma_desc_mat_alloc(&descB);
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");
         plasma_desc_mat_free(&descA);
         return retval;
     }
-
     retval = plasma_desc_mat_alloc(&descC);
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");
@@ -517,9 +515,9 @@ int PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
 
     // Call the parallel function.
     plasma_pzgemm(transA, transB,
-                  alpha, A,
-                         B,
-                   beta, C,
+                  alpha, *A,
+                         *B,
+                   beta, *C,
                   sequence, request);
 
     return PLASMA_SUCCESS;
