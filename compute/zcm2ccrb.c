@@ -89,11 +89,6 @@ int PLASMA_zcm2ccrb_Async(PLASMA_Complex64_t *Af77, int lda, PLASMA_desc *A,
         plasma_error("NULL request");
         return -5;
     }
-    if (A->lm != lda) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        plasma_error("leading dimensions do not match");
-        return PLASMA_ERR_ILLEGAL_VALUE;
-    }
 
     // Check sequence status.
     if (sequence->status == PLASMA_SUCCESS)
