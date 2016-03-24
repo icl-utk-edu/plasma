@@ -108,7 +108,6 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
 {
     int Am, An;
     int Bm, Bn;
-    int Cm;
     int nb;
     int retval;
     int status;
@@ -173,7 +172,6 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
         Bm = n;
         Bn = k;
     }
-    Cm = m;
 
     if (lda < imax(1, Am)) {
         plasma_error("illegal value of lda");
@@ -215,7 +213,7 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
                              nb*nb, Bm, Bn, 0, 0, Bm, Bn);
 
     descC = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, Cm, An, 0, 0, Am, An);
+                             nb*nb, m, n, 0, 0, m, n);
 
     // Allocate matrices in tile layout.
     retval = plasma_desc_mat_alloc(&descA);
