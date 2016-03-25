@@ -17,11 +17,6 @@
 #include "../control/descriptor.h"
 #include "../include/plasmatypes.h"
 
-#define BLKADDR(A, type, m, n)  (type *)plasma_getaddr(A, m, n)
-
-#define AF77(m, n) &(Af77[ ((int64_t)A.nb*(int64_t)lda*(int64_t)(n)) + (int64_t)(A.mb*(m)) ])
-#define ABDL(m, n) BLKADDR(A, PLASMA_Complex64_t, m, n)
-
 /******************************************************************************/
 void plasma_pzoocm2ccrb(PLASMA_Complex64_t *Af77, int lda, PLASMA_desc A,
                         PLASMA_sequence *sequence, PLASMA_request *request)
@@ -46,8 +41,8 @@ void plasma_pzoocm2ccrb(PLASMA_Complex64_t *Af77, int lda, PLASMA_desc A,
             x2 = n == A.nt-1 ? (A.j+A.n-1)%A.nb+1 : A.nb;
             y2 = m == A.mt-1 ? (A.i+A.m-1)%A.mb+1 : A.mb;
 
-            f77 = AF77(m, n);
-            bdl = ABDL(m, n);
+            f77 = &Af77[(size_t)A.nb*lda*n + (size_t)A.mb*m];
+            bdl = (PLASMA_Complex64_t*)plasma_getaddr(A, m, n);
 
             CORE_OMP_zlacpy(PlasmaUpperLower,
                             y2-y1, x2-x1, A.mb,
