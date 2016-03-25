@@ -47,7 +47,7 @@ void plasma_pzoocm2ccrb(PLASMA_Complex64_t *Af77, int lda, PLASMA_desc A,
             CORE_OMP_zlacpy(PlasmaUpperLower,
                             y2-y1, x2-x1, A.mb,
                             &(f77[x1*lda+y1]), lda,
-                            &(bdl[x1*lda+y1]), ldt);
+                            &(bdl[x1*A.nb+y1]), ldt);
         }
     }
 }
