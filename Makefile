@@ -77,9 +77,12 @@ libs := \
 
 .DELETE_ON_ERROR:
 
-.PHONY: lib
+.PHONY: libdir lib
 
-lib: $(libs)
+lib: libdir $(libs)
+
+libdir:
+	-mkdir -p lib
 
 # In case changing Makefile.gen changes $(obj), also depend on it,
 # which recreates the library if a file is removed.
@@ -133,7 +136,6 @@ distclean: clean cleangen
 	grep -l @generated $(plasma_src) $(coreblas_src) $(test_src) | xargs rm
 	-rm -f compute/*.o control/*.o core_blas/*.o test/*.o
 	-rm -f $(makefiles_gen)
-
 
 # ----------------------------------------
 # Create dependencies to do precision generation.
