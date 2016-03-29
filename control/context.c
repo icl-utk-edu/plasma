@@ -12,6 +12,8 @@
  *
  **/
 
+#include <stdlib.h>
+
 #include "context.h"
 #include "internal.h"
 
@@ -58,7 +60,7 @@ int plasma_context_attach()
     // Reallocate context map if out of space.
     if (num_contexts == max_contexts-1) {
         max_contexts *= 2;
-        realloc(&context_map, max_contexts*sizeof(plasma_context_map_t));
+        context_map = realloc(&context_map, max_contexts*sizeof(plasma_context_map_t));
         if (context_map == NULL) {
             pthread_mutex_unlock(&context_map_lock);
             plasma_error("realloc() failed");
