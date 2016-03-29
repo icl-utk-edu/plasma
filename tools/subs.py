@@ -424,6 +424,7 @@ subs = {
     # if real != complex name, it must be handled above.
     ('core_blas_s',          'core_blas_d',          'core_blas_c',          'core_blas_z'         ),
     ('internal_s',           'internal_d',           'internal_c',           'internal_z'          ),
+    ('INTERNAL_S_H',         'INTERNAL_D_H',         'INTERNAL_C_H',         'INTERNAL_Z_H'        ),
     ('LAPACKE_s',            'LAPACKE_d',            'LAPACKE_c',            'LAPACKE_z'           ),
     ('PLASMA_S',             'PLASMA_D',             'PLASMA_C',             'PLASMA_Z'            ),
     ('PLASMA_s',             'PLASMA_d',             'PLASMA_c',             'PLASMA_z'            ),
