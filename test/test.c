@@ -12,6 +12,7 @@
  *
  **/
 #include "test.h"
+#include "../control/context.h"
 
 #include <assert.h>
 #include <stdio.h>
