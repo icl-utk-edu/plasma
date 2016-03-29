@@ -16,6 +16,7 @@
 #include "../control/async.h"
 #include "../control/descriptor.h"
 #include "../include/plasmatypes.h"
+#include "../include/core_blas_z.h"
 
 /******************************************************************************/
 void plasma_pzooccrb2cm(PLASMA_desc A, PLASMA_Complex64_t *Af77, int lda,
