@@ -115,6 +115,7 @@ void CORE_OMP_zgemm(
                               const PLASMA_Complex64_t *B, int ldb,
            PLASMA_Complex64_t beta, PLASMA_Complex64_t *C, int ldc)
 {
+#pragma omp task depend(in:A[0:nb*nb]) depend(in:B[0:nb*nb]) depend(inout:C[0:nb*nb])  
     CORE_zgemm(
         transA, transB,
         m, n, k,
@@ -122,3 +123,4 @@ void CORE_OMP_zgemm(
                B, ldb,
          beta, C, ldc);
 }
+

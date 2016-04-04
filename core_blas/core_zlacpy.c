@@ -78,6 +78,7 @@ void CORE_OMP_zlacpy(PLASMA_enum uplo,
                      const PLASMA_Complex64_t *A, int lda,
                            PLASMA_Complex64_t *B, int ldb)
 {
+#pragma omp task depend(in:A[0:m*n]) depend(out:B[0:m*n]) 
     CORE_zlacpy(uplo,
                 m, n,
                 A, lda,

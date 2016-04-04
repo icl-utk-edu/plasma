@@ -245,40 +245,39 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
     // Initialize request.
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
 
-    // Translate to tile layout.
-    retval = PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
-    if (retval != PLASMA_SUCCESS) {
-        plasma_error("PLASMA_zcm2ccrb_Async() failed");
-        return retval;
-    }
-    retval = PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
-    if (retval != PLASMA_SUCCESS) {
-        plasma_error("PLASMA_zcm2ccrb_Async() failed");
-        return retval;
-    }
-    retval = PLASMA_zcm2ccrb_Async(C, ldc, &descC, sequence, &request);
-    if (retval != PLASMA_SUCCESS) {
-        plasma_error("PLASMA_zcm2ccrb_Async() failed");
-        return retval;
-    }
+#pragma omp parallel
+#pragma omp master
+    {
+        /* the Async functions are submitted here.  After an error is
+           occurs (at submission time or at run time) the
+           sequence->status will be marked with an error.  After an
+           error occurs, the next Async can will not insert more tasks
+           into the runtime.  The sequence->status status is simply
+           checked at the end of the parallel region.  */
 
-    // Call the tile async function.
-    retval = PLASMA_zgemm_Tile_Async(transA, transB,
-                                     alpha, &descA,
-                                            &descB,
-                                      beta, &descC,
-                                     sequence, &request);
-    if (retval != PLASMA_SUCCESS) {
-        plasma_error("PLASMA_zgemm_Tile_Async() failed");
-        return retval;
-    }
+        // Translate to tile layout.
+        PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
+        if (sequence->status == PLASMA_SUCCESS) 
+            PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
+        if (sequence->status == PLASMA_SUCCESS) 
+            PLASMA_zcm2ccrb_Async(C, ldc, &descC, sequence, &request);
 
-    // Translate back to LAPACK layout.
-    retval = PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
-    if (retval != PLASMA_SUCCESS) {
-        plasma_error("PLASMA_zccrb2cm_Async() failed");
-        return retval;
-    }
+        // Call the tile async function.
+        if (sequence->status == PLASMA_SUCCESS) 
+            PLASMA_zgemm_Tile_Async(transA, transB,
+                                    alpha, &descA,
+                                    &descB,
+                                    beta, &descC,
+                                    sequence, &request);
+
+        // Translate back to LAPACK layout.
+        if (sequence->status == PLASMA_SUCCESS) 
+            PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
+    } /* pragma omp parallel block closed  */
+
+    // Check for errors in the async execution
+    if (sequence->status != PLASMA_SUCCESS)
+        return sequence->status;
 
     // Free matrices in tile layout.
     plasma_desc_mat_free(&descA);
