@@ -77,12 +77,9 @@ libs := \
 
 .DELETE_ON_ERROR:
 
-.PHONY: libdir lib
+.PHONY: lib
 
-lib: libdir $(libs)
-
-libdir:
-	-mkdir -p lib
+lib: $(libs)
 
 # In case changing Makefile.gen changes $(obj), also depend on it,
 # which recreates the library if a file is removed.
