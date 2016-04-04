@@ -23,6 +23,7 @@
 
 #include "../control/async.h"
 #include "../control/descriptor.h"
+#include "../control/context.h"
 
 #include "plasma_s.h"
 #include "plasma_d.h"
