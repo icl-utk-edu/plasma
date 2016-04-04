@@ -67,6 +67,11 @@ enum {
     PLASMA_OUTOFPLACE
 };
 
+enum {
+    PLASMA_TILE_SIZE,
+    PLASMA_TRANSLATION_MODE
+};
+
 /******************************************************************************/
 typedef int PLASMA_enum;
 typedef int PLASMA_bool;
