@@ -38,7 +38,7 @@ static inline int imax(int a, int b)
 
 /******************************************************************************/
 static inline void plasma_warning_func_line_file(
-    char *func, int line, char *file, char *msg)
+    char const *func, int line, char *file, char *msg)
 {
     fprintf(stderr,
             "PLASMA WARNING at %d of %s() in %s: %s\n",
@@ -56,7 +56,7 @@ static inline void plasma_error_func_line_file(
 
 /******************************************************************************/
 static inline void plasma_fatal_error_func_line_file(
-    char *func, int line, char *file, char *msg)
+    char const *func, int line, char *file, char *msg)
 {
     fprintf(stderr,
             "PLASMA FATAL ERROR at %d of %s() in %s: %s\n",
