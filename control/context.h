@@ -20,8 +20,8 @@
 
 /******************************************************************************/
 typedef struct {
-    int nb;                  ///< tile size
-    PLASMA_enum translation; ///< in-place or out-of-place layout translation
+    int nb;                  ///< PLASMA_TILE_SIZE
+    PLASMA_enum translation; ///< in-place or out-of-place PLASMA_TRANSLATION_MODE
 } plasma_context_t;
 
 typedef struct {
@@ -32,6 +32,8 @@ typedef struct {
 /******************************************************************************/
 int PLASMA_Init();
 int PLASMA_Finalize();
+int PLASMA_Set(PLASMA_enum param, int value);
+int PLASMA_Get(PLASMA_enum param, int *value);
 
 int plasma_context_attach();
 int plasma_context_detach();

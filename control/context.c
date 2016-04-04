@@ -53,6 +53,53 @@ int PLASMA_Finalize()
 }
 
 /******************************************************************************/
+int PLASMA_Set(PLASMA_enum param, int value)
+{
+    plasma_context_t *plasma;
+
+    plasma = plasma_context_self();
+    if (plasma == NULL) {
+        plasma_error("PLASMA not initialized");
+        return PLASMA_ERR_NOT_INITIALIZED;
+    }
+    switch (param) {
+    case PLASMA_TILE_SIZE:
+        if (value <= 0) {
+            plasma_error("Negative tile size");
+            return PLASMA_ERR_ILLEGAL_VALUE;
+        }
+        plasma->nb = value;
+        break;
+    default:
+        plasma_error("Unknown parameter");
+        return PLASMA_ERR_ILLEGAL_VALUE;
+    }
+    return PLASMA_SUCCESS;
+}
+
+/******************************************************************************/
+int PLASMA_Get(PLASMA_enum param, int *value)
+{
+    plasma_context_t *plasma;
+
+    plasma = plasma_context_self();
+    if (plasma == NULL) {
+        plasma_fatal_error("PLASMA not initialized");
+        return PLASMA_ERR_NOT_INITIALIZED;
+    }
+    switch (param) {
+    case PLASMA_TILE_SIZE:
+        *value = plasma->nb;
+        return PLASMA_SUCCESS;
+        break;
+    default:
+        plasma_error("Unknown parameter");
+        return PLASMA_ERR_ILLEGAL_VALUE;
+    }
+    return PLASMA_SUCCESS;
+}
+
+/******************************************************************************/
 int plasma_context_attach()
 {
     pthread_mutex_lock(&context_map_lock);
