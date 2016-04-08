@@ -64,6 +64,7 @@ int main(int argc, char **argv)
         time_routine(argv[1], NULL);
 
     PLASMA_Init();
+    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_NB].val[0].i);
     if (outer) {
         // outer product iteration
         do {
@@ -309,6 +310,9 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--k="))
             param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_K]);
 
+        else if (param_starts_with(argv[i], "--nb="))
+            param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NB]);
+
         else if (param_starts_with(argv[i], "--pada="))
             param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_PADA]);
         else if (param_starts_with(argv[i], "--padb="))
@@ -348,6 +352,9 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_int(1000, &param[PARAM_N]);
     if (param[PARAM_K].num == 0)
         param_add_int(1000, &param[PARAM_K]);
+
+    if (param[PARAM_NB].num == 0)
+        param_add_int(256, &param[PARAM_NB]);
 
     if (param[PARAM_PADA].num == 0)
         param_add_int(0, &param[PARAM_PADA]);

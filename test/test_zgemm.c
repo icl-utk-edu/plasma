@@ -163,7 +163,7 @@ void test_zgemm(param_value_t param[], char *info)
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldc*Cn, C1);
     assert(retval == 0);
 
-    PLASMA_Complex64_t *C2;
+    PLASMA_Complex64_t *C2 = NULL;
     if (test) {
         C2 = (PLASMA_Complex64_t*)malloc(
             (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
