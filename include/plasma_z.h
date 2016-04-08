@@ -25,14 +25,6 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
                  PLASMA_Complex64_t beta,  PLASMA_Complex64_t *C, int ldc);
 
 /***************************************************************************//**
- *  Tile interface.
- **/
-int PLASMA_zgemm_Tile(PLASMA_enum transA, PLASMA_enum transB,
-                      PLASMA_Complex64_t alpha, PLASMA_desc *descA,
-                                                PLASMA_desc *descB,
-                      PLASMA_Complex64_t beta,  PLASMA_desc *descC);
-
-/***************************************************************************//**
  *  Tile asynchronous interface.
  **/
 int PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
@@ -40,12 +32,6 @@ int PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
                                                       PLASMA_desc *descB,
                             PLASMA_Complex64_t beta,  PLASMA_desc *descC,
                             PLASMA_sequence *sequence, PLASMA_request *request);
-
-/***************************************************************************//**
- *  Layout translation sync.
- **/
-int PLASMA_zcm2ccrb(PLASMA_Complex64_t *Af77, int lda, PLASMA_desc *A);
-int PLASMA_zccrb2cm(PLASMA_desc *A, PLASMA_Complex64_t *Af77, int lda);
 
 /***************************************************************************//**
  *  Layout translation async.

@@ -21,42 +21,6 @@
 #include "../include/plasmatypes.h"
 
 /******************************************************************************/
-int PLASMA_zccrb2cm(PLASMA_desc *A, PLASMA_Complex64_t *Af77, int lda)
-{
-    int retval;
-    int status;
-
-    // Get PLASMA context.
-    plasma_context_t *plasma = plasma_context_self();
-    if (plasma == NULL) {
-        plasma_error("PLASMA not initialized");
-        return PLASMA_ERR_NOT_INITIALIZED;
-    }
-
-    // Create sequence.
-    PLASMA_sequence *sequence = NULL;
-    retval = plasma_sequence_create(&sequence);
-    if (retval != PLASMA_SUCCESS) {
-        plasma_error("plasma_sequence_create() failed");
-        return retval;
-    }
-    // Initialize request.
-    PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
-
-    // Call the async function.
-    retval = PLASMA_zccrb2cm_Async(A, Af77, lda, sequence, &request);
-    if (retval != PLASMA_SUCCESS) {
-        plasma_error("PLASMA_zccrb2cm_Async() failed");
-        return retval;
-    }
-
-    // Return status.
-    status = sequence->status;
-    plasma_sequence_destroy(sequence);
-    return status;
-}
-
-/******************************************************************************/
 int PLASMA_zccrb2cm_Async(PLASMA_desc *A, PLASMA_Complex64_t *Af77, int lda,
                           PLASMA_sequence *sequence, PLASMA_request *request)
 {
