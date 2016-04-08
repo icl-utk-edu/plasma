@@ -30,6 +30,7 @@ typedef enum {
     PARAM_M,      // M dimension
     PARAM_N,      // N dimension
     PARAM_K,      // K dimension
+    PARAM_NB,     // tile size NBxNB
     PARAM_PADA,   // padding of A
     PARAM_PADB,   // padding of B
     PARAM_PADC,   // padding of C
@@ -61,6 +62,7 @@ static const char *ParamUsage[][2] = {
     {"--m=", "M dimension (number of rows) [default: 1000]"},
     {"--n=", "N dimension (number of columns) [default: 1000]"},
     {"--k=", "K dimension (number of rows or columns) [default: 1000]"},
+    {"--nb=", "NB size of tile (NB by NB) [default: 256]"},
     {"--pada=", "padding of A [default: 0]"},
     {"--padb=", "padding of B [default: 0]"},
     {"--padc=", "padding of C [default: 0]"}
