@@ -15,8 +15,8 @@
 #ifndef INTERNAL_Z_H
 #define INTERNAL_Z_H
 
-#include "async.h"
-#include "descriptor.h"
+#include "plasma_async.h"
+#include "plasma_descriptor.h"
 #include "plasmatypes.h"
 
 /******************************************************************************/

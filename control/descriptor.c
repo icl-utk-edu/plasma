@@ -12,9 +12,9 @@
  *
  **/
 
-#include "context.h"
-#include "descriptor.h"
-#include "internal.h"
+#include "plasma_context.h"
+#include "plasma_descriptor.h"
+#include "plasma_internal.h"
 
 /******************************************************************************/
 int PLASMA_Desc_Create(PLASMA_desc **desc, void *mat, PLASMA_enum dtyp,

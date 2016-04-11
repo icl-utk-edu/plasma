@@ -13,8 +13,8 @@
  *
  **/
 
-#include "async.h"
-#include "descriptor.h"
+#include "plasma_async.h"
+#include "plasma_descriptor.h"
 #include "plasmatypes.h"
 #include "core_blas_z.h"
 

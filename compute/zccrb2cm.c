@@ -13,10 +13,10 @@
  *
  **/
 
-#include "async.h"
-#include "context.h"
-#include "descriptor.h"
-#include "internal.h"
+#include "plasma_async.h"
+#include "plasma_context.h"
+#include "plasma_descriptor.h"
+#include "plasma_internal.h"
 #include "plasma_z.h"
 #include "plasmatypes.h"
 

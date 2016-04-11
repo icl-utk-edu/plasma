@@ -12,8 +12,8 @@
  *
  **/
 
-#include "async.h"
-#include "internal.h"
+#include "plasma_async.h"
+#include "plasma_internal.h"
 
 #include <stdlib.h>
 
