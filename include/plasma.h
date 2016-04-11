@@ -21,9 +21,9 @@
     #include <lapacke.h>
 #endif
 
-#include "../control/async.h"
-#include "../control/descriptor.h"
-#include "../control/context.h"
+#include "async.h"
+#include "descriptor.h"
+#include "context.h"
 
 #include "plasma_s.h"
 #include "plasma_d.h"

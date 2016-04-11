@@ -12,12 +12,13 @@
  *
  **/
 #include "test.h"
-#include "../control/context.h"
 
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "plasma.h"
 
 /***************************************************************************//**
  *

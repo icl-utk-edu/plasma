@@ -13,12 +13,12 @@
  *
  **/
 
-#include "../control/async.h"
-#include "../control/context.h"
-#include "../control/descriptor.h"
-#include "../control/internal.h"
-#include "../include/plasma_z.h"
-#include "../include/plasmatypes.h"
+#include "async.h"
+#include "context.h"
+#include "descriptor.h"
+#include "internal.h"
+#include "plasma_z.h"
+#include "plasmatypes.h"
 
 /******************************************************************************/
 int PLASMA_zcm2ccrb_Async(PLASMA_Complex64_t *Af77, int lda, PLASMA_desc *A,

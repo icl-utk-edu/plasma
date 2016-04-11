@@ -13,10 +13,10 @@
  *
  **/
 
-#include "../control/async.h"
-#include "../control/descriptor.h"
-#include "../include/plasmatypes.h"
-#include "../include/core_blas_z.h"
+#include "async.h"
+#include "descriptor.h"
+#include "plasmatypes.h"
+#include "core_blas_z.h"
 
 #define A(m, n) plasma_getaddr(A, m, n)
 #define B(m, n) plasma_getaddr(B, m, n)

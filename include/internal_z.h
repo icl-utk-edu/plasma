@@ -15,9 +15,9 @@
 #ifndef INTERNAL_Z_H
 #define INTERNAL_Z_H
 
-#include "../control/async.h"
-#include "../control/descriptor.h"
-#include "../include/plasmatypes.h"
+#include "async.h"
+#include "descriptor.h"
+#include "plasmatypes.h"
 
 /******************************************************************************/
 void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
