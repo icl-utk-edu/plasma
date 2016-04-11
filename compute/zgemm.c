@@ -93,7 +93,6 @@
  *
  *******************************************************************************
  *
- * @sa PLASMA_zgemm_Tile
  * @sa PLASMA_zgemm_Tile_Async
  * @sa PLASMA_cgemm
  * @sa PLASMA_dgemm
