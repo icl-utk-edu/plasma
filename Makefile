@@ -40,7 +40,7 @@ LIBS      ?= -L$(LAPACKDIR) -llapack -llapacke -L$(CBLASDIR)/lib -lcblas -lblas
 
 codegen     := ./tools/codegen.py
 
-PLASMA_INC  := -Iinclude
+PLASMA_INC  := -Iinclude -Icore_blas
 PLASMA_LIBS := -Llib -lplasma -lcoreblas
 
 
@@ -139,7 +139,7 @@ distclean: clean cleangen
 
 plasma_src   := $(wildcard compute/*.c compute/*.h control/*.c control/*.h include/*.h)
 
-coreblas_src := $(wildcard core_blas/*.c)
+coreblas_src := $(wildcard core_blas/*.c core_blas/*.h)
 
 test_src     := $(wildcard test/*.c test/*.h)
 
