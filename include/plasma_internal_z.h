@@ -17,7 +17,7 @@
 
 #include "plasma_async.h"
 #include "plasma_descriptor.h"
-#include "plasmatypes.h"
+#include "plasma_types.h"
 
 /******************************************************************************/
 void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,

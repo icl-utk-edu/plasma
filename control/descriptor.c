@@ -12,6 +12,7 @@
  *
  **/
 
+#include "plasma_types.h"
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"

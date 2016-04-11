@@ -14,7 +14,7 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
-#include "plasmatypes.h"
+#include "plasma_types.h"
 
 #include <pthread.h>
 

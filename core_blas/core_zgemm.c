@@ -13,8 +13,8 @@
  *
  **/
 
-#include "../include/core_blas.h"
-#include "../include/plasmatypes.h"
+#include "core_blas.h"
+#include "plasma_types.h"
 
 #ifdef PLASMA_WITH_MKL
     #include <mkl.h>

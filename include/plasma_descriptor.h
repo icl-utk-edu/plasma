@@ -14,7 +14,7 @@
 #ifndef DESCRIPTOR_H
 #define DESCRIPTOR_H
 
-#include "plasmatypes.h"
+#include "plasma_types.h"
 
 #include <stdlib.h>
 #include <assert.h>

@@ -18,7 +18,7 @@
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
 #include "plasma_z.h"
-#include "plasmatypes.h"
+#include "plasma_types.h"
 
 /******************************************************************************/
 int PLASMA_zccrb2cm_Async(PLASMA_desc *A, PLASMA_Complex64_t *Af77, int lda,

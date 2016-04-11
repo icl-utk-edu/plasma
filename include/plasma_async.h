@@ -14,7 +14,7 @@
 #ifndef ASYNC_H
 #define ASYNC_H
 
-#include "plasmatypes.h"
+#include "plasma_types.h"
 
 /******************************************************************************/
 typedef struct {
