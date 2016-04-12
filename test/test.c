@@ -128,6 +128,7 @@ void print_routine_usage(char *name)
     print_usage(PARAM_OUTER);
     print_usage(PARAM_TEST);
     print_usage(PARAM_TOL);
+    print_usage(PARAM_NB);
 
     printf("\n");
     run_routine(name, NULL, NULL);
