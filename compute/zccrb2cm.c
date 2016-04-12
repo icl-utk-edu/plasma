@@ -21,52 +21,51 @@
 #include "plasma_types.h"
 
 /******************************************************************************/
-int PLASMA_zccrb2cm_Async(PLASMA_desc *A, PLASMA_Complex64_t *Af77, int lda,
-                          PLASMA_sequence *sequence, PLASMA_request *request)
+void PLASMA_zccrb2cm_Async(PLASMA_desc *A, PLASMA_Complex64_t *Af77, int lda,
+                           PLASMA_sequence *sequence, PLASMA_request *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         plasma_error("PLASMA not initialized");
-        return PLASMA_ERR_NOT_INITIALIZED;
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        return;
     }
 
     // Check input arguments.
     if (plasma_desc_check(A) != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         plasma_error("invalid A");
-        return -1;
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        return;
     }
     if (Af77 == NULL) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         plasma_error("NULL A");
-        return -2;
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        return;
     }
     if (sequence == NULL) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         plasma_error("NULL sequence");
-        return -4;
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        return;
     }
     if (request == NULL) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         plasma_error("NULL request");
-        return -5;
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        return;
     }
 
     // Check sequence status.
-    if (sequence->status == PLASMA_SUCCESS)
-        request->status = PLASMA_SUCCESS;
-    else
-        return plasma_request_fail(sequence, request,
-                                   PLASMA_ERR_SEQUENCE_FLUSHED);
+    if (sequence->status != PLASMA_SUCCESS) {
+        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
+        return;
+    }
 
-    // quick return
+    // quick return with success
     if (A->m == 0 || A->n == 0)
-        return PLASMA_SUCCESS;
+        return;
 
     // Call the parallel function.
     plasma_pzooccrb2cm(*A, Af77, lda, sequence, request);
 
-    return PLASMA_SUCCESS;
+    return;
 }

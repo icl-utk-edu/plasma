@@ -13,12 +13,12 @@
  *
  **/
 
+#include "plasma_types.h"
 #include "plasma_async.h"
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
 #include "plasma_z.h"
-#include "plasma_types.h"
 
 /***************************************************************************//**
  *
@@ -247,12 +247,12 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
 #pragma omp parallel
 #pragma omp master
     {
-        /* the Async functions are submitted here.  After an error is
-           occurs (at submission time or at run time) the
-           sequence->status will be marked with an error.  After an
-           error occurs, the next Async can will not insert more tasks
-           into the runtime.  The sequence->status status is simply
-           checked at the end of the parallel region.  */
+        /* the Async functions are submitted here.  If an error occurs
+           (at submission time or at run time) the sequence->status
+           will be marked with an error.  After an error, the next
+           Async will not _insert_ more tasks into the runtime.  The
+           sequence->status can be checked after each call to _Async
+           or at the end of the parallel region. */
 
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
@@ -294,29 +294,48 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
  * @ingroup PLASMA_Complex64_t_Tile_Async
  *
  *  Performs matrix multiplication.
- *  Non-blocking equivalent of PLASMA_zgemm_Tile().
+ *  Non-blocking tile version of PLASMA_zgemm().
  *  May return before the computation is finished.
+ *  Operates on matrices stored by tiles.
+ *  All matrices are passed through descriptors.
+ *  All dimensions are taken from the descriptors.
  *  Allows for pipelining of operations at runtime.
  *
  *******************************************************************************
  *
+ * @param[in] A
+ *          Descriptor of matrix A.
+ *
+ * @param[in] B
+ *          Descriptor of matrix B.
+ *
+ * @param[in,out] C
+ *          Descriptor of matrix C.
+ *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to
- *          (for completion checks and exception handling purposes).
+ *          (for completion checks and exception handling purposes).  Check 
+ *          the sequence->status for errors.
  *
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
+ * @retval void 
+ *          Errors are returned by setting sequence->status and
+ *          request->status to error values.  The sequence->status and
+ *          request->status should never be set to PLASMA_SUCCESS (the
+ *          initial values) since another async call may be setting a
+ *          failure value at the same time.
+ *
  *******************************************************************************
  *
  * @sa PLASMA_zgemm
- * @sa PLASMA_zgemm_Tile
  * @sa PLASMA_cgemm_Tile_Async
  * @sa PLASMA_dgemm_Tile_Async
  * @sa PLASMA_sgemm_Tile_Async
  *
  ******************************************************************************/
-int PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
+void PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
                             PLASMA_Complex64_t alpha, PLASMA_desc *A,
                                                       PLASMA_desc *B,
                             PLASMA_Complex64_t beta,  PLASMA_desc *C,
@@ -325,50 +344,50 @@ int PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         plasma_error("PLASMA not initialized");
-        return PLASMA_ERR_NOT_INITIALIZED;
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        return;
     }
 
     // Check input arguments.
     if ((transA != PlasmaNoTrans) &&
         (transA != PlasmaTrans) &&
         (transA != PlasmaConjTrans)) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         plasma_error("illegal value of transA");
-        return -1;
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        return;
     }
     if ((transB != PlasmaNoTrans) &&
         (transB != PlasmaTrans) &&
         (transB != PlasmaConjTrans)) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         plasma_error("illegal value of transB");
-        return -2;
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        return;
     }
     if (plasma_desc_check(A) != PLASMA_SUCCESS) {
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         plasma_error("invalid A");
-        return -4;
+        return;
     }
     if (plasma_desc_check(B) != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         plasma_error("invalid B");
-        return -5;
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        return;
     }
     if (plasma_desc_check(C) != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         plasma_error("invalid C");
-        return -7;
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        return;
     }
     if (sequence == NULL) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         plasma_error("NULL sequence");
-        return -8;
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        return;
     }
     if (request == NULL) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         plasma_error("NULL request");
-        return -9;
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        return;
     }
 
     int Am, An, Ai, Aj, Amb, Anb;
@@ -409,29 +428,31 @@ int PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
 
     if (Amb != C->mb || Anb != Bmb || Bnb != C->nb) {
         plasma_error("tile size mismatch");
-        return plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        return;
     }
     if (Am != C->m || An != Bm || Bn != C->n) {
         plasma_error("matrix size mismatch");
-        return plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        return;
     }
     if (Ai%Amb != C->i%C->mb ||
         Bj%Bnb != C->j%C->nb || Aj%Anb != Bi%Bmb) {
         plasma_error("start indexes have to match");
-        return plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        return;
     }
 
     // Check sequence status.
-    if (sequence->status == PLASMA_SUCCESS)
-        request->status = PLASMA_SUCCESS;
-    else
-        return plasma_request_fail(sequence, request,
-                                   PLASMA_ERR_SEQUENCE_FLUSHED);
+    if (sequence->status != PLASMA_SUCCESS) {
+        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
+        return;
+    }
 
     // quick return
     if (C->m == 0 || C->n == 0 || An == 0 ||
         (alpha == (PLASMA_Complex64_t)0.0 && beta == (PLASMA_Complex64_t)1.0))
-        return PLASMA_SUCCESS;
+        return;
 
     // Call the parallel function.
     plasma_pzgemm(transA, transB,
@@ -440,5 +461,5 @@ int PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
                    beta, *C,
                   sequence, request);
 
-    return PLASMA_SUCCESS;
+    return;
 }
