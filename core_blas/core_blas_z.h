@@ -12,8 +12,10 @@
  * @precisions normal z -> c d s
  *
  **/
-#ifndef CORE_BLAS_H
-#define CORE_BLAS_H
+#ifndef CORE_BLAS_Z_H
+#define CORE_BLAS_Z_H
+
+#include "plasma_types.h"
 
 /******************************************************************************/
 void CORE_zgemm(
@@ -41,4 +43,4 @@ void CORE_OMP_zlacpy(PLASMA_enum uplo,
                      const PLASMA_Complex64_t *A, int lda,
                            PLASMA_Complex64_t *B, int ldb);
 
-#endif // CORE_BLAS_H
+#endif // CORE_BLAS_Z_H

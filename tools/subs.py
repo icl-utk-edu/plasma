@@ -420,6 +420,7 @@ subs = {
     # Most routines have already been renamed by above BLAS/LAPACK rules.
     # Functions where real == complex name can be handled here;
     # if real != complex name, it must be handled above.
+    ('CORE_BLAS_S',          'CORE_BLAS_D',          'CORE_BLAS_C',          'CORE_BLAS_Z'         ),
     ('core_blas_s',          'core_blas_d',          'core_blas_c',          'core_blas_z'         ),
     ('internal_s',           'internal_d',           'internal_c',           'internal_z'          ),
     ('INTERNAL_S_H',         'INTERNAL_D_H',         'INTERNAL_C_H',         'INTERNAL_Z_H'        ),
