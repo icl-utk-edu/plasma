@@ -35,6 +35,15 @@ enum {
     PlasmaComplexDouble = 5
 };
 
+/***************************************************************************//**
+ *
+ *  PLASMA constants - CBLAS & LAPACK
+ *  The naming and numbering is consistent with:
+ *
+ *    1) CBLAS from Netlib (http://www.netlib.org/blas/blast-forum/cblas.tgz),
+ *    2) C Interface to LAPACK from Netlib (http://www.netlib.org/lapack/lapwrapc/).
+ *
+ **/
 enum {
     PlasmaNoTrans    = 111,
     PlasmaTrans      = 112,
