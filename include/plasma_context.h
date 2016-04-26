@@ -18,6 +18,10 @@
 
 #include <pthread.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /******************************************************************************/
 typedef struct {
     int nb;                  ///< PLASMA_TILE_SIZE
@@ -39,5 +43,9 @@ int plasma_context_attach();
 int plasma_context_detach();
 plasma_context_t *plasma_context_self();
 void plasma_context_init(plasma_context_t *context);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif // CONTEXT_H

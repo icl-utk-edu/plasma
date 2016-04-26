@@ -17,6 +17,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /******************************************************************************/
 static inline int imax(int a, int b)
 {
@@ -38,7 +42,7 @@ static inline int imax(int a, int b)
 
 /******************************************************************************/
 static inline void plasma_warning_func_line_file(
-    char const *func, int line, char *file, char *msg)
+    char const *func, int line, const char *file, const char *msg)
 {
     fprintf(stderr,
             "PLASMA WARNING at %d of %s() in %s: %s\n",
@@ -47,7 +51,7 @@ static inline void plasma_warning_func_line_file(
 
 /******************************************************************************/
 static inline void plasma_error_func_line_file(
-    char const *func, int line, char *file, char *msg)
+    char const *func, int line, const char *file, const char *msg)
 {
     fprintf(stderr,
             "PLASMA ERROR at %d of %s() in %s: %s\n",
@@ -56,13 +60,17 @@ static inline void plasma_error_func_line_file(
 
 /******************************************************************************/
 static inline void plasma_fatal_error_func_line_file(
-    char const *func, int line, char *file, char *msg)
+    char const *func, int line, const char *file, const char *msg)
 {
     fprintf(stderr,
             "PLASMA FATAL ERROR at %d of %s() in %s: %s\n",
             line, func, file, msg);
     exit(0);
 }
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #include "plasma_internal_s.h"
 #include "plasma_internal_d.h"

@@ -16,6 +16,7 @@
 #include "plasma_async.h"
 #include "plasma_descriptor.h"
 #include "plasma_types.h"
+#include "plasma_internal.h"
 #include "core_blas_z.h"
 
 /******************************************************************************/

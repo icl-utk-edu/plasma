@@ -19,6 +19,10 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /***************************************************************************//**
  *  Tile matrix descriptor.
  *
@@ -83,8 +87,8 @@ static inline int BLKLDD(PLASMA_desc A, int k)
 /******************************************************************************/
 inline static void *plasma_getaddr(PLASMA_desc A, int m, int n)
 {
-    size_t mm = m+A.i/A.mb;
-    size_t nn = n+A.j/A.nb;
+    int mm = m + A.i/A.mb;
+    int nn = n + A.j/A.nb;
     size_t eltsize = plasma_element_size(A.dtyp);
     size_t offset = 0;
 
@@ -117,5 +121,9 @@ PLASMA_desc plasma_desc_submatrix(PLASMA_desc descA, int i, int j, int m, int n)
 int plasma_desc_check(PLASMA_desc *desc);
 int plasma_desc_mat_alloc(PLASMA_desc *desc);
 int plasma_desc_mat_free(PLASMA_desc *desc);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif // DESCRIPTOR_H

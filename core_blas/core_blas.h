@@ -14,6 +14,10 @@
 #ifndef CORE_BLAS_H
 #define CORE_BLAS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static const char *lapack_constants[] = {
     "", "", "", "", "", "", "", "", "", "",
     "", "", "", "", "", "", "", "", "", "",
@@ -49,6 +53,10 @@ static const char *lapack_constants[] = {
 static inline char lapack_const(int plasma_const) {
     return lapack_constants[plasma_const][0];
 }
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #include "core_blas_s.h"
 #include "core_blas_d.h"

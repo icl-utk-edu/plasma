@@ -110,7 +110,7 @@ void time_routine(char *name, param_value_t pval[]);
 void run_routine(char *name, param_value_t pval[], char *info);
 void param_init(param_t param[]);
 int param_read(int argc, char **argv, param_t param[]);
-int param_starts_with(char *str, char *prefix);
+int param_starts_with(const char *str, const char *prefix);
 void param_scan_int(char *str, param_t *param);
 void param_scan_char(char *str, param_t *param);
 void param_scan_double(char *str, param_t *param);

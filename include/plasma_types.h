@@ -16,6 +16,10 @@
 
 #include <complex.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /******************************************************************************/
 #ifndef CBLAS_SADDR
 #define CBLAS_SADDR(var) &(var)
@@ -76,7 +80,11 @@ enum {
 typedef int PLASMA_enum;
 typedef int PLASMA_bool;
 
-typedef float  complex PLASMA_Complex32_t;
-typedef double complex PLASMA_Complex64_t;
+typedef float  _Complex PLASMA_Complex32_t;
+typedef double _Complex PLASMA_Complex64_t;
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif // PLASMATYPES_H

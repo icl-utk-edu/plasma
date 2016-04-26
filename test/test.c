@@ -385,7 +385,7 @@ int param_read(int argc, char **argv, param_t param[])
  * @retval 0 - no match
  *
  ******************************************************************************/
-int param_starts_with(char *str, char *prefix)
+int param_starts_with(const char *str, const char *prefix)
 {
     size_t n = strlen(prefix);
     if (strncmp(str, prefix, n))
@@ -483,7 +483,8 @@ void param_add_int(int ival, param_t *param)
     param->num++;
     if (param->num == param->size) {
         param->size *= 2;
-        param->val = realloc(param->val, param->size*sizeof(param_value_t));
+        param->val = (param_value_t*) realloc(
+            param->val, param->size*sizeof(param_value_t));
         assert(param->val != NULL);
     }
 }
@@ -502,7 +503,8 @@ void param_add_char(char cval, param_t *param)
     param->num++;
     if (param->num == param->size) {
         param->size *= 2;
-        param->val = realloc(param->val, param->size*sizeof(param_value_t));
+        param->val = (param_value_t*) realloc(
+            param->val, param->size*sizeof(param_value_t));
         assert(param->val != NULL);
     }
 }
@@ -521,7 +523,8 @@ void param_add_double(double dval, param_t *param)
     param->num++;
     if (param->num == param->size) {
         param->size *= 2;
-        param->val = realloc(param->val, param->size*sizeof(param_value_t));
+        param->val = (param_value_t*) realloc(
+            param->val, param->size*sizeof(param_value_t));
         assert(param->val != NULL);
     }
 }

@@ -16,6 +16,10 @@
 
 #include "plasma_types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /******************************************************************************/
 typedef struct {
     PLASMA_bool status; ///< error code
@@ -35,5 +39,9 @@ int plasma_request_fail(PLASMA_sequence *sequence,
 
 int plasma_sequence_create(PLASMA_sequence **sequence);
 int plasma_sequence_destroy(PLASMA_sequence *sequence);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif // ASYNC_H

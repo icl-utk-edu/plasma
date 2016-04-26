@@ -17,6 +17,10 @@
 
 #include "plasma_types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /******************************************************************************/
 void CORE_zgemm(
     PLASMA_enum transA, PLASMA_enum transB,
@@ -42,5 +46,9 @@ void CORE_OMP_zlacpy(PLASMA_enum uplo,
                      int m, int n, int nb,
                      const PLASMA_Complex64_t *A, int lda,
                            PLASMA_Complex64_t *B, int ldb);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif // CORE_BLAS_Z_H

@@ -16,11 +16,12 @@
 #include "plasma_async.h"
 #include "plasma_descriptor.h"
 #include "plasma_types.h"
+#include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define A(m, n) plasma_getaddr(A, m, n)
-#define B(m, n) plasma_getaddr(B, m, n)
-#define C(m, n) plasma_getaddr(C, m, n)
+#define A(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(A, m, n))
+#define B(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(B, m, n))
+#define C(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(C, m, n))
 /******************************************************************************/
 void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                    PLASMA_Complex64_t alpha, PLASMA_desc A,

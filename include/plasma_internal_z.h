@@ -19,6 +19,10 @@
 #include "plasma_descriptor.h"
 #include "plasma_types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /******************************************************************************/
 void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                    PLASMA_Complex64_t alpha, PLASMA_desc A,
@@ -31,5 +35,9 @@ void plasma_pzooccrb2cm(PLASMA_desc A, PLASMA_Complex64_t *Af77, int lda,
 
 void plasma_pzoocm2ccrb(PLASMA_Complex64_t *Af77, int lda, PLASMA_desc A,
                         PLASMA_sequence *sequence, PLASMA_request *request);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif // INTERNAL_Z_H

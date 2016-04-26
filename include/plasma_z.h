@@ -15,6 +15,10 @@
 #ifndef PLASMA_Z_H
 #define PLASMA_Z_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /***************************************************************************//**
  *  Standard interface.
  **/
@@ -41,5 +45,9 @@ void PLASMA_zcm2ccrb_Async(PLASMA_Complex64_t *Af77, int lda, PLASMA_desc *A,
 
 void PLASMA_zccrb2cm_Async(PLASMA_desc *A, PLASMA_Complex64_t *Af77, int lda,
                           PLASMA_sequence *sequence, PLASMA_request *request);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif // PLASMA_Z_H
