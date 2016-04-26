@@ -74,7 +74,7 @@ static inline void plasma_fatal_error_func_line_file(
     fprintf(stderr,
             "PLASMA FATAL ERROR at %d of %s() in %s: %s\n",
             line, func, file, msg);
-    exit(0);
+    exit(EXIT_FAILURE);
 }
 
 #ifdef __cplusplus
