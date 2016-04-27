@@ -63,9 +63,9 @@ static const char *ParamUsage[][2] = {
     {"--n=", "N dimension (number of columns) [default: 1000]"},
     {"--k=", "K dimension (number of rows or columns) [default: 1000]"},
     {"--nb=", "NB size of tile (NB by NB) [default: 256]"},
-    {"--pada=", "padding of A [default: 0]"},
-    {"--padb=", "padding of B [default: 0]"},
-    {"--padc=", "padding of C [default: 0]"}
+    {"--pada=", "padding added to lda [default: 0]"},
+    {"--padb=", "padding added to ldb [default: 0]"},
+    {"--padc=", "padding added to ldc [default: 0]"}
 };
 
 //==============================================================================
@@ -103,23 +103,41 @@ static const int InfoSpacing = 12;
 
 // function declarations
 void print_main_usage();
-void print_routine_usage(char *name);
+void print_routine_usage(const char *name);
 void print_usage(int label);
-void test_routine(char *name, param_value_t param[]);
-void time_routine(char *name, param_value_t pval[]);
-void run_routine(char *name, param_value_t pval[], char *info);
+void test_routine(const char *name, param_value_t param[]);
+void time_routine(const char *name, param_value_t pval[]);
+void run_routine(const char *name, param_value_t pval[], char *info);
 void param_init(param_t param[]);
-int param_read(int argc, char **argv, param_t param[]);
-int param_starts_with(const char *str, const char *prefix);
-void param_scan_int(char *str, param_t *param);
-void param_scan_char(char *str, param_t *param);
-void param_scan_double(char *str, param_t *param);
+int  param_read(int argc, char **argv, param_t param[]);
+int  param_starts_with(const char *str, const char *prefix);
+int  param_scan_int(const char *str, param_t *param);
+int  param_scan_char(const char *str, param_t *param);
+int  param_scan_double(const char *str, param_t *param);
 void param_add_int(int val, param_t *param);
 void param_add_char(char cval, param_t *param);
 void param_add_double(double dval, param_t *param);
-int param_step_inner(param_t param[]);
-int param_step_outer(param_t param[], int idx);
-int param_snap(param_t param[], param_value_t value[]);
+int  param_step_inner(param_t param[]);
+int  param_step_outer(param_t param[], int idx);
+int  param_snap(param_t param[], param_value_t value[]);
+
+//==============================================================================
+static inline int imin(int a, int b)
+{
+    if (a < b)
+        return a;
+    else
+        return b;
+}
+
+//==============================================================================
+static inline int imax(int a, int b)
+{
+    if (a > b)
+        return a;
+    else
+        return b;
+}
 
 #include "test_s.h"
 #include "test_d.h"

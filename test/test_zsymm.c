@@ -35,8 +35,8 @@
  *
  * @brief Tests ZSYMM.
  *
- * @param[in] param - array of parameters
- * @param[out] info - string of column labels or column values
+ * @param[in]  param - array of parameters
+ * @param[out] info  - string of column labels or column values; length InfoLen
  *
  ******************************************************************************/
 void test_zsymm(param_value_t param[], char *info)

@@ -39,16 +39,10 @@ int main(int argc, char **argv)
         strcmp(argv[1], "--help") == 0) {
 
         print_main_usage();
-        return EXIT_FAILURE;
+        return EXIT_SUCCESS;
     }
 
-    if (argc == 3 &&
-        (strcmp(argv[2], "-h") == 0 ||
-         strcmp(argv[2], "--help") == 0)) {
-
-        print_routine_usage(argv[1]);
-        return EXIT_FAILURE;
-    }
+    const char* routine = argv[1];
 
     param_t param[PARAM_SIZEOF];      // set of parameters
     param_value_t pval[PARAM_SIZEOF]; // snapshot of values
@@ -60,9 +54,9 @@ int main(int argc, char **argv)
 
     // Print labels.
     if (test)
-        test_routine(argv[1], NULL);
+        test_routine(routine, NULL);
     else
-        time_routine(argv[1], NULL);
+        time_routine(routine, NULL);
 
     PLASMA_Init();
     PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_NB].val[0].i);
@@ -70,11 +64,15 @@ int main(int argc, char **argv)
         // outer product iteration
         do {
             param_snap(param, pval);
-            for (int i = 0; i < iter; i++)
+            for (int i = 0; i < iter; i++) {
                 if (test)
-                    test_routine(argv[1], pval);
+                    test_routine(routine, pval);
                 else
-                    time_routine(argv[1], pval);
+                    time_routine(routine, pval);
+            }
+            if (iter > 1) {
+                printf("\n");
+            }
         }
         while (param_step_outer(param, 0));
     }
@@ -82,11 +80,15 @@ int main(int argc, char **argv)
         // inner product iteration
         do {
             param_snap(param, pval);
-            for (int i = 0; i < iter; i++)
+            for (int i = 0; i < iter; i++) {
                 if (test)
-                    test_routine(argv[1], pval);
+                    test_routine(routine, pval);
                 else
-                    time_routine(argv[1], pval);
+                    time_routine(routine, pval);
+            }
+            if (iter > 1) {
+                printf("\n");
+            }
         }
         while (param_step_inner(param));
     }
@@ -115,7 +117,7 @@ void print_main_usage()
  * @param[in] name - routine name
  *
  ******************************************************************************/
-void print_routine_usage(char *name)
+void print_routine_usage(const char *name)
 {
     printf("Usage:\n"
            "\ttest %s [-h|--help]\n"
@@ -156,11 +158,11 @@ void print_usage(int label)
  *        If pval is NULL, prints column labels.
  *        Otherwise, prints column values.
  *
- * @param[in] name - routine name
+ * @param[in]    name - routine name
  * @param[inout] pval - array of parameter values
  *
  ******************************************************************************/
-void test_routine(char *name, param_value_t pval[])
+void test_routine(const char *name, param_value_t pval[])
 {
     char info[InfoLen];
     run_routine(name, pval, info);
@@ -192,11 +194,11 @@ void test_routine(char *name, param_value_t pval[])
  *        If pval is NULL, prints column labels.
  *        Otherwise, prints column values.
  *
- * @param[in] name - routine name
+ * @param[in]    name - routine name
  * @param[inout] pval - array of parameter values
  *
  ******************************************************************************/
-void time_routine(char *name, param_value_t pval[])
+void time_routine(const char *name, param_value_t pval[])
 {
     char info[InfoLen];
     run_routine(name, pval, info);
@@ -221,14 +223,15 @@ void time_routine(char *name, param_value_t pval[])
  *
  * @brief Invokes a specific routine.
  *
- * @param[in] name - routine name
+ * @param[in]    name - routine name
  * @param[inout] pval - array of parameter values
- * @param[out] info - string of column labels or column values
+ * @param[out]   info - string of column labels or column values; length InfoLen
  *
  ******************************************************************************/
-void run_routine(char *name, param_value_t pval[], char *info)
+void run_routine(const char *name, param_value_t pval[], char *info)
 {
-    if (strcmp(name, "zgemm") == 0)
+    // -----
+    if      (strcmp(name, "zgemm") == 0)
         test_zgemm(pval, info);
     else if (strcmp(name, "dgemm") == 0)
         test_dgemm(pval, info);
@@ -236,6 +239,8 @@ void run_routine(char *name, param_value_t pval[], char *info)
         test_cgemm(pval, info);
     else if (strcmp(name, "sgemm") == 0)
         test_sgemm(pval, info);
+
+    // -----
     else if (strcmp(name, "zsymm") == 0)
         test_zsymm(pval, info);
     else if (strcmp(name, "dsymm") == 0)
@@ -244,8 +249,12 @@ void run_routine(char *name, param_value_t pval[], char *info)
         test_csymm(pval, info);
     else if (strcmp(name, "ssymm") == 0)
         test_ssymm(pval, info);
-    else
-        assert(0);
+
+    // -----
+    else {
+        printf("unknown routine: %s\n", name);
+        exit(EXIT_FAILURE);
+    }
 }
 
 /***************************************************************************//**
@@ -271,33 +280,38 @@ void param_init(param_t param[])
  *
  * @brief Initializes an array of parameter iterators
  *        according to command lineoptions.
+ *        Assumes argv[1] is function name; parses argv[2:argc-1].
  *
- * @param[in] argc
- * @param[in] argv
+ * @param[in]    argc
+ * @param[in]    argv
  * @param[inout] param - array of parameter iterators
+ *
+ * @retval iter
  *
  ******************************************************************************/
 int param_read(int argc, char **argv, param_t param[])
 {
+    int err = 0;
     int iter = 1;
+    const char* routine = argv[1];
 
     //================================================================
     // Initialize parameters from the command line.
     //================================================================
-    for (int i = 1; i < argc && argv[i]; i++) {
+    for (int i = 2; i < argc && argv[i]; i++) {
 
         //--------------------------------------------------
         // Scan character parameters.
         //--------------------------------------------------
         if (param_starts_with(argv[i], "--outer="))
-            param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_OUTER]);
+            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_OUTER]);
         else if (param_starts_with(argv[i], "--test="))
-            param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TEST]);
+            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TEST]);
 
         else if (param_starts_with(argv[i], "--transa="))
-            param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANSA]);
+            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANSA]);
         else if (param_starts_with(argv[i], "--transb="))
-            param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANSB]);
+            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANSB]);
 
         //--------------------------------------------------
         // Scan integer parameters.
@@ -306,28 +320,47 @@ int param_read(int argc, char **argv, param_t param[])
             iter = strtol(strchr(argv[i], '=')+1, NULL, 10);
 
         else if (param_starts_with(argv[i], "--m="))
-            param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_M]);
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_M]);
         else if (param_starts_with(argv[i], "--n="))
-            param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_N]);
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_N]);
         else if (param_starts_with(argv[i], "--k="))
-            param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_K]);
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_K]);
 
         else if (param_starts_with(argv[i], "--nb="))
-            param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NB]);
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NB]);
 
         else if (param_starts_with(argv[i], "--pada="))
-            param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_PADA]);
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_PADA]);
         else if (param_starts_with(argv[i], "--padb="))
-            param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_PADB]);
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_PADB]);
         else if (param_starts_with(argv[i], "--padc="))
-            param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_PADC]);
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_PADC]);
 
         //--------------------------------------------------
         // Scan double precision parameters.
         //--------------------------------------------------
         else if (param_starts_with(argv[i], "--tol="))
-            param_scan_double(strchr(argv[i], '=')+1, &param[PARAM_TOL]);
+            err = param_scan_double(strchr(argv[i], '=')+1, &param[PARAM_TOL]);
+
+        //--------------------------------------------------
+        // Handle help and errors.
+        //--------------------------------------------------
+        else if (strcmp(argv[i], "-h") == 0 ||
+                 strcmp(argv[i], "--help") == 0) {
+            print_routine_usage(routine);
+            exit(EXIT_SUCCESS);
+        }
+        else {
+            printf("unknown argument: %s\n", argv[i]);
+            exit(EXIT_FAILURE);
+        }
+
+        if (err) {
+            printf("error scanning argument: %s\n", argv[i]);
+            exit(EXIT_FAILURE);
+        }
     }
+
     //================================================================
     // Set default values for uninitialized parameters.
     //================================================================
@@ -372,7 +405,7 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_double(50.0, &param[PARAM_TOL]);
 
     return iter;
-    }
+}
 
 /***************************************************************************//**
  *
@@ -395,23 +428,40 @@ int param_starts_with(const char *str, const char *prefix)
 
 /***************************************************************************//**
  *
- * @brief Scans an integer or a range.
+ * @brief Scans a list of integers or ranges (start:end:step).
  *        Adds the value(s) to a parameter iterator.
  *
- * @param[in] str - string containin an integer
+ * @param[in]    str   - string containin an integer
  * @param[inout] param - parameter iterator
  *
+ * @retval 1 - failure
+ * @retval 0 - success
+ *
  ******************************************************************************/
-void param_scan_int(char *str, param_t *param)
+int param_scan_int(const char *str, param_t *param)
 {
     char *endptr;
     do {
         long start = strtol(str, &endptr, 10);
+        if (endptr == str) {
+            return 1;
+        }
         if (*endptr == ':') {
-            long stop = strtol(endptr+1, &endptr, 10);
-            long step = strtol(endptr+1, &endptr, 10);
-            for (int i = start; i <= stop; i += step)
+            str = endptr+1;
+            long stop = strtol(str, &endptr, 10);
+            if (endptr == str || *endptr != ':') {
+                return 1;
+            }
+
+            str = endptr+1;
+            long step = strtol(str, &endptr, 10);
+            if (endptr == str || step <= 0) {
+                return 1;
+            }
+
+            for (int i = start; i <= stop; i += step) {
                 param_add_int(i, param);
+            }
         }
         else {
             param_add_int(start, param);
@@ -419,47 +469,73 @@ void param_scan_int(char *str, param_t *param)
         str = endptr+1;
     }
     while (*endptr != '\0');
+    return 0;
 }
 
 /***************************************************************************//**
  *
- * @brief Scans a character.
- *        Adds the value to a parameter iterator.
+ * @brief Scans a list of characters.
+ *        Adds the value(s) to a parameter iterator.
  *
- * @param[in] str - string containing a single character
+ * @param[in]    str   - string containing a single character
  * @param[inout] param - parameter iterator
  *
+ * @retval 1 - failure
+ * @retval 0 - success
+ *
  ******************************************************************************/
-void param_scan_char(char *str, param_t *param)
+int param_scan_char(const char *str, param_t *param)
 {
-    char *endptr;
+    const char *endptr;
     do {
+        if (*str == '\0') {
+            return 1;
+        }
         param_add_char(*str, param);
         endptr = str+1;
         str = endptr+1;
     }
     while (*endptr != '\0');
+    return 0;
 }
 
 /***************************************************************************//**
  *
- * @brief Scans a double precision number.
- *        Adds the value to a parameter iterator.
+ * @brief Scans a list of double precision numbers or ranges (start:end:step).
+ *        Adds the value(s) to a parameter iterator.
  *
- * @param[in] str - string containing a double precision number
+ * @param[in]    str   - string containing a double precision number
  * @param[inout] param - parameter iterator
  *
+ * @retval 1 - failure
+ * @retval 0 - success
+ *
  ******************************************************************************/
-void param_scan_double(char *str, param_t *param)
+int param_scan_double(const char *str, param_t *param)
 {
     char *endptr;
     do {
         double start = strtod(str, &endptr);
+        if (endptr == str) {
+            return 1;
+        }
         if (*endptr == ':') {
-            double stop = strtod(endptr+1, &endptr);
-            double step = strtod(endptr+1, &endptr);
-            for (double d = start; d <= stop; d += step)
+            str = endptr+1;
+            double stop = strtod(str, &endptr);
+            if (endptr == str || *endptr != ':') {
+                return 1;
+            }
+
+            str = endptr+1;
+            double step = strtod(str, &endptr);
+            if (endptr == str || step <= 0) {
+                return 1;
+            }
+
+            // add fraction of step to allow for rounding error
+            for (double d = start; d <= stop + step/10.; d += step) {
                 param_add_double(d, param);
+            }
         }
         else {
             param_add_double(start, param);
@@ -467,13 +543,14 @@ void param_scan_double(char *str, param_t *param)
         str = endptr+1;
     }
     while (*endptr != '\0');
+    return 0;
 }
 
 /***************************************************************************//**
  *
  * @brief Adds an integer to a parameter iterator.
  *
- * @param[in] ival - integer
+ * @param[in]    ival  - integer
  * @param[inout] param - parameter iterator
  *
  ******************************************************************************/
@@ -493,7 +570,7 @@ void param_add_int(int ival, param_t *param)
  *
  * @brief Adds a character to a parameter iterator.
  *
- * @param[in] cval - character
+ * @param[in]    cval  - character
  * @param[inout] param - parameter iterator
  *
  ******************************************************************************/
@@ -513,7 +590,7 @@ void param_add_char(char cval, param_t *param)
  *
  * @brief Adds a double precision number to a parameter iterator.
  *
- * @param[in] dval - double precision value
+ * @param[in]    dval  - double precision value
  * @param[inout] param - parameter iterator
  *
  ******************************************************************************/
@@ -533,7 +610,7 @@ void param_add_double(double dval, param_t *param)
  *
  * @brief Steps through an array of parameter iterators
  *        (inner product evaluation).
- *        Advances all iteratos at the same time.
+ *        Advances all iterators at the same time.
  *        Iterators that exhausted their range return the last value.
  *
  * @param[inout] param - array of parameter iterators
@@ -568,9 +645,11 @@ int param_step_inner(param_t param[])
  ******************************************************************************/
 int param_step_outer(param_t param[], int idx)
 {
-    while (param[idx].num == 0)
-        if (++idx == PARAM_SIZEOF)
+    while (param[idx].num == 0) {
+        if (++idx == PARAM_SIZEOF) {
             return 0;
+        }
+    }
 
     if (++param[idx].pos == param[idx].num) {
         param[idx].pos = 0;
@@ -581,10 +660,16 @@ int param_step_outer(param_t param[], int idx)
 
 /***************************************************************************//**
  *
+ * @brief Copies a snapshot of the current iteration of param iterators to pval.
+ *
+ * @param[in]  param - array of parameter iterators
+ * @param[out] pval  - array of parameter values
+ *
  ******************************************************************************/
 int param_snap(param_t param[], param_value_t pval[])
 {
-    for (int i = 0; i < PARAM_SIZEOF; i++)
+    for (int i = 0; i < PARAM_SIZEOF; i++) {
         pval[i] = param[i].val[param[i].pos];
+    }
     return 0;
 }
