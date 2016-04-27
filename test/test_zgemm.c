@@ -31,6 +31,8 @@
 #include <omp.h>
 #include <plasma.h>
 
+#define COMPLEX
+
 /***************************************************************************//**
  *
  * @brief Tests ZGEMM.
@@ -55,6 +57,8 @@ void test_zgemm(param_value_t param[], char *info)
             print_usage(PARAM_M);
             print_usage(PARAM_N);
             print_usage(PARAM_K);
+            print_usage(PARAM_ALPHA);
+            print_usage(PARAM_BETA);
             print_usage(PARAM_PADA);
             print_usage(PARAM_PADB);
             print_usage(PARAM_PADC);
@@ -62,29 +66,33 @@ void test_zgemm(param_value_t param[], char *info)
         else {
             // Return column labels.
             snprintf(info, InfoLen,
-                   "%*s%*s%*s%*s%*s%*s%*s%*s",
-                   InfoSpacing, "TransA",
-                   InfoSpacing, "TransB",
-                   InfoSpacing, "M",
-                   InfoSpacing, "N",
-                   InfoSpacing, "K",
-                   InfoSpacing, "PadA",
-                   InfoSpacing, "PadB",
-                   InfoSpacing, "PadC");
+                "%*s%*s%*s%*s%*s%*s%*s%*s%*s%*s",
+                InfoSpacing, "TransA",
+                InfoSpacing, "TransB",
+                InfoSpacing, "M",
+                InfoSpacing, "N",
+                InfoSpacing, "K",
+                InfoSpacing, "alpha",
+                InfoSpacing, "beta",
+                InfoSpacing, "PadA",
+                InfoSpacing, "PadB",
+                InfoSpacing, "PadC");
         }
         return;
     }
     // Return column values.
     snprintf(info, InfoLen,
-             "%*c%*c%*d%*d%*d%*d%*d%*d",
-             InfoSpacing, param[PARAM_TRANSA].c,
-             InfoSpacing, param[PARAM_TRANSB].c,
-             InfoSpacing, param[PARAM_M].i,
-             InfoSpacing, param[PARAM_N].i,
-             InfoSpacing, param[PARAM_K].i,
-             InfoSpacing, param[PARAM_PADA].i,
-             InfoSpacing, param[PARAM_PADB].i,
-             InfoSpacing, param[PARAM_PADC].i);
+        "%*c%*c%*d%*d%*d%*.4f%*.4f%*d%*d%*d",
+        InfoSpacing, param[PARAM_TRANSA].c,
+        InfoSpacing, param[PARAM_TRANSB].c,
+        InfoSpacing, param[PARAM_M].i,
+        InfoSpacing, param[PARAM_N].i,
+        InfoSpacing, param[PARAM_K].i,
+        InfoSpacing, param[PARAM_ALPHA].d,
+        InfoSpacing, param[PARAM_BETA].d,
+        InfoSpacing, param[PARAM_PADA].i,
+        InfoSpacing, param[PARAM_PADB].i,
+        InfoSpacing, param[PARAM_PADC].i);
 
     //================================================================
     // Set parameters.
@@ -175,8 +183,13 @@ void test_zgemm(param_value_t param[], char *info)
         memcpy(C2, C1, (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
     }
 
-    PLASMA_Complex64_t alpha = (PLASMA_Complex64_t)1.234;
-    PLASMA_Complex64_t beta = (PLASMA_Complex64_t)-5.678;
+    #ifdef COMPLEX
+    PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
+    PLASMA_Complex64_t beta  = param[PARAM_BETA].z;
+    #else
+    PLASMA_Complex64_t alpha = __real__(param[PARAM_ALPHA].z);
+    PLASMA_Complex64_t beta  = __real__(param[PARAM_BETA].z);
+    #endif
 
     //================================================================
     // Run and time PLASMA.

@@ -343,6 +343,14 @@ int param_read(int argc, char **argv, param_t param[])
             err = param_scan_double(strchr(argv[i], '=')+1, &param[PARAM_TOL]);
 
         //--------------------------------------------------
+        // Scan complex parameters.
+        //--------------------------------------------------
+        else if (param_starts_with(argv[i], "--alpha="))
+            err = param_scan_complex(strchr(argv[i], '=')+1, &param[PARAM_ALPHA]);
+        else if (param_starts_with(argv[i], "--beta="))
+            err = param_scan_complex(strchr(argv[i], '=')+1, &param[PARAM_BETA]);
+
+        //--------------------------------------------------
         // Handle help and errors.
         //--------------------------------------------------
         else if (strcmp(argv[i], "-h") == 0 ||
@@ -403,6 +411,11 @@ int param_read(int argc, char **argv, param_t param[])
     //--------------------------------------------------
     if (param[PARAM_TOL].num == 0)
         param_add_double(50.0, &param[PARAM_TOL]);
+
+    if (param[PARAM_ALPHA].num == 0)
+        param_add_double(1.2345, &param[PARAM_ALPHA]);
+    if (param[PARAM_BETA].num == 0)
+        param_add_double(6.7890, &param[PARAM_BETA]);
 
     return iter;
 }
@@ -548,6 +561,43 @@ int param_scan_double(const char *str, param_t *param)
 
 /***************************************************************************//**
  *
+ * @brief Scans a list of complex numbers in format: 1.23 or 1.23+2.45i. (No ranges.)
+ *        Adds the value(s) to a parameter iterator.
+ *
+ * @param[in]    str   - string containing a double precision number
+ * @param[inout] param - parameter iterator
+ *
+ * @retval 1 - failure
+ * @retval 0 - success
+ *
+ ******************************************************************************/
+int param_scan_complex(const char *str, param_t *param)
+{
+    char *endptr;
+    do {
+        double re = strtod(str, &endptr);
+        double im = 0.0;
+        if (endptr == str) {
+            return 1;
+        }
+        if (*endptr == '+') {
+            str = endptr+1;
+            im = strtod(str, &endptr);
+            if (endptr == str || *endptr != 'i') {
+                return 1;
+            }
+            endptr += 1;  // skip 'i'
+        }
+        PLASMA_Complex64_t z = re + im*_Complex_I;
+        param_add_complex(z, param);
+        str = endptr+1;
+    }
+    while (*endptr != '\0');
+    return 0;
+}
+
+/***************************************************************************//**
+ *
  * @brief Adds an integer to a parameter iterator.
  *
  * @param[in]    ival  - integer
@@ -597,6 +647,26 @@ void param_add_char(char cval, param_t *param)
 void param_add_double(double dval, param_t *param)
 {
     param->val[param->num].d = dval;
+    param->num++;
+    if (param->num == param->size) {
+        param->size *= 2;
+        param->val = (param_value_t*) realloc(
+            param->val, param->size*sizeof(param_value_t));
+        assert(param->val != NULL);
+    }
+}
+
+/***************************************************************************//**
+ *
+ * @brief Adds a complex number to a parameter iterator.
+ *
+ * @param[in]    zval  - complex value
+ * @param[inout] param - parameter iterator
+ *
+ ******************************************************************************/
+void param_add_complex(PLASMA_Complex64_t zval, param_t *param)
+{
+    param->val[param->num].z = zval;
     param->num++;
     if (param->num == param->size) {
         param->size *= 2;

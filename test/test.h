@@ -14,6 +14,8 @@
 #ifndef TEST_H
 #define TEST_H
 
+#include "plasma_types.h"
+
 //==============================================================================
 // parameter labels
 //==============================================================================
@@ -31,6 +33,8 @@ typedef enum {
     PARAM_N,      // N dimension
     PARAM_K,      // K dimension
     PARAM_NB,     // tile size NBxNB
+    PARAM_ALPHA,  // scalar alpha
+    PARAM_BETA,   // scalar beta
     PARAM_PADA,   // padding of A
     PARAM_PADB,   // padding of B
     PARAM_PADC,   // padding of C
@@ -63,6 +67,8 @@ static const char *ParamUsage[][2] = {
     {"--n=", "N dimension (number of columns) [default: 1000]"},
     {"--k=", "K dimension (number of rows or columns) [default: 1000]"},
     {"--nb=", "NB size of tile (NB by NB) [default: 256]"},
+    {"--alpha=", "scalar alpha"},
+    {"--beta=", "scalar beta"},
     {"--pada=", "padding added to lda [default: 0]"},
     {"--padb=", "padding added to ldb [default: 0]"},
     {"--padc=", "padding added to ldc [default: 0]"}
@@ -73,9 +79,10 @@ static const char *ParamUsage[][2] = {
 //==============================================================================
 // parameter value type
 typedef union {
-    int i;          // integer
-    char c;         // character
-    double d;       // double precision
+    int i;                 // integer
+    char c;                // character
+    double d;              // double precision
+    PLASMA_Complex64_t z;  // double complex
 } param_value_t;
 
 // parameter type
@@ -114,9 +121,11 @@ int  param_starts_with(const char *str, const char *prefix);
 int  param_scan_int(const char *str, param_t *param);
 int  param_scan_char(const char *str, param_t *param);
 int  param_scan_double(const char *str, param_t *param);
+int  param_scan_complex(const char *str, param_t *param);
 void param_add_int(int val, param_t *param);
 void param_add_char(char cval, param_t *param);
 void param_add_double(double dval, param_t *param);
+void param_add_complex(PLASMA_Complex64_t zval, param_t *param);
 int  param_step_inner(param_t param[]);
 int  param_step_outer(param_t param[], int idx);
 int  param_snap(param_t param[], param_value_t value[]);
