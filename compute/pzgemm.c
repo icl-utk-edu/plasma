@@ -44,11 +44,11 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
         ldcm = BLKLDD(C, m);
         for (n = 0; n < C.nt; n++) {
             tempnn = n == C.nt-1 ? C.n-n*C.nb : C.nb;
-            //=======================================
-            // A: PlasmaNoTrans / B: PlasmaNoTrans
-            //=======================================
             if (transA == PlasmaNoTrans) {
                 ldam = BLKLDD(A, m);
+                //=======================================
+                // A: PlasmaNoTrans / B: PlasmaNoTrans
+                //=======================================
                 if (transB == PlasmaNoTrans) {
                     for (k = 0; k < A.nt; k++) {
                         tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
@@ -79,10 +79,10 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                     }
                 }
             }
-            //==========================================
-            // A: Plasma[Conj]Trans / B: PlasmaNoTrans
-            //==========================================
             else {
+                //==========================================
+                // A: Plasma[Conj]Trans / B: PlasmaNoTrans
+                //==========================================
                 if (transB == PlasmaNoTrans) {
                     for (k = 0; k < A.mt; k++) {
                         tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;

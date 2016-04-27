@@ -68,14 +68,18 @@
  *          and is m otherwise.
  *
  * @param[in] lda
- *          The leading dimension of the array A. lda >= max(1,m).
+ *          The leading dimension of the array A.
+ *          When transA = PlasmaNoTrans, lda >= max(1,m),
+ *          otherwise, lda >= max(1,k).
  *
  * @param[in] B
  *          An ldb-by-kb matrix, where kb is n when transB = PlasmaNoTrans,
  *          and is k otherwise.
  *
  * @param[in] ldb
- *          The leading dimension of the array B. ldb >= max(1,n).
+ *          The leading dimension of the array B.
+ *          When transB = PlasmaNoTrans, ldb >= max(1,k),
+ *          otherwise, ldb >= max(1,n).
  *
  * @param[in] beta
  *          The scalar beta.
@@ -262,12 +266,13 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
             PLASMA_zcm2ccrb_Async(C, ldc, &descC, sequence, &request);
 
         // Call the tile async function.
-        if (sequence->status == PLASMA_SUCCESS) 
+        if (sequence->status == PLASMA_SUCCESS) {
             PLASMA_zgemm_Tile_Async(transA, transB,
                                     alpha, &descA,
                                     &descB,
                                     beta, &descC,
                                     sequence, &request);
+        }
 
         // Translate back to LAPACK layout.
         if (sequence->status == PLASMA_SUCCESS) 
@@ -303,11 +308,27 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
  *
  *******************************************************************************
  *
+ * @param[in] transA
+ *          - PlasmaNoTrans:   A is not transposed,
+ *          - PlasmaTrans:     A is transposed,
+ *          - PlasmaConjTrans: A is conjugate transposed.
+ *
+ * @param[in] transB
+ *          - PlasmaNoTrans:   B is not transposed,
+ *          - PlasmaTrans:     B is transposed,
+ *          - PlasmaConjTrans: B is conjugate transposed.
+ *
+ * @param[in] alpha
+ *          The scalar alpha.
+ *
  * @param[in] A
  *          Descriptor of matrix A.
  *
  * @param[in] B
  *          Descriptor of matrix B.
+ *
+ * @param[in] beta
+ *          The scalar beta.
  *
  * @param[in,out] C
  *          Descriptor of matrix C.
