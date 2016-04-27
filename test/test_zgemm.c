@@ -35,9 +35,12 @@
  *
  * @brief Tests ZGEMM.
  *
- * @param[in] param - array of parameters
- * @param[out] info - string of column labels or column values
+ * @param[in]  param - array of parameters
+ * @param[out] info  - string of column labels or column values; length InfoLen
  *
+ * If param is NULL     and info is NULL,     print usage and return.
+ * If param is NULL     and info is non-NULL, set info to column headings and return.
+ * If param is non-NULL and info is non-NULL, set info to column values   and run test.
  ******************************************************************************/
 void test_zgemm(param_value_t param[], char *info)
 {
@@ -130,9 +133,9 @@ void test_zgemm(param_value_t param[], char *info)
     Cm = m;
     Cn = n;
 
-    int lda = Am + param[PARAM_PADA].i;
-    int ldb = Bm + param[PARAM_PADB].i;
-    int ldc = Cm + param[PARAM_PADC].i;
+    int lda = imax(1, Am + param[PARAM_PADA].i);
+    int ldb = imax(1, Bm + param[PARAM_PADB].i);
+    int ldc = imax(1, Cm + param[PARAM_PADC].i);
 
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
@@ -203,13 +206,13 @@ void test_zgemm(param_value_t param[], char *info)
                                 B, ldb,
              CBLAS_SADDR(beta), C2, ldc);
 
-        double Cnorm = LAPACKE_zlange(LAPACK_COL_MAJOR, 'F', Cm, Cn, C1, ldc);
-
         PLASMA_Complex64_t zmone = (PLASMA_Complex64_t)-1.0;
         cblas_zaxpy((size_t)ldc*Cn, CBLAS_SADDR(zmone), C1, 1, C2, 1);
 
-        double error =
-            LAPACKE_zlange(LAPACK_COL_MAJOR, 'F', Cm, Cn, C2, ldc) / Cnorm;
+        double Cnorm = LAPACKE_zlange(LAPACK_COL_MAJOR, 'F', Cm, Cn, C1, ldc);
+        double error = LAPACKE_zlange(LAPACK_COL_MAJOR, 'F', Cm, Cn, C2, ldc);
+        if (Cnorm != 0)
+            error /= Cnorm;
 
         param[PARAM_ERROR].d = error;
         param[PARAM_SUCCESS].i = error < tol;
