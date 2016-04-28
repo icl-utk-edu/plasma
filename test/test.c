@@ -169,21 +169,21 @@ void test_routine(const char *name, param_value_t pval[])
 
     if (pval == NULL) {
         printf("\n");
-        printf("%*s%*s%*s%*s%*s\n",
-            InfoSpacing, "Status",
-            InfoSpacing, "Error",
+        printf("%*s %*s %s %*s %*s\n",
             InfoSpacing, "Seconds",
             InfoSpacing, "GFLOPS",
-            InfoSpacing, info);
+                         info,
+            InfoSpacing, "Error",
+            InfoSpacing, "Status");
         printf("\n");
     }
     else {
-        printf("%*s%*.2le%*lf%*lf%s\n",
-            InfoSpacing, pval[PARAM_SUCCESS].i ? "pass" : "FAILED",
-            InfoSpacing, pval[PARAM_ERROR].d,
+        printf("%*.4lf %*.4lf %s %*.2le %*s\n",
             InfoSpacing, pval[PARAM_TIME].d,
             InfoSpacing, pval[PARAM_GFLOPS].d,
-                         info);
+                         info,
+            InfoSpacing, pval[PARAM_ERROR].d,
+            InfoSpacing, pval[PARAM_SUCCESS].i ? "pass" : "FAILED");
     }
 }
 
@@ -205,14 +205,14 @@ void time_routine(const char *name, param_value_t pval[])
 
     if (pval == NULL) {
         printf("\n");
-        printf("%*s%*s%*s\n",
+        printf("%*s %*s %s\n",
             InfoSpacing, "Seconds",
             InfoSpacing, "GFLOPS",
-            InfoSpacing, info);
+                         info);
         printf("\n");
     }
     else {
-        printf("%*lf%*lf%s\n",
+        printf("%*.4lf %*.4lf %s\n",
             InfoSpacing, pval[PARAM_TIME].d,
             InfoSpacing, pval[PARAM_GFLOPS].d,
                          info);

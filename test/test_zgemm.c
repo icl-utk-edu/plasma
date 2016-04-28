@@ -66,7 +66,7 @@ void test_zgemm(param_value_t param[], char *info)
         else {
             // Return column labels.
             snprintf(info, InfoLen,
-                "%*s%*s%*s%*s%*s%*s%*s%*s%*s%*s",
+                "%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s",
                 InfoSpacing, "TransA",
                 InfoSpacing, "TransB",
                 InfoSpacing, "M",
@@ -82,14 +82,14 @@ void test_zgemm(param_value_t param[], char *info)
     }
     // Return column values.
     snprintf(info, InfoLen,
-        "%*c%*c%*d%*d%*d%*.4f%*.4f%*d%*d%*d",
+        "%*c %*c %*d %*d %*d %*.4f %*.4f %*d %*d %*d",
         InfoSpacing, param[PARAM_TRANSA].c,
         InfoSpacing, param[PARAM_TRANSB].c,
         InfoSpacing, param[PARAM_M].i,
         InfoSpacing, param[PARAM_N].i,
         InfoSpacing, param[PARAM_K].i,
-        InfoSpacing, param[PARAM_ALPHA].d,
-        InfoSpacing, param[PARAM_BETA].d,
+        InfoSpacing, __real__(param[PARAM_ALPHA].z),
+        InfoSpacing, __real__(param[PARAM_BETA].z),
         InfoSpacing, param[PARAM_PADA].i,
         InfoSpacing, param[PARAM_PADB].i,
         InfoSpacing, param[PARAM_PADC].i);

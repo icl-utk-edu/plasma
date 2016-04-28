@@ -106,7 +106,8 @@ static const int DescriptionIndent = -20;
 static const int InfoLen = 1024;
 
 // spacing in info output string
-static const int InfoSpacing = 12;
+// each column is InfoSpacing wide + 1 space between columns
+static const int InfoSpacing = 11;
 
 // function declarations
 void print_main_usage();
