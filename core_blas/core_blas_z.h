@@ -37,7 +37,7 @@ void CORE_zlacpy(PLASMA_enum uplo,
 /******************************************************************************/
 void CORE_OMP_zgemm(
     PLASMA_enum transA, PLASMA_enum transB,
-    int m, int n, int k, int nb,
+    int m, int n, int k,
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                               const PLASMA_Complex64_t *B, int ldb,
            PLASMA_Complex64_t beta, PLASMA_Complex64_t *C, int ldc);

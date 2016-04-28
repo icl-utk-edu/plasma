@@ -56,7 +56,7 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                         zbeta = k == 0 ? beta : zone;
                         CORE_OMP_zgemm(
                             transA, transB,
-                            tempmm, tempnn, tempkn, A.mb,
+                            tempmm, tempnn, tempkn,
                             alpha, A(m, k), ldam,
                                    B(k, n), ldbk,
                             zbeta, C(m, n), ldcm);
@@ -72,7 +72,7 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                         zbeta = k == 0 ? beta : zone;
                         CORE_OMP_zgemm(
                             transA, transB,
-                            tempmm, tempnn, tempkn, A.mb,
+                            tempmm, tempnn, tempkn,
                             alpha, A(m, k), ldam,
                                    B(n, k), ldbn,
                             zbeta, C(m, n), ldcm);
@@ -91,7 +91,7 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                         zbeta = k == 0 ? beta : zone;
                         CORE_OMP_zgemm(
                             transA, transB,
-                            tempmm, tempnn, tempkm, A.mb,
+                            tempmm, tempnn, tempkm,
                             alpha, A(k, m), ldak,
                                    B(k, n), ldbk,
                             zbeta, C(m, n), ldcm);
@@ -108,10 +108,10 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                         zbeta = k == 0 ? beta : zone;
                         CORE_OMP_zgemm(
                             transA, transB,
-                            tempmm, tempnn, tempkm, A.mb,
-                            alpha, A(k, m), ldak,  /* lda * X */
-                                   B(n, k), ldbn,  /* ldb * Z */
-                            zbeta, C(m, n), ldcm); /* ldc * Y */
+                            tempmm, tempnn, tempkm,
+                            alpha, A(k, m), ldak,
+                                   B(n, k), ldbn,
+                            zbeta, C(m, n), ldcm);
                     }
                 }
             }
