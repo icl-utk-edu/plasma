@@ -27,12 +27,13 @@ void CORE_zgemm(
     int m, int n, int k,
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                               const PLASMA_Complex64_t *B, int ldb,
-           PLASMA_Complex64_t beta, PLASMA_Complex64_t *C, int ldc);
+    PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc);
 
-void CORE_zlacpy(PLASMA_enum uplo,
-                 int m, int n,
-                 const PLASMA_Complex64_t *A, int lda,
-                       PLASMA_Complex64_t *B, int ldb);
+void CORE_zlacpy(
+    PLASMA_enum uplo,
+    int m, int n,
+    const PLASMA_Complex64_t *A, int lda,
+          PLASMA_Complex64_t *B, int ldb);
 
 /******************************************************************************/
 void CORE_OMP_zgemm(
@@ -40,12 +41,13 @@ void CORE_OMP_zgemm(
     int m, int n, int k,
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                               const PLASMA_Complex64_t *B, int ldb,
-           PLASMA_Complex64_t beta, PLASMA_Complex64_t *C, int ldc);
+    PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc);
 
-void CORE_OMP_zlacpy(PLASMA_enum uplo,
-                     int m, int n, int nb,
-                     const PLASMA_Complex64_t *A, int lda,
-                           PLASMA_Complex64_t *B, int ldb);
+void CORE_OMP_zlacpy(
+    PLASMA_enum uplo,
+    int m, int n, int nb,
+    const PLASMA_Complex64_t *A, int lda,
+          PLASMA_Complex64_t *B, int ldb);
 
 #ifdef __cplusplus
 }  // extern "C"

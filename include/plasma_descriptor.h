@@ -85,7 +85,7 @@ static inline int BLKLDD(PLASMA_desc A, int k)
 }
 
 /******************************************************************************/
-inline static void *plasma_getaddr(PLASMA_desc A, int m, int n)
+static inline void *plasma_getaddr(PLASMA_desc A, int m, int n)
 {
     int mm = m + A.i/A.mb;
     int nn = n + A.j/A.nb;

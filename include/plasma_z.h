@@ -22,29 +22,35 @@ extern "C" {
 /***************************************************************************//**
  *  Standard interface.
  **/
-int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
-                 int m, int n, int k,
-                 PLASMA_Complex64_t alpha, PLASMA_Complex64_t *A, int lda,
-                                           PLASMA_Complex64_t *B, int ldb,
-                 PLASMA_Complex64_t beta,  PLASMA_Complex64_t *C, int ldc);
+int PLASMA_zgemm(
+    PLASMA_enum transA, PLASMA_enum transB,
+    int m, int n, int k,
+    PLASMA_Complex64_t alpha, PLASMA_Complex64_t *A, int lda,
+                              PLASMA_Complex64_t *B, int ldb,
+    PLASMA_Complex64_t beta,  PLASMA_Complex64_t *C, int ldc);
 
 /***************************************************************************//**
  *  Tile asynchronous interface.
  **/
-void PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
-                            PLASMA_Complex64_t alpha, PLASMA_desc *descA,
-                                                      PLASMA_desc *descB,
-                            PLASMA_Complex64_t beta,  PLASMA_desc *descC,
-                            PLASMA_sequence *sequence, PLASMA_request *request);
+void PLASMA_zgemm_Tile_Async(
+    PLASMA_enum transA, PLASMA_enum transB,
+    PLASMA_Complex64_t alpha, PLASMA_desc *descA,
+                              PLASMA_desc *descB,
+    PLASMA_Complex64_t beta,  PLASMA_desc *descC,
+    PLASMA_sequence *sequence, PLASMA_request *request);
 
 /***************************************************************************//**
  *  Layout translation async.
  **/
-void PLASMA_zcm2ccrb_Async(PLASMA_Complex64_t *Af77, int lda, PLASMA_desc *A,
-                          PLASMA_sequence *sequence, PLASMA_request *request);
+void PLASMA_zcm2ccrb_Async(
+    PLASMA_Complex64_t *Af77, int lda,
+    PLASMA_desc *A,
+    PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zccrb2cm_Async(PLASMA_desc *A, PLASMA_Complex64_t *Af77, int lda,
-                          PLASMA_sequence *sequence, PLASMA_request *request);
+void PLASMA_zccrb2cm_Async(
+    PLASMA_desc *A,
+    PLASMA_Complex64_t *Af77, int lda,
+    PLASMA_sequence *sequence, PLASMA_request *request);
 
 #ifdef __cplusplus
 }  // extern "C"
