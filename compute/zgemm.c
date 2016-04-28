@@ -119,8 +119,8 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
     PLASMA_desc descB;
     PLASMA_desc descC;
 
-    PLASMA_Complex64_t zzero = (PLASMA_Complex64_t)0.0;
-    PLASMA_Complex64_t zone = (PLASMA_Complex64_t)1.0;
+    PLASMA_Complex64_t zzero = 0.0;
+    PLASMA_Complex64_t zone  = 1.0;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

@@ -34,7 +34,7 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
     int tempmm, tempnn, tempkn, tempkm;
 
     PLASMA_Complex64_t zbeta;
-    PLASMA_Complex64_t zone = (PLASMA_Complex64_t)1.0;
+    PLASMA_Complex64_t zone = 1.0;
 
     if (sequence->status != PLASMA_SUCCESS)
         return;
