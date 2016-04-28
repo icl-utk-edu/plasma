@@ -40,7 +40,7 @@ LIBS      ?= -L$(LAPACKDIR) -llapack -llapacke -L$(CBLASDIR)/lib -lcblas -lblas
 
 codegen     := ./tools/codegen.py
 
-PLASMA_INC  := -Iinclude -Icore_blas
+PLASMA_INC  := -Iinclude
 PLASMA_LIBS := -Llib -lplasma -lcoreblas
 
 
