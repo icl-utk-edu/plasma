@@ -471,8 +471,7 @@ void PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
     }
 
     // quick return
-    if (C->m == 0 || C->n == 0 || An == 0 ||
-        (alpha == (PLASMA_Complex64_t)0.0 && beta == (PLASMA_Complex64_t)1.0))
+    if (C->m == 0 || C->n == 0 || ((alpha == 0.0 || An == 0) && beta == 1.0))
         return;
 
     // Call the parallel function.

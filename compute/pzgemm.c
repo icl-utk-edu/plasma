@@ -22,7 +22,10 @@
 #define A(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(A, m, n))
 #define B(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(B, m, n))
 #define C(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(C, m, n))
-/******************************************************************************/
+/***************************************************************************//**
+ * Parallel tile matrix-matrix multiplication.
+ * @see PLASMA_zgemm_Tile_Async
+ ******************************************************************************/
 void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                    PLASMA_Complex64_t alpha, PLASMA_desc A,
                                              PLASMA_desc B,
@@ -39,12 +42,27 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
     if (sequence->status != PLASMA_SUCCESS)
         return;
 
+    int innerK = (transA == PlasmaNoTrans ? A.n : A.m);
+    
     for (m = 0; m < C.mt; m++) {
         tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
         ldcm = BLKLDD(C, m);
         for (n = 0; n < C.nt; n++) {
             tempnn = n == C.nt-1 ? C.n-n*C.nb : C.nb;
-            if (transA == PlasmaNoTrans) {
+            if (alpha == 0.0 || innerK == 0) {
+                //=======================================
+                // alpha*A*B does not contribute; scale C
+                //=======================================
+                ldam = imax( 1, BLKLDD(A, 0) );
+                ldbk = imax( 1, BLKLDD(B, 0) );
+                CORE_OMP_zgemm(
+                    transA, transB,
+                    tempmm, tempnn, 0,
+                    alpha, A(0, 0), ldam,
+                           B(0, 0), ldbk,
+                    beta,  C(m, n), ldcm);
+            }
+            else if (transA == PlasmaNoTrans) {
                 ldam = BLKLDD(A, m);
                 //=======================================
                 // A: PlasmaNoTrans / B: PlasmaNoTrans
