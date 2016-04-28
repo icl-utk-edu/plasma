@@ -113,7 +113,7 @@ static const int InfoSpacing = 11;
 void print_main_usage();
 void print_routine_usage(const char *name);
 void print_usage(int label);
-void test_routine(const char *name, param_value_t param[]);
+int  test_routine(const char *name, param_value_t param[]);
 void time_routine(const char *name, param_value_t pval[]);
 void run_routine(const char *name, param_value_t pval[], char *info);
 void param_init(param_t param[]);

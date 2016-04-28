@@ -30,6 +30,7 @@
  *
  * @retval EXIT_SUCCESS - correct invocation
  * @retval EXIT_FAILURE - incorrect invocation
+ * @retval > 0 - number of tests that failed
  *
  ******************************************************************************/
 int main(int argc, char **argv)
@@ -51,6 +52,7 @@ int main(int argc, char **argv)
     int iter = param_read(argc, argv, param);
     int outer = param[PARAM_OUTER].val[0].c == 'y';
     int test = param[PARAM_TEST].val[0].c == 'y';
+    int err = 0;
 
     // Print labels.
     if (test)
@@ -66,7 +68,7 @@ int main(int argc, char **argv)
             param_snap(param, pval);
             for (int i = 0; i < iter; i++) {
                 if (test)
-                    test_routine(routine, pval);
+                    err += test_routine(routine, pval);
                 else
                     time_routine(routine, pval);
             }
@@ -82,7 +84,7 @@ int main(int argc, char **argv)
             param_snap(param, pval);
             for (int i = 0; i < iter; i++) {
                 if (test)
-                    test_routine(routine, pval);
+                    err += test_routine(routine, pval);
                 else
                     time_routine(routine, pval);
             }
@@ -94,7 +96,7 @@ int main(int argc, char **argv)
     }
     PLASMA_Finalize();
     printf("\n");
-    return EXIT_SUCCESS;
+    return err;
 }
 
 /***************************************************************************//**
@@ -161,8 +163,11 @@ void print_usage(int label)
  * @param[in]    name - routine name
  * @param[inout] pval - array of parameter values
  *
+ * @retval 1 - failure
+ * @retval 0 - success
+ *
  ******************************************************************************/
-void test_routine(const char *name, param_value_t pval[])
+int test_routine(const char *name, param_value_t pval[])
 {
     char info[InfoLen];
     run_routine(name, pval, info);
@@ -176,6 +181,7 @@ void test_routine(const char *name, param_value_t pval[])
             InfoSpacing, "Error",
             InfoSpacing, "Status");
         printf("\n");
+        return 0;
     }
     else {
         printf("%*.4lf %*.4lf %s %*.2le %*s\n",
@@ -184,6 +190,7 @@ void test_routine(const char *name, param_value_t pval[])
                          info,
             InfoSpacing, pval[PARAM_ERROR].d,
             InfoSpacing, pval[PARAM_SUCCESS].i ? "pass" : "FAILED");
+        return (pval[PARAM_SUCCESS].i == 0);
     }
 }
 
