@@ -159,9 +159,9 @@ void test_zgemm(param_value_t param[], char *info)
         (PLASMA_Complex64_t*)malloc((size_t)ldb*Bn*sizeof(PLASMA_Complex64_t));
     assert(B != NULL);
 
-    PLASMA_Complex64_t *C1 =
+    PLASMA_Complex64_t *C =
         (PLASMA_Complex64_t*)malloc((size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
-    assert(C1 != NULL);
+    assert(C != NULL);
 
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
@@ -171,16 +171,16 @@ void test_zgemm(param_value_t param[], char *info)
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*Bn, B);
     assert(retval == 0);
 
-    retval = LAPACKE_zlarnv(1, seed, (size_t)ldc*Cn, C1);
+    retval = LAPACKE_zlarnv(1, seed, (size_t)ldc*Cn, C);
     assert(retval == 0);
 
-    PLASMA_Complex64_t *C2 = NULL;
+    PLASMA_Complex64_t *Cref = NULL;
     if (test) {
-        C2 = (PLASMA_Complex64_t*)malloc(
+        Cref = (PLASMA_Complex64_t*)malloc(
             (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
-        assert(C2 != NULL);
+        assert(Cref != NULL);
 
-        memcpy(C2, C1, (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
+        memcpy(Cref, C, (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
     }
 
     #ifdef COMPLEX
@@ -200,7 +200,7 @@ void test_zgemm(param_value_t param[], char *info)
         m, n, k,
         alpha, A, lda,
                B, ldb,
-         beta, C1, ldc);
+         beta, C, ldc);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
@@ -217,13 +217,16 @@ void test_zgemm(param_value_t param[], char *info)
             m, n, k,
             CBLAS_SADDR(alpha), A, lda,
                                 B, ldb,
-             CBLAS_SADDR(beta), C2, ldc);
+             CBLAS_SADDR(beta), Cref, ldc);
 
-        PLASMA_Complex64_t zmone = (PLASMA_Complex64_t)-1.0;
-        cblas_zaxpy((size_t)ldc*Cn, CBLAS_SADDR(zmone), C1, 1, C2, 1);
+        PLASMA_Complex64_t zmone = -1.0;
+        cblas_zaxpy((size_t)ldc*Cn, CBLAS_SADDR(zmone), Cref, 1, C, 1);
 
-        double Cnorm = LAPACKE_zlange(LAPACK_COL_MAJOR, 'F', Cm, Cn, C1, ldc);
-        double error = LAPACKE_zlange(LAPACK_COL_MAJOR, 'F', Cm, Cn, C2, ldc);
+        double work[1];
+        double Cnorm = LAPACKE_zlange_work(
+                           LAPACK_COL_MAJOR, 'F', Cm, Cn, Cref, ldc, work);
+        double error = LAPACKE_zlange_work(
+                           LAPACK_COL_MAJOR, 'F', Cm, Cn, C,    ldc, work);
         if (Cnorm != 0)
             error /= Cnorm;
 
@@ -236,7 +239,7 @@ void test_zgemm(param_value_t param[], char *info)
     //================================================================
     free(A);
     free(B);
-    free(C1);
+    free(C);
     if (test)
-        free(C2);
+        free(Cref);
 }
