@@ -34,6 +34,8 @@ LDFLAGS   ?= -fopenmp
 INC       ?= -I$(LAPACKDIR)/LAPACKE/include -I$(CBLASDIR)/include
 LIBS      ?= -L$(LAPACKDIR) -llapack -llapacke -L$(CBLASDIR)/lib -lcblas -lblas
 
+prefix    ?= /usr/local/plasma
+
 
 # ----------------------------------------
 # Internal tools and flags
@@ -151,6 +153,28 @@ $(test_exe): $(test_obj) $(libs) Makefile.test.gen
 
 %.o: %.c | $(headers)
 	$(CC) $(CFLAGS) $(PLASMA_INC) $(INC) -c -o $@ $<
+
+
+# ----------------------------------------
+# Install
+
+install_dirs:
+	mkdir -p $(prefix)
+	mkdir -p $(prefix)/include
+	mkdir -p $(prefix)/lib
+	mkdir -p $(prefix)/lib/pkgconfig
+
+install: lib install_dirs
+	cp  include/*.h $(prefix)/include
+	cp  $(libs)     $(prefix)/lib
+	-cp $(shared)   $(prefix)/lib
+	# pkgconfig
+	cat lib/pkgconfig/plasma.pc.in         | \
+	sed -e s:@INSTALL_PREFIX@:"$(prefix)": | \
+	sed -e s:@CFLAGS@:"$(INC)":            | \
+	sed -e s:@LIBS@:"$(LIBS)":             | \
+	sed -e s:@REQUIRES@::                    \
+	    > $(prefix)/lib/pkgconfig/plasma.pc
 
 
 # ----------------------------------------
