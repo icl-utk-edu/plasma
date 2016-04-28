@@ -51,7 +51,7 @@ enum {
 
     PlasmaUpper      = 121,
     PlasmaLower      = 122,
-    PlasmaUpperLower = 123,
+    PlasmaFull       = 123,  // formerly PlasmaUpperLower
 
     PlasmaNonUnit    = 131,
     PlasmaUnit       = 132,

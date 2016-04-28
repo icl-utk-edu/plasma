@@ -32,9 +32,9 @@
  *******************************************************************************
  *
  * @param[in] uplo
- *          - PlasmaUpperLower: entire A,
- *          - PlasmaUpper:      upper triangle,
- *          - PlasmaLower:      lower triangle.
+ *          - PlasmaFull:  entire A,
+ *          - PlasmaUpper: upper triangle,
+ *          - PlasmaLower: lower triangle.
  *
  * @param[in] M
  *          The number of rows of the matrices A and B.

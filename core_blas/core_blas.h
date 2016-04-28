@@ -39,7 +39,7 @@ static const char *lapack_constants[] = {
     "", "", "", "", "", "", "",
     "Upper",                                ///< 121: PlasmaUpper
     "Lower",                                ///< 122: PlasmaLower
-    "All",                                  ///< 123: PlasmaUpperLower
+    "General",                              ///< 123: PlasmaFull
 
     "", "", "", "", "", "", "",
     "NonUnit",                              ///< 131: PlasmaNonUnit
