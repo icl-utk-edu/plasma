@@ -2,6 +2,7 @@
 # Usage:
 #   make [all]      --  make lib test
 #   make lib        --  make lib/libplasma.a lib/libcoreblas.a
+#   make shared     --  make lib/libplasma.so lib/libcoreblas.so
 #   make test       --  make test/test
 #   make generate   --  generate precisions
 #   make clean      --  remove objects, libraries, and executables
