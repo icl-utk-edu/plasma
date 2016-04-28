@@ -43,6 +43,10 @@ codegen     := ./tools/codegen.py
 PLASMA_INC  := -Iinclude
 PLASMA_LIBS := -Llib -lplasma -lcoreblas
 
+.DELETE_ON_ERROR:
+
+.SUFFIXES:
+
 
 # ----------------------------------------
 # Define sources, objects, libraries, executables.
@@ -67,17 +71,15 @@ test_obj     := $(addsuffix .o, $(basename $(filter-out %.h, $(test_all))))
 
 test_exe     := test/test
 
-libs := \
-	lib/libplasma.a    \
-	lib/libcoreblas.a  \
-
 
 # ----------------------------------------
 # Build libraries
 
-.DELETE_ON_ERROR:
-
 .PHONY: lib
+
+libs := \
+	lib/libplasma.a    \
+	lib/libcoreblas.a  \
 
 lib: $(libs)
 
@@ -94,6 +96,40 @@ lib/libcoreblas.a: $(coreblas_obj) Makefile.coreblas.gen
 	-rm -f $@
 	$(ARCH) $(ARCHFLAGS) $@ $(coreblas_obj)
 	$(RANLIB) $@
+
+
+# ----------------------------------------
+# Build shared libraries
+
+# check whether all FLAGS have -fPIC
+have_fpic = $(and $(findstring -fPIC, $(CFLAGS)),   \
+                  $(findstring -fPIC, $(LDFLAGS)))
+
+# -----
+# if all FLAGS have -fPIC: allow compiling shared libraries
+ifneq ($(have_fpic),)
+
+shared := \
+	lib/libplasma.so    \
+	lib/libcoreblas.so  \
+
+shared: $(shared)
+
+lib/libplasma.so: $(plasma_obj) Makefile.plasma.gen lib/libcoreblas.so
+	$(CC) -shared $(LDFLAGS) -o $@ $(plasma_obj) -Llib -lcoreblas $(LIBS)
+
+lib/libcoreblas.so: $(coreblas_obj) Makefile.coreblas.gen
+	$(CC) -shared $(LDFLAGS) -o $@ $(coreblas_obj) $(LIBS)
+
+# -----
+# else: some FLAGS missing -fPIC: print error for shared
+else
+
+shared:
+	@echo "Error: 'make shared' requires CFLAGS and LDFLAGS to have -fPIC."
+	@echo "Please edit your make.inc file, make clean && make shared."
+
+endif
 
 
 # ----------------------------------------
@@ -124,7 +160,7 @@ $(test_exe): $(test_obj) $(libs) Makefile.test.gen
 .PHONY: clean distclean
 
 clean:
-	-rm -f $(plasma_obj) $(coreblas_obj) $(test_obj) $(test_exe) $(libs)
+	-rm -f $(plasma_obj) $(coreblas_obj) $(test_obj) $(test_exe) $(libs) $(shared)
 
 # cleangen removes generated files if the template still exists;
 # grep for any stale generated files without a template.
@@ -133,6 +169,7 @@ distclean: clean cleangen
 	grep -l @generated $(plasma_src) $(coreblas_src) $(test_src) | xargs rm
 	-rm -f compute/*.o control/*.o core_blas/*.o test/*.o
 	-rm -f $(makefiles_gen)
+
 
 # ----------------------------------------
 # Create dependencies to do precision generation.
