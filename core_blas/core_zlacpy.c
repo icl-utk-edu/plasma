@@ -65,11 +65,11 @@ void CORE_zlacpy(PLASMA_enum uplo,
                  const PLASMA_Complex64_t *A, int lda,
                        PLASMA_Complex64_t *B, int ldb)
 {
-    LAPACKE_zlacpy(LAPACK_COL_MAJOR,
-                   lapack_const(uplo),
-                   m, n,
-                   A, lda,
-                   B, ldb);
+    LAPACKE_zlacpy_work(LAPACK_COL_MAJOR,
+                        lapack_const(uplo),
+                        m, n,
+                        A, lda,
+                        B, ldb);
 }
 
 /******************************************************************************/
@@ -78,6 +78,7 @@ void CORE_OMP_zlacpy(PLASMA_enum uplo,
                      const PLASMA_Complex64_t *A, int lda,
                            PLASMA_Complex64_t *B, int ldb)
 {
+    // omp depends assume lda == ldb == m
 #pragma omp task depend(in:A[0:m*n]) depend(out:B[0:m*n]) 
     CORE_zlacpy(uplo,
                 m, n,
