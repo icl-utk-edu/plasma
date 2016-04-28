@@ -412,10 +412,17 @@ int param_read(int argc, char **argv, param_t param[])
     if (param[PARAM_TOL].num == 0)
         param_add_double(50.0, &param[PARAM_TOL]);
 
-    if (param[PARAM_ALPHA].num == 0)
-        param_add_double(1.2345, &param[PARAM_ALPHA]);
-    if (param[PARAM_BETA].num == 0)
-        param_add_double(6.7890, &param[PARAM_BETA]);
+    //--------------------------------------------------
+    // Set complex parameters.
+    //--------------------------------------------------
+    if (param[PARAM_ALPHA].num == 0) {
+        PLASMA_Complex64_t z = 1.2345 + 2.3456*_Complex_I;
+        param_add_complex(z, &param[PARAM_ALPHA]);
+    }
+    if (param[PARAM_BETA].num == 0) {
+        PLASMA_Complex64_t z = 6.7890 + 7.8901*_Complex_I;
+        param_add_double(z, &param[PARAM_BETA]);
+    }
 
     return iter;
 }
