@@ -11,8 +11,8 @@
  * @date 2016-01-01
  *
  **/
-#ifndef INTERNAL_H
-#define INTERNAL_H
+#ifndef ICL_PLASMA_INTERNAL_H
+#define ICL_PLASMA_INTERNAL_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -86,4 +86,4 @@ static inline void plasma_fatal_error_func_line_file(
 #include "plasma_internal_c.h"
 #include "plasma_internal_z.h"
 
-#endif // INTERNAL_H
+#endif // ICL_PLASMA_INTERNAL_H

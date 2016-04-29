@@ -11,8 +11,8 @@
  * @date 2016-01-01
  *
  **/
-#ifndef TUNE_H
-#define TUNE_H
+#ifndef ICL_PLASMA_TUNE_H
+#define ICL_PLASMA_TUNE_H
 
 enum {
     PLASMA_FUNC_SGEMM,
@@ -21,4 +21,4 @@ enum {
     PLASMA_FUNC_ZGEMM
 };
 
-#endif // TUNE_H
+#endif // ICL_PLASMA_TUNE_H

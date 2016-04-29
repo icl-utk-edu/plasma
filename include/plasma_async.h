@@ -11,8 +11,8 @@
  * @date 2016-01-01
  *
  **/
-#ifndef ASYNC_H
-#define ASYNC_H
+#ifndef ICL_PLASMA_ASYNC_H
+#define ICL_PLASMA_ASYNC_H
 
 #include "plasma_types.h"
 
@@ -44,4 +44,4 @@ int plasma_sequence_destroy(PLASMA_sequence *sequence);
 }  // extern "C"
 #endif
 
-#endif // ASYNC_H
+#endif // ICL_PLASMA_ASYNC_H

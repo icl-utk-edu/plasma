@@ -12,8 +12,8 @@
  * @precisions normal z -> c d s
  *
  **/
-#ifndef CORE_BLAS_Z_H
-#define CORE_BLAS_Z_H
+#ifndef ICL_CORE_BLAS_Z_H
+#define ICL_CORE_BLAS_Z_H
 
 #include "plasma_types.h"
 
@@ -53,4 +53,4 @@ void CORE_OMP_zlacpy(
 }  // extern "C"
 #endif
 
-#endif // CORE_BLAS_Z_H
+#endif // ICL_CORE_BLAS_Z_H

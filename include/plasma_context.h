@@ -11,8 +11,8 @@
  * @date 2016-01-01
  *
  **/
-#ifndef CONTEXT_H
-#define CONTEXT_H
+#ifndef ICL_PLASMA_CONTEXT_H
+#define ICL_PLASMA_CONTEXT_H
 
 #include "plasma_types.h"
 
@@ -48,4 +48,4 @@ void plasma_context_init(plasma_context_t *context);
 }  // extern "C"
 #endif
 
-#endif // CONTEXT_H
+#endif // ICL_PLASMA_CONTEXT_H

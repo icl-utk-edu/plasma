@@ -12,8 +12,8 @@
  * @precisions normal z -> s d c
  *
  **/
-#ifndef PLASMA_Z_H
-#define PLASMA_Z_H
+#ifndef ICL_PLASMA_Z_H
+#define ICL_PLASMA_Z_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,4 +56,4 @@ void PLASMA_zccrb2cm_Async(
 }  // extern "C"
 #endif
 
-#endif // PLASMA_Z_H
+#endif // ICL_PLASMA_Z_H

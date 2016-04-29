@@ -11,8 +11,8 @@
  * @date 2016-01-01
  *
  **/
-#ifndef PLASMATYPES_H
-#define PLASMATYPES_H
+#ifndef ICL_PLASMA_TYPES_H
+#define ICL_PLASMA_TYPES_H
 
 #include <complex.h>
 
@@ -96,4 +96,4 @@ typedef double _Complex PLASMA_Complex64_t;
 }  // extern "C"
 #endif
 
-#endif // PLASMATYPES_H
+#endif // ICL_PLASMA_TYPES_H

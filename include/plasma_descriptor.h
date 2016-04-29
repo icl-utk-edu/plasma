@@ -11,8 +11,8 @@
  * @date 2016-01-01
  *
  **/
-#ifndef DESCRIPTOR_H
-#define DESCRIPTOR_H
+#ifndef ICL_PLASMA_DESCRIPTOR_H
+#define ICL_PLASMA_DESCRIPTOR_H
 
 #include "plasma_types.h"
 
@@ -126,4 +126,4 @@ int plasma_desc_mat_free(PLASMA_desc *desc);
 }  // extern "C"
 #endif
 
-#endif // DESCRIPTOR_H
+#endif // ICL_PLASMA_DESCRIPTOR_H

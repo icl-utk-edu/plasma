@@ -12,8 +12,8 @@
  * @precisions normal z -> s d c
  *
  **/
-#ifndef INTERNAL_Z_H
-#define INTERNAL_Z_H
+#ifndef ICL_PLASMA_INTERNAL_Z_H
+#define ICL_PLASMA_INTERNAL_Z_H
 
 #include "plasma_async.h"
 #include "plasma_descriptor.h"
@@ -45,4 +45,4 @@ void plasma_pzoocm2ccrb(
 }  // extern "C"
 #endif
 
-#endif // INTERNAL_Z_H
+#endif // ICL_PLASMA_INTERNAL_Z_H

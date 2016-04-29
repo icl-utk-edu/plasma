@@ -11,8 +11,8 @@
  * @date 2016-01-01
  *
  **/
-#ifndef PLASMA_H
-#define PLASMA_H
+#ifndef ICL_PLASMA_H
+#define ICL_PLASMA_H
 
 #ifdef PLASMA_WITH_MKL
     #include <mkl.h>
@@ -30,4 +30,4 @@
 #include "plasma_c.h"
 #include "plasma_z.h"
 
-#endif // PLASMA_H
+#endif // ICL_PLASMA_H

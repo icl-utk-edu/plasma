@@ -11,8 +11,8 @@
  * @date 2016-01-01
  *
  **/
-#ifndef CORE_BLAS_H
-#define CORE_BLAS_H
+#ifndef ICL_CORE_BLAS_H
+#define ICL_CORE_BLAS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -63,4 +63,4 @@ static inline char lapack_const(int plasma_const) {
 #include "core_blas_c.h"
 #include "core_blas_z.h"
 
-#endif // CORE_BLAS_H
+#endif // ICL_CORE_BLAS_H
