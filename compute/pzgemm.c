@@ -8,6 +8,7 @@
  *
  * @version 3.0.0
  * @author Jakub Kurzak
+ * @author Mark Gates
  * @date 2016-01-01
  * @precisions normal z -> s d c
  *
