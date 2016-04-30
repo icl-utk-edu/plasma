@@ -1,6 +1,6 @@
 /**
  *
- * @file context.h
+ * @file plasma_context.h
  *
  *  PLASMA control routines.
  *  PLASMA is a software package provided by Univ. of Tennessee,

@@ -25,7 +25,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_gemm
  *
  *  Performs one of the matrix-matrix operations
  *

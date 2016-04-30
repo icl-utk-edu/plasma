@@ -25,7 +25,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_lacpy
  *
  *  Copies all or part of a two-dimensional matrix A to another matrix B.
  *
@@ -36,11 +36,11 @@
  *          - PlasmaUpper: upper triangle,
  *          - PlasmaLower: lower triangle.
  *
- * @param[in] M
+ * @param[in] m
  *          The number of rows of the matrices A and B.
  *          m >= 0.
  *
- * @param[in] N
+ * @param[in] n
  *          The number of columns of the matrices A and B.
  *          n >= 0.
  *

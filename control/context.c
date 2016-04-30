@@ -1,6 +1,6 @@
 /**
  *
- * @file context.h
+ * @file context.c
  *
  *  PLASMA control routines.
  *  PLASMA is a software package provided by Univ. of Tennessee,
@@ -23,7 +23,10 @@ static int num_contexts = 0;
 plasma_context_map_t *context_map = NULL;
 pthread_mutex_t context_map_lock = PTHREAD_MUTEX_INITIALIZER;
 
-/******************************************************************************/
+/***************************************************************************//**
+    @ingroup plasma_init
+    Initializes PLASMA, allocating its context.
+*/
 int PLASMA_Init()
 {
     pthread_mutex_lock(&context_map_lock);
@@ -45,7 +48,10 @@ int PLASMA_Init()
     return PLASMA_SUCCESS;
 }
 
-/******************************************************************************/
+/***************************************************************************//**
+    @ingroup plasma_init
+    Finalizes PLASMA, freeing its context.
+*/
 int PLASMA_Finalize()
 {
     plasma_context_detach();

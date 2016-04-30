@@ -1,6 +1,6 @@
 /**
  *
- * @file async.h
+ * @file async.c
  *
  *  PLASMA control routines.
  *  PLASMA is a software package provided by Univ. of Tennessee,

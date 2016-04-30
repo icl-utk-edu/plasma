@@ -20,7 +20,12 @@
 #include "plasma_z.h"
 #include "plasma_types.h"
 
-/******************************************************************************/
+/***************************************************************************//**
+    @ingroup plasma_ccrb2cm
+    
+    Convert tiled (CCRB) to column-major (CM) matrix layout.
+    Out-of-place.
+*/
 void PLASMA_zccrb2cm_Async(PLASMA_desc *A, PLASMA_Complex64_t *Af77, int lda,
                            PLASMA_sequence *sequence, PLASMA_request *request)
 {

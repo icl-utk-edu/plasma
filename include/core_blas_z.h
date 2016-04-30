@@ -1,6 +1,6 @@
 /**
  *
- * @file core_blas.h
+ * @file core_blas_z.h
  *
  *  PLASMA header.
  *  PLASMA is a software package provided by Univ. of Tennessee,

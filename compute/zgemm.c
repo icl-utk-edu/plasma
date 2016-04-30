@@ -22,7 +22,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_gemm
  *
  *  Performs one of the matrix-matrix operations
  *
@@ -296,7 +296,7 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t_Tile_Async
+ * @ingroup plasma_gemm
  *
  *  Performs matrix multiplication.
  *  Non-blocking tile version of PLASMA_zgemm().

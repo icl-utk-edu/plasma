@@ -1,6 +1,6 @@
 /**
  *
- * @file plasmatypes.h
+ * @file plasma_types.h
  *
  *  PLASMA header.
  *  PLASMA is a software package provided by Univ. of Tennessee,

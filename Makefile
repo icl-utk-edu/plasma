@@ -4,6 +4,7 @@
 #   make lib        --  make lib/libplasma.a lib/libcoreblas.a
 #   make shared     --  make lib/libplasma.so lib/libcoreblas.so
 #   make test       --  make test/test
+#   make docs       --  make docs/html
 #   make generate   --  generate precisions
 #   make clean      --  remove objects, libraries, and executables
 #   make cleangen   --  remove generated precision files
@@ -157,7 +158,18 @@ $(test_exe): $(test_obj) $(libs) Makefile.test.gen
 
 
 # ----------------------------------------
+# Build documentation
+
+.PHONY: docs
+
+docs:
+	doxygen docs/doxygen/doxyfile.conf
+
+
+# ----------------------------------------
 # Install
+
+.PHONY: install_dirs install
 
 install_dirs:
 	mkdir -p $(prefix)
@@ -190,10 +202,10 @@ clean:
 # cleangen removes generated files if the template still exists;
 # grep for any stale generated files without a template.
 distclean: clean cleangen
-	@echo "src $(plasma_src) $(coreblas_src) $(test_src)"
 	grep -l @generated $(plasma_src) $(coreblas_src) $(test_src) | xargs rm
 	-rm -f compute/*.o control/*.o core_blas/*.o test/*.o
 	-rm -f $(makefiles_gen)
+	-rm -f docs/html
 
 
 # ----------------------------------------

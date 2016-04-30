@@ -1,6 +1,6 @@
 /**
  *
- * @file context.h
+ * @file plasma_descriptor.h
  *
  *  PLASMA control routines.
  *  PLASMA is a software package provided by Univ. of Tennessee,
@@ -24,18 +24,20 @@ extern "C" {
 #endif
 
 /***************************************************************************//**
- *  Tile matrix descriptor.
+ * @ingroup plasma_descriptor
  *
- *           n1      n2
- *      +----------+---+
- *      |          |   |    m1 = lm - (lm%mb)
- *      |          |   |    m2 = lm%mb
- *  m1  |    A11   |A12|    n1 = ln - (ln%nb)
- *      |          |   |    n2 = ln%nb
- *      |          |   |
- *      +----------+---+
- *  m2  |    A21   |A22|
- *      +----------+---+
+ * Tile matrix descriptor.
+ *
+ *              n1      n2
+ *         +----------+---+
+ *         |          |   |    m1 = lm - (lm%mb)
+ *         |          |   |    m2 = lm%mb
+ *     m1  |    A11   |A12|    n1 = ln - (ln%nb)
+ *         |          |   |    n2 = ln%nb
+ *         |          |   |
+ *         +----------+---+
+ *     m2  |    A21   |A22|
+ *         +----------+---+
  *
  **/
 typedef struct {

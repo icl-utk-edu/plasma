@@ -1,6 +1,6 @@
 /**
  *
- * @file internal.h
+ * @file plasma_internal_z.h
  *
  *  PLASMA control routines.
  *  PLASMA is a software package provided by Univ. of Tennessee,
