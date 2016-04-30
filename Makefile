@@ -205,7 +205,7 @@ distclean: clean cleangen
 	grep -l @generated $(plasma_src) $(coreblas_src) $(test_src) | xargs rm
 	-rm -f compute/*.o control/*.o core_blas/*.o test/*.o
 	-rm -f $(makefiles_gen)
-	-rm -f docs/html
+	-rm -rf docs/html
 
 
 # ----------------------------------------
