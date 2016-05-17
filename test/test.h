@@ -8,7 +8,8 @@
  *
  * @version 3.0.0
  * @author Jakub Kurzak
- * @date 2016-01-01
+ * @author Samuel D. Relton
+ * @date 2016-05-16
  *
  **/
 #ifndef TEST_H
@@ -29,6 +30,8 @@ typedef enum {
     PARAM_TOL,    // tolerance
     PARAM_TRANSA, // transposition of A
     PARAM_TRANSB, // transposition of B
+	PARAM_SIDE,   // side of A
+	PARAM_UPLO,   // Upper or lower triangular
     PARAM_M,      // M dimension
     PARAM_N,      // N dimension
     PARAM_K,      // K dimension
@@ -63,6 +66,8 @@ static const char *ParamUsage[][2] = {
     {"--tol=", "tolerance [default: 50]"},
     {"--transa=[n|t|c]", "transposition of A [default: n]"},
     {"--transb=[n|t|c]", "transposition of B [default: n]"},
+	{"--side=[l|r]", "side of A [default: n]"},
+	{"--uplo=[u|l]", "upper or lower triangular matrix [default: l]"},
     {"--m=", "M dimension (number of rows) [default: 1000]"},
     {"--n=", "N dimension (number of columns) [default: 1000]"},
     {"--k=", "K dimension (number of rows or columns) [default: 1000]"},

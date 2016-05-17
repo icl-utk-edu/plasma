@@ -392,6 +392,10 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_char('n', &param[PARAM_TRANSA]);
     if (param[PARAM_TRANSB].num == 0)
         param_add_char('n', &param[PARAM_TRANSB]);
+	if (param[PARAM_SIDE].num == 0)
+		param_add_char('l', &param[PARAM_SIDE]);
+	if (param[PARAM_UPLO].num == 0)
+		param_add_char('l', &param[PARAM_UPLO]);
 
     //--------------------------------------------------
     // Set integer parameters.

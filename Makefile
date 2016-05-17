@@ -36,7 +36,7 @@ LDFLAGS   ?= -fopenmp
 INC       ?= -I$(LAPACKDIR)/LAPACKE/include -I$(CBLASDIR)/include
 LIBS      ?= -L$(LAPACKDIR) -llapack -llapacke -L$(CBLASDIR)/lib -lcblas -lblas
 
-prefix    ?= /usr/local/plasma
+prefix    ?= build
 
 
 # ----------------------------------------
