@@ -4,7 +4,8 @@
  *
  *  PLASMA header.
  *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver.
+ *  Univ. of Manchester, Univ. of California Berkeley and
+ *  Univ. of Colorado Denver.
  *
  * @version 3.0.0
  * @author Jakub Kurzak
@@ -36,6 +37,13 @@ void CORE_zsymm(
                                const PLASMA_Complex64_t *B, int ldb,
     PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc);
 
+void CORE_zhemm(
+    PLASMA_enum side, PLASMA_enum uplo,
+    int m, int n,
+    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+                               const PLASMA_Complex64_t *B, int ldb,
+    PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc);
+
 void CORE_zlacpy(
     PLASMA_enum uplo,
     int m, int n,
@@ -50,7 +58,6 @@ void CORE_OMP_zgemm(
                                const PLASMA_Complex64_t *B, int ldb,
     PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc);
 
-
 void CORE_OMP_zsymm(
     PLASMA_enum side, PLASMA_enum uplo,
     int m, int n,
@@ -58,6 +65,12 @@ void CORE_OMP_zsymm(
                                const PLASMA_Complex64_t *B, int ldb,
     PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc);
 
+void CORE_OMP_zhemm(
+    PLASMA_enum side, PLASMA_enum uplo,
+    int m, int n,
+    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+                               const PLASMA_Complex64_t *B, int ldb,
+    PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc);
 
 void CORE_OMP_zlacpy(
     PLASMA_enum uplo,

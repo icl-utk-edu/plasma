@@ -1,0 +1,134 @@
+/**
+ *
+ * @file core_zhemm.c
+ *
+ *  PLASMA core_blas kernel.
+ *  PLASMA is a software package provided by Univ. of Tennessee,
+ *  Univ. of Manchester, Univ. of California Berkeley and
+ *  Univ. of Colorado Denver
+ *
+ * @version 3.0.0
+ * @author Samuel D. Relton
+ * @date 2016-05-17
+ * @precisions normal z -> c
+ *
+ **/
+
+#include "core_blas.h"
+#include "plasma_types.h"
+
+#ifdef PLASMA_WITH_MKL
+    #include <mkl.h>
+#else
+    #include <cblas.h>
+    #include <lapacke.h>
+#endif
+
+/***************************************************************************//**
+ *
+ * @ingroup core_hemm
+ *
+ *  Performs one of the matrix-matrix operations
+ *
+ *     \f[ C = \alpha \times A \times B + \beta \times C \f]
+ *
+ *  or
+ *
+ *     \f[ C = \alpha \times B \times A + \beta \times C \f]
+ *
+ *  where alpha and beta are scalars, A is an hemmetric matrix and  B and
+ *  C are m by n matrices.
+ *
+ *******************************************************************************
+ *
+ * @param[in] side
+ *          Specifies whether the hemmetric matrix A appears on the
+ *          left or right in the operation as follows:
+ *          - PlasmaLeft:      \f[ C = \alpha \times A \times B + \beta \times C \f]
+ *          - PlasmaRight:     \f[ C = \alpha \times B \times A + \beta \times C \f]
+ *
+ * @param[in] uplo
+ *          Specifies whether the upper or lower triangular part of
+ *          the hemmetric matrix A is to be referenced as follows:
+ *          = PlasmaLower:     Only the lower triangular part of the
+ *                             hemmetric matrix A is to be referenced.
+ *          = PlasmaUpper:     Only the upper triangular part of the
+ *                             hemmetric matrix A is to be referenced.
+ *
+ * @param[in] m
+ *          Specifies the number of rows of the matrix C. M >= 0.
+ *
+ * @param[in] n
+ *          Specifies the number of columns of the matrix C. N >= 0.
+ *
+ * @param[in] alpha
+ *          Specifies the scalar alpha.
+ *
+ * @param[in] A
+ *          A is a LDA-by-ka matrix, where ka is M when side = PlasmaLeft,
+ *          and is N otherwise. Only the uplo triangular part is referenced.
+ *
+ * @param[in] lda
+ *          The leading dimension of the array A. LDA >= max(1,ka).
+ *
+ * @param[in] B
+ *          B is a LDB-by-N matrix, where the leading M-by-N part of
+ *          the array B must contain the matrix B.
+ *
+ * @param[in] ldb
+ *          The leading dimension of the array B. LDB >= max(1,M).
+ *
+ * @param[in] beta
+ *          Specifies the scalar beta.
+ *
+ * @param[in,out] C
+ *          C is a LDC-by-N matrix.
+ *          On exit, the array is overwritten by the M by N updated matrix.
+ *
+ * @param[in] ldc
+ *          The leading dimension of the array C. LDC >= max(1,M).
+ *
+ ******************************************************************************/
+void CORE_zhemm(PLASMA_enum side, PLASMA_enum uplo,
+                int m, int n,
+                PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+                const PLASMA_Complex64_t *B, int ldb,
+                PLASMA_Complex64_t beta, PLASMA_Complex64_t *C, int ldc)
+{
+    cblas_zhemm(
+        CblasColMajor,
+        (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
+        m, n,
+        CBLAS_SADDR(alpha), A, lda,
+        B, ldb,
+        CBLAS_SADDR(beta), C, ldc);
+}
+/******************************************************************************/
+void CORE_OMP_zhemm(
+	PLASMA_enum side, PLASMA_enum uplo,
+                int m, int n,
+                PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+                const PLASMA_Complex64_t *B, int ldb,
+                PLASMA_Complex64_t beta, PLASMA_Complex64_t *C, int ldc)
+{
+	if (side == PlasmaLeft)
+	{
+#pragma omp task depend(in:A[0:m*m]) depend(in:B[0:m*n]) depend(inout:C[0:m*n])
+	CORE_zhemm(
+		side, uplo,
+		m, n,
+		alpha, A, lda,
+		       B, ldb,
+		beta,  C, ldc);
+	}
+	else
+	{
+#pragma omp task depend(in:A[0:n*n]) depend(in:B[0:m*n]) depend(inout:C[0:m*n])
+	CORE_zhemm(
+		side, uplo,
+		m, n,
+		alpha, A, lda,
+		       B, ldb,
+		beta,  C, ldc);
+	}
+}

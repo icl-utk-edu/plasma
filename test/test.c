@@ -4,11 +4,13 @@
  *
  *  PLASMA testing harness.
  *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver.
+ *  Univ. of Manchester, Univ. of California Berkeley and
+ *  Univ. of Colorado Denver.
  *
  * @version 3.0.0
  * @author Jakub Kurzak
- * @date 2016-01-01
+ * @author Samuel D. Relton
+ * @date 2016-05-17
  *
  **/
 #include "test.h"
@@ -257,6 +259,10 @@ void run_routine(const char *name, param_value_t pval[], char *info)
     else if (strcmp(name, "ssymm") == 0)
         test_ssymm(pval, info);
 
+	else if (strcmp(name, "zhemm") == 0)
+		test_zhemm(pval, info);
+	else if (strcmp(name, "chemm") == 0)
+		test_chemm(pval, info);
     // -----
     else {
         printf("unknown routine: %s\n", name);

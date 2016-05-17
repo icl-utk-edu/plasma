@@ -1,6 +1,6 @@
 /**
  *
- * @file zsymm.c
+ * @file zhemm.c
  *
  *  PLASMA computational routine.
  *  PLASMA is a software package provided by Univ. of Tennessee,
@@ -9,8 +9,8 @@
  *
  * @version 3.0.0
  * @author Samuel D. Relton
- * @date 2016-05-16
- * @precisions normal z -> s d c
+ * @date 2016-05-17
+ * @precisions normal z -> c
  *
  **/
 
@@ -23,7 +23,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup plasma_symm
+ * @ingroup plasma_hemm
  *
  *  Performs one of the matrix-matrix operations
  *
@@ -33,24 +33,24 @@
  *
  *     \f[ C = \alpha \times B \times A + \beta \times C \f]
  *
- *  where alpha and beta are scalars, A is an symmetric matrix and  B and
+ *  where alpha and beta are scalars, A is an hemmetric matrix and  B and
  *  C are m by n matrices.
  *
  *******************************************************************************
  *
  * @param[in] side
- *          Specifies whether the symmetric matrix A appears on the
+ *          Specifies whether the hemmetric matrix A appears on the
  *          left or right in the operation as follows:
  *          - PlasmaLeft:      \f[ C = \alpha \times A \times B + \beta \times C \f]
  *          - PlasmaRight:     \f[ C = \alpha \times B \times A + \beta \times C \f]
  *
  * @param[in] uplo
  *          Specifies whether the upper or lower triangular part of
- *          the symmetric matrix A is to be referenced as follows:
+ *          the hemmetric matrix A is to be referenced as follows:
  *          - PlasmaLower:     Only the lower triangular part of the
- *                             symmetric matrix A is to be referenced.
+ *                             hemmetric matrix A is to be referenced.
  *          - PlasmaUpper:     Only the upper triangular part of the
- *                             symmetric matrix A is to be referenced.
+ *                             hemmetric matrix A is to be referenced.
  *
  * @param[in] m
  *          Specifies the number of rows of the matrix C. M >= 0.
@@ -91,13 +91,13 @@
  *
  *******************************************************************************
  *
- * @sa PLASMA_zsymm_Tile_Async
- * @sa PLASMA_csymm
- * @sa PLASMA_dsymm
- * @sa PLASMA_ssymm
+ * @sa PLASMA_zhemm_Tile_Async
+ * @sa PLASMA_chemm
+ * @sa PLASMA_dhemm
+ * @sa PLASMA_shemm
  *
  ******************************************************************************/
-int PLASMA_zsymm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
+int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
                  PLASMA_Complex64_t alpha, PLASMA_Complex64_t *A, int lda,
                                            PLASMA_Complex64_t *B, int ldb,
                  PLASMA_Complex64_t beta,  PLASMA_Complex64_t *C, int ldc)
@@ -241,7 +241,7 @@ int PLASMA_zsymm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
 
         // Call the tile async function.
         if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_zsymm_Tile_Async(side, uplo,
+            PLASMA_zhemm_Tile_Async(side, uplo,
                                     alpha, &descA,
                                     &descB,
                                     beta, &descC,
@@ -270,10 +270,10 @@ int PLASMA_zsymm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
 
 /***************************************************************************//**
  *
- * @ingroup plasma_symm
+ * @ingroup plasma_hemm
  *
- *  Performs symmetric matrix multiplication.
- *  Non-blocking equivalent of PLASMA_zsymm_Tile().
+ *  Performs hemmetric matrix multiplication.
+ *  Non-blocking equivalent of PLASMA_zhemm_Tile().
  *  May return before the computation is finished.
  *  Allows for pipelining of operations at runtime.
  *
@@ -288,14 +288,14 @@ int PLASMA_zsymm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
  *
  *******************************************************************************
  *
- * @sa PLASMA_zsymm
- * @sa PLASMA_zsymm_Tile
- * @sa PLASMA_csymm_Tile_Async
- * @sa PLASMA_dsymm_Tile_Async
- * @sa PLASMA_ssymm_Tile_Async
+ * @sa PLASMA_zhemm
+ * @sa PLASMA_zhemm_Tile
+ * @sa PLASMA_chemm_Tile_Async
+ * @sa PLASMA_dhemm_Tile_Async
+ * @sa PLASMA_shemm_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zsymm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
+void PLASMA_zhemm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
                             PLASMA_Complex64_t alpha, PLASMA_desc *A, PLASMA_desc *B,
                             PLASMA_Complex64_t beta,  PLASMA_desc *C,
                             PLASMA_sequence *sequence, PLASMA_request *request)
@@ -389,7 +389,7 @@ void PLASMA_zsymm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
 		return;
 
 	// Call the parallel function.
-	plasma_pzsymm(side, uplo,
+	plasma_pzhemm(side, uplo,
 				  alpha, *A,
 				         *B,
 				  beta,  *C,
