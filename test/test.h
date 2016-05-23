@@ -29,6 +29,8 @@ typedef enum {
     PARAM_TOL,    // tolerance
     PARAM_TRANSA, // transposition of A
     PARAM_TRANSB, // transposition of B
+    PARAM_TRANS,  // matrix transposition
+    PARAM_UPLO,   // matrix position
     PARAM_M,      // M dimension
     PARAM_N,      // N dimension
     PARAM_K,      // K dimension
@@ -63,6 +65,8 @@ static const char *ParamUsage[][2] = {
     {"--tol=", "tolerance [default: 50]"},
     {"--transa=[n|t|c]", "transposition of A [default: n]"},
     {"--transb=[n|t|c]", "transposition of B [default: n]"},
+    {"--trans=[n|t|c]", "matrix transposition [default: n]"},
+    {"--uplo=[u|l]", "matrix transposition [default: l]"},
     {"--m=", "M dimension (number of rows) [default: 1000]"},
     {"--n=", "N dimension (number of columns) [default: 1000]"},
     {"--k=", "K dimension (number of rows or columns) [default: 1000]"},

@@ -4,11 +4,16 @@
  *
  *  PLASMA control routines.
  *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver.
+ *  Univ. of California Berkeley, Univ. of Colorado Denver and
+ *  Univ. of Manchester.
  *
  * @version 3.0.0
  * @author Jakub Kurzak
- * @date 2016-01-01
+ * @author Mawussi Zounon
+ * @author Pedro V. Lara
+ * @author Maksims Abalenkovs 
+ * @author Samuel D. Relton
+ * @date 2016-05-11
  * @precisions normal z -> s d c
  *
  **/
@@ -29,6 +34,18 @@ void plasma_pzgemm(
     PLASMA_Complex64_t alpha, PLASMA_desc A,
                               PLASMA_desc B,
     PLASMA_Complex64_t beta,  PLASMA_desc C,
+    PLASMA_sequence *sequence, PLASMA_request *request);
+
+void plasma_pzsyrk(
+    PLASMA_enum uplo, PLASMA_enum trans,
+    PLASMA_Complex64_t alpha, PLASMA_desc A,
+    PLASMA_Complex64_t beta,  PLASMA_desc C,
+    PLASMA_sequence *sequence, PLASMA_request *request);
+
+void plasma_pzherk(
+    PLASMA_enum uplo, PLASMA_enum trans,
+    double alpha, PLASMA_desc A,
+    double beta,  PLASMA_desc C,
     PLASMA_sequence *sequence, PLASMA_request *request);
 
 void plasma_pzooccrb2cm(
