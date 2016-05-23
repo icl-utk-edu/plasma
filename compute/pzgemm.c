@@ -44,7 +44,7 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
         return;
 
     int innerK = (transA == PlasmaNoTrans ? A.n : A.m);
-    
+
     for (m = 0; m < C.mt; m++) {
         tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
         ldcm = BLKLDD(C, m);
