@@ -331,12 +331,12 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--test="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TEST]);
 
+        else if (param_starts_with(argv[i], "--trans="))
+            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANS]);
         else if (param_starts_with(argv[i], "--transa="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANSA]);
         else if (param_starts_with(argv[i], "--transb="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANSB]);
-        else if (param_starts_with(argv[i], "--trans="))
-            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANS]);
         else if (param_starts_with(argv[i], "--uplo="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_UPLO]);
 
@@ -407,13 +407,12 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_char('n', &param[PARAM_OUTER]);
     if (param[PARAM_TEST].num == 0)
         param_add_char('y', &param[PARAM_TEST]);
-
+    if (param[PARAM_TRANS].num == 0)
+        param_add_char('n', &param[PARAM_TRANS]);
     if (param[PARAM_TRANSA].num == 0)
         param_add_char('n', &param[PARAM_TRANSA]);
     if (param[PARAM_TRANSB].num == 0)
         param_add_char('n', &param[PARAM_TRANSB]);
-    if (param[PARAM_TRANS].num == 0)
-        param_add_char('n', &param[PARAM_TRANS]);
     if (param[PARAM_UPLO].num == 0)
         param_add_char('l', &param[PARAM_UPLO]);
 

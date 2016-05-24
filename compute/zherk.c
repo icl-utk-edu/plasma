@@ -9,7 +9,7 @@
  *
  * @version 3.0.0
  * @author Pedro V. Lara
- * @date 2016-05-16
+ * @date 2016-05-24
  * @precisions normal z -> c
  *
  **/
@@ -27,13 +27,11 @@
  *
  *  Performs one of the hermitian rank k operations
  *
- *    \f[ C = \alpha [ op( A ) \times conjg( op( A )' )] + \beta C \f],
+ *    \f[ C = \alpha A \times A^H + \beta C \f],
+ *    or
+ *    \f[ C = \alpha A^H \times A + \beta C \f],
  *
- *  where op( X ) is one of
- *
- *    op( X ) = X  or op( X ) = conjg( X' )
- *
- *  where alpha and beta are real scalars, C is an n-by-n hermitian
+ *  alpha and beta are real scalars, C is an n-by-n hermitian
  *  matrix and A is an n-by-k matrix in the first case and a k-by-n
  *  matrix in the second case.
  *
@@ -44,18 +42,18 @@
  *          - PlasmaLower: Lower triangle of C is stored.
  *
  * @param[in] trans
- *          Specifies whether the matrix A is transposed or conjugate transposed:
  *          - PlasmaNoTrans:   A is not transposed;
  *          - PlasmaConjTrans: A is conjugate transposed.
  *
  * @param[in] n
- *          The number of n specifies the order of the matrix C. n must be at least zero.
+ *          The order of the matrix C. 
+ *          n >= 0.
  *
  * @param[in] k
- *          The number of k specifies the number of columns of the matrix op( A ).
+ *          The number of columns of the matrix op( A ).
  *
  * @param[in] alpha
- *          The number of alpha specifies the scalar alpha.
+ *          The scalar alpha.
  *
  * @param[in] A
  *          A is a lda-by-ka matrix, where ka is k when trans = PlasmaNoTrans,
@@ -63,8 +61,8 @@
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda must be at least
- *          max( 1, n ) if trans == PlasmaNoTrans, otherwise lda must
- *          be at least max( 1, k ).
+ *          max(1, n) if trans == PlasmaNoTrans, otherwise lda must
+ *          be at least max(1, k).
  *
  * @param[in] beta
  *          beta specifies the scalar beta
@@ -75,7 +73,7 @@
  *          by the uplo part of the updated matrix.
  *
  * @param[in] ldc
- *          The leading dimension of the array C. ldc >= max( 1, n ).
+ *          The leading dimension of the array C. ldc >= max(1, n).
  *
  *******************************************************************************
  *
@@ -109,17 +107,20 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
     }
 
     // Check input arguments.
-    if ((uplo != PlasmaUpper) && (uplo != PlasmaLower)) {
+    if ((uplo != PlasmaUpper) && 
+        (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
         return -1;
     }
-    if ((trans != PlasmaNoTrans) && (trans != PlasmaConjTrans)) {
+    if ((trans != PlasmaNoTrans) && 
+        (trans != PlasmaConjTrans)) {
         plasma_error("illegal value of trans");
         return -2;
     }
-    if ( trans == PlasmaNoTrans ) {
+    if (trans == PlasmaNoTrans) {
         Am = n; An = k;
-    } else {
+    } 
+    else {
         Am = k; An = n;
     }
     if (n < 0) {
@@ -139,7 +140,7 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
         return -10;
     }
 
-    /* Quick return */
+    // quick return
     if (n == 0 ||
         ((alpha == 0.0 || k == 0.0) && beta == 1.0))
         return PLASMA_SUCCESS;
@@ -154,7 +155,6 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
     
     /* Set NT & KT */
     nb = plasma->nb;
-
     // Initialize tile matrix descriptors.
     descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
                              nb*nb, Am, An, 0, 0, Am, An);
@@ -211,7 +211,7 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
         // Translate back to LAPACK layout.
         if (sequence->status == PLASMA_SUCCESS) 
             PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
-    } /* pragma omp parallel block closed  */
+    } // pragma omp parallel block closed 
 
     // Check for errors in the async execution
     if (sequence->status != PLASMA_SUCCESS)
@@ -232,10 +232,12 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
  * @ingroup PLASMA_Complex64_t_Tile_Async
  *
  *  Performs rank-k update.
- *  Tile equivalent of PLASMA_zherk().
+ *  Non-blocking tile version of PLASMA_zherk().
+ *  May return before the computation is finished.
  *  Operates on matrices stored by tiles.
  *  All matrices are passed through descriptors.
  *  All dimensions are taken from the descriptors.
+ *  Allows for pipelining of operations at runtime.
  *
  *******************************************************************************
  *
@@ -244,9 +246,8 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
  *          - PlasmaLower: Lower triangle of C is stored.
  *
  * @param[in] trans
- *          Specifies whether the matrix A is transposed or conjugate transposed:
  *          - PlasmaNoTrans:   A is not transposed;
- *          - PlasmaConjTrans: A is conjugated transposed.
+ *          - PlasmaConjTrans: A is conjugate transposed.
  *
  * @param[in] alpha
  *          The scalar alpha.

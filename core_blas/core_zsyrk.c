@@ -9,7 +9,7 @@
  *
  * @version 3.0.0
  * @author Pedro V. Lara
- * @date 2016-05-11
+ * @date 2016-05-24
  * @precisions normal z -> c d s
  *
  **/
@@ -30,13 +30,11 @@
  *
  *  Performs one of the symmetric rank k operations
  *
- *    \f[ C = \alpha [ op( A ) \times conjg( op( A )' )] + \beta C \f],
+ *    \f[ C = \alpha A \times A^T + \beta C \f],
+ *    or
+ *    \f[ C = \alpha A^T \times A + \beta C \f],
  *
- *  where op( X ) is one of
- *
- *    op( X ) = X  or op( X ) = conjg( X' )
- *
- *  where alpha and beta are real scalars, C is an n-by-n symmetric
+ *  alpha and beta are real scalars, C is an n-by-n symmetric
  *  matrix and A is an n-by-k matrix in the first case and a k-by-n
  *  matrix in the second case.
  *
@@ -47,18 +45,17 @@
  *          - PlasmaLower: Lower triangle of C is stored.
  *
  * @param[in] trans
- *          Specifies whether the matrix A is transposed or conjugate transposed:
  *          - PlasmaNoTrans:   A is not transposed;
  *          - PlasmaTrans  :   A is transposed.
  *
  * @param[in] n
- *          The number of n specifies the order of the matrix C. n must be at least zero.
+ *          The order of the matrix C. n >= 0.
  *
  * @param[in] k
- *          The number of k specifies the number of columns of the matrix op( A ).
+ *          The number of columns of the matrix op( A ).
  *
  * @param[in] alpha
- *          alpha specifies the scalar alpha.
+ *          The scalar alpha.
  *
  * @param[in] A
  *          A is a lda-by-ka matrix, where ka is k when trans = PlasmaNoTrans,
@@ -66,7 +63,7 @@
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda must be at least
- *          max( 1, n ) if trans == PlasmaNoTrans, otherwise lda must
+ *          max(1, n) if trans == PlasmaNoTrans, otherwise lda must
  *          be at least max( 1, k ).
  *
  * @param[in] beta
@@ -89,20 +86,15 @@ void CORE_zsyrk(
     PLASMA_Complex64_t beta,  
     PLASMA_Complex64_t *C, int ldc)
 {
-
     cblas_zsyrk(
         CblasColMajor,
         (CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)trans,
         n, k,
-        CBLAS_SADDR(alpha), 
-	    A, lda,
-        CBLAS_SADDR(beta), 
-	    C, ldc);
-
+        CBLAS_SADDR(alpha), A, lda,
+        CBLAS_SADDR(beta), C, ldc);
 }
 
 /******************************************************************************/
-
 void CORE_OMP_zsyrk(
     PLASMA_enum uplo, PLASMA_enum trans, 
     int n, int k,
@@ -119,5 +111,4 @@ void CORE_OMP_zsyrk(
         n, k,
         alpha, A, lda,
         beta, C, ldc);
-
 }

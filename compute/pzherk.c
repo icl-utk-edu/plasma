@@ -9,7 +9,7 @@
  *
  * @version 3.0.0
  * @author Pedro V. Lara
- * @date 2016-05-16
+ * @date 2016-05-24
  * @precisions normal z -> c
  *
  **/
@@ -31,7 +31,6 @@ void plasma_pzherk(PLASMA_enum uplo, PLASMA_enum trans,
                    double beta,  PLASMA_desc C,
                    PLASMA_sequence *sequence, PLASMA_request *request)
 {
-
     int m, n, k;
     int ldak, ldam, ldan, ldcm, ldcn;
     int tempnn, tempmm, tempkn, tempkm;
@@ -41,14 +40,14 @@ void plasma_pzherk(PLASMA_enum uplo, PLASMA_enum trans,
 
     if (sequence->status != PLASMA_SUCCESS)
         return;
-    
+        
     for (n = 0; n < C.nt; n++) {
         tempnn = n == C.nt-1 ? C.n-n*C.nb : C.nb;
         ldan = BLKLDD(A, n);
         ldcn = BLKLDD(C, n);
-        /*
-         *  PlasmaNoTrans
-         */
+        //=======================================
+        // PlasmaNoTrans
+        //=======================================
         if (trans == PlasmaNoTrans) {
             for (k = 0; k < A.nt; k++) {
                 tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
@@ -56,12 +55,12 @@ void plasma_pzherk(PLASMA_enum uplo, PLASMA_enum trans,
                 CORE_OMP_zherk(
                     uplo, trans,
                     tempnn, tempkn,
-                    alpha, A(n, k), ldan, /* ldan * K */
-                    zbeta, C(n, n), ldcn); /* ldc  * N */
+                    alpha, A(n, k), ldan, 
+                    zbeta, C(n, n), ldcn); 
             }
-            /*
-             *  PlasmaNoTrans / PlasmaLower
-             */
+            //=======================================
+            // PlasmaNoTrans / PlasmaLower
+            //=======================================
             if (uplo == PlasmaLower) {
                 for (m = n+1; m < C.mt; m++) {
                     tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
@@ -73,15 +72,15 @@ void plasma_pzherk(PLASMA_enum uplo, PLASMA_enum trans,
                         CORE_OMP_zgemm(
                             trans, PlasmaConjTrans,
                             tempmm, tempnn, tempkn,
-                            alpha, A(m, k), ldam,  /* ldam * K */
-                                   A(n, k), ldan,  /* ldan * K */
-                            zbeta, C(m, n), ldcm); /* ldc  * N */
+                            alpha, A(m, k), ldam, 
+                                   A(n, k), ldan,  
+                            zbeta, C(m, n), ldcm); 
                     }
                 }
             }
-            /*
-             *  PlasmaNoTrans / PlasmaUpper
-             */
+            //=======================================
+            // PlasmaNoTrans / PlasmaUpper
+            //=======================================
             else {
                 for (m = n+1; m < C.mt; m++) {
                     tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
@@ -92,16 +91,16 @@ void plasma_pzherk(PLASMA_enum uplo, PLASMA_enum trans,
                         CORE_OMP_zgemm(
                             trans, PlasmaConjTrans,
                             tempnn, tempmm, tempkn,
-                            alpha, A(n, k), ldan,  /* ldan * K */
-                                   A(m, k), ldam,  /* ldam * M */
-                            zbeta, C(n, m), ldcn); /* ldc  * M */
+                            alpha, A(n, k), ldan,  
+                                   A(m, k), ldam,  
+                            zbeta, C(n, m), ldcn); 
                     }
                 }
             }
         }
-        /*
-         *  Plasma[Conj]Trans
-         */
+        //=======================================
+        // Plasma[Conj]Trans
+        //=======================================
         else {
             for (k = 0; k < A.mt; k++) {
                 tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
@@ -110,12 +109,12 @@ void plasma_pzherk(PLASMA_enum uplo, PLASMA_enum trans,
                 CORE_OMP_zherk(
                     uplo, trans,
                     tempnn, tempkm,
-                    alpha, A(k, n), ldak,  /* lda * N */
-                    zbeta, C(n, n), ldcn); /* ldc * N */
+                    alpha, A(k, n), ldak,  
+                    zbeta, C(n, n), ldcn); 
             }
-            /*
-             *  Plasma[Conj]Trans / PlasmaLower
-             */
+            //=======================================
+            // Plasma[Conj]Trans / PlasmaLower
+            //=======================================
             if (uplo == PlasmaLower) {
                 for (m = n+1; m < C.mt; m++) {
                     tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
@@ -127,15 +126,15 @@ void plasma_pzherk(PLASMA_enum uplo, PLASMA_enum trans,
                         CORE_OMP_zgemm(
                             trans, PlasmaNoTrans,
                             tempmm, tempnn, tempkm,
-                            alpha, A(k, m), ldak,  /* lda * M */
-                                   A(k, n), ldak,  /* lda * N */
-                            zbeta, C(m, n), ldcm); /* ldc * N */
+                            alpha, A(k, m), ldak,  
+                                   A(k, n), ldak,  
+                            zbeta, C(m, n), ldcm); 
                     }
                 }
             }
-            /*
-             *  Plasma[Conj]Trans / PlasmaUpper
-             */
+            //=======================================
+            // Plasma[Conj]Trans / PlasmaUpper
+            //=======================================
             else {
                 for (m = n+1; m < C.mt; m++) {
                     tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
@@ -146,13 +145,12 @@ void plasma_pzherk(PLASMA_enum uplo, PLASMA_enum trans,
                         CORE_OMP_zgemm(
                             trans, PlasmaNoTrans,
                             tempnn, tempmm, tempkm,
-                            alpha, A(k, n), ldak,  /* lda * K */
-                                   A(k, m), ldak,  /* lda * M */
-                            zbeta, C(n, m), ldcn); /* ldc * M */
+                            alpha, A(k, n), ldak,  
+                                   A(k, m), ldak,  
+                            zbeta, C(n, m), ldcn); 
                     }
                 }
             }
         }
     }
-
 }

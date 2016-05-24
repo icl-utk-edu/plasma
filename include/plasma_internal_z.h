@@ -13,7 +13,7 @@
  * @author Pedro V. Lara
  * @author Maksims Abalenkovs 
  * @author Samuel D. Relton
- * @date 2016-05-11
+ * @date 2016-05-24
  * @precisions normal z -> s d c
  *
  **/
@@ -36,16 +36,16 @@ void plasma_pzgemm(
     PLASMA_Complex64_t beta,  PLASMA_desc C,
     PLASMA_sequence *sequence, PLASMA_request *request);
 
-void plasma_pzsyrk(
-    PLASMA_enum uplo, PLASMA_enum trans,
-    PLASMA_Complex64_t alpha, PLASMA_desc A,
-    PLASMA_Complex64_t beta,  PLASMA_desc C,
-    PLASMA_sequence *sequence, PLASMA_request *request);
-
 void plasma_pzherk(
     PLASMA_enum uplo, PLASMA_enum trans,
     double alpha, PLASMA_desc A,
     double beta,  PLASMA_desc C,
+    PLASMA_sequence *sequence, PLASMA_request *request);
+
+void plasma_pzsyrk(
+    PLASMA_enum uplo, PLASMA_enum trans,
+    PLASMA_Complex64_t alpha, PLASMA_desc A,
+    PLASMA_Complex64_t beta,  PLASMA_desc C,
     PLASMA_sequence *sequence, PLASMA_request *request);
 
 void plasma_pzooccrb2cm(

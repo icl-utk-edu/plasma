@@ -27,9 +27,9 @@ typedef enum {
     PARAM_OUTER,  // outer product iteration?
     PARAM_TEST,   // test the solution?
     PARAM_TOL,    // tolerance
+    PARAM_TRANS,  // matrix transposition
     PARAM_TRANSA, // transposition of A
     PARAM_TRANSB, // transposition of B
-    PARAM_TRANS,  // matrix transposition
     PARAM_UPLO,   // matrix position
     PARAM_M,      // M dimension
     PARAM_N,      // N dimension
@@ -63,9 +63,9 @@ static const char *ParamUsage[][2] = {
     {"--outer=[y|n]", "outer product iteration [default: n]"},
     {"--test=[y|n]", "test the solution [default: y]"},
     {"--tol=", "tolerance [default: 50]"},
+    {"--trans=[n|t|c]", "matrix transposition [default: n]"},
     {"--transa=[n|t|c]", "transposition of A [default: n]"},
     {"--transb=[n|t|c]", "transposition of B [default: n]"},
-    {"--trans=[n|t|c]", "matrix transposition [default: n]"},
     {"--uplo=[u|l]", "matrix transposition [default: l]"},
     {"--m=", "M dimension (number of rows) [default: 1000]"},
     {"--n=", "N dimension (number of columns) [default: 1000]"},

@@ -30,20 +30,20 @@ void CORE_zgemm(
                               const PLASMA_Complex64_t *B, int ldb,
     PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc);
 
-void CORE_zsyrk(
-    PLASMA_enum uplo, PLASMA_enum trans, 
-    int n, int k,
-    PLASMA_Complex64_t alpha, 
-    const PLASMA_Complex64_t *A, int lda,
-    PLASMA_Complex64_t beta,  
-    PLASMA_Complex64_t *C, int ldc);
-
 void CORE_zherk(
     PLASMA_enum uplo, PLASMA_enum trans,
     int n, int k,
     double alpha, 
     const PLASMA_Complex64_t *A, int lda,
     double beta,        
+    PLASMA_Complex64_t *C, int ldc);
+
+void CORE_zsyrk(
+    PLASMA_enum uplo, PLASMA_enum trans, 
+    int n, int k,
+    PLASMA_Complex64_t alpha, 
+    const PLASMA_Complex64_t *A, int lda,
+    PLASMA_Complex64_t beta,  
     PLASMA_Complex64_t *C, int ldc);
 
 void CORE_zlacpy(
@@ -61,20 +61,20 @@ void CORE_OMP_zgemm(
                               const PLASMA_Complex64_t *B, int ldb,
     PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc);
 
-void CORE_OMP_zsyrk(
-    PLASMA_enum uplo, PLASMA_enum trans, 
-    int n, int k,
-    PLASMA_Complex64_t alpha, 
-    const PLASMA_Complex64_t *A, int lda,
-    PLASMA_Complex64_t beta,  
-    PLASMA_Complex64_t *C, int ldc);
-
 void CORE_OMP_zherk(
     PLASMA_enum uplo, PLASMA_enum trans,
     int n, int k,
     double alpha, 
     const PLASMA_Complex64_t *A, int lda,
     double beta,        
+    PLASMA_Complex64_t *C, int ldc);
+
+void CORE_OMP_zsyrk(
+    PLASMA_enum uplo, PLASMA_enum trans, 
+    int n, int k,
+    PLASMA_Complex64_t alpha, 
+    const PLASMA_Complex64_t *A, int lda,
+    PLASMA_Complex64_t beta,  
     PLASMA_Complex64_t *C, int ldc);
 
 void CORE_OMP_zlacpy(
