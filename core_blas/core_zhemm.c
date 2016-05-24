@@ -114,8 +114,8 @@ void CORE_OMP_zhemm(
 	if (side == PlasmaLeft)
 	{
 #pragma omp task depend(in:A[0:m*m]) depend(in:B[0:m*n]) depend(inout:C[0:m*n])
-	CORE_zhemm(
-		side, uplo,
+            CORE_zhemm(
+                side, uplo,
 		m, n,
 		alpha, A, lda,
 		       B, ldb,
@@ -124,7 +124,7 @@ void CORE_OMP_zhemm(
 	else
 	{
 #pragma omp task depend(in:A[0:n*n]) depend(in:B[0:m*n]) depend(inout:C[0:m*n])
-	CORE_zhemm(
+            CORE_zhemm(
 		side, uplo,
 		m, n,
 		alpha, A, lda,

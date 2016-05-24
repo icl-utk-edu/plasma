@@ -102,33 +102,33 @@ int PLASMA_zsymm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
                                            PLASMA_Complex64_t *B, int ldb,
                  PLASMA_Complex64_t beta,  PLASMA_Complex64_t *C, int ldc)
 {
-	int Am;
-	int nb;
-	int retval;
-	int status;
+    int Am;
+    int nb;
+    int retval;
+    int status;
 
-	PLASMA_desc descA;
-	PLASMA_desc descB;
-	PLASMA_desc descC;
+    PLASMA_desc descA;
+    PLASMA_desc descB;
+    PLASMA_desc descC;
 
-	PLASMA_Complex64_t zzero = 0.0;
-	PLASMA_Complex64_t zone  = 1.0;
+    PLASMA_Complex64_t zzero = 0.0;
+    PLASMA_Complex64_t zone  = 1.0;
 
-	// Get PLASMA context.
-	plasma_context_t *plasma = plasma_context_self();
-	if (plasma == NULL) {
+    // Get PLASMA context.
+    plasma_context_t *plasma = plasma_context_self();
+    if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
         return PLASMA_ERR_NOT_INITIALIZED;
     }
 
-	// ADD IN NULL MATRIX CHECKS.
+    // ADD IN NULL MATRIX CHECKS.
 
-	// Check input arguments.
-	if ( (side != PlasmaLeft) && (side != PlasmaRight) ){
+    // Check input arguments.
+    if ( (side != PlasmaLeft) && (side != PlasmaRight) ){
         plasma_error("illegal value of side");
         return -1;
     }
-	   if ((uplo != PlasmaLower) && (uplo != PlasmaUpper)) {
+    if ((uplo != PlasmaLower) && (uplo != PlasmaUpper)) {
         plasma_error("illegal value of uplo");
         return -2;
     }
@@ -141,70 +141,70 @@ int PLASMA_zsymm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
         plasma_error("illegal value of n");
         return -4;
     }
-	if (A == NULL) {
-		plasma_error("NULL A");
-		return -7;
-	}
+    if (A == NULL) {
+        plasma_error("NULL A");
+        return -7;
+    }
 
-	if (side == PlasmaLeft)
-	{
-		Am = m;
-	}
-	else
-	{
-		Am = n;
-	}
+    if (side == PlasmaLeft)
+    {
+        Am = m;
+    }
+    else
+    {
+        Am = n;
+    }
 
     if (lda < imax(1, Am)) {
         plasma_error("illegal value of lda");
         return -8;
     }
-	if (B == NULL) {
-		plasma_error("NULL B");
-		return -9;
-	}
+    if (B == NULL) {
+        plasma_error("NULL B");
+        return -9;
+    }
     if (ldb < imax(1, m)) {
         plasma_error("illegal value of ldb");
         return -10;
     }
-	if (C == NULL) {
-		plasma_error("NULL C");
-		return -12;
-	}
+    if (C == NULL) {
+        plasma_error("NULL C");
+        return -12;
+    }
     if (ldc < imax(1, m)) {
         plasma_error("illegal value of ldc");
         return -13;
     }
 
-	// quick return
-	if (m == 0 || n == 0 || (alpha == zzero && beta == zone))
-		return PLASMA_SUCCESS;
+    // quick return
+    if (m == 0 || n == 0 || (alpha == zzero && beta == zone))
+        return PLASMA_SUCCESS;
 
-	nb = plasma->nb;
+    nb = plasma->nb;
 
-	// Initialize tile matrix descriptors.
-	descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-							 nb*nb, Am, Am, 0, 0, Am, Am);
-	descB = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-							 nb*nb, m, n, 0, 0, m, n);
-	descC = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-							 nb*nb, m, n, 0, 0, m, n);
+    // Initialize tile matrix descriptors.
+    descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
+                             nb*nb, Am, Am, 0, 0, Am, Am);
+    descB = plasma_desc_init(PlasmaComplexDouble, nb, nb,
+                             nb*nb, m, n, 0, 0, m, n);
+    descC = plasma_desc_init(PlasmaComplexDouble, nb, nb,
+                             nb*nb, m, n, 0, 0, m, n);
 
-	// Allocate matrices in tile layout.
-	retval = plasma_desc_mat_alloc(&descA);
-	if (retval != PLASMA_SUCCESS)
-	{
-		plasma_error("plasma_desc_mat_alloc() failed");
-		return retval;
-	}
-	retval = plasma_desc_mat_alloc(&descB);
-	if (retval != PLASMA_SUCCESS)
-	{
-		plasma_error("plasma_desc_mat_alloc() failed");
-		plasma_desc_mat_free(&descA);
-		return retval;
-	}
-	retval = plasma_desc_mat_alloc(&descC);
+    // Allocate matrices in tile layout.
+    retval = plasma_desc_mat_alloc(&descA);
+    if (retval != PLASMA_SUCCESS)
+    {
+        plasma_error("plasma_desc_mat_alloc() failed");
+        return retval;
+    }
+    retval = plasma_desc_mat_alloc(&descB);
+    if (retval != PLASMA_SUCCESS)
+    {
+        plasma_error("plasma_desc_mat_alloc() failed");
+        plasma_desc_mat_free(&descA);
+        return retval;
+    }
+    retval = plasma_desc_mat_alloc(&descC);
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");
         plasma_desc_mat_free(&descA);
@@ -212,8 +212,8 @@ int PLASMA_zsymm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
         return retval;
     }
 
-	// Create sequence.
-	PLASMA_sequence *sequence = NULL;
+    // Create sequence.
+    PLASMA_sequence *sequence = NULL;
     retval = plasma_sequence_create(&sequence);
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_sequence_create() failed");
@@ -300,26 +300,26 @@ void PLASMA_zsymm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
                             PLASMA_Complex64_t beta,  PLASMA_desc *C,
                             PLASMA_sequence *sequence, PLASMA_request *request)
 {
-	// Get PLASMA context.
-	plasma_context_t *plasma = plasma_context_self();
+    // Get PLASMA context.
+    plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
 
-	// Check input arguments.
-	if ( (side != PlasmaLeft) && (side != PlasmaRight) ){
+    // Check input arguments.
+    if ( (side != PlasmaLeft) && (side != PlasmaRight) ){
         plasma_error("illegal value of side");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-		return;
+        return;
     }
-	if ((uplo != PlasmaLower) && (uplo != PlasmaUpper)) {
+    if ((uplo != PlasmaLower) && (uplo != PlasmaUpper)) {
         plasma_error("illegal value of uplo");
-		plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-		return;
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        return;
     }
-	    if (plasma_desc_check(A) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(A) != PLASMA_SUCCESS) {
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         plasma_error("invalid A");
         return;
@@ -345,31 +345,31 @@ void PLASMA_zsymm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
         return;
     }
 
-	if (A->mb != C->mb || A->nb != B->nb || B->nb != C->nb) {
-		plasma_error("tile size mismatch");
+    if (A->mb != C->mb || A->nb != B->nb || B->nb != C->nb) {
+        plasma_error("tile size mismatch");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
-	}
-	if (side == PlasmaLeft) {
-		if (A->m != B->m || A->n != B->m) {
-			plasma_error("matrix size mismatch");
-			plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-			return;
-		}
-	}
-	else {
-		if (A->m != B->n || A->n != B->n) {
-			plasma_error("matrix size mismatch");
-			plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-			return;
-		}
-	}
-	if (B->m != C->m || B->n != C->n) {
-		plasma_error("matrix size mismatch");
-		plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-		return;
-	}
-	if (A->i%A->mb != C->i%C->mb ||
+    }
+    if (side == PlasmaLeft) {
+        if (A->m != B->m || A->n != B->m) {
+            plasma_error("matrix size mismatch");
+            plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+            return;
+        }
+    }
+    else {
+        if (A->m != B->n || A->n != B->n) {
+            plasma_error("matrix size mismatch");
+            plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+            return;
+        }
+    }
+    if (B->m != C->m || B->n != C->n) {
+        plasma_error("matrix size mismatch");
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        return;
+    }
+    if (A->i%A->mb != C->i%C->mb ||
         B->j%B->nb != C->j%C->nb || A->j%A->nb != B->i%B->mb) {
         plasma_error("start indexes have to match");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
@@ -377,22 +377,22 @@ void PLASMA_zsymm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
     }
 
 
-	// Check sequence status.
-	if (sequence->status != PLASMA_SUCCESS)
-	{
-		plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
-		return;
-	}
+    // Check sequence status.
+    if (sequence->status != PLASMA_SUCCESS)
+    {
+        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
+        return;
+    }
 
-	// quick return
-	if (C->m == 0 || C->n == 0 || ((alpha == 0.0 || A->n == 0) && beta == 1.0))
-		return;
+    // quick return
+    if (C->m == 0 || C->n == 0 || ((alpha == 0.0 || A->n == 0) && beta == 1.0))
+        return;
 
-	// Call the parallel function.
-	plasma_pzsymm(side, uplo,
-				  alpha, *A,
-				         *B,
-				  beta,  *C,
-				  sequence, request);
-	return;
+    // Call the parallel function.
+    plasma_pzsymm(side, uplo,
+                  alpha, *A,
+                  *B,
+                  beta,  *C,
+                  sequence, request);
+    return;
 }

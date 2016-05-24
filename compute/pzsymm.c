@@ -42,167 +42,167 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
     PLASMA_Complex64_t zbeta;
     PLASMA_Complex64_t zone = (PLASMA_Complex64_t)1.0;
 
-	    if (sequence->status != PLASMA_SUCCESS)
+    if (sequence->status != PLASMA_SUCCESS)
         return;
 
     for(m = 0; m < C.mt; m++) {
         tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
-		ldcm = BLKLDD(C, m);
-		for (n = 0; n < C.nt; n++) {
-			tempnn = n == C.nt-1 ? C.n-n*C.nb : C.nb;
-			/*
-			 *  PlasmaLeft / PlasmaLower
-			 */
-			if (side == PlasmaLeft) {
-				ldam = BLKLDD(A, m);
-				if (uplo == PlasmaLower) {
-					for (k = 0; k < C.mt; k++) {
-						tempkm = k == C.mt-1 ? C.m-k*C.mb : C.mb;
-						ldak = BLKLDD(A, k);
-						ldbk = BLKLDD(B, k);
-						zbeta = k == 0 ? beta : zone;
-						if (k < m) {
-							CORE_OMP_zgemm(
-								PlasmaNoTrans, PlasmaNoTrans,
-								tempmm, tempnn, tempkm,
-								alpha, A(m, k), ldam,
-								B(k, n), ldbk,
-								zbeta, C(m, n), ldcm);
-						}
-						else {
-							if (k == m) {
-								CORE_OMP_zsymm(
-									side, uplo,
-									tempmm, tempnn,
-									alpha, A(k, k), ldak,
-									B(k, n), ldbk,
-									zbeta, C(m, n), ldcm);
-							}
-							else {
-								CORE_OMP_zgemm(
-									PlasmaTrans, PlasmaNoTrans,
-									tempmm, tempnn, tempkm,
-									alpha, A(k, m), ldak,
-									B(k, n), ldbk,
-									zbeta, C(m, n), ldcm);
-							}
-						}
-					}
-				}
-				/*
-				 *  PlasmaLeft / PlasmaUpper
-				 */
-				else {
-					for (k = 0; k < C.mt; k++) {
-						tempkm = k == C.mt-1 ? C.m-k*C.mb : C.mb;
-						ldak = BLKLDD(A, k);
-						ldbk = BLKLDD(B, k);
-						zbeta = k == 0 ? beta : zone;
-						if (k < m) {
-							CORE_OMP_zgemm(
-								PlasmaTrans, PlasmaNoTrans,
-								tempmm, tempnn, tempkm,
-								alpha, A(k, m), ldak,
-								B(k, n), ldbk,
-								zbeta, C(m, n), ldcm);
-						}
-						else {
-							if (k == m) {
-								CORE_OMP_zsymm(
-									side, uplo,
-									tempmm, tempnn,
-									alpha, A(k, k), ldak,
-									B(k, n), ldbk,
-									zbeta, C(m, n), ldcm);
-							}
-							else {
-								CORE_OMP_zgemm(
-									PlasmaNoTrans, PlasmaNoTrans,
-									tempmm, tempnn, tempkm,
-									alpha, A(m, k), ldam,
-									B(k, n), ldbk,
-									zbeta, C(m, n), ldcm);
-							}
-						}
-					}
-				}
-			}
-			/*
-			 *  PlasmaRight / PlasmaLower
-			 */
-			else {
-				ldan = BLKLDD(A, n);
-				ldbm = BLKLDD(B, m);
-				if (uplo == PlasmaLower) {
-					for (k = 0; k < C.nt; k++) {
-						tempkn = k == C.nt-1 ? C.n-k*C.nb : C.nb;
-						ldak = BLKLDD(A, k);
-						zbeta = k == 0 ? beta : zone;
-						if (k < n) {
-							CORE_OMP_zgemm(
-								PlasmaNoTrans, PlasmaTrans,
-								tempmm, tempnn, tempkn,
-								alpha, B(m, k), ldbm,
-								A(n, k), ldan,
-								zbeta, C(m, n), ldcm);
-						}
-						else {
-							if (n == k) {
-								CORE_OMP_zsymm(
-									side, uplo,
-									tempmm, tempnn,
-									alpha, A(k, k), ldak,
-									B(m, k), ldbm,
-									zbeta, C(m, n), ldcm);
-							}
-							else {
-								CORE_OMP_zgemm(
-									PlasmaNoTrans, PlasmaNoTrans,
-									tempmm, tempnn, tempkn,
-									alpha, B(m, k), ldbm,
-									A(k, n), ldak,
-									zbeta, C(m, n), ldcm);
-							}
-						}
-					}
-				}
-				/*
-				 *  PlasmaRight / PlasmaUpper
-				 */
-				else {
-					for (k = 0; k < C.nt; k++) {
-						tempkn = k == C.nt-1 ? C.n-k*C.nb : C.nb;
-						ldak = BLKLDD(A, k);
-						zbeta = k == 0 ? beta : zone;
-						if (k < n) {
-							CORE_OMP_zgemm(
-								PlasmaNoTrans, PlasmaNoTrans,
-								tempmm, tempnn, tempkn,
-								alpha, B(m, k), ldbm,
-								A(k, n), ldak,
-								zbeta, C(m, n), ldcm);
-						}
-						else {
-							if (n == k) {
-								CORE_OMP_zsymm(
-									side, uplo,
-									tempmm, tempnn,
-									alpha, A(k, k), ldak,
-									B(m, k), ldbm,
-									zbeta, C(m, n), ldcm);
-							}
-							else {
-								CORE_OMP_zgemm(
-									PlasmaNoTrans, PlasmaTrans,
-									tempmm, tempnn, tempkn,
-									alpha, B(m, k), ldbm,
-									A(n, k), ldan,
-									zbeta, C(m, n), ldcm);
-							}
-						}
-					}
-				}
-			}
+        ldcm = BLKLDD(C, m);
+        for (n = 0; n < C.nt; n++) {
+            tempnn = n == C.nt-1 ? C.n-n*C.nb : C.nb;
+            /*
+             *  PlasmaLeft / PlasmaLower
+             */
+            if (side == PlasmaLeft) {
+                ldam = BLKLDD(A, m);
+                if (uplo == PlasmaLower) {
+                    for (k = 0; k < C.mt; k++) {
+                        tempkm = k == C.mt-1 ? C.m-k*C.mb : C.mb;
+                        ldak = BLKLDD(A, k);
+                        ldbk = BLKLDD(B, k);
+                        zbeta = k == 0 ? beta : zone;
+                        if (k < m) {
+                            CORE_OMP_zgemm(
+                                PlasmaNoTrans, PlasmaNoTrans,
+                                tempmm, tempnn, tempkm,
+                                alpha, A(m, k), ldam,
+                                       B(k, n), ldbk,
+                                zbeta, C(m, n), ldcm);
+                        }
+                        else {
+                            if (k == m) {
+                                CORE_OMP_zsymm(
+                                    side, uplo,
+                                    tempmm, tempnn,
+                                    alpha, A(k, k), ldak,
+                                           B(k, n), ldbk,
+                                    zbeta, C(m, n), ldcm);
+                            }
+                            else {
+                                CORE_OMP_zgemm(
+                                    PlasmaTrans, PlasmaNoTrans,
+                                    tempmm, tempnn, tempkm,
+                                    alpha, A(k, m), ldak,
+                                           B(k, n), ldbk,
+                                    zbeta, C(m, n), ldcm);
+                            }
+                        }
+                    }
+                }
+                /*
+                 *  PlasmaLeft / PlasmaUpper
+                 */
+                else {
+                    for (k = 0; k < C.mt; k++) {
+                        tempkm = k == C.mt-1 ? C.m-k*C.mb : C.mb;
+                        ldak = BLKLDD(A, k);
+                        ldbk = BLKLDD(B, k);
+                        zbeta = k == 0 ? beta : zone;
+                        if (k < m) {
+                            CORE_OMP_zgemm(
+                                PlasmaTrans, PlasmaNoTrans,
+                                tempmm, tempnn, tempkm,
+                                alpha, A(k, m), ldak,
+                                       B(k, n), ldbk,
+                                zbeta, C(m, n), ldcm);
+                        }
+                        else {
+                            if (k == m) {
+                                CORE_OMP_zsymm(
+                                    side, uplo,
+                                    tempmm, tempnn,
+                                    alpha, A(k, k), ldak,
+                                           B(k, n), ldbk,
+                                    zbeta, C(m, n), ldcm);
+                            }
+                            else {
+                                CORE_OMP_zgemm(
+                                    PlasmaNoTrans, PlasmaNoTrans,
+                                    tempmm, tempnn, tempkm,
+                                    alpha, A(m, k), ldam,
+                                           B(k, n), ldbk,
+                                    zbeta, C(m, n), ldcm);
+                            }
+                        }
+                    }
+                }
+            }
+            /*
+             *  PlasmaRight / PlasmaLower
+             */
+            else {
+                ldan = BLKLDD(A, n);
+                ldbm = BLKLDD(B, m);
+                if (uplo == PlasmaLower) {
+                    for (k = 0; k < C.nt; k++) {
+                        tempkn = k == C.nt-1 ? C.n-k*C.nb : C.nb;
+                        ldak = BLKLDD(A, k);
+                        zbeta = k == 0 ? beta : zone;
+                        if (k < n) {
+                            CORE_OMP_zgemm(
+                                PlasmaNoTrans, PlasmaTrans,
+                                tempmm, tempnn, tempkn,
+                                alpha, B(m, k), ldbm,
+                                       A(n, k), ldan,
+                                zbeta, C(m, n), ldcm);
+                        }
+                        else {
+                            if (n == k) {
+                                CORE_OMP_zsymm(
+                                    side, uplo,
+                                    tempmm, tempnn,
+                                    alpha, A(k, k), ldak,
+                                           B(m, k), ldbm,
+                                    zbeta, C(m, n), ldcm);
+                            }
+                            else {
+                                CORE_OMP_zgemm(
+                                    PlasmaNoTrans, PlasmaNoTrans,
+                                    tempmm, tempnn, tempkn,
+                                    alpha, B(m, k), ldbm,
+                                           A(k, n), ldak,
+                                    zbeta, C(m, n), ldcm);
+                            }
+                        }
+                    }
+                }
+                /*
+                 *  PlasmaRight / PlasmaUpper
+                 */
+                else {
+                    for (k = 0; k < C.nt; k++) {
+                        tempkn = k == C.nt-1 ? C.n-k*C.nb : C.nb;
+                        ldak = BLKLDD(A, k);
+                        zbeta = k == 0 ? beta : zone;
+                        if (k < n) {
+                            CORE_OMP_zgemm(
+                                PlasmaNoTrans, PlasmaNoTrans,
+                                tempmm, tempnn, tempkn,
+                                alpha, B(m, k), ldbm,
+                                       A(k, n), ldak,
+                                zbeta, C(m, n), ldcm);
+                        }
+                        else {
+                            if (n == k) {
+                                CORE_OMP_zsymm(
+                                    side, uplo,
+                                    tempmm, tempnn,
+                                    alpha, A(k, k), ldak,
+                                           B(m, k), ldbm,
+                                    zbeta, C(m, n), ldcm);
+                            }
+                            else {
+                                CORE_OMP_zgemm(
+                                    PlasmaNoTrans, PlasmaTrans,
+                                    tempmm, tempnn, tempkn,
+                                    alpha, B(m, k), ldbm,
+                                           A(n, k), ldan,
+                                    zbeta, C(m, n), ldcm);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
