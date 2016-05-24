@@ -246,6 +246,22 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_cgemm(pval, info);
     else if (strcmp(name, "sgemm") == 0)
         test_sgemm(pval, info);
+    
+    // -----
+    else if (strcmp(name, "zsyrk") == 0)
+        test_zsyrk(pval, info);
+    else if (strcmp(name, "dsyrk") == 0)
+        test_dsyrk(pval, info);
+    else if (strcmp(name, "csyrk") == 0)
+        test_csyrk(pval, info);
+    else if (strcmp(name, "ssyrk") == 0)
+        test_ssyrk(pval, info);
+    
+    // -----
+    else if (strcmp(name, "zherk") == 0)
+        test_zherk(pval, info);
+    else if (strcmp(name, "cherk") == 0)
+        test_cherk(pval, info);
 
     // -----
     else if (strcmp(name, "zsymm") == 0)
@@ -315,10 +331,14 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--test="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TEST]);
 
+        else if (param_starts_with(argv[i], "--trans="))
+            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANS]);
         else if (param_starts_with(argv[i], "--transa="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANSA]);
         else if (param_starts_with(argv[i], "--transb="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANSB]);
+        else if (param_starts_with(argv[i], "--uplo="))
+            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_UPLO]);
 
         //--------------------------------------------------
         // Scan integer parameters.
@@ -387,11 +407,14 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_char('n', &param[PARAM_OUTER]);
     if (param[PARAM_TEST].num == 0)
         param_add_char('y', &param[PARAM_TEST]);
-
+    if (param[PARAM_TRANS].num == 0)
+        param_add_char('n', &param[PARAM_TRANS]);
     if (param[PARAM_TRANSA].num == 0)
         param_add_char('n', &param[PARAM_TRANSA]);
     if (param[PARAM_TRANSB].num == 0)
         param_add_char('n', &param[PARAM_TRANSB]);
+    if (param[PARAM_UPLO].num == 0)
+        param_add_char('l', &param[PARAM_UPLO]);
 
     //--------------------------------------------------
     // Set integer parameters.
