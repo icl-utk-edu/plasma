@@ -251,18 +251,18 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
 #pragma omp parallel
 #pragma omp master
     {
-        /* the Async functions are submitted here.  If an error occurs
-           (at submission time or at run time) the sequence->status
-           will be marked with an error.  After an error, the next
-           Async will not _insert_ more tasks into the runtime.  The
-           sequence->status can be checked after each call to _Async
-           or at the end of the parallel region. */
+        // the Async functions are submitted here.  If an error occurs
+        // (at submission time or at run time) the sequence->status
+        // will be marked with an error.  After an error, the next
+        // Async will not _insert_ more tasks into the runtime.  The
+        // sequence->status can be checked after each call to _Async
+        // or at the end of the parallel region.
 
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
-        if (sequence->status == PLASMA_SUCCESS) 
+        if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
-        if (sequence->status == PLASMA_SUCCESS) 
+        if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zcm2ccrb_Async(C, ldc, &descC, sequence, &request);
 
         // Call the tile async function.
@@ -275,9 +275,9 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
         }
 
         // Translate back to LAPACK layout.
-        if (sequence->status == PLASMA_SUCCESS) 
+        if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
-    } /* pragma omp parallel block closed  */
+    } // pragma omp parallel block closed
 
     // Check for errors in the async execution
     if (sequence->status != PLASMA_SUCCESS)
@@ -335,13 +335,13 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
  *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to
- *          (for completion checks and exception handling purposes).  Check 
+ *          (for completion checks and exception handling purposes).  Check
  *          the sequence->status for errors.
  *
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
- * @retval void 
+ * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
  *          request->status should never be set to PLASMA_SUCCESS (the

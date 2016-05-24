@@ -22,7 +22,7 @@
 
 /***************************************************************************//**
     @ingroup plasma_ccrb2cm
-    
+
     Convert tiled (CCRB) to column-major (CM) matrix layout.
     Out-of-place.
 */
