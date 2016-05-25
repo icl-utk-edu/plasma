@@ -6,9 +6,9 @@ _|  ____|_/  _\____/_|  _|_/  _\
 
 **Parallel Linear Algebra Software for Multicore Architectures**
 
-**University of Tennessee, US
+**University of Tennessee, US,
 University of Manchester, UK,
-University of Colorado Denver, US
+University of Colorado Denver, US,
 University of California, Berkeley, US**
 
 PLASMA is a software package for solving problems in dense linear algebra
