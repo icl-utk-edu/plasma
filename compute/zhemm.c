@@ -28,9 +28,7 @@
  *  Performs one of the matrix-matrix operations
  *
  *     \f[ C = \alpha \times A \times B + \beta \times C \f]
- *
  *  or
- *
  *     \f[ C = \alpha \times B \times A + \beta \times C \f]
  *
  *  where alpha and beta are scalars, A is an hemmetric matrix and  B and
@@ -120,8 +118,6 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
         plasma_error("PLASMA not initialized");
         return PLASMA_ERR_NOT_INITIALIZED;
     }
-
-    // ADD IN NULL MATRIX CHECKS.
 
     // Check input arguments.
     if ( (side != PlasmaLeft) && (side != PlasmaRight) ){
@@ -251,7 +247,7 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
         // Translate back to LAPACK layout.
         if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
-    } /* pragma omp parallel block closed  */
+    } // pragma omp parallel block closed
 
     // Check for errors in the async execution
     if (sequence->status != PLASMA_SUCCESS)
@@ -269,7 +265,6 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
 }
 
 /***************************************************************************//**
-                                                                              *
  * @ingroup plasma_hemm
  *
  *  Performs hemmetric matrix multiplication.
@@ -296,9 +291,9 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
  *
  ******************************************************************************/
 void PLASMA_zhemm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
-                            PLASMA_Complex64_t alpha, PLASMA_desc *A, PLASMA_desc *B,
-                            PLASMA_Complex64_t beta,  PLASMA_desc *C,
-                            PLASMA_sequence *sequence, PLASMA_request *request)
+                             PLASMA_Complex64_t alpha, PLASMA_desc *A, PLASMA_desc *B,
+                             PLASMA_Complex64_t beta,  PLASMA_desc *C,
+                             PLASMA_sequence *sequence, PLASMA_request *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -309,12 +304,14 @@ void PLASMA_zhemm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
     }
 
     // Check input arguments.
-    if ( (side != PlasmaLeft) && (side != PlasmaRight) ){
+    if ((side != PlasmaLeft) &&
+        (side != PlasmaRight)){
         plasma_error("illegal value of side");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if ((uplo != PlasmaLower) && (uplo != PlasmaUpper)) {
+    if ((uplo != PlasmaLower) &&
+        (uplo != PlasmaUpper)) {
         plasma_error("illegal value of uplo");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -376,10 +373,8 @@ void PLASMA_zhemm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
         return;
     }
 
-
     // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS)
-    {
+    if (sequence->status != PLASMA_SUCCESS) {
         plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
         return;
     }

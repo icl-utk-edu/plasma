@@ -39,8 +39,7 @@ int main(int argc, char **argv)
 {
     if (argc == 1 ||
         strcmp(argv[1], "-h") == 0 ||
-        strcmp(argv[1], "--help") == 0)
-    {
+        strcmp(argv[1], "--help") == 0) {
         print_main_usage();
         return EXIT_SUCCESS;
     }
@@ -68,15 +67,13 @@ int main(int argc, char **argv)
         // outer product iteration
         do {
             param_snap(param, pval);
-            for (int i = 0; i < iter; i++)
-            {
+            for (int i = 0; i < iter; i++) {
                 if (test)
                     err += test_routine(routine, pval);
                 else
                     time_routine(routine, pval);
             }
-            if (iter > 1)
-            {
+            if (iter > 1) {
                 printf("\n");
             }
         }
@@ -86,15 +83,13 @@ int main(int argc, char **argv)
         // inner product iteration
         do {
             param_snap(param, pval);
-            for (int i = 0; i < iter; i++)
-            {
+            for (int i = 0; i < iter; i++) {
                 if (test)
                     err += test_routine(routine, pval);
                 else
                     time_routine(routine, pval);
             }
-            if (iter > 1)
-            {
+            if (iter > 1) {
                 printf("\n");
             }
         }
@@ -154,9 +149,9 @@ void print_routine_usage(const char *name)
 void print_usage(int label)
 {
     printf("\t%*s%s\n",
-           DescriptionIndent,
-           ParamUsage[label][0],
-           ParamUsage[label][1]);
+        DescriptionIndent,
+        ParamUsage[label][0],
+        ParamUsage[label][1]);
 }
 
 /***************************************************************************//**
@@ -181,21 +176,21 @@ int test_routine(const char *name, param_value_t pval[])
     if (pval == NULL) {
         printf("\n");
         printf("%*s %*s %s %*s %*s\n",
-               InfoSpacing, "Seconds",
-               InfoSpacing, "GFLOPS",
-               info,
-               InfoSpacing, "Error",
-               InfoSpacing, "Status");
+            InfoSpacing, "Seconds",
+            InfoSpacing, "GFLOPS",
+            info,
+            InfoSpacing, "Error",
+            InfoSpacing, "Status");
         printf("\n");
         return 0;
     }
     else {
         printf("%*.4lf %*.4lf %s %*.2le %*s\n",
-               InfoSpacing, pval[PARAM_TIME].d,
-               InfoSpacing, pval[PARAM_GFLOPS].d,
-               info,
-               InfoSpacing, pval[PARAM_ERROR].d,
-               InfoSpacing, pval[PARAM_SUCCESS].i ? "pass" : "FAILED");
+            InfoSpacing, pval[PARAM_TIME].d,
+            InfoSpacing, pval[PARAM_GFLOPS].d,
+            info,
+            InfoSpacing, pval[PARAM_ERROR].d,
+            InfoSpacing, pval[PARAM_SUCCESS].i ? "pass" : "FAILED");
         return (pval[PARAM_SUCCESS].i == 0);
     }
 }
@@ -219,16 +214,16 @@ void time_routine(const char *name, param_value_t pval[])
     if (pval == NULL) {
         printf("\n");
         printf("%*s %*s %s\n",
-               InfoSpacing, "Seconds",
-               InfoSpacing, "GFLOPS",
-               info);
+            InfoSpacing, "Seconds",
+            InfoSpacing, "GFLOPS",
+            info);
         printf("\n");
     }
     else {
         printf("%*.4lf %*.4lf %s\n",
-               InfoSpacing, pval[PARAM_TIME].d,
-               InfoSpacing, pval[PARAM_GFLOPS].d,
-               info);
+            InfoSpacing, pval[PARAM_TIME].d,
+            InfoSpacing, pval[PARAM_GFLOPS].d,
+            info);
     }
 }
 
@@ -283,8 +278,7 @@ void run_routine(const char *name, param_value_t pval[], char *info)
  ******************************************************************************/
 void param_init(param_t param[])
 {
-    for (int i = 0; i < PARAM_SIZEOF; i++)
-    {
+    for (int i = 0; i < PARAM_SIZEOF; i++) {
         param[i].num = 0;
         param[i].pos = 0;
         param[i].val =

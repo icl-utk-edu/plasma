@@ -28,10 +28,10 @@
  *  @see PLASMA_zsymm_Tile_Async
  ******************************************************************************/
 void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
-				   PLASMA_Complex64_t alpha, PLASMA_desc A,
-				                             PLASMA_desc B,
-				   PLASMA_Complex64_t beta,  PLASMA_desc C,
-				   PLASMA_sequence *sequence, PLASMA_request *request)
+                   PLASMA_Complex64_t alpha, PLASMA_desc A,
+                                             PLASMA_desc B,
+                   PLASMA_Complex64_t beta,  PLASMA_desc C,
+                   PLASMA_sequence *sequence, PLASMA_request *request)
 {
     int k, m, n;
     int next_m;
@@ -50,9 +50,9 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
         ldcm = BLKLDD(C, m);
         for (n = 0; n < C.nt; n++) {
             tempnn = n == C.nt-1 ? C.n-n*C.nb : C.nb;
-            /*
-             *  PlasmaLeft / PlasmaLower
-             */
+            //=======================================
+            // SIDE: PlasmaLeft / UPLO: PlasmaLower
+            //=======================================
             if (side == PlasmaLeft) {
                 ldam = BLKLDD(A, m);
                 if (uplo == PlasmaLower) {
@@ -89,9 +89,9 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
                         }
                     }
                 }
-                /*
-                 *  PlasmaLeft / PlasmaUpper
-                 */
+                //=======================================
+                // SIDE: PlasmaLeft / UPLO: PlasmaUpper
+                //=======================================
                 else {
                     for (k = 0; k < C.mt; k++) {
                         tempkm = k == C.mt-1 ? C.m-k*C.mb : C.mb;
@@ -127,9 +127,9 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
                     }
                 }
             }
-            /*
-             *  PlasmaRight / PlasmaLower
-             */
+            //=======================================
+            // SIDE: PlasmaRight / UPLO: PlasmaLower
+            //=======================================
             else {
                 ldan = BLKLDD(A, n);
                 ldbm = BLKLDD(B, m);
@@ -166,9 +166,9 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
                         }
                     }
                 }
-                /*
-                 *  PlasmaRight / PlasmaUpper
-                 */
+                //=======================================
+                // SIDE: PlasmaRight / UPLO: PlasmaUpper
+                //=======================================
                 else {
                     for (k = 0; k < C.nt; k++) {
                         tempkn = k == C.nt-1 ? C.n-k*C.nb : C.nb;
