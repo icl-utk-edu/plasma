@@ -334,7 +334,6 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--test="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TEST]);
 
-
         else if (param_starts_with(argv[i], "--side="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_SIDE]);
 

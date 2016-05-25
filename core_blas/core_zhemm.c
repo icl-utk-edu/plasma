@@ -5,7 +5,7 @@
  *  PLASMA core_blas kernel.
  *  PLASMA is a software package provided by Univ. of Tennessee,
  *  Univ. of Manchester, Univ. of California Berkeley and
- *  Univ. of Colorado Denver
+ *  Univ. of Colorado Denver.
  *
  * @version 3.0.0
  * @author Samuel D. Relton
@@ -36,7 +36,7 @@
  *
  *     \f[ C = \alpha \times B \times A + \beta \times C \f]
  *
- *  where alpha and beta are scalars, A is an hemmetric matrix and  B and
+ *  where alpha and beta are scalars, A is a hermitian matrix and B and
  *  C are m by n matrices.
  *
  *******************************************************************************
@@ -49,44 +49,44 @@
  *
  * @param[in] uplo
  *          Specifies whether the upper or lower triangular part of
- *          the hemmetric matrix A is to be referenced as follows:
- *          = PlasmaLower:     Only the lower triangular part of the
- *                             hemmetric matrix A is to be referenced.
- *          = PlasmaUpper:     Only the upper triangular part of the
- *                             hemmetric matrix A is to be referenced.
+ *          the hermitian matrix A is to be referenced as follows:
+ *          - PlasmaLower:     Only the lower triangular part of the
+ *                             hermitian matrix A is to be referenced.
+ *          - PlasmaUpper:     Only the upper triangular part of the
+ *                             hermitian matrix A is to be referenced.
  *
  * @param[in] m
- *          Specifies the number of rows of the matrix C. M >= 0.
+ *          Specifies the number of rows of the matrix C. m >= 0.
  *
  * @param[in] n
- *          Specifies the number of columns of the matrix C. N >= 0.
+ *          Specifies the number of columns of the matrix C. n >= 0.
  *
  * @param[in] alpha
  *          Specifies the scalar alpha.
  *
  * @param[in] A
- *          A is a LDA-by-ka matrix, where ka is M when side = PlasmaLeft,
- *          and is N otherwise. Only the uplo triangular part is referenced.
+ *          A is a lda-by-ka matrix, where ka is m when side = PlasmaLeft,
+ *          and is n otherwise. Only the uplo triangular part is referenced.
  *
  * @param[in] lda
- *          The leading dimension of the array A. LDA >= max(1,ka).
+ *          The leading dimension of the array A. lda >= max(1,ka).
  *
  * @param[in] B
- *          B is a LDB-by-N matrix, where the leading M-by-N part of
+ *          B is an ldb-by-n matrix, where the leading m-by-n part of
  *          the array B must contain the matrix B.
  *
  * @param[in] ldb
- *          The leading dimension of the array B. LDB >= max(1,M).
+ *          The leading dimension of the array B. ldb >= max(1,m).
  *
  * @param[in] beta
  *          Specifies the scalar beta.
  *
  * @param[in,out] C
- *          C is a LDC-by-N matrix.
- *          On exit, the array is overwritten by the M by N updated matrix.
+ *          C is a ldc-by-n matrix.
+ *          On exit, the array is overwritten by the m-by-n updated matrix.
  *
  * @param[in] ldc
- *          The leading dimension of the array C. LDC >= max(1,M).
+ *          The leading dimension of the array C. ldc >= max(1,m).
  *
  ******************************************************************************/
 void CORE_zhemm(PLASMA_enum side, PLASMA_enum uplo,

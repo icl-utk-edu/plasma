@@ -31,7 +31,7 @@
  *  or
  *     \f[ C = \alpha \times B \times A + \beta \times C \f]
  *
- *  where alpha and beta are scalars, A is an hemmetric matrix and  B and
+ *  where alpha and beta are scalars, A is an hermitian matrix and B and
  *  C are m by n matrices.
  *
  *******************************************************************************
@@ -44,41 +44,41 @@
  *
  * @param[in] uplo
  *          Specifies whether the upper or lower triangular part of
- *          the hemmetric matrix A is to be referenced as follows:
+ *          the hermitian matrix A is to be referenced as follows:
  *          - PlasmaLower:     Only the lower triangular part of the
- *                             hemmetric matrix A is to be referenced.
+ *                             hermitian matrix A is to be referenced.
  *          - PlasmaUpper:     Only the upper triangular part of the
- *                             hemmetric matrix A is to be referenced.
+ *                             hermitian matrix A is to be referenced.
  *
  * @param[in] m
- *          Specifies the number of rows of the matrix C. M >= 0.
+ *          Specifies the number of rows of the matrix C. m >= 0.
  *
  * @param[in] n
- *          Specifies the number of columns of the matrix C. N >= 0.
+ *          Specifies the number of columns of the matrix C. n >= 0.
  *
  * @param[in] alpha
  *          Specifies the scalar alpha.
  *
  * @param[in] A
- *          A is a LDA-by-ka matrix, where ka is M when side = PlasmaLeft,
- *          and is N otherwise. Only the uplo triangular part is referenced.
+ *          A is a lda-by-ka matrix, where ka is m when side = PlasmaLeft,
+ *          and is n otherwise. Only the uplo triangular part is referenced.
  *
  * @param[in] lda
- *          The leading dimension of the array A. LDA >= max(1,ka).
+ *          The leading dimension of the array A. lda >= max(1,ka).
  *
  * @param[in] B
- *          B is a LDB-by-N matrix, where the leading M-by-N part of
+ *          B is a ldb-by-n matrix, where the leading m-by-n part of
  *          the array B must contain the matrix B.
  *
  * @param[in] ldb
- *          The leading dimension of the array B. LDB >= max(1,M).
+ *          The leading dimension of the array B. ldb >= max(1,m).
  *
  * @param[in] beta
  *          Specifies the scalar beta.
  *
  * @param[in,out] C
- *          C is a LDC-by-N matrix.
- *          On exit, the array is overwritten by the M by N updated matrix.
+ *          C is a ldc-by-n matrix.
+ *          On exit, the array is overwritten by the m-by-n updated matrix.
  *
  * @param[in] ldc
  *          The leading dimension of the array C. LDC >= max(1,M).
@@ -91,8 +91,6 @@
  *
  * @sa PLASMA_zhemm_Tile_Async
  * @sa PLASMA_chemm
- * @sa PLASMA_dhemm
- * @sa PLASMA_shemm
  *
  ******************************************************************************/
 int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
@@ -139,7 +137,7 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
     }
     if (A == NULL) {
         plasma_error("NULL A");
-        return -7;
+        return -6;
     }
 
     if (side == PlasmaLeft)
@@ -153,23 +151,23 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
 
     if (lda < imax(1, Am)) {
         plasma_error("illegal value of lda");
-        return -8;
+        return -7;
     }
     if (B == NULL) {
         plasma_error("NULL B");
-        return -9;
+        return -8;
     }
     if (ldb < imax(1, m)) {
         plasma_error("illegal value of ldb");
-        return -10;
+        return -9;
     }
     if (C == NULL) {
         plasma_error("NULL C");
-        return -12;
+        return -11;
     }
     if (ldc < imax(1, m)) {
         plasma_error("illegal value of ldc");
-        return -13;
+        return -12;
     }
 
     // quick return
@@ -267,7 +265,7 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
 /***************************************************************************//**
  * @ingroup plasma_hemm
  *
- *  Performs hemmetric matrix multiplication.
+ *  Performs hermitian matrix multiplication.
  *  Non-blocking equivalent of PLASMA_zhemm_Tile().
  *  May return before the computation is finished.
  *  Allows for pipelining of operations at runtime.
