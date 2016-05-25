@@ -23,10 +23,7 @@
 void test_zgemm(param_value_t param[], char *info);
 void test_zsymm(param_value_t param[], char *info);
 void test_zsyrk(param_value_t param[], char *info);
-
-#define COMPLEX
 void test_zhemm(param_value_t param[], char *info);
 void test_zherk(param_value_t param[], char *info);
-#undef COMPLEX
 
 #endif // TEST_Z_H

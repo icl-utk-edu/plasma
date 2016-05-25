@@ -29,6 +29,7 @@ typedef enum {
     PARAM_OUTER,  // outer product iteration?
     PARAM_TEST,   // test the solution?
     PARAM_TOL,    // tolerance
+    PARAM_TRANS,  // transposition
     PARAM_TRANSA, // transposition of A
     PARAM_TRANSB, // transposition of B
     PARAM_SIDE,   // side of A

@@ -286,8 +286,6 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
  * @sa PLASMA_zhemm
  * @sa PLASMA_zhemm_Tile
  * @sa PLASMA_chemm_Tile_Async
- * @sa PLASMA_dhemm_Tile_Async
- * @sa PLASMA_shemm_Tile_Async
  *
  ******************************************************************************/
 void PLASMA_zhemm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
