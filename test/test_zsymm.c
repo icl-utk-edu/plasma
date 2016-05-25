@@ -90,7 +90,6 @@ void test_zsymm(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-
     PLASMA_enum side;
     PLASMA_enum uplo;
 

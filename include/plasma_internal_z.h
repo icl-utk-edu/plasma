@@ -9,8 +9,11 @@
  *
  * @version 3.0.0
  * @author Jakub Kurzak
+ * @author Mawussi Zounon
+ * @author Pedro V. Lara
+ * @author Maksims Abalenkovs
  * @author Samuel D. Relton
- * @date 2016-05-16
+ * @date 2016-05-24
  * @precisions normal z -> s d c
  *
  **/
