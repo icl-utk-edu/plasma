@@ -4,12 +4,13 @@
  *
  *  PLASMA header.
  *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley, Univ. of Colorado Denver and
- *  Univ. of Manchester.
+ *  Univ. of Manchester, Univ. of California Berkeley and
+ *  Univ. of Colorado Denver.
  *
  * @version 3.0.0
  * @author Jakub Kurzak
- * @date 2016-01-01
+ * @author Samuel D. Relton
+ * @date 2016-05-16
  * @precisions normal z -> s d c
  *
  **/
@@ -30,21 +31,29 @@ int PLASMA_zgemm(
                               PLASMA_Complex64_t *B, int ldb,
     PLASMA_Complex64_t beta,  PLASMA_Complex64_t *C, int ldc);
 
-int PLASMA_zherk(
-    PLASMA_enum uplo, PLASMA_enum trans, 
-    int n, int k, 
-    double alpha, 
-    PLASMA_Complex64_t *A, int lda, 
-    double beta, 
-    PLASMA_Complex64_t *C, int ldc);
+int PLASMA_zsymm(PLASMA_enum side, PLASMA_enum uplo,
+                 int m, int n,
+                 PLASMA_Complex64_t alpha, PLASMA_Complex64_t *A, int lda,
+                                           PLASMA_Complex64_t *B, int ldb,
+                 PLASMA_Complex64_t beta,  PLASMA_Complex64_t *C, int ldc);
 
-int PLASMA_zsyrk(
-    PLASMA_enum uplo, PLASMA_enum trans, 
-    int n, int k,
-    PLASMA_Complex64_t alpha, 
-    PLASMA_Complex64_t *A, int lda,
-    PLASMA_Complex64_t beta,  
-    PLASMA_Complex64_t *C, int ldc);
+int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo,
+                 int m, int n,
+                 PLASMA_Complex64_t alpha, PLASMA_Complex64_t *A, int lda,
+                                           PLASMA_Complex64_t *B, int ldb,
+                 PLASMA_Complex64_t beta,  PLASMA_Complex64_t *C, int ldc);
+
+int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans,
+                 int n, int k,
+                 PLASMA_Complex64_t alpha, PLASMA_Complex64_t *A, int lda,
+                 PLASMA_Complex64_t beta,  PLASMA_Complex64_t *C, int ldc);
+
+int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans,
+                 int n, int k,
+                 double alpha, PLASMA_Complex64_t *A, int lda,
+                 double beta,  PLASMA_Complex64_t *C, int ldc);
+
+
 
 /***************************************************************************//**
  *  Tile asynchronous interface.
@@ -56,17 +65,28 @@ void PLASMA_zgemm_Tile_Async(
     PLASMA_Complex64_t beta,  PLASMA_desc *descC,
     PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zherk_Tile_Async(
-    PLASMA_enum uplo, PLASMA_enum trans, 
-    double alpha, PLASMA_desc *A, 
-    double beta, PLASMA_desc *C, 
-    PLASMA_sequence *sequence, PLASMA_request *request);
+void PLASMA_zsymm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
+                             PLASMA_Complex64_t alpha,
+                             PLASMA_desc *A, PLASMA_desc *B,
+                             PLASMA_Complex64_t beta,  PLASMA_desc *C,
+                             PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zsyrk_Tile_Async(
-     PLASMA_enum uplo, PLASMA_enum trans,
-     PLASMA_Complex64_t alpha, PLASMA_desc *A,
-     PLASMA_Complex64_t beta,  PLASMA_desc *C,
-     PLASMA_sequence *sequence, PLASMA_request *request);
+void PLASMA_zhemm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
+                             PLASMA_Complex64_t alpha,
+                             PLASMA_desc *A, PLASMA_desc *B,
+                             PLASMA_Complex64_t beta,  PLASMA_desc *C,
+                             PLASMA_sequence *sequence, PLASMA_request *request);
+
+void PLASMA_zsyrk_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
+                             PLASMA_Complex64_t alpha, PLASMA_desc *A,
+                             PLASMA_Complex64_t beta,  PLASMA_desc *C,
+                             PLASMA_sequence *sequence, PLASMA_request *request);
+
+void PLASMA_zherk_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
+                             double alpha, PLASMA_desc *A,
+                             double beta,  PLASMA_desc *C,
+                             PLASMA_sequence *sequence, PLASMA_request *request);
+
 
 /***************************************************************************//**
  *  Layout translation async.

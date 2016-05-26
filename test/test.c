@@ -4,11 +4,13 @@
  *
  *  PLASMA testing harness.
  *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver.
+ *  Univ. of Manchester, Univ. of California Berkeley and
+ *  Univ. of Colorado Denver.
  *
  * @version 3.0.0
  * @author Jakub Kurzak
- * @date 2016-01-01
+ * @author Samuel D. Relton
+ * @date 2016-05-17
  *
  **/
 #include "test.h"
@@ -38,7 +40,6 @@ int main(int argc, char **argv)
     if (argc == 1 ||
         strcmp(argv[1], "-h") == 0 ||
         strcmp(argv[1], "--help") == 0) {
-
         print_main_usage();
         return EXIT_SUCCESS;
     }
@@ -177,7 +178,7 @@ int test_routine(const char *name, param_value_t pval[])
         printf("%*s %*s %s %*s %*s\n",
             InfoSpacing, "Seconds",
             InfoSpacing, "GFLOPS",
-                         info,
+            info,
             InfoSpacing, "Error",
             InfoSpacing, "Status");
         printf("\n");
@@ -187,7 +188,7 @@ int test_routine(const char *name, param_value_t pval[])
         printf("%*.4lf %*.4lf %s %*.2le %*s\n",
             InfoSpacing, pval[PARAM_TIME].d,
             InfoSpacing, pval[PARAM_GFLOPS].d,
-                         info,
+            info,
             InfoSpacing, pval[PARAM_ERROR].d,
             InfoSpacing, pval[PARAM_SUCCESS].i ? "pass" : "FAILED");
         return (pval[PARAM_SUCCESS].i == 0);
@@ -215,14 +216,14 @@ void time_routine(const char *name, param_value_t pval[])
         printf("%*s %*s %s\n",
             InfoSpacing, "Seconds",
             InfoSpacing, "GFLOPS",
-                         info);
+            info);
         printf("\n");
     }
     else {
         printf("%*.4lf %*.4lf %s\n",
             InfoSpacing, pval[PARAM_TIME].d,
             InfoSpacing, pval[PARAM_GFLOPS].d,
-                         info);
+            info);
     }
 }
 
@@ -246,22 +247,6 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_cgemm(pval, info);
     else if (strcmp(name, "sgemm") == 0)
         test_sgemm(pval, info);
-    
-    // -----
-    else if (strcmp(name, "zsyrk") == 0)
-        test_zsyrk(pval, info);
-    else if (strcmp(name, "dsyrk") == 0)
-        test_dsyrk(pval, info);
-    else if (strcmp(name, "csyrk") == 0)
-        test_csyrk(pval, info);
-    else if (strcmp(name, "ssyrk") == 0)
-        test_ssyrk(pval, info);
-    
-    // -----
-    else if (strcmp(name, "zherk") == 0)
-        test_zherk(pval, info);
-    else if (strcmp(name, "cherk") == 0)
-        test_cherk(pval, info);
 
     // -----
     else if (strcmp(name, "zsymm") == 0)
@@ -272,8 +257,26 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_csymm(pval, info);
     else if (strcmp(name, "ssymm") == 0)
         test_ssymm(pval, info);
-
+    // ----
+    else if (strcmp(name, "zhemm") == 0)
+        test_zhemm(pval, info);
+    else if (strcmp(name, "chemm") == 0)
+        test_chemm(pval, info);
     // -----
+    else if (strcmp(name, "zsyrk") == 0)
+        test_zsyrk(pval, info);
+    else if (strcmp(name, "dsyrk") == 0)
+        test_dsyrk(pval, info);
+    else if (strcmp(name, "csyrk") == 0)
+        test_csyrk(pval, info);
+    else if (strcmp(name, "ssyrk") == 0)
+        test_ssyrk(pval, info);
+    // ----
+    else if (strcmp(name, "zherk") == 0)
+        test_zherk(pval, info);
+    else if (strcmp(name, "cherk") == 0)
+        test_cherk(pval, info);
+    // ----
     else {
         printf("unknown routine: %s\n", name);
         exit(EXIT_FAILURE);
@@ -331,15 +334,18 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--test="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TEST]);
 
-        else if (param_starts_with(argv[i], "--trans="))
+        else if (param_starts_with(argv[i], "--side="))
+            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_SIDE]);
+
+        else if (param_starts_with(argv[1], "--trans="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANS]);
         else if (param_starts_with(argv[i], "--transa="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANSA]);
         else if (param_starts_with(argv[i], "--transb="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANSB]);
+
         else if (param_starts_with(argv[i], "--uplo="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_UPLO]);
-
         //--------------------------------------------------
         // Scan integer parameters.
         //--------------------------------------------------
@@ -407,6 +413,9 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_char('n', &param[PARAM_OUTER]);
     if (param[PARAM_TEST].num == 0)
         param_add_char('y', &param[PARAM_TEST]);
+
+    if (param[PARAM_SIDE].num == 0)
+        param_add_char('l', &param[PARAM_SIDE]);
     if (param[PARAM_TRANS].num == 0)
         param_add_char('n', &param[PARAM_TRANS]);
     if (param[PARAM_TRANSA].num == 0)

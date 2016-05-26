@@ -1,6 +1,6 @@
 /**
  *
- * @file test_zsymm.c
+ * @file test_zhemm.c
  *
  *  PLASMA test routine.
  *  PLASMA is a software package provided by Univ. of Tennessee,
@@ -10,7 +10,7 @@
  * @version 3.0.0
  * @author Samuel D. Relton
  * @date 2016-05-17
- * @precisions normal z -> s d c
+ * @precisions normal z -> c
  *
  **/
 #include "test.h"
@@ -34,7 +34,7 @@
 
 /***************************************************************************//**
  *
- * @brief Tests ZSYMM.
+ * @brief Tests ZHEMM.
  *
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
@@ -43,7 +43,7 @@
  * If param is NULL     and info is non-NULL, set info to column headings and return.
  * If param is non-NULL and info is non-NULL, set info to column values and run test.
  ******************************************************************************/
-void test_zsymm(param_value_t param[], char *info)
+void test_zhemm(param_value_t param[], char *info)
 {
     //================================================================
     // Print usage info or return column labels or values.
@@ -181,7 +181,7 @@ void test_zsymm(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zsymm(
+    PLASMA_zhemm(
         (CBLAS_SIDE)side, (CBLAS_UPLO) uplo,
         m, n,
         alpha, A, lda,
@@ -191,13 +191,13 @@ void test_zsymm(param_value_t param[], char *info)
     plasma_time_t time = stop-start;
 
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = flops_zsymm(side, m, n) / time / 1e9;
+    param[PARAM_GFLOPS].d = flops_zhemm(side, m, n) / time / 1e9;
 
     //================================================================
     // Test results by comparing to a reference implementation.
     //================================================================
     if (test) {
-        cblas_zsymm(
+        cblas_zhemm(
             CblasColMajor,
             (CBLAS_SIDE) side, (CBLAS_UPLO) uplo,
             m, n,
