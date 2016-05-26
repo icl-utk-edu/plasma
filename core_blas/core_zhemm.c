@@ -31,9 +31,7 @@
  *  Performs one of the matrix-matrix operations
  *
  *     \f[ C = \alpha \times A \times B + \beta \times C \f]
- *
  *  or
- *
  *     \f[ C = \alpha \times B \times A + \beta \times C \f]
  *
  *  where alpha and beta are scalars, A is a hermitian matrix and B and
@@ -44,8 +42,8 @@
  * @param[in] side
  *          Specifies whether the hemmetric matrix A appears on the
  *          left or right in the operation as follows:
- *          - PlasmaLeft:      \f[ C = \alpha \times A \times B + \beta \times C \f]
- *          - PlasmaRight:     \f[ C = \alpha \times B \times A + \beta \times C \f]
+ *          - PlasmaLeft:  \f[ C = \alpha \times A \times B + \beta \times C \f]
+ *          - PlasmaRight: \f[ C = \alpha \times B \times A + \beta \times C \f]
  *
  * @param[in] uplo
  *          Specifies whether the upper or lower triangular part of
@@ -91,9 +89,11 @@
  ******************************************************************************/
 void CORE_zhemm(PLASMA_enum side, PLASMA_enum uplo,
                 int m, int n,
-                PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+                PLASMA_Complex64_t alpha,
+                const PLASMA_Complex64_t *A, int lda,
                 const PLASMA_Complex64_t *B, int ldb,
-                PLASMA_Complex64_t beta, PLASMA_Complex64_t *C, int ldc)
+                PLASMA_Complex64_t beta,
+                PLASMA_Complex64_t *C, int ldc)
 {
     cblas_zhemm(
         CblasColMajor,
@@ -106,12 +106,13 @@ void CORE_zhemm(PLASMA_enum side, PLASMA_enum uplo,
 /******************************************************************************/
 void CORE_OMP_zhemm(PLASMA_enum side, PLASMA_enum uplo,
                     int m, int n,
-                    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+                    PLASMA_Complex64_t alpha,
+                    const PLASMA_Complex64_t *A, int lda,
                     const PLASMA_Complex64_t *B, int ldb,
-                    PLASMA_Complex64_t beta, PLASMA_Complex64_t *C, int ldc)
+                    PLASMA_Complex64_t beta,
+                    PLASMA_Complex64_t *C, int ldc)
 {
-    if (side == PlasmaLeft)
-    {
+    if (side == PlasmaLeft) {
 #pragma omp task depend(in:A[0:m*m]) depend(in:B[0:m*n]) depend(inout:C[0:m*n])
         CORE_zhemm(
             side, uplo,
@@ -120,8 +121,7 @@ void CORE_OMP_zhemm(PLASMA_enum side, PLASMA_enum uplo,
                    B, ldb,
             beta,  C, ldc);
     }
-    else
-    {
+    else {
 #pragma omp task depend(in:A[0:n*n]) depend(in:B[0:m*n]) depend(inout:C[0:m*n])
         CORE_zhemm(
             side, uplo,

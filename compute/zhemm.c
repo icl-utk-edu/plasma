@@ -39,8 +39,8 @@
  * @param[in] side
  *          Specifies whether the hemmetric matrix A appears on the
  *          left or right in the operation as follows:
- *          - PlasmaLeft:      \f[ C = \alpha \times A \times B + \beta \times C \f]
- *          - PlasmaRight:     \f[ C = \alpha \times B \times A + \beta \times C \f]
+ *          - PlasmaLeft:  \f[ C = \alpha \times A \times B + \beta \times C \f]
+ *          - PlasmaRight: \f[ C = \alpha \times B \times A + \beta \times C \f]
  *
  * @param[in] uplo
  *          Specifies whether the upper or lower triangular part of
@@ -140,12 +140,10 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
         return -6;
     }
 
-    if (side == PlasmaLeft)
-    {
+    if (side == PlasmaLeft) {
         Am = m;
     }
-    else
-    {
+    else {
         Am = n;
     }
 
@@ -186,14 +184,12 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
 
     // Allocate matrices in tile layout.
     retval = plasma_desc_mat_alloc(&descA);
-    if (retval != PLASMA_SUCCESS)
-    {
+    if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");
         return retval;
     }
     retval = plasma_desc_mat_alloc(&descB);
-    if (retval != PLASMA_SUCCESS)
-    {
+    if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");
         plasma_desc_mat_free(&descA);
         return retval;
@@ -219,12 +215,12 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
 #pragma omp parallel
 #pragma omp master
     {
-        /* the Async functions are submitted here.  If an error occurs
-           (at submission time or at run time) the sequence->status
-           will be marked with an error.  After an error, the next
-           Async will not _insert_ more tasks into the runtime.  The
-           sequence->status can be checked after each call to _Async
-           or at the end of the parallel region. */
+        // the Async functions are submitted here.  If an error occurs
+        //   (at submission time or at run time) the sequence->status
+        //   will be marked with an error.  After an error, the next
+        //   Async will not _insert_ more tasks into the runtime.  The
+        //   sequence->status can be checked after each call to _Async
+        //   or at the end of the parallel region.
 
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
@@ -287,7 +283,8 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
  *
  ******************************************************************************/
 void PLASMA_zhemm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
-                             PLASMA_Complex64_t alpha, PLASMA_desc *A, PLASMA_desc *B,
+                             PLASMA_Complex64_t alpha, PLASMA_desc *A,
+                                                       PLASMA_desc *B,
                              PLASMA_Complex64_t beta,  PLASMA_desc *C,
                              PLASMA_sequence *sequence, PLASMA_request *request)
 {

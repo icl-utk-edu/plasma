@@ -39,6 +39,9 @@
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
  *
+ * If param is NULL     and info is NULL,     print usage and return.
+ * If param is NULL     and info is non-NULL, set info to column headings and return.
+ * If param is non-NULL and info is non-NULL, set info to column values and run test.
  ******************************************************************************/
 void test_zsymm(param_value_t param[], char *info)
 {
@@ -110,13 +113,11 @@ void test_zsymm(param_value_t param[], char *info)
     int Bm, Bn;
     int Cm, Cn;
 
-    if (side == PlasmaLeft)
-    {
+    if (side == PlasmaLeft) {
         Am = m;
         An = m;
     }
-    else
-    {
+    else {
         Am = n;
         An = n;
     }
@@ -129,7 +130,6 @@ void test_zsymm(param_value_t param[], char *info)
     int lda = imax(1, Am + param[PARAM_PADA].i);
     int ldb = imax(1, Bm + param[PARAM_PADB].i);
     int ldc = imax(1, Cm + param[PARAM_PADC].i);
-
 
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
@@ -161,8 +161,7 @@ void test_zsymm(param_value_t param[], char *info)
     assert(retval == 0);
 
     PLASMA_Complex64_t *Cref = NULL;
-    if (test)
-    {
+    if (test) {
         Cref = (PLASMA_Complex64_t*)malloc(
             (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
         assert(Cref != NULL);
@@ -197,8 +196,7 @@ void test_zsymm(param_value_t param[], char *info)
     //================================================================
     // Test results by comparing to a reference implementation.
     //================================================================
-    if (test)
-    {
+    if (test) {
         cblas_zsymm(
             CblasColMajor,
             (CBLAS_SIDE) side, (CBLAS_UPLO) uplo,
