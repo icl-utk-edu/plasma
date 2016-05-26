@@ -183,7 +183,6 @@ int PLASMA_zsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
     //     return status;
     // }
 
-
     /* Set NT & KT */
     nb = plasma->nb;
     // Initialize tile matrix descriptors.
