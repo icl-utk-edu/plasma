@@ -46,6 +46,15 @@ int PLASMA_zsyrk(
     PLASMA_Complex64_t beta,  
     PLASMA_Complex64_t *C, int ldc);
 
+int PLASMA_zher2k(
+    PLASMA_enum uplo, PLASMA_enum trans,
+    int n, int k,
+    PLASMA_Complex64_t alpha,
+    PLASMA_Complex64_t *A, int lda,
+    PLASMA_Complex64_t *B, int ldb,
+    double beta, PLASMA_Complex64_t *C, int ldc);
+
+
 /***************************************************************************//**
  *  Tile asynchronous interface.
  **/
@@ -67,6 +76,13 @@ void PLASMA_zsyrk_Tile_Async(
      PLASMA_Complex64_t alpha, PLASMA_desc *A,
      PLASMA_Complex64_t beta,  PLASMA_desc *C,
      PLASMA_sequence *sequence, PLASMA_request *request);
+
+void PLASMA_zher2k_Tile_Async(
+    PLASMA_enum uplo, PLASMA_enum trans,
+    PLASMA_Complex64_t alpha, PLASMA_desc *A,
+    PLASMA_desc *B,  double beta, PLASMA_desc *C,
+    PLASMA_sequence *sequence, PLASMA_request *request);
+
 
 /***************************************************************************//**
  *  Layout translation async.
