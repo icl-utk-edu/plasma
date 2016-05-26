@@ -8,7 +8,9 @@
  *
  * @version 3.0.0
  * @author Jakub Kurzak
- * @date 2016-01-01
+ * @author Samuel D. Relton
+ * @author Mawussi Zounon
+ * @date 2016-05-17
  *
  **/
 #include "test.h"
@@ -237,54 +239,53 @@ void time_routine(const char *name, param_value_t pval[])
  ******************************************************************************/
 void run_routine(const char *name, param_value_t pval[], char *info)
 {
-    // -----
-    if      (strcmp(name, "zgemm") == 0)
-        test_zgemm(pval, info);
-    else if (strcmp(name, "dgemm") == 0)
-        test_dgemm(pval, info);
-    else if (strcmp(name, "cgemm") == 0)
-        test_cgemm(pval, info);
-    else if (strcmp(name, "sgemm") == 0)
-        test_sgemm(pval, info);
-    
-    // -----
-    else if (strcmp(name, "zsyrk") == 0)
-        test_zsyrk(pval, info);
-    else if (strcmp(name, "dsyrk") == 0)
-        test_dsyrk(pval, info);
-    else if (strcmp(name, "csyrk") == 0)
-        test_csyrk(pval, info);
-    else if (strcmp(name, "ssyrk") == 0)
-        test_ssyrk(pval, info);
-    
-    // -----
-    else if (strcmp(name, "zherk") == 0)
-        test_zherk(pval, info);
-    else if (strcmp(name, "cherk") == 0)
-        test_cherk(pval, info);
-
-    // -----
-    else if (strcmp(name, "zsymm") == 0)
-        test_zsymm(pval, info);
-    else if (strcmp(name, "dsymm") == 0)
-        test_dsymm(pval, info);
-    else if (strcmp(name, "csymm") == 0)
-        test_csymm(pval, info);
-    else if (strcmp(name, "ssymm") == 0)
-        test_ssymm(pval, info);
-
-        // -----
-    else if (strcmp(name, "zher2k") == 0)
-        test_zherk(pval, info);
-    else if (strcmp(name, "cher2k") == 0)
-        test_cherk(pval, info);
-
-
-    // -----
-    else {
-        printf("unknown routine: %s\n", name);
-        exit(EXIT_FAILURE);
-    }
+  // -----
+  if      (strcmp(name, "zgemm") == 0)
+    test_zgemm(pval, info);
+  else if (strcmp(name, "dgemm") == 0)
+    test_dgemm(pval, info);
+  else if (strcmp(name, "cgemm") == 0)
+    test_cgemm(pval, info);
+  else if (strcmp(name, "sgemm") == 0)
+    test_sgemm(pval, info);
+  // -----
+  else if (strcmp(name, "zhemm") == 0)
+    test_zhemm(pval, info);
+  else if (strcmp(name, "chemm") == 0)
+    test_chemm(pval, info);
+  // -----
+  else if (strcmp(name, "zherk") == 0)
+    test_zherk(pval, info);
+  else if (strcmp(name, "cherk") == 0)
+    test_cherk(pval, info);
+  // ----
+  else if (strcmp(name, "zsymm") == 0)
+    test_zsymm(pval, info);
+  else if (strcmp(name, "dsymm") == 0)
+    test_dsymm(pval, info);
+  else if (strcmp(name, "csymm") == 0)
+    test_csymm(pval, info);
+  else if (strcmp(name, "ssymm") == 0)
+    test_ssymm(pval, info);
+  // ----
+  else if (strcmp(name, "zsyrk") == 0)
+    test_zsyrk(pval, info);
+  else if (strcmp(name, "dsyrk") == 0)
+    test_dsyrk(pval, info);
+  else if (strcmp(name, "csyrk") == 0)
+    test_csyrk(pval, info);
+  else if (strcmp(name, "ssyrk") == 0)
+    test_ssyrk(pval, info);
+  // -----
+  else if (strcmp(name, "zher2k") == 0)
+    test_zherk(pval, info);
+  else if (strcmp(name, "cher2k") == 0)
+    test_cherk(pval, info);
+  // ----
+  else {
+    printf("unknown routine: %s\n", name);
+    exit(EXIT_FAILURE);
+  }
 }
 
 /***************************************************************************//**
