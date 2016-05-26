@@ -32,7 +32,7 @@ typedef enum {
     PARAM_TRANS,  // transposition
     PARAM_TRANSA, // transposition of A
     PARAM_TRANSB, // transposition of B
-    PARAM_SIDE,   // side of A
+    PARAM_SIDE,   // Left of right side application
     PARAM_UPLO,   // Upper or lower triangular
     PARAM_M,      // M dimension
     PARAM_N,      // N dimension
@@ -68,7 +68,7 @@ static const char *ParamUsage[][2] = {
     {"--tol=", "tolerance [default: 50]"},
     {"--transa=[n|t|c]", "transposition of A [default: n]"},
     {"--transb=[n|t|c]", "transposition of B [default: n]"},
-    {"--side=[l|r]", "side of A [default: n]"},
+    {"--side=[l|r]", "left of right side application [default: l]"},
     {"--uplo=[u|l]", "upper or lower triangular matrix [default: l]"},
     {"--m=", "M dimension (number of rows) [default: 1000]"},
     {"--n=", "N dimension (number of columns) [default: 1000]"},
