@@ -1,15 +1,16 @@
 /**
  *
- * @file test_zgemm.c
+ * @file test_zhemm.c
  *
  *  PLASMA test routine.
  *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver.
+ *  Univ. of Manchester, Univ. of California Berkeley and
+ *  Univ. of Colorado Denver.
  *
  * @version 3.0.0
- * @author Jakub Kurzak
- * @date 2016-01-01
- * @precisions normal z -> s d c
+ * @author Samuel D. Relton
+ * @date 2016-05-17
+ * @precisions normal z -> c
  *
  **/
 #include "test.h"
@@ -31,20 +32,18 @@
 #include <omp.h>
 #include <plasma.h>
 
-#define COMPLEX
-
 /***************************************************************************//**
  *
- * @brief Tests ZGEMM.
+ * @brief Tests ZHEMM.
  *
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
  *
  * If param is NULL     and info is NULL,     print usage and return.
  * If param is NULL     and info is non-NULL, set info to column headings and return.
- * If param is non-NULL and info is non-NULL, set info to column values   and run test.
+ * If param is non-NULL and info is non-NULL, set info to column values and run test.
  ******************************************************************************/
-void test_zgemm(param_value_t param[], char *info)
+void test_zhemm(param_value_t param[], char *info)
 {
     //================================================================
     // Print usage info or return column labels or values.
@@ -52,11 +51,10 @@ void test_zgemm(param_value_t param[], char *info)
     if (param == NULL) {
         if (info == NULL) {
             // Print usage info.
-            print_usage(PARAM_TRANSA);
-            print_usage(PARAM_TRANSB);
+            print_usage(PARAM_SIDE);
+            print_usage(PARAM_UPLO);
             print_usage(PARAM_M);
             print_usage(PARAM_N);
-            print_usage(PARAM_K);
             print_usage(PARAM_ALPHA);
             print_usage(PARAM_BETA);
             print_usage(PARAM_PADA);
@@ -66,78 +64,66 @@ void test_zgemm(param_value_t param[], char *info)
         else {
             // Return column labels.
             snprintf(info, InfoLen,
-                "%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s",
-                InfoSpacing, "TransA",
-                InfoSpacing, "TransB",
-                InfoSpacing, "M",
-                InfoSpacing, "N",
-                InfoSpacing, "K",
-                InfoSpacing, "alpha",
-                InfoSpacing, "beta",
-                InfoSpacing, "PadA",
-                InfoSpacing, "PadB",
-                InfoSpacing, "PadC");
+                     "%*s %*s %*s %*s %*s %*s %*s %*s %*s",
+                     InfoSpacing, "side",
+                     InfoSpacing, "uplo",
+                     InfoSpacing, "m",
+                     InfoSpacing, "n",
+                     InfoSpacing, "alpha",
+                     InfoSpacing, "beta",
+                     InfoSpacing, "PadA",
+                     InfoSpacing, "PadB",
+                     InfoSpacing, "PadC");
         }
         return;
     }
     // Return column values.
     snprintf(info, InfoLen,
-        "%*c %*c %*d %*d %*d %*.4f %*.4f %*d %*d %*d",
-        InfoSpacing, param[PARAM_TRANSA].c,
-        InfoSpacing, param[PARAM_TRANSB].c,
-        InfoSpacing, param[PARAM_M].i,
-        InfoSpacing, param[PARAM_N].i,
-        InfoSpacing, param[PARAM_K].i,
-        InfoSpacing, __real__(param[PARAM_ALPHA].z),
-        InfoSpacing, __real__(param[PARAM_BETA].z),
-        InfoSpacing, param[PARAM_PADA].i,
-        InfoSpacing, param[PARAM_PADB].i,
-        InfoSpacing, param[PARAM_PADC].i);
+             "%*c %*c %*d %*d %*.4f %*.4f %*d %*d %*d",
+             InfoSpacing, param[PARAM_SIDE].c,
+             InfoSpacing, param[PARAM_UPLO].c,
+             InfoSpacing, param[PARAM_M].i,
+             InfoSpacing, param[PARAM_N].i,
+             InfoSpacing, __real__(param[PARAM_ALPHA].z),
+             InfoSpacing, __real__(param[PARAM_BETA].z),
+             InfoSpacing, param[PARAM_PADA].i,
+             InfoSpacing, param[PARAM_PADB].i,
+             InfoSpacing, param[PARAM_PADC].i);
 
     //================================================================
     // Set parameters.
     //================================================================
-    PLASMA_enum transa;
-    PLASMA_enum transb;
+    PLASMA_enum side;
+    PLASMA_enum uplo;
 
-    if (param[PARAM_TRANSA].c == 'n')
-        transa = PlasmaNoTrans;
-    else if (param[PARAM_TRANSA].c == 't')
-        transa = PlasmaTrans;
+    if (param[PARAM_SIDE].c == 'l')
+        side = PlasmaLeft;
     else
-        transa = PlasmaConjTrans;
+        side = PlasmaRight;
 
-    if (param[PARAM_TRANSB].c == 'n')
-        transb = PlasmaNoTrans;
-    else if (param[PARAM_TRANSB].c == 't')
-        transb = PlasmaTrans;
+    if (param[PARAM_UPLO].c == 'l')
+        uplo = PlasmaLower;
     else
-        transb = PlasmaConjTrans;
+        uplo = PlasmaUpper;
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
-    int k = param[PARAM_K].i;
 
     int Am, An;
     int Bm, Bn;
     int Cm, Cn;
 
-    if (transa == PlasmaNoTrans) {
+    if (side == PlasmaLeft) {
         Am = m;
-        An = k;
-    }
-    else {
-        Am = k;
         An = m;
     }
-    if (transb == PlasmaNoTrans) {
-        Bm = k;
-        Bn = n;
-    }
     else {
-        Bm = n;
-        Bn = k;
+        Am = n;
+        An = n;
     }
+    Bm = m;
+    Bn = n;
+
     Cm = m;
     Cn = n;
 
@@ -195,38 +181,38 @@ void test_zgemm(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zgemm(
-        (CBLAS_TRANSPOSE)transa, (CBLAS_TRANSPOSE)transb,
-        m, n, k,
+    PLASMA_zhemm(
+        (CBLAS_SIDE)side, (CBLAS_UPLO) uplo,
+        m, n,
         alpha, A, lda,
                B, ldb,
-         beta, C, ldc);
+        beta,  C, ldc);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = flops_zgemm(m, n, k) / time / 1e9;
+    param[PARAM_GFLOPS].d = flops_zhemm(side, m, n) / time / 1e9;
 
     //================================================================
     // Test results by comparing to a reference implementation.
     //================================================================
     if (test) {
-        cblas_zgemm(
+        cblas_zhemm(
             CblasColMajor,
-            (CBLAS_TRANSPOSE)transa, (CBLAS_TRANSPOSE)transb,
-            m, n, k,
+            (CBLAS_SIDE) side, (CBLAS_UPLO) uplo,
+            m, n,
             CBLAS_SADDR(alpha), A, lda,
                                 B, ldb,
-             CBLAS_SADDR(beta), Cref, ldc);
+            CBLAS_SADDR(beta),  Cref, ldc);
 
         PLASMA_Complex64_t zmone = -1.0;
         cblas_zaxpy((size_t)ldc*Cn, CBLAS_SADDR(zmone), Cref, 1, C, 1);
 
         double work[1];
         double Cnorm = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', Cm, Cn, Cref, ldc, work);
+            LAPACK_COL_MAJOR, 'F', Cm, Cn, Cref, ldc, work);
         double error = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', Cm, Cn, C,    ldc, work);
+            LAPACK_COL_MAJOR, 'F', Cm, Cn, C,    ldc, work);
         if (Cnorm != 0)
             error /= Cnorm;
 
@@ -234,9 +220,7 @@ void test_zgemm(param_value_t param[], char *info)
         param[PARAM_SUCCESS].i = error < tol;
     }
 
-    //================================================================
-    // Free arrays.
-    //================================================================
+    // Free arrays
     free(A);
     free(B);
     free(C);

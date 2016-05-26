@@ -1,15 +1,16 @@
 /**
  *
- * @file test_zgemm.c
+ * @file test_zherk.c
  *
  *  PLASMA test routine.
  *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver.
+ *  Univ. of California Berkeley, Univ. of Colorado Denver and
+ *  Univ. of Manchester.
  *
  * @version 3.0.0
- * @author Jakub Kurzak
- * @date 2016-01-01
- * @precisions normal z -> s d c
+ * @author Pedro V. Lara
+ * @date 2016-05-16
+ * @precisions normal z -> c
  *
  **/
 #include "test.h"
@@ -35,7 +36,7 @@
 
 /***************************************************************************//**
  *
- * @brief Tests ZGEMM.
+ * @brief Tests ZHERK.
  *
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
@@ -44,7 +45,7 @@
  * If param is NULL     and info is non-NULL, set info to column headings and return.
  * If param is non-NULL and info is non-NULL, set info to column values   and run test.
  ******************************************************************************/
-void test_zgemm(param_value_t param[], char *info)
+void test_zherk(param_value_t param[], char *info)
 {
     //================================================================
     // Print usage info or return column labels or values.
@@ -52,97 +53,78 @@ void test_zgemm(param_value_t param[], char *info)
     if (param == NULL) {
         if (info == NULL) {
             // Print usage info.
-            print_usage(PARAM_TRANSA);
-            print_usage(PARAM_TRANSB);
-            print_usage(PARAM_M);
+            print_usage(PARAM_UPLO);
+            print_usage(PARAM_TRANS);
             print_usage(PARAM_N);
             print_usage(PARAM_K);
             print_usage(PARAM_ALPHA);
             print_usage(PARAM_BETA);
             print_usage(PARAM_PADA);
-            print_usage(PARAM_PADB);
             print_usage(PARAM_PADC);
         }
         else {
             // Return column labels.
             snprintf(info, InfoLen,
-                "%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s",
-                InfoSpacing, "TransA",
-                InfoSpacing, "TransB",
-                InfoSpacing, "M",
+                "%*s %*s %*s %*s %*s %*s %*s %*s",
+                InfoSpacing, "Uplo",
+                InfoSpacing, "Trans",
                 InfoSpacing, "N",
                 InfoSpacing, "K",
                 InfoSpacing, "alpha",
                 InfoSpacing, "beta",
                 InfoSpacing, "PadA",
-                InfoSpacing, "PadB",
                 InfoSpacing, "PadC");
         }
         return;
     }
     // Return column values.
     snprintf(info, InfoLen,
-        "%*c %*c %*d %*d %*d %*.4f %*.4f %*d %*d %*d",
-        InfoSpacing, param[PARAM_TRANSA].c,
-        InfoSpacing, param[PARAM_TRANSB].c,
-        InfoSpacing, param[PARAM_M].i,
+        "%*c %*c %*d %*d %*.4f %*.4f %*d %*d",
+        InfoSpacing, param[PARAM_UPLO].c,
+        InfoSpacing, param[PARAM_TRANS].c,
         InfoSpacing, param[PARAM_N].i,
         InfoSpacing, param[PARAM_K].i,
         InfoSpacing, __real__(param[PARAM_ALPHA].z),
         InfoSpacing, __real__(param[PARAM_BETA].z),
         InfoSpacing, param[PARAM_PADA].i,
-        InfoSpacing, param[PARAM_PADB].i,
         InfoSpacing, param[PARAM_PADC].i);
 
     //================================================================
     // Set parameters.
     //================================================================
-    PLASMA_enum transa;
-    PLASMA_enum transb;
+    PLASMA_enum uplo;
+    PLASMA_enum trans;
 
-    if (param[PARAM_TRANSA].c == 'n')
-        transa = PlasmaNoTrans;
-    else if (param[PARAM_TRANSA].c == 't')
-        transa = PlasmaTrans;
+    if (param[PARAM_UPLO].c == 'l')
+        uplo = PlasmaLower;
+    else 
+        uplo = PlasmaUpper;
+    
+    if (param[PARAM_TRANS].c == 'n')
+        trans = PlasmaNoTrans;
+    else if (param[PARAM_TRANS].c == 't')
+        trans = PlasmaTrans;
     else
-        transa = PlasmaConjTrans;
+        trans = PlasmaConjTrans;
 
-    if (param[PARAM_TRANSB].c == 'n')
-        transb = PlasmaNoTrans;
-    else if (param[PARAM_TRANSB].c == 't')
-        transb = PlasmaTrans;
-    else
-        transb = PlasmaConjTrans;
-
-    int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
     int k = param[PARAM_K].i;
 
     int Am, An;
-    int Bm, Bn;
     int Cm, Cn;
 
-    if (transa == PlasmaNoTrans) {
-        Am = m;
+    if (trans == PlasmaNoTrans) {
+        Am = n;
         An = k;
     }
     else {
         Am = k;
-        An = m;
+        An = n;
     }
-    if (transb == PlasmaNoTrans) {
-        Bm = k;
-        Bn = n;
-    }
-    else {
-        Bm = n;
-        Bn = k;
-    }
-    Cm = m;
+    Cm = n;
     Cn = n;
 
     int lda = imax(1, Am + param[PARAM_PADA].i);
-    int ldb = imax(1, Bm + param[PARAM_PADB].i);
     int ldc = imax(1, Cm + param[PARAM_PADC].i);
 
     int test = param[PARAM_TEST].c == 'y';
@@ -155,10 +137,6 @@ void test_zgemm(param_value_t param[], char *info)
         (PLASMA_Complex64_t*)malloc((size_t)lda*An*sizeof(PLASMA_Complex64_t));
     assert(A != NULL);
 
-    PLASMA_Complex64_t *B =
-        (PLASMA_Complex64_t*)malloc((size_t)ldb*Bn*sizeof(PLASMA_Complex64_t));
-    assert(B != NULL);
-
     PLASMA_Complex64_t *C =
         (PLASMA_Complex64_t*)malloc((size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
     assert(C != NULL);
@@ -166,9 +144,6 @@ void test_zgemm(param_value_t param[], char *info)
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*An, A);
-    assert(retval == 0);
-
-    retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*Bn, B);
     assert(retval == 0);
 
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldc*Cn, C);
@@ -183,41 +158,52 @@ void test_zgemm(param_value_t param[], char *info)
         memcpy(Cref, C, (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
     }
 
-#ifdef COMPLEX
-    PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
-    PLASMA_Complex64_t beta  = param[PARAM_BETA].z;
-#else
-    PLASMA_Complex64_t alpha = __real__(param[PARAM_ALPHA].z);
-    PLASMA_Complex64_t beta  = __real__(param[PARAM_BETA].z);
-#endif
+
+    //#ifdef COMPLEX
+    //PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
+    //PLASMA_Complex64_t beta  = param[PARAM_BETA].z;
+    //#else
+    //PLASMA_Complex64_t alpha = __real__(param[PARAM_ALPHA].z);
+    //PLASMA_Complex64_t beta  = __real__(param[PARAM_BETA].z);
+    //#endif
+    
+    double alpha = __real__(param[PARAM_ALPHA].z);
+    double beta  = __real__(param[PARAM_BETA].z);
 
     //================================================================
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zgemm(
-        (CBLAS_TRANSPOSE)transa, (CBLAS_TRANSPOSE)transb,
-        m, n, k,
+
+    PLASMA_zherk(
+        (CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)trans,
+        n, k,
         alpha, A, lda,
-               B, ldb,
-         beta, C, ldc);
+        beta, C, ldc);
+    //cblas_zherk(
+    //    CblasColMajor,
+    //    (CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)trans,
+    //    n, k,
+    //    alpha, A, lda,
+    //    beta, C, ldc);
+         
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = flops_zgemm(m, n, k) / time / 1e9;
+    param[PARAM_GFLOPS].d = flops_zherk(k, n) / time / 1e9;
 
     //================================================================
     // Test results by comparing to a reference implementation.
     //================================================================
     if (test) {
-        cblas_zgemm(
+
+        cblas_zherk(
             CblasColMajor,
-            (CBLAS_TRANSPOSE)transa, (CBLAS_TRANSPOSE)transb,
-            m, n, k,
-            CBLAS_SADDR(alpha), A, lda,
-                                B, ldb,
-             CBLAS_SADDR(beta), Cref, ldc);
+            (CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)trans,
+            n, k,
+            alpha, A, lda,
+            beta, Cref, ldc);
 
         PLASMA_Complex64_t zmone = -1.0;
         cblas_zaxpy((size_t)ldc*Cn, CBLAS_SADDR(zmone), Cref, 1, C, 1);
@@ -238,7 +224,6 @@ void test_zgemm(param_value_t param[], char *info)
     // Free arrays.
     //================================================================
     free(A);
-    free(B);
     free(C);
     if (test)
         free(Cref);

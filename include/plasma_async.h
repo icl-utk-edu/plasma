@@ -8,7 +8,8 @@
  *
  * @version 3.0.0
  * @author Jakub Kurzak
- * @date 2016-01-01
+ * @author Samuel D. Relton
+ * @date 2016-05-16
  *
  **/
 #ifndef ICL_PLASMA_ASYNC_H
