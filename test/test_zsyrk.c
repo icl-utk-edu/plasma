@@ -101,9 +101,9 @@ void test_zsyrk(param_value_t param[], char *info)
         uplo = PlasmaUpper;
 
     if (param[PARAM_TRANS].c == 'n')
-       trans = PlasmaNoTrans;
+        trans = PlasmaNoTrans;
     else if (param[PARAM_TRANS].c == 't')
-       trans = PlasmaTrans;
+        trans = PlasmaTrans;
     else
         trans = PlasmaConjTrans;
 
@@ -157,7 +157,6 @@ void test_zsyrk(param_value_t param[], char *info)
 
         memcpy(Cref, C, (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
     }
-
 
 #ifdef COMPLEX
     PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
