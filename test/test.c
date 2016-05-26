@@ -40,6 +40,7 @@ int main(int argc, char **argv)
     if (argc == 1 ||
         strcmp(argv[1], "-h") == 0 ||
         strcmp(argv[1], "--help") == 0) {
+
         print_main_usage();
         return EXIT_SUCCESS;
     }
