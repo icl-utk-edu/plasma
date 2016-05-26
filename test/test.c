@@ -248,8 +248,17 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_cgemm(pval, info);
     else if (strcmp(name, "sgemm") == 0)
         test_sgemm(pval, info);
-
     // -----
+    else if (strcmp(name, "zhemm") == 0)
+        test_zhemm(pval, info);
+    else if (strcmp(name, "chemm") == 0)
+        test_chemm(pval, info);
+    // -----
+    else if (strcmp(name, "zherk") == 0)
+        test_zherk(pval, info);
+    else if (strcmp(name, "cherk") == 0)
+        test_cherk(pval, info);
+    // ----
     else if (strcmp(name, "zsymm") == 0)
         test_zsymm(pval, info);
     else if (strcmp(name, "dsymm") == 0)
@@ -259,11 +268,6 @@ void run_routine(const char *name, param_value_t pval[], char *info)
     else if (strcmp(name, "ssymm") == 0)
         test_ssymm(pval, info);
     // ----
-    else if (strcmp(name, "zhemm") == 0)
-        test_zhemm(pval, info);
-    else if (strcmp(name, "chemm") == 0)
-        test_chemm(pval, info);
-    // -----
     else if (strcmp(name, "zsyrk") == 0)
         test_zsyrk(pval, info);
     else if (strcmp(name, "dsyrk") == 0)
@@ -272,11 +276,6 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_csyrk(pval, info);
     else if (strcmp(name, "ssyrk") == 0)
         test_ssyrk(pval, info);
-    // ----
-    else if (strcmp(name, "zherk") == 0)
-        test_zherk(pval, info);
-    else if (strcmp(name, "cherk") == 0)
-        test_cherk(pval, info);
     // ----
     else {
         printf("unknown routine: %s\n", name);
