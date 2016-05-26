@@ -36,7 +36,7 @@
  *
  *    op( X ) = X  or op( X ) = conjg( X' )
  *
- *  where alpha and beta are real scalars, C is an n-by-n symmetric
+ *  where alpha is complex, beta  is real scalar, C is an n-by-n symmetric
  *  matrix and A and B are an n-by-k matrices the first case and k-by-n
  *  matrices in the second case.
  *

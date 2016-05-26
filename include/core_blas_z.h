@@ -68,6 +68,13 @@ void CORE_zher2k(
     const PLASMA_Complex64_t *B, int ldb,
     double beta,  PLASMA_Complex64_t *C, int ldc);
 
+void CORE_zsyr2k(
+    PLASMA_enum uplo, PLASMA_enum trans,
+    int n, int k,
+    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+    const PLASMA_Complex64_t *B, int ldb,
+    PLASMA_Complex64_t beta,  PLASMA_Complex64_t *C, int ldc);
+
 void CORE_zlacpy(
     PLASMA_enum uplo,
     int m, int n,
@@ -118,6 +125,13 @@ void CORE_OMP_zher2k(
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
     const PLASMA_Complex64_t *B, int ldb,
     double beta,  PLASMA_Complex64_t *C, int ldc);
+
+void CORE_OMP_zsyr2k(
+    PLASMA_enum uplo, PLASMA_enum trans,
+    int n, int k,
+    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+    const PLASMA_Complex64_t *B, int ldb,
+    PLASMA_Complex64_t beta,  PLASMA_Complex64_t *C, int ldc);
 
 
 void CORE_OMP_zlacpy(
