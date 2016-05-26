@@ -17,10 +17,10 @@
 #include "plasma_types.h"
 
 #ifdef PLASMA_WITH_MKL
-#include <mkl.h>
+     #include <mkl.h>
 #else
-#include <cblas.h>
-#include <lapacke.h>
+    #include <cblas.h>
+    #include <lapacke.h>
 #endif
 
 #undef REAL
@@ -55,9 +55,9 @@
  * @param[in] trans
  *          Specifies whether A is transposed or conjugate transposed:
  *          = PlasmaNoTrans: \f[ C = \alpha [ op( A ) \times conjg( op( B )')] +
- conjg( \alpha ) [ op( B ) \times conjg( op( A )' )] + \beta C \f]
+ *            conjg( \alpha ) [ op( B ) \times conjg( op( A )' )] + \beta C \f]
  *          = PlasmaConjTrans: \f[ C = \alpha[conjg( op( A )') \times op( B )] +
- *          conjg( \alpha ) [ conjg( op( B )' ) \times op( A ) ] + \beta C \f]
+ *            conjg( \alpha ) [ conjg( op( B )' ) \times op( A ) ] + \beta C \f]
  *
  * @param[in] n
  *          n specifies the order of the matrix C. n must be at least zero.
@@ -125,7 +125,7 @@ void CORE_OMP_zher2k(
 {
     //  omp depends assume lda == n or k, ldb == n or k, and ldc == n,
     // depending on transposes
-    #pragma omp task depend(in:A[0:n*k]) depend(in:B[0:n*k]) depend(inout:C[0:n*n])
+#pragma omp task depend(in:A[0:n*k]) depend(in:B[0:n*k]) depend(inout:C[0:n*n])
     CORE_zher2k(
         uplo, trans,
         n, k, alpha,

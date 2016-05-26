@@ -22,11 +22,11 @@
 #include <string.h>
 
 #ifdef PLASMA_WITH_MKL
-#include <mkl_cblas.h>
-#include <mkl_lapacke.h>
+    #include <mkl_cblas.h>
+    #include <mkl_lapacke.h>
 #else
-#include <cblas.h>
-#include <lapacke.h>
+    #include <cblas.h>
+    #include <lapacke.h>
 #endif
 #include <omp.h>
 #include <plasma.h>

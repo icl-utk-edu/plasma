@@ -102,19 +102,20 @@
  * @sa PLASMA_cher2k
  *
  ******************************************************************************/
-int PLASMA_zher2k(
-    PLASMA_enum uplo, PLASMA_enum trans,
-    int n, int k,
-    PLASMA_Complex64_t alpha,
-    PLASMA_Complex64_t *A, int lda,
-    PLASMA_Complex64_t *B, int ldb,
-    double beta, PLASMA_Complex64_t *C, int ldc)
+int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
+                  int n, int k,
+                  PLASMA_Complex64_t alpha,
+                  PLASMA_Complex64_t *A, int lda,
+                  PLASMA_Complex64_t *B, int ldb,
+                  double beta, PLASMA_Complex64_t *C, int ldc)
 {
     int Am, An;
     int Bm, Bn;
     int nb;
     int retval;
     int status;
+    PLASMA_Complex64_t zzero = 0.0;
+    PLASMA_Complex64_t zone  = 1.0;
 
     PLASMA_desc descA;
     PLASMA_desc descB;
@@ -129,12 +130,12 @@ int PLASMA_zher2k(
 
     // Check input arguments.
     if ((uplo != PlasmaUpper) &&
-            (uplo != PlasmaLower)) {
+	(uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
         return -1;
     }
     if ((trans != PlasmaNoTrans) &&
-            (trans != PlasmaConjTrans)) {
+	(trans != PlasmaConjTrans)) {
         plasma_error("illegal value of trans");
         return -2;
     }
@@ -171,9 +172,7 @@ int PLASMA_zher2k(
     }
 
     // quick return
-    if (n == 0 ||
-            ((alpha == (PLASMA_Complex64_t)0.0 || k == 0.0) &&
-             beta == (double)1.0))
+    if (n == 0 || ((alpha == zzero || k == 0.0) && beta == (double)1.0))
         return PLASMA_SUCCESS;
 
     // Tune
@@ -202,7 +201,6 @@ int PLASMA_zher2k(
         plasma_error("plasma_desc_mat_alloc() failed");
         return retval;
     }
-
     retval = plasma_desc_mat_alloc(&descB);
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");
@@ -225,8 +223,8 @@ int PLASMA_zher2k(
     // Initialize request.
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
 
-    #pragma omp parallel
-    #pragma omp master
+#pragma omp parallel
+#pragma omp master
     {
         // the Async functions are submitted here.  If an error occurs
         //   (at submission time or at run time) the sequence->status
@@ -330,12 +328,14 @@ int PLASMA_zher2k(
  * @sa PLASMA_cher2k_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zher2k_Tile_Async(
-    PLASMA_enum uplo, PLASMA_enum trans,
-    PLASMA_Complex64_t alpha, PLASMA_desc *A,
-    PLASMA_desc *B, double beta,  PLASMA_desc *C,
-    PLASMA_sequence *sequence, PLASMA_request *request)
+void PLASMA_zher2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
+                              PLASMA_Complex64_t alpha, PLASMA_desc *A,
+			                                PLASMA_desc *B,
+			                  double beta,  PLASMA_desc *C,
+			      PLASMA_sequence *sequence, PLASMA_request *request)
 {
+
+    PLASMA_Complex64_t zzero = 0.0;
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -345,14 +345,12 @@ void PLASMA_zher2k_Tile_Async(
     }
 
     // Check input arguments.
-    if ((uplo != PlasmaUpper) &&
-            (uplo != PlasmaLower)) {
+    if ((uplo != PlasmaUpper) && (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if ((trans != PlasmaNoTrans) &&
-            (trans != PlasmaConjTrans)) {
+    if ((trans != PlasmaNoTrans) && (trans != PlasmaConjTrans)) {
         plasma_error("illegal value of trans");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -424,15 +422,14 @@ void PLASMA_zher2k_Tile_Async(
     }
 
     // quick return
-    if (C->m == 0 ||
-            ((alpha == (PLASMA_Complex64_t)0.0 || An == 0) &&
-             beta == (double)1.0))
+    if (C->m == 0 || ((alpha == zzero || An == 0) && beta == (double)1.0))
         return;
 
     // Call the parallel function.
     plasma_pzher2k(uplo, trans,
-                   alpha, *A, *B,
-                   beta, *C,
+                   alpha, *A,
+		          *B,
+                    beta, *C,
                    sequence, request);
     return;
 }
