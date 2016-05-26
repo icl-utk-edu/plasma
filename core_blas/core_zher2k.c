@@ -125,7 +125,7 @@ void CORE_OMP_zher2k(
 {
     //  omp depends assume lda == n or k, ldb == n or k, and ldc == n,
     // depending on transposes
-#pragma omp task depend(in:A[0:n*k]) depend(in:B[0:n*k]) depend(inout:C[0:n*n])
+    #pragma omp task depend(in:A[0:n*k]) depend(in:B[0:n*k]) depend(inout:C[0:n*n])
     CORE_zher2k(
         uplo, trans,
         n, k, alpha,

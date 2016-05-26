@@ -43,8 +43,7 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
     if (sequence->status != PLASMA_SUCCESS)
         return;
 
-    for (n = 0; n < C.nt; n++)
-    {
+    for (n = 0; n < C.nt; n++) {
         tempnn = n == C.nt-1 ? C.n-n*C.nb : C.nb;
         ldan = BLKLDD(A, n);
         ldbn = BLKLDD(B, n);
@@ -52,10 +51,8 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
         //=======================================
         // PlasmaNoTrans
         //=======================================
-        if (trans == PlasmaNoTrans)
-        {
-            for (k = 0; k < A.nt; k++)
-            {
+        if (trans == PlasmaNoTrans) {
+            for (k = 0; k < A.nt; k++) {
                 tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
                 dbeta = k == 0 ? beta : 1.0;
                 CORE_OMP_zher2k(
@@ -68,16 +65,13 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
             //=======================================
             // PlasmaNoTrans / PlasmaLower
             //=======================================
-            if (uplo == PlasmaLower)
-            {
-                for (m = n+1; m < C.mt; m++)
-                {
+            if (uplo == PlasmaLower) {
+                for (m = n+1; m < C.mt; m++) {
                     tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
                     ldam = BLKLDD(A, m);
                     ldbm = BLKLDD(B, m);
                     ldcm = BLKLDD(C, m);
-                    for (k = 0; k < A.nt; k++)
-                    {
+                    for (k = 0; k < A.nt; k++) {
                         tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
                         zbeta = k == 0 ? (PLASMA_Complex64_t)beta : zone;
                         CORE_OMP_zgemm(
@@ -99,15 +93,12 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
             //=======================================
             // PlasmaNoTrans / PlasmaUpper
             //=======================================
-            else
-            {
-                for (m = n+1; m < C.mt; m++)
-                {
+            else {
+                for (m = n+1; m < C.mt; m++) {
                     tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
                     ldam = BLKLDD(A, m);
                     ldbm = BLKLDD(B, m);
-                    for (k = 0; k < A.nt; k++)
-                    {
+                    for (k = 0; k < A.nt; k++) {
                         tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
                         zbeta = k == 0 ? (PLASMA_Complex64_t)beta : zone;
                         CORE_OMP_zgemm(
@@ -130,10 +121,8 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
         //=======================================
         // Plasma[Conj]Trans
         //=======================================
-        else
-        {
-            for (k = 0; k < A.mt; k++)
-            {
+        else {
+            for (k = 0; k < A.mt; k++) {
                 tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
                 ldak = BLKLDD(A, k);
                 ldbk = BLKLDD(B, k);
@@ -148,14 +137,11 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
             //=======================================
             // Plasma[Conj]Trans / PlasmaLower
             //=======================================
-            if (uplo == PlasmaLower)
-            {
-                for (m = n+1; m < C.mt; m++)
-                {
+            if (uplo == PlasmaLower) {
+                for (m = n+1; m < C.mt; m++) {
                     tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
                     ldcm = BLKLDD(C, m);
-                    for (k = 0; k < A.mt; k++)
-                    {
+                    for (k = 0; k < A.mt; k++) {
                         tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
                         ldak = BLKLDD(A, k);
                         ldbk = BLKLDD(B, k);
@@ -179,13 +165,10 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
             //=======================================
             // Plasma[Conj]Trans / PlasmaUpper
             //=======================================
-            else
-            {
-                for (m = n+1; m < C.mt; m++)
-                {
+            else {
+                for (m = n+1; m < C.mt; m++) {
                     tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
-                    for (k = 0; k < A.mt; k++)
-                    {
+                    for (k = 0; k < A.mt; k++) {
                         tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
                         ldak = BLKLDD(A, k);
                         ldbk = BLKLDD(B, k);

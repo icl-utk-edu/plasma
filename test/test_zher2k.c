@@ -51,10 +51,8 @@ void test_zher2k(param_value_t param[], char *info)
     //================================================================
     // Print usage info or return column labels or values.
     //================================================================
-    if (param == NULL)
-    {
-        if (info == NULL)
-        {
+    if (param == NULL) {
+        if (info == NULL) {
             // Print usage info.
             print_usage(PARAM_UPLO);
             print_usage(PARAM_TRANS);
@@ -65,9 +63,7 @@ void test_zher2k(param_value_t param[], char *info)
             print_usage(PARAM_PADA);
             print_usage(PARAM_PADB);
             print_usage(PARAM_PADC);
-        }
-        else
-        {
+        } else {
             // Return column labels.
             snprintf(info, InfoLen,
                      "%*s %*s %*s %*s %*s %*s %*s %*s %*s",
@@ -121,15 +117,12 @@ void test_zher2k(param_value_t param[], char *info)
     int Bm, Bn;
     int Cm, Cn;
 
-    if (trans == PlasmaNoTrans)
-    {
+    if (trans == PlasmaNoTrans) {
         Am = n;
         An = k;
         Bm = n;
         Bn = k;
-    }
-    else
-    {
+    } else {
         Am = k;
         An = n;
         Bm = k;
@@ -173,8 +166,7 @@ void test_zher2k(param_value_t param[], char *info)
     assert(retval == 0);
 
     PLASMA_Complex64_t *Cref = NULL;
-    if (test)
-    {
+    if (test) {
         Cref = (PLASMA_Complex64_t*)malloc(
                    (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
         assert(Cref != NULL);
@@ -206,8 +198,7 @@ void test_zher2k(param_value_t param[], char *info)
     //================================================================
     // Test results by comparing to a reference implementation.
     //================================================================
-    if (test)
-    {
+    if (test) {
         cblas_zher2k(
             CblasColMajor,
             (CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)trans,
