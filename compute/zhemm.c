@@ -81,7 +81,7 @@
  *          On exit, the array is overwritten by the m-by-n updated matrix.
  *
  * @param[in] ldc
- *          The leading dimension of the array C. LDC >= max(1,M).
+ *          The leading dimension of the array C. ldc >= max(1,m).
  *
  *******************************************************************************
  *
