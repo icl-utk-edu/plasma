@@ -43,7 +43,7 @@
  *
  * If param is NULL     and info is NULL,     print usage and return.
  * If param is NULL     and info is non-NULL, set info to column headings and return.
- * If param is non-NULL and info is non-NULL, set info to column values  and run test.
+ * If param is non-NULL and info is non-NULL, set info to column values and run test.
  ******************************************************************************/
 void test_zherk(param_value_t param[], char *info)
 {
