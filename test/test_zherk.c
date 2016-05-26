@@ -43,7 +43,7 @@
  *
  * If param is NULL     and info is NULL,     print usage and return.
  * If param is NULL     and info is non-NULL, set info to column headings and return.
- * If param is non-NULL and info is non-NULL, set info to column values   and run test.
+ * If param is non-NULL and info is non-NULL, set info to column values  and run test.
  ******************************************************************************/
 void test_zherk(param_value_t param[], char *info)
 {
@@ -97,9 +97,9 @@ void test_zherk(param_value_t param[], char *info)
 
     if (param[PARAM_UPLO].c == 'l')
         uplo = PlasmaLower;
-    else 
+    else
         uplo = PlasmaUpper;
-    
+
     if (param[PARAM_TRANS].c == 'n')
         trans = PlasmaNoTrans;
     else if (param[PARAM_TRANS].c == 't')
@@ -158,15 +158,6 @@ void test_zherk(param_value_t param[], char *info)
         memcpy(Cref, C, (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
     }
 
-
-    //#ifdef COMPLEX
-    //PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
-    //PLASMA_Complex64_t beta  = param[PARAM_BETA].z;
-    //#else
-    //PLASMA_Complex64_t alpha = __real__(param[PARAM_ALPHA].z);
-    //PLASMA_Complex64_t beta  = __real__(param[PARAM_BETA].z);
-    //#endif
-    
     double alpha = __real__(param[PARAM_ALPHA].z);
     double beta  = __real__(param[PARAM_BETA].z);
 
@@ -180,13 +171,7 @@ void test_zherk(param_value_t param[], char *info)
         n, k,
         alpha, A, lda,
         beta, C, ldc);
-    //cblas_zherk(
-    //    CblasColMajor,
-    //    (CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)trans,
-    //    n, k,
-    //    alpha, A, lda,
-    //    beta, C, ldc);
-         
+
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
