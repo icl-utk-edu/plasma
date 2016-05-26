@@ -279,6 +279,7 @@ void run_routine(const char *name, param_value_t pval[], char *info)
     else if (strcmp(name, "cher2k") == 0)
         test_cherk(pval, info);
 
+
     // -----
     else {
         printf("unknown routine: %s\n", name);
