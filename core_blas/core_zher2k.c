@@ -49,29 +49,29 @@
  *******************************************************************************
  *
  * @param[in] uplo
- *          = PlasmaUpper: Upper triangle of C is stored;
- *          = PlasmaLower: Lower triangle of C is stored.
+ *          - PlasmaUpper: Upper triangle of C is stored;
+ *          - PlasmaLower: Lower triangle of C is stored.
  *
  * @param[in] trans
  *          Specifies whether A is transposed or conjugate transposed:
- *          = PlasmaNoTrans: \f[ C = \alpha [ op( A ) \times conjg( op( B )')] +
+ *          - PlasmaNoTrans: \f[ C = \alpha [ op( A ) \times conjg( op( B )')] +
  *            conjg( \alpha ) [ op( B ) \times conjg( op( A )' )] + \beta C \f]
- *          = PlasmaConjTrans: \f[ C = \alpha[conjg( op( A )') \times op( B )] +
+ *          - PlasmaConjTrans: \f[ C = \alpha[conjg( op( A )') \times op( B )] +
  *            conjg( \alpha ) [ conjg( op( B )' ) \times op( A ) ] + \beta C \f]
  *
  * @param[in] n
- *          n specifies the order of the matrix C. n must be at least zero.
+ *          The order of the matrix C. n must be at least zero.
  *
  * @param[in] k
- *          k specifies the number of columns of the A and
- *          B matrices with trans = PlasmaNoTrans, or specifies
+ *          The number of columns of the A and
+ *          B matrices with trans = PlasmaNoTrans, or
  *          the number of rows of the A and B matrices with trans = PlasmaTrans.
  *
  * @param[in] alpha
- *          alpha specifies the scalar alpha.
+ *          The scalar alpha.
  *
  * @param[in] A
- *          A is a lda-by-ka matrix, where ka is k when trans = PlasmaNoTrans,
+ *          A lda-by-ka matrix, where ka is k when trans = PlasmaNoTrans,
  *          and is n otherwise.
  *
  * @param[in] lda
@@ -79,7 +79,7 @@
  *          max( 1, n ), otherwise lda must be at least max( 1, k ).
  *
  * @param[in] B
- *          B is a ldb-by-kb matrix, where kb is k when trans = PlasmaNoTrans,
+ *          A ldb-by-kb matrix, where kb is k when trans = PlasmaNoTrans,
  *          and is n otherwise.
  *
  * @param[in] ldb
@@ -87,10 +87,10 @@
  *          max( 1, n ), otherwise ldb must be at least max( 1, k ).
  *
  * @param[in] beta
- *          beta specifies the scalar beta.
+ *          The scalar beta.
  *
  * @param[in,out] C
- *          C is a ldc-by-n matrix.
+ *          A ldc-by-n matrix.
  *          On exit, the array uplo part of the matrix is overwritten
  *          by the uplo part of the updated matrix.
  *
@@ -109,8 +109,9 @@ void CORE_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
         CblasColMajor,
         (CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)trans,
         n, k,
-        CBLAS_SADDR(alpha), A, lda, B, ldb,
-        beta, C, ldc);
+        CBLAS_SADDR(alpha), A, lda,
+	                    B, ldb,
+                     beta, C, ldc);
 }
 
 /******************************************************************************/
@@ -129,7 +130,8 @@ void CORE_OMP_zher2k(
     CORE_zher2k(
         uplo, trans,
         n, k, alpha,
-        A, lda, B, ldb,
-        beta, C, ldc);
+	     A, lda,
+	     B, ldb,
+      beta, C, ldc);
 }
 
