@@ -75,6 +75,13 @@ void CORE_zsyr2k(
     const PLASMA_Complex64_t *B, int ldb,
     PLASMA_Complex64_t beta,  PLASMA_Complex64_t *C, int ldc);
 
+void CORE_ztrsm(
+    PLASMA_enum side, PLASMA_enum uplo,
+    PLASMA_enum transA, PLASMA_enum diag,
+    int m, int n,
+    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+    PLASMA_Complex64_t *B, int ldb);
+
 void CORE_zlacpy(
     PLASMA_enum uplo,
     int m, int n,
@@ -133,6 +140,12 @@ void CORE_OMP_zsyr2k(
     const PLASMA_Complex64_t *B, int ldb,
     PLASMA_Complex64_t beta,  PLASMA_Complex64_t *C, int ldc);
 
+void CORE_OMP_ztrsm(
+    PLASMA_enum side, PLASMA_enum uplo,
+    PLASMA_enum transA, PLASMA_enum diag,
+    int m, int n,
+    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+    PLASMA_Complex64_t *B, int ldb);
 
 void CORE_OMP_zlacpy(
     PLASMA_enum uplo,

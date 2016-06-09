@@ -278,6 +278,15 @@ void run_routine(const char *name, param_value_t pval[], char *info)
   else if (strcmp(name, "ssyr2k") == 0)
     test_ssyr2k(pval, info);
   // ----
+    else if (strcmp(name, "ztrsm") == 0)
+    test_ztrsm(pval, info);
+  else if (strcmp(name, "dtrsm") == 0)
+    test_dtrsm(pval, info);
+  else if (strcmp(name, "ctrsm") == 0)
+    test_ctrsm(pval, info);
+  else if (strcmp(name, "strsm") == 0)
+    test_strsm(pval, info);
+  // ----
   else {
     printf("unknown routine: %s\n", name);
     exit(EXIT_FAILURE);
@@ -347,6 +356,9 @@ int param_read(int argc, char **argv, param_t param[])
 
         else if (param_starts_with(argv[i], "--uplo="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_UPLO]);
+	
+	else if (param_starts_with(argv[i], "--diag="))
+	  err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_DIAG]);
         //--------------------------------------------------
         // Scan integer parameters.
         //--------------------------------------------------
@@ -425,6 +437,8 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_char('n', &param[PARAM_TRANSB]);
     if (param[PARAM_UPLO].num == 0)
         param_add_char('l', &param[PARAM_UPLO]);
+    if (param[PARAM_DIAG].num == 0)
+      param_add_char('n', &param[PARAM_DIAG]);
 
     //--------------------------------------------------
     // Set integer parameters.
