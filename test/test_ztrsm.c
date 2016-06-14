@@ -21,11 +21,11 @@
 #include <string.h>
 
 #ifdef PLASMA_WITH_MKL
-#include <mkl_cblas.h>
-#include <mkl_lapacke.h>
+    #include <mkl_cblas.h>
+    #include <mkl_lapacke.h>
 #else
-#include <cblas.h>
-#include <lapacke.h>
+    #include <cblas.h>
+    #include <lapacke.h>
 #endif
 #include <omp.h>
 #include <plasma.h>
@@ -148,12 +148,25 @@ void test_ztrsm(param_value_t param[], char *info)
 
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
+    
+    //==================================================================
+    // Initialize the matrices 
+    // Factor A into LU to get well-conditioned triangular matrix.
+    // Copy L to U, since L seems okay when used with non-unit diagonal
+    // (i.e., from U), while U fails when used with unit diagonal.
+    //==================================================================
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*lda, A);
     assert(retval == 0);
-
-    for(int i=0; i< imax(m,n); i++)
-        A[lda*i+i] = A[lda*i+i] + 2.0;
-
+    int ipiv[lda];
+    
+    LAPACKE_zgetrf(CblasColMajor, Am, Am,
+		   A, lda, ipiv);
+    
+    for( int j = 0; j < Am; ++j ) {
+      for( int i = 0; i < j; ++i ) {
+	A[i,j] = A[j,i];
+      }
+    }
 
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*n, B);
     assert(retval == 0);
