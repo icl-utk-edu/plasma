@@ -149,12 +149,12 @@ void test_ztrsm(param_value_t param[], char *info)
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
     
-    //==================================================================
+    //=================================================================
     // Initialize the matrices 
     // Factor A into LU to get well-conditioned triangular matrix.
     // Copy L to U, since L seems okay when used with non-unit diagonal
     // (i.e., from U), while U fails when used with unit diagonal.
-    //==================================================================
+    //=================================================================
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*lda, A);
     assert(retval == 0);
     int ipiv[lda];
