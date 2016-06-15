@@ -277,6 +277,24 @@ void run_routine(const char *name, param_value_t pval[], char *info)
     test_csyr2k(pval, info);
   else if (strcmp(name, "ssyr2k") == 0)
     test_ssyr2k(pval, info);
+  // -----
+  else if (strcmp(name, "zpotrf") == 0)
+    test_zpotrf(pval, info);
+  else if (strcmp(name, "dpotrf") == 0)
+    test_dpotrf(pval, info);
+  else if (strcmp(name, "cpotrf") == 0)
+    test_cpotrf(pval, info);
+  else if (strcmp(name, "spotrf") == 0)
+    test_spotrf(pval, info);
+  // ----
+  else if (strcmp(name, "ztrsm") == 0)
+    test_ztrsm(pval, info);
+  else if (strcmp(name, "dtrsm") == 0)
+    test_dtrsm(pval, info);
+  else if (strcmp(name, "ctrsm") == 0)
+    test_ctrsm(pval, info);
+  else if (strcmp(name, "strsm") == 0)
+    test_strsm(pval, info);
   // ----
   else {
     printf("unknown routine: %s\n", name);

@@ -34,6 +34,7 @@ typedef enum {
     PARAM_TRANSB, // transposition of B
     PARAM_SIDE,   // Left of right side application
     PARAM_UPLO,   // Upper or lower triangular
+    PARAM_DIAG,   // Upper or lower triangular
     PARAM_M,      // M dimension
     PARAM_N,      // N dimension
     PARAM_K,      // K dimension

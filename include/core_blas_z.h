@@ -81,6 +81,17 @@ void CORE_zlacpy(
     const PLASMA_Complex64_t *A, int lda,
           PLASMA_Complex64_t *B, int ldb);
 
+void CORE_zpotrf(
+    PLASMA_enum uplo, int n,
+    PLASMA_Complex64_t *A, int lda);
+
+void CORE_ztrsm(
+    PLASMA_enum side, PLASMA_enum uplo,
+    PLASMA_enum transA, PLASMA_enum diag,
+    int m, int n,
+    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+    PLASMA_Complex64_t *B, int ldb);
+
 /******************************************************************************/
 void CORE_OMP_zgemm(
     PLASMA_enum transA, PLASMA_enum transB,
@@ -139,6 +150,17 @@ void CORE_OMP_zlacpy(
     int m, int n, int nb,
     const PLASMA_Complex64_t *A, int lda,
           PLASMA_Complex64_t *B, int ldb);
+
+void CORE_OMP_zpotrf(
+    PLASMA_enum uplo, int n,
+    PLASMA_Complex64_t *A, int lda);
+
+void CORE_OMP_ztrsm(
+    PLASMA_enum side, PLASMA_enum uplo,
+    PLASMA_enum transA, PLASMA_enum diag,
+    int m, int n,
+    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+    PLASMA_Complex64_t *B, int ldb);
 
 #ifdef __cplusplus
 }  // extern "C"
