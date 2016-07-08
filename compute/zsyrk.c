@@ -187,12 +187,12 @@ int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
 #pragma omp parallel
 #pragma omp master
     {
-        /* the Async functions are submitted here.  If an error occurs
-           (at submission time or at run time) the sequence->status
-           will be marked with an error.  After an error, the next
-           Async will not _insert_ more tasks into the runtime.  The
-           sequence->status can be checked after each call to _Async
-           or at the end of the parallel region. */
+        // the Async functions are submitted here.  If an error occurs
+        // (at submission time or at run time) the sequence->status
+        // will be marked with an error.  After an error, the next
+        // Async will not _insert_ more tasks into the runtime.  The
+        // sequence->status can be checked after each call to _Async
+        // or at the end of the parallel region.
 
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
@@ -333,24 +333,19 @@ void PLASMA_zsyrk_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
         return;
     }
 
-    int Am, An, Ai, Aj, Amb, Anb;
-    int Bm, Bn, Bi, Bj, Bmb, Bnb;
+    int Am, An, Amb, Anb;
 
     if (trans == PlasmaNoTrans) {
         Am  = A->m;
         An  = A->n;
         Amb = A->mb;
         Anb = A->nb;
-        Ai  = A->i;
-        Aj  = A->j;
     }
     else {
         Am  = A->n;
         An  = A->m;
         Amb = A->nb;
         Anb = A->mb;
-        Ai  = A->j;
-        Aj  = A->i;
     }
 
     if (C->mb != C->nb) {
