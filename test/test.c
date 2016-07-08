@@ -249,6 +249,11 @@ void run_routine(const char *name, param_value_t pval[], char *info)
     else if (strcmp(name, "sgemm") == 0)
         test_sgemm(pval, info);
 
+    else if (strcmp(name, "zhemm") == 0)
+        test_zher2k(pval, info);
+    else if (strcmp(name, "chemm") == 0)
+        test_cher2k(pval, info);
+
     else if (strcmp(name, "zher2k") == 0)
         test_zher2k(pval, info);
     else if (strcmp(name, "cher2k") == 0)
@@ -267,6 +272,15 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_cpotrf(pval, info);
     else if (strcmp(name, "spotrf") == 0)
         test_spotrf(pval, info);
+
+    else if (strcmp(name, "zsymm") == 0)
+        test_zsyr2k(pval, info);
+    else if (strcmp(name, "dsymm") == 0)
+        test_dsyr2k(pval, info);
+    else if (strcmp(name, "csymm") == 0)
+        test_csyr2k(pval, info);
+    else if (strcmp(name, "ssymm") == 0)
+        test_ssyr2k(pval, info);
 
     else if (strcmp(name, "zsyr2k") == 0)
         test_zsyr2k(pval, info);
