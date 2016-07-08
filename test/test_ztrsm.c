@@ -125,7 +125,8 @@ void test_ztrsm(param_value_t param[], char *info)
 
     if (side == PlasmaLeft) {
         Am = m;
-    } else {
+    }
+    else {
         Am = n;
     }
 
@@ -148,25 +149,22 @@ void test_ztrsm(param_value_t param[], char *info)
 
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
-    
+
     //=================================================================
-    // Initialize the matrices 
+    // Initialize the matrices.
     // Factor A into LU to get well-conditioned triangular matrix.
     // Copy L to U, since L seems okay when used with non-unit diagonal
     // (i.e., from U), while U fails when used with unit diagonal.
     //=================================================================
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*lda, A);
     assert(retval == 0);
+
     int ipiv[lda];
-    
-    LAPACKE_zgetrf(CblasColMajor, Am, Am,
-		   A, lda, ipiv);
-    
-    for( int j = 0; j < Am; ++j ) {
-      for( int i = 0; i < j; ++i ) {
-	A[i,j] = A[j,i];
-      }
-    }
+    LAPACKE_zgetrf(CblasColMajor, Am, Am, A, lda, ipiv);
+
+    for(int j = 0; j < Am; j++)
+        for(int i = 0; i < j; i++)
+            A[i,j] = A[j,i];
 
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*n, B);
     assert(retval == 0);
@@ -174,7 +172,7 @@ void test_ztrsm(param_value_t param[], char *info)
     PLASMA_Complex64_t *Bref = NULL;
     if (test) {
         Bref = (PLASMA_Complex64_t*)malloc(
-                   (size_t)ldb*n*sizeof(PLASMA_Complex64_t));
+            (size_t)ldb*n*sizeof(PLASMA_Complex64_t));
         assert(Bref != NULL);
 
         memcpy(Bref, B, (size_t)ldb*n*sizeof(PLASMA_Complex64_t));
@@ -190,12 +188,13 @@ void test_ztrsm(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
+
     PLASMA_ztrsm(
         (CBLAS_SIDE)side, (CBLAS_UPLO) uplo,
         (CBLAS_TRANSPOSE)transa, (CBLAS_DIAG)diag,
         m, n,
         alpha, A, lda,
-        B, ldb);
+               B, ldb);
 
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
@@ -229,10 +228,11 @@ void test_ztrsm(param_value_t param[], char *info)
         param[PARAM_SUCCESS].i = error < tol*n;
     }
 
-    // Free arrays
+    //================================================================
+    // Free arrays.
+    //================================================================
     free(A);
     free(B);
     if (test)
         free(Bref);
-
 }

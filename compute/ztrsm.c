@@ -23,7 +23,7 @@
  *
  * @ingroup plasma_trsm
  *
- * *  Performs one of the matrix equations
+ *  Performs one of the matrix equations
  *
  *    \f[ op( A )\times X  = \alpha B, \f] or
  *    \f[ op( X )\times A  = \alpha B, \f]
@@ -33,27 +33,26 @@
  *          - op( X ) = X^T or
  *          - op( X ) = X^H,
  *
- *  alpha is a scalar, A and  are B m by n  matrices.
- *  The matrix X is overwritten on B
+ *  alpha is a scalar, A and are B m by n matrices.
+ *  The matrix X is overwritten by B.
  *
  *******************************************************************************
  *
  * @param[in] side
- *          - PlasmaLeft:  A*X = B
- *          - PlasmaRight: X*A = B
+ *          - PlasmaLeft:  A*X = B,
+ *          - PlasmaRight: X*A = B.
  *
  * @param[in] uplo
- *          Specifies whether A is upper triangular or lower triangular:
- *          - PlasmaUpper: Upper triangle of A is stored,
- *          - PlasmaLower: Lower triangle of A is stored.
+ *          - PlasmaUpper: A is upper triangular,
+ *          - PlasmaLower: A is lower triangular.
  *
  * @param[in] transA
- *          - PlasmaNoTrans:   A is transposed;
- *          - PlasmaTrans:     A is not transposed;
+ *          - PlasmaNoTrans:   A is not transposed,
+ *          - PlasmaTrans:     A is transposed,
  *          - PlasmaConjTrans: A is conjugate transposed.
  *
  * @param[in] diag
- *          - PlasmaNonUnit: A is non unit;
+ *          - PlasmaNonUnit: A is non unit,
  *          - PlasmaUnit:    A us unit.
  *
  * @param[in] n
@@ -68,12 +67,12 @@
  * @param[in] A
  *          The triangular matrix. If uplo = PlasmaUpper, the leading n-by-n
  *          upper triangular part of the array A contains the upper triangular
- *          matrix, and the strictly lower
- *          triangular part of A is not referenced. If uplo = PlasmaLower,
- *          the leading n-by-n  lower triangular part of the array A contains
- *          the lower triangular matrix, and the strictly upper triangular part
- *          of A is not referenced. If diag = PlasmaUnit, the diagonal elements
- *          of A are also not referenced and are assumed to be 1.
+ *          matrix, and the strictly lower triangular part of A is not
+ *          referenced. If uplo = PlasmaLower, the leading n-by-n lower
+ *          triangular part of A contains the lower triangular matrix,
+ *          and the strictly upper triangular part of A is not referenced.
+ *          If diag = PlasmaUnit, the diagonal elements of A are also not
+ *          referenced and are assumed to be 1.
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,n).
@@ -83,7 +82,7 @@
  *          On exit, if return value = 0, the n-by-nrhs solution matrix X.
  *
  * @param[in] ldb
- *          The leading dimension of the array B. LDB >= max(1,n).
+ *          The leading dimension of the array B. ldb >= max(1,n).
  *
  *
  *******************************************************************************
@@ -104,9 +103,10 @@ int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
                  PLASMA_Complex64_t *A, int lda,
                  PLASMA_Complex64_t *B, int ldb)
 {
-    int nb, An;
-    int status;
+    int An;
+    int nb;
     int retval;
+    int status;
 
     PLASMA_desc descA;
     PLASMA_desc  descB;
@@ -117,15 +117,10 @@ int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
         plasma_fatal_error("PLASMA not initialized");
         return PLASMA_ERR_NOT_INITIALIZED;
     }
-    if (side == PlasmaLeft) {
-        An = n;
-    } else {
-        An = nrhs;
-    }
 
     // Check input arguments
     if ((side != PlasmaLeft) &&
-            (side != PlasmaRight)) {
+        (side != PlasmaRight)) {
         plasma_error("illegal value of side");
         return -1;
     }
@@ -135,8 +130,8 @@ int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
         return -2;
     }
     if ((transA != PlasmaConjTrans) &&
-            (transA != PlasmaNoTrans) &&
-            (transA != PlasmaTrans )) {
+        (transA != PlasmaNoTrans) &&
+        (transA != PlasmaTrans )) {
         plasma_error("illegal value of transA");
         return -3;
     }
@@ -162,8 +157,15 @@ int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
         return -10;
     }
 
-    // Quick return
-    if ((n == 0) || ( nrhs == 0))
+    if (side == PlasmaLeft) {
+        An = n;
+    }
+    else {
+        An = nrhs;
+    }
+
+    // quick return
+    if ((n == 0) || (nrhs == 0))
         return PLASMA_SUCCESS;
 
     // Tune.
@@ -223,7 +225,7 @@ int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
             PLASMA_ztrsm_Tile_Async(side, uplo,
                                     transA, diag,
                                     alpha, &descA,
-                                    &descB,
+                                           &descB,
                                     sequence, &request);
         }
 
@@ -260,20 +262,20 @@ int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
  *******************************************************************************
  *
  * @param[in] side
- *          - PlasmaLeft:  A*X = B
- *          - PlasmaRight: X*A = B
+ *          - PlasmaLeft:  A*X = B,
+ *          - PlasmaRight: X*A = B.
  *
  * @param[in] uplo
- *          - PlasmaUpper: Upper triangle of A is stored;
- *          - PlasmaLower: Lower triangle of A is stored.
+ *          - PlasmaUpper: A is uppert triangular,
+ *          - PlasmaLower: A is lower triangular.
  *
  * @param[in] transA
- *          - PlasmaNoTrans:   A is transposed;
- *          - PlasmaTrans:     A is not transposed;
+ *          - PlasmaNoTrans:   A is transposed,
+ *          - PlasmaTrans:     A is not transposed,
  *          - PlasmaConjTrans: A is conjugate transposed.
  *
  * @param[in] diag
- *          - PlasmaNonUnit: A is non unit;
+ *          - PlasmaNonUnit: A is non unit,
  *          - PlasmaUnit:    A us unit.
  *
  * @param[in] alpha
@@ -303,7 +305,6 @@ int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
  *******************************************************************************
  *
  * @sa PLASMA_ztrsm
- * @sa PLASMA_ztrsm_Tile_Async
  * @sa PLASMA_ctrsm_Tile_Async
  * @sa PLASMA_dtrsm_Tile_Async
  * @sa PLASMA_strsm_Tile_Async
@@ -312,10 +313,9 @@ int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
 void PLASMA_ztrsm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
                              PLASMA_enum transA, PLASMA_enum diag,
                              PLASMA_Complex64_t alpha, PLASMA_desc *A,
-                             PLASMA_desc *B,
+                                                       PLASMA_desc *B,
                              PLASMA_sequence *sequence, PLASMA_request *request)
 {
-
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -326,26 +326,26 @@ void PLASMA_ztrsm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
 
     // Check input arguments
     if ((side != PlasmaLeft) &&
-            (side != PlasmaRight)) {
+        (side != PlasmaRight)) {
         plasma_error("illegal value of side");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
     if ((uplo != PlasmaUpper) &&
-            (uplo != PlasmaLower)) {
+        (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
     if ((transA != PlasmaConjTrans) &&
-            (transA != PlasmaNoTrans) &&
-            (transA != PlasmaTrans)) {
+        (transA != PlasmaNoTrans) &&
+        (transA != PlasmaTrans)) {
         plasma_error("illegal value of transA");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
     if ((diag != PlasmaUnit) &&
-            (diag != PlasmaNonUnit)) {
+        (diag != PlasmaNonUnit)) {
         plasma_error("illegal value of diag");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -366,13 +366,13 @@ void PLASMA_ztrsm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    /* Quick return */
+    // quick return
 
     // Call the parallel function.
     plasma_pztrsm(side, uplo,
                   transA, diag,
                   alpha, *A,
-                  *B,
+                         *B,
                   sequence, request);
 
     return;

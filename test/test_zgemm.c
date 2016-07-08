@@ -195,12 +195,14 @@ void test_zgemm(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
+
     PLASMA_zgemm(
         (CBLAS_TRANSPOSE)transa, (CBLAS_TRANSPOSE)transb,
         m, n, k,
         alpha, A, lda,
                B, ldb,
          beta, C, ldc);
+
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
