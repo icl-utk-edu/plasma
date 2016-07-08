@@ -89,45 +89,43 @@
  ******************************************************************************/
 void CORE_zhemm(PLASMA_enum side, PLASMA_enum uplo,
                 int m, int n,
-                PLASMA_Complex64_t alpha,
-                const PLASMA_Complex64_t *A, int lda,
-                const PLASMA_Complex64_t *B, int ldb,
-                PLASMA_Complex64_t beta,
-                PLASMA_Complex64_t *C, int ldc)
+                PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+                                          const PLASMA_Complex64_t *B, int ldb,
+                PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc)
 {
-    cblas_zhemm(
-        CblasColMajor,
-        (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
-        m, n,
-        CBLAS_SADDR(alpha), A, lda,
-        B, ldb,
-        CBLAS_SADDR(beta), C, ldc);
+    cblas_zhemm(CblasColMajor,
+                (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
+                m, n,
+                CBLAS_SADDR(alpha), A, lda,
+                                    B, ldb,
+                CBLAS_SADDR(beta),  C, ldc);
 }
 /******************************************************************************/
-void CORE_OMP_zhemm(PLASMA_enum side, PLASMA_enum uplo,
-                    int m, int n,
-                    PLASMA_Complex64_t alpha,
-                    const PLASMA_Complex64_t *A, int lda,
-                    const PLASMA_Complex64_t *B, int ldb,
-                    PLASMA_Complex64_t beta,
-                    PLASMA_Complex64_t *C, int ldc)
+void CORE_OMP_zhemm(
+    PLASMA_enum side, PLASMA_enum uplo,
+    int m, int n,
+    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+                              const PLASMA_Complex64_t *B, int ldb,
+    PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc)
 {
     if (side == PlasmaLeft) {
-#pragma omp task depend(in:A[0:m*m]) depend(in:B[0:m*n]) depend(inout:C[0:m*n])
-        CORE_zhemm(
-            side, uplo,
-            m, n,
-            alpha, A, lda,
-                   B, ldb,
-            beta,  C, ldc);
+        #pragma omp task depend(in:A[0:m*m]) \
+                         depend(in:B[0:m*n]) \
+                         depend(inout:C[0:m*n])
+        CORE_zhemm(side, uplo,
+                   m, n,
+                   alpha, A, lda,
+                          B, ldb,
+                   beta,  C, ldc);
     }
     else {
-#pragma omp task depend(in:A[0:n*n]) depend(in:B[0:m*n]) depend(inout:C[0:m*n])
-        CORE_zhemm(
-            side, uplo,
-            m, n,
-            alpha, A, lda,
+        #pragma omp task depend(in:A[0:n*n]) \
+                         depend(in:B[0:m*n]) \
+                         depend(inout:C[0:m*n])
+        CORE_zhemm(side, uplo,
+                   m, n,
+                   alpha, A, lda,
                    B, ldb,
-            beta,  C, ldc);
+                   beta,  C, ldc);
     }
 }

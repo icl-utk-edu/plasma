@@ -91,20 +91,18 @@
  *          The leading dimension of the array C. ldc >= max(1,m).
  *
  ******************************************************************************/
-void CORE_zgemm(
-    PLASMA_enum transA, PLASMA_enum transB,
-    int m, int n, int k,
-    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
-                              const PLASMA_Complex64_t *B, int ldb,
-           PLASMA_Complex64_t beta, PLASMA_Complex64_t *C, int ldc)
+void CORE_zgemm(PLASMA_enum transA, PLASMA_enum transB,
+                int m, int n, int k,
+                PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+                                          const PLASMA_Complex64_t *B, int ldb,
+                PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc)
 {
-    cblas_zgemm(
-        CblasColMajor,
-        (CBLAS_TRANSPOSE)transA, (CBLAS_TRANSPOSE)transB,
-        m, n, k,
-        CBLAS_SADDR(alpha), A, lda,
-                            B, ldb,
-        CBLAS_SADDR(beta),  C, ldc);
+    cblas_zgemm(CblasColMajor,
+                (CBLAS_TRANSPOSE)transA, (CBLAS_TRANSPOSE)transB,
+                m, n, k,
+                CBLAS_SADDR(alpha), A, lda,
+                                    B, ldb,
+                CBLAS_SADDR(beta),  C, ldc);
 }
 
 /******************************************************************************/
@@ -113,15 +111,16 @@ void CORE_OMP_zgemm(
     int m, int n, int k,
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                               const PLASMA_Complex64_t *B, int ldb,
-           PLASMA_Complex64_t beta, PLASMA_Complex64_t *C, int ldc)
+    PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc)
 {
     // omp depends assume lda == m or k, ldb == k or n, and ldc == m,
     // depending on transposes
-#pragma omp task depend(in:A[0:m*k]) depend(in:B[0:k*n]) depend(inout:C[0:m*n])
-    CORE_zgemm(
-        transA, transB,
-        m, n, k,
-        alpha, A, lda,
-               B, ldb,
-         beta, C, ldc);
+    #pragma omp task depend(in:A[0:m*k]) \
+                     depend(in:B[0:k*n]) \
+                     depend(inout:C[0:m*n])
+    CORE_zgemm(transA, transB,
+               m, n, k,
+               alpha, A, lda,
+                      B, ldb,
+               beta,  C, ldc);
 }
