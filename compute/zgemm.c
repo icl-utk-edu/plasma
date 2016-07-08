@@ -357,10 +357,10 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
  *
  ******************************************************************************/
 void PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
-                            PLASMA_Complex64_t alpha, PLASMA_desc *A,
-                                                      PLASMA_desc *B,
-                            PLASMA_Complex64_t beta,  PLASMA_desc *C,
-                            PLASMA_sequence *sequence, PLASMA_request *request)
+                             PLASMA_Complex64_t alpha, PLASMA_desc *A,
+                                                       PLASMA_desc *B,
+                             PLASMA_Complex64_t beta,  PLASMA_desc *C,
+                             PLASMA_sequence *sequence, PLASMA_request *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
