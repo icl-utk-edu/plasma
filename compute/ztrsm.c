@@ -367,7 +367,8 @@ void PLASMA_ztrsm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
         return;
     }
     /* Quick return */
-
+    if ((B->n == 0) || (B->m == 0))
+      return;
     // Call the parallel function.
     plasma_pztrsm(side, uplo,
                   transA, diag,
