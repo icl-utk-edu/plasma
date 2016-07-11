@@ -7,9 +7,9 @@
  *  Univ. of California Berkeley and Univ. of Colorado Denver and
  *  Univ. of Manchester.
  *
- * @version 
+ * @version
  * @author Pedro V. Lara
- * @date 
+ * @date
  * @precisions normal z -> c d s
  *
  **/
@@ -62,21 +62,21 @@
  *          The leading dimension of the array A. lda >= max(1,n).
  *
  *******************************************************************************/
-void CORE_zpotrf(PLASMA_enum uplo, int n,
-                     PLASMA_Complex64_t *A, int lda)
+void CORE_zpotrf(PLASMA_enum uplo,
+                 int n,
+                 PLASMA_Complex64_t *A, int lda)
 {
-    LAPACKE_zpotrf(
-        LAPACK_COL_MAJOR,
-        lapack_const(uplo),
-        n, A, lda);
+    LAPACKE_zpotrf(LAPACK_COL_MAJOR,
+                   lapack_const(uplo),
+                   n,
+                   A, lda);
 }
 
 /******************************************************************************/
-void CORE_OMP_zpotrf(PLASMA_enum uplo, int n,
-                     PLASMA_Complex64_t *A, int lda)
+void CORE_OMP_zpotrf(PLASMA_enum uplo, int n, PLASMA_Complex64_t *A, int lda)
 {
-#pragma omp task depend(inout:A[0:n*n])
-    CORE_zpotrf(
-        uplo, n,
-        A, lda);
+    #pragma omp task depend(inout:A[0:n*n])
+    CORE_zpotrf(uplo,
+                n,
+                A, lda);
 }

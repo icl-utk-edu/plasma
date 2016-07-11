@@ -35,7 +35,7 @@
  *    \f[ C = \alpha A^H \times A + \beta C \f],
  *
  *  where op( X ) is one of:
- *          - op( X ) = X  or 
+ *          - op( X ) = X  or
  *          - op( X ) = conjg( X' )
  *
  *  alpha and beta are real scalars, C is an n-by-n hermitian
@@ -82,39 +82,29 @@
  *          The leading dimension of the array C. ldc >= max(1, n).
  *
  *******************************************************************************/
-void CORE_zherk(
-    PLASMA_enum uplo, PLASMA_enum trans, 
-    int n, int k,
-    double alpha, 
-    const PLASMA_Complex64_t *A, int lda,
-    double beta,  
-    PLASMA_Complex64_t *C, int ldc)
+void CORE_zherk(PLASMA_enum uplo, PLASMA_enum trans,
+                int n, int k,
+                double alpha, const PLASMA_Complex64_t *A, int lda,
+                double beta,        PLASMA_Complex64_t *C, int ldc)
 {
-
-    cblas_zherk(
-        CblasColMajor,
-        (CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)trans,
-        n, k,
-        alpha, A, lda,
-        beta, C, ldc);
+    cblas_zherk(CblasColMajor,
+                (CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)trans,
+                n, k,
+                alpha, A, lda,
+                beta,  C, ldc);
 }
 
 /******************************************************************************/
-
-void CORE_OMP_zherk(
-    PLASMA_enum uplo, PLASMA_enum trans, 
-    int n, int k,
-    double alpha, 
-    const PLASMA_Complex64_t *A, int lda,
-    double beta,  
-    PLASMA_Complex64_t *C, int ldc)
+void CORE_OMP_zherk(PLASMA_enum uplo, PLASMA_enum trans,
+                    int n, int k,
+                    double alpha, const PLASMA_Complex64_t *A, int lda,
+                    double beta,        PLASMA_Complex64_t *C, int ldc)
 {
     // omp depends assume lda == n or k, and ldc == n,
     // depending on transposes
-#pragma omp task depend(in:A[0:n*k]) depend(inout:C[0:n*n])
-    CORE_zherk(
-        uplo, trans,
-        n, k,
-        alpha, A, lda,
-        beta, C, ldc);
+    #pragma omp task depend(in:A[0:n*k]) depend(inout:C[0:n*n])
+    CORE_zherk(uplo, trans,
+               n, k,
+               alpha, A, lda,
+               beta,  C, ldc);
 }

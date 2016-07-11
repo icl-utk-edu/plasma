@@ -78,37 +78,30 @@
  *          The leading dimension of the array C. ldc >= max( 1, n ).
  *
  *******************************************************************************/
-void CORE_zsyrk(
-    PLASMA_enum uplo, PLASMA_enum trans, 
-    int n, int k,
-    PLASMA_Complex64_t alpha, 
-    const PLASMA_Complex64_t *A, int lda,
-    PLASMA_Complex64_t beta,  
-    PLASMA_Complex64_t *C, int ldc)
+void CORE_zsyrk(PLASMA_enum uplo, PLASMA_enum trans,
+                int n, int k,
+                PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+                PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc)
 {
-    cblas_zsyrk(
-        CblasColMajor,
-        (CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)trans,
-        n, k,
-        CBLAS_SADDR(alpha), A, lda,
-        CBLAS_SADDR(beta), C, ldc);
+    cblas_zsyrk(CblasColMajor,
+                (CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)trans,
+                n, k,
+                CBLAS_SADDR(alpha), A, lda,
+                CBLAS_SADDR(beta),  C, ldc);
 }
 
 /******************************************************************************/
 void CORE_OMP_zsyrk(
-    PLASMA_enum uplo, PLASMA_enum trans, 
+    PLASMA_enum uplo, PLASMA_enum trans,
     int n, int k,
-    PLASMA_Complex64_t alpha, 
-    const PLASMA_Complex64_t *A, int lda,
-    PLASMA_Complex64_t beta,  
-    PLASMA_Complex64_t *C, int ldc)
+    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+    PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc)
 {
     // omp depends assume lda == n or k, and ldc == n,
     // depending on transposes
-#pragma omp task depend(in:A[0:n*k]) depend(inout:C[0:n*n])
-    CORE_zsyrk(
-        uplo, trans,
-        n, k,
-        alpha, A, lda,
-        beta, C, ldc);
+    #pragma omp task depend(in:A[0:n*k]) depend(inout:C[0:n*n])
+    CORE_zsyrk(uplo, trans,
+               n, k,
+               alpha, A, lda,
+               beta,  C, ldc);
 }
