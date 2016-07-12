@@ -7,9 +7,15 @@ _|  ____|_/  _\____/_|  _|_/  _\
 **Parallel Linear Algebra Software for Multicore Architectures**
 
 **University of Tennessee (US)**
+
 **University of Manchester (UK)**
+
 **University of Colorado Denver (US)**
+
 **University of California, Berkeley (US)**
+
+About PLASMA
+============
 
 PLASMA is a software package for solving problems in dense linear algebra
 using multicore processors and Xeon Phi coprocessors.
@@ -26,6 +32,16 @@ to this Bitbucket Mercurial repository.
 The content of this repository reflects the progress of the transition.
 Before the transition is complete, the old releases of PLASMA are available at
 http://icl.cs.utk.edu/plasma/.
+
+Get Assistance
+==============
+
+To get assistance with PLASMA, join the *PLASMA User* Google group by going to
+https://groups.google.com/d/forum/plasma-user and clicking `Apply to join group`.
+Then email your questions and comments to `plasma-user@googlegroups.com`.
+
+Cite PLASMA
+===========
 
 Feel free to use the following publications to reference PLASMA:
 
