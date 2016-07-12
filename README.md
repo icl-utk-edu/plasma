@@ -31,7 +31,7 @@ At the same time, it is moving from its ICL SVN repository
 to this Bitbucket Mercurial repository.
 The content of this repository reflects the progress of the transition.
 Before the transition is complete, the old releases of PLASMA are available at
-http://icl.cs.utk.edu/plasma/.
+http://icl.cs.utk.edu/plasma/software/.
 
 Get Assistance
 ==============
