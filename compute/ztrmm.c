@@ -9,7 +9,7 @@
  * @version 3.0.0
  * @author  Mathieu Faverge
  * @author  Maksims Abalenkovs
- * @date    2016-06-22
+ * @date    2016-07-15
  * @precisions normal z -> s d c
  *
  **/
@@ -112,12 +112,13 @@ int PLASMA_ztrmm(PLASMA_enum side, PLASMA_enum uplo,
     int nb, na;
     int status;
     plasma_context_t *plasma;
-    PLASMA_sequence *sequence = NULL;
-    PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
+    PLASMA_sequence  *sequence = NULL;
+    PLASMA_request    request = PLASMA_REQUEST_INITIALIZER;
     PLASMA_desc descA, descB;
 
     /* Get PLASMA context */
     plasma = plasma_context_self();
+
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
         return PLASMA_ERR_NOT_INITIALIZED;
@@ -172,7 +173,7 @@ int PLASMA_ztrmm(PLASMA_enum side, PLASMA_enum uplo,
 
     /* Tune nb depending on m, n & nrhs; Set nbnb */
     /*
-    if (plasma_tune(PLASMA_FUNC_ZPOSV, N, N, NRHS) != PLASMA_SUCCESS) {
+    if (plasma_tune(PLASMA_FUNC_ZPOSV, n, n, nrhs) != PLASMA_SUCCESS) {
         plasma_error("plasma_tune() failed");
         return status;
     }
@@ -186,13 +187,16 @@ int PLASMA_ztrmm(PLASMA_enum side, PLASMA_enum uplo,
     descB = plasma_desc_init(PlasmaComplexDouble, nb, nb,
                              nb*nb, n,  na, 0, 0, n,  na);
 
-    /* Allocae matrices in tile layout */
+    /* Allocate matrices in tile layout */
     retval = plasma_desc_mat_alloc(&descA);
+
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");
         return retval;
     }
+
     retval = plasma_desc_mat_alloc(&descB);
+
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");
         plasma_desc_mat_free(&descA);
@@ -201,6 +205,7 @@ int PLASMA_ztrmm(PLASMA_enum side, PLASMA_enum uplo,
 
     /* Create sequence */
     retval = plasma_sequence_create(&sequence);
+
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_sequence_create() failed");
         return retval;
@@ -248,12 +253,13 @@ int PLASMA_ztrmm(PLASMA_enum side, PLASMA_enum uplo,
     plasma_desc_mat_free(&descA);
     plasma_desc_mat_free(&descB);
 
+    /* Destroy sequence */
+    plasma_sequence_destroy(sequence);
+
     /* Return status */
     status = sequence->status;
-    plasma_sequence_destroy(sequence);
     return status;
 }
-
 
 /***************************************************************************//**
  *
@@ -267,44 +273,11 @@ int PLASMA_ztrmm(PLASMA_enum side, PLASMA_enum uplo,
  *
  *******************************************************************************
  *
- * @param[in] side
- *          Specifies whether A appears on the left or on the right of X:
- *          - PlasmaLeft:  alpha*op( A )*B
- *          - PlasmaRight: alpha*B*op( A )
- *
- * @param[in] uplo
- *          Specifies whether the matrix A is upper triangular or lower triangular:
- *          - PlasmaUpper: Upper triangle of A is stored;
- *          - PlasmaLower: Lower triangle of A is stored.
- *
- * @param[in] transA
- *          Specifies whether the matrix A is transposed, not transposed or conjugate transposed:
- *          - PlasmaNoTrans:   A is transposed;
- *          - PlasmaTrans:     A is not transposed;
- *          - PlasmaConjTrans: A is conjugate transposed.
- *
- * @param[in] diag
- *          Specifies whether or not A is unit triangular:
- *          - PlasmaNonUnit: A is non unit;
- *          - PlasmaUnit:    A us unit.
- *
- * @param[in] alpha
- *          alpha specifies the scalar alpha.
- *
  * @param[in] A
- *          Descriptor of the triangular matrix A. If uplo = PlasmaUpper, the
- *          leading n-by-n upper triangular part of the array A contains the
- *          upper triangular matrix, and the strictly lower triangular part of
- *          A is not referenced. If uplo = PlasmaLower, the leading n-by-n
- *          lower triangular part of the array A contains the lower triangular
- *          matrix, and the strictly upper triangular part of A is not
- *          referenced. If diag = PlasmaUnit, the diagonal elements of A are
- *          also not referenced and are assumed to be 1.
+ *          Descriptor of the triangular matrix A.
  *
  * @param[in,out] B
- *          Descriptor of matrix B. On entry, the n-by-nrhs right hand side
- *          matrix B.  On exit, if return value = 0, the n-by-nrhs solution
- *          matrix X.
+ *          Descriptor of matrix B.
  *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to
