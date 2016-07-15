@@ -8,9 +8,10 @@
  *  Univ. of Colorado Denver.
  *
  * @version 3.0.0
- * @author Jakub Kurzak
- * @author Samuel D. Relton
- * @date 2016-05-24
+ * @author  Jakub Kurzak
+ * @author  Samuel D. Relton
+ * @author  Maksims Abalenkovs
+ * @date    2016-06-22
  * @precisions normal z -> c d s
  *
  **/
@@ -81,6 +82,18 @@ void CORE_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
                 PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                                                 PLASMA_Complex64_t *B, int ldb);
 
+void CORE_ztrmm(
+    PLASMA_enum side, PLASMA_enum uplo, PLASMA_enum transA, PLASMA_enum diag,
+    int m, int n,
+    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+                                    PLASMA_Complex64_t *B, int ldb);
+
+void CORE_ztrmm_p2(
+    PLASMA_enum side, PLASMA_enum uplo, PLASMA_enum transA, PLASMA_enum diag,
+    int m, int n,
+    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t  *A, int lda,
+                                    PLASMA_Complex64_t **B, int ldb);
+
 /******************************************************************************/
 void CORE_OMP_zgemm(
     PLASMA_enum transA, PLASMA_enum transB,
@@ -144,6 +157,17 @@ void CORE_OMP_ztrsm(
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                                     PLASMA_Complex64_t *B, int ldb);
 
+void CORE_OMP_ztrmm(
+    PLASMA_enum side, PLASMA_enum uplo, PLASMA_enum transA, PLASMA_enum diag,
+    int m, int n,
+    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+                                    PLASMA_Complex64_t *B, int ldb);
+
+void CORE_OMP_ztrmm_p2(
+    PLASMA_enum side, PLASMA_enum uplo, PLASMA_enum transA, PLASMA_enum diag,
+    int m, int n,
+    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t  *A, int lda,
+                                    PLASMA_Complex64_t **B, int ldb);
 #ifdef __cplusplus
 }  // extern "C"
 #endif

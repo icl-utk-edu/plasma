@@ -8,9 +8,10 @@
  *  Univ. of Colorado Denver.
  *
  * @version 3.0.0
- * @author Jakub Kurzak
- * @author Samuel D. Relton
- * @date 2016-05-16
+ * @author  Jakub Kurzak
+ * @author  Samuel D. Relton
+ * @author  Maksims Abalenkovs
+ * @date    2016-06-22
  * @precisions normal z -> s d c
  *
  **/
@@ -73,6 +74,12 @@ int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
                  PLASMA_Complex64_t alpha, PLASMA_Complex64_t *A, int lda,
                                            PLASMA_Complex64_t *B, int ldb);
 
+int PLASMA_ztrmm(PLASMA_enum side, PLASMA_enum uplo,
+                 PLASMA_enum transA, PLASMA_enum diag,
+                 int n, int nrhs, PLASMA_Complex64_t alpha,
+                 PLASMA_Complex64_t *A, int lda,
+                 PLASMA_Complex64_t *B, int ldb);
+
 /***************************************************************************//**
  *  Tile asynchronous interface.
  **/
@@ -134,6 +141,11 @@ void PLASMA_ztrsm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
                                                        PLASMA_desc *B,
                              PLASMA_sequence *sequence,
                              PLASMA_request *request);
+
+void PLASMA_ztrmm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
+                             PLASMA_enum transA, PLASMA_enum diag,
+                             PLASMA_Complex64_t alpha, PLASMA_desc *A, PLASMA_desc *B,
+                             PLASMA_sequence *sequence, PLASMA_request *request);
 
 /***************************************************************************//**
  *  Layout translation async.

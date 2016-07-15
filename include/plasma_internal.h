@@ -7,8 +7,8 @@
  *  Univ. of California Berkeley and Univ. of Colorado Denver.
  *
  * @version 3.0.0
- * @author Jakub Kurzak
- * @date 2016-01-01
+ * @author  Jakub Kurzak
+ * @date    2016-05-06
  *
  **/
 #ifndef ICL_PLASMA_INTERNAL_H

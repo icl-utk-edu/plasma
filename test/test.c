@@ -8,10 +8,11 @@
  *  Univ. of Colorado Denver.
  *
  * @version 3.0.0
- * @author Jakub Kurzak
- * @author Samuel D. Relton
- * @author Mawussi Zounon
- * @date 2016-05-17
+ * @author  Jakub Kurzak
+ * @author  Samuel D. Relton
+ * @author  Mawussi Zounon
+ * @author  Maksims Abalenkovs
+ * @date    2016-06-22
  *
  **/
 #include "test.h"
@@ -309,6 +310,15 @@ void run_routine(const char *name, param_value_t pval[], char *info)
     else if (strcmp(name, "strsm") == 0)
         test_strsm(pval, info);
 
+    else if (strcmp(name, "ztrmm") == 0)
+        test_ztrmm(pval, info);
+    else if (strcmp(name, "dtrmm") == 0)
+        test_dtrmm(pval, info);
+    else if (strcmp(name, "ctrmm") == 0)
+        test_ctrmm(pval, info);
+    else if (strcmp(name, "strmm") == 0)
+        test_strmm(pval, info);
+
     else {
         printf("unknown routine: %s\n", name);
         exit(EXIT_FAILURE);
@@ -393,6 +403,8 @@ int param_read(int argc, char **argv, param_t param[])
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_N]);
         else if (param_starts_with(argv[i], "--k="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_K]);
+        else if (param_starts_with(argv[i], "--nrhs="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NRHS]);
 
         else if (param_starts_with(argv[i], "--nb="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NB]);
@@ -460,7 +472,7 @@ int param_read(int argc, char **argv, param_t param[])
     if (param[PARAM_UPLO].num == 0)
         param_add_char('l', &param[PARAM_UPLO]);
     if (param[PARAM_DIAG].num == 0)
-      param_add_char('n', &param[PARAM_DIAG]);
+        param_add_char('n', &param[PARAM_DIAG]);
 
     //--------------------------------------------------
     // Set integer parameters.
@@ -471,6 +483,9 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_int(1000, &param[PARAM_N]);
     if (param[PARAM_K].num == 0)
         param_add_int(1000, &param[PARAM_K]);
+
+    if (param[PARAM_NRHS].num == 0)
+        param_add_int(1000, &param[PARAM_NRHS]);
 
     if (param[PARAM_NB].num == 0)
         param_add_int(256, &param[PARAM_NB]);

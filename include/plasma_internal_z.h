@@ -8,12 +8,12 @@
  *  Univ. of Colorado Denver.
  *
  * @version 3.0.0
- * @author Jakub Kurzak
- * @author Mawussi Zounon
- * @author Pedro V. Lara
- * @author Maksims Abalenkovs
- * @author Samuel D. Relton
- * @date 2016-05-24
+ * @author  Jakub Kurzak
+ * @author  Mawussi Zounon
+ * @author  Pedro V. Lara
+ * @author  Maksims Abalenkovs
+ * @author  Samuel D. Relton
+ * @date    2016-06-22
  * @precisions normal z -> s d c
  *
  **/
@@ -41,16 +41,27 @@ void plasma_pzhemm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_Complex64_t beta,  PLASMA_desc C,
                    PLASMA_sequence *sequence, PLASMA_request *request);
 
-void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
+void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
+                   PLASMA_Complex64_t alpha, PLASMA_desc A,
+                   PLASMA_Complex64_t beta,  PLASMA_desc C,
+                   PLASMA_sequence *sequence, PLASMA_request *request);
+
+void plasma_pzsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
                     PLASMA_Complex64_t alpha, PLASMA_desc A,
                                               PLASMA_desc B,
-                    double beta,              PLASMA_desc C,
+                    PLASMA_Complex64_t beta,  PLASMA_desc C,
                     PLASMA_sequence *sequence, PLASMA_request *request);
 
 void plasma_pzherk(PLASMA_enum uplo, PLASMA_enum trans,
                    double alpha, PLASMA_desc A,
                    double beta,  PLASMA_desc C,
                    PLASMA_sequence *sequence, PLASMA_request *request);
+
+void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
+                    PLASMA_Complex64_t alpha, PLASMA_desc A,
+                                              PLASMA_desc B,
+                    double beta,              PLASMA_desc C,
+                    PLASMA_sequence *sequence, PLASMA_request *request);
 
 void plasma_pzooccrb2cm(PLASMA_desc A,
                         PLASMA_Complex64_t *Af77, int lda,
@@ -69,22 +80,26 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_Complex64_t beta,  PLASMA_desc C,
                    PLASMA_sequence *sequence, PLASMA_request *request);
 
- void plasma_pzsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
-                     PLASMA_Complex64_t alpha, PLASMA_desc A,
-                                               PLASMA_desc B,
-                     PLASMA_Complex64_t beta,  PLASMA_desc C,
-                     PLASMA_sequence *sequence, PLASMA_request *request);
-
-void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
-                   PLASMA_Complex64_t alpha, PLASMA_desc A,
-                   PLASMA_Complex64_t beta,  PLASMA_desc C,
-                   PLASMA_sequence *sequence, PLASMA_request *request);
-
 void plasma_pztrsm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_enum trans, PLASMA_enum diag,
                    PLASMA_Complex64_t alpha, PLASMA_desc A,
                                              PLASMA_desc B,
                    PLASMA_sequence *sequence, PLASMA_request *request);
+
+void plasma_pztrmm(PLASMA_enum side, PLASMA_enum uplo,
+                   PLASMA_enum trans, PLASMA_enum diag,
+                   PLASMA_Complex64_t alpha, PLASMA_desc A, PLASMA_desc B,
+                   PLASMA_sequence *sequence, PLASMA_request *request);
+
+void plasma_pzooccrb2cm(
+    PLASMA_desc A,
+    PLASMA_Complex64_t *Af77, int lda,
+    PLASMA_sequence *sequence, PLASMA_request *request);
+
+void plasma_pzoocm2ccrb(
+    PLASMA_Complex64_t *Af77, int lda,
+    PLASMA_desc A,
+    PLASMA_sequence *sequence, PLASMA_request *request);
 
 #ifdef __cplusplus
 }  // extern "C"

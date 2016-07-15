@@ -128,13 +128,12 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
     }
 
     // Check input arguments.
-    if ((uplo != PlasmaUpper) &&
-	(uplo != PlasmaLower)) {
+    /* Check input arguments */
+    if ((uplo != PlasmaUpper) && (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
         return -1;
     }
-    if ((trans != PlasmaNoTrans) &&
-	(trans != PlasmaConjTrans)) {
+    if ((trans != PlasmaNoTrans) && (trans != PlasmaConjTrans)) {
         plasma_error("illegal value of trans");
         return -2;
     }

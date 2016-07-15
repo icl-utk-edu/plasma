@@ -156,9 +156,9 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
                         CORE_OMP_zgemm(
                             trans, PlasmaNoTrans,
                             tempmm, tempnn, tempkm,
-                            conj(alpha), B(k, m),
-                            ldbk, A(k, n), ldak,
-                            zone, C(m, n), ldcm);
+                            conj(alpha), B(k, m), ldbk,   /* lda * m */
+                                         A(k, n), ldak,   /* lda * n */
+                            zone,        C(m, n), ldcm);  /* ldc * n */
                     }
                 }
             }

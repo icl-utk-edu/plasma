@@ -8,9 +8,10 @@
  *  Univ. of Colorado Denver.
  *
  * @version 3.0.0
- * @author Jakub Kurzak
- * @author Samuel D. Relton
- * @date 2016-05-16
+ * @author  Jakub Kurzak
+ * @author  Samuel D. Relton
+ * @author  Maksims Abalenkovs
+ * @date    2016-06-21
  *
  **/
 #ifndef TEST_H
@@ -34,16 +35,17 @@ typedef enum {
     PARAM_TRANSB, // transposition of B
     PARAM_SIDE,   // Left of right side application
     PARAM_UPLO,   // Upper or lower triangular
-    PARAM_DIAG,   // Upper or lower triangular
+    PARAM_DIAG,   // Unit triangularity
     PARAM_M,      // M dimension
     PARAM_N,      // N dimension
     PARAM_K,      // K dimension
-    PARAM_NB,     // tile size NBxNB
-    PARAM_ALPHA,  // scalar alpha
-    PARAM_BETA,   // scalar beta
-    PARAM_PADA,   // padding of A
-    PARAM_PADB,   // padding of B
-    PARAM_PADC,   // padding of C
+    PARAM_NRHS,   // Number of right hand sides
+    PARAM_NB,     // Tile size NBxNB
+    PARAM_ALPHA,  // Scalar alpha
+    PARAM_BETA,   // Scalar beta
+    PARAM_PADA,   // Padding of A
+    PARAM_PADB,   // Padding of B
+    PARAM_PADC,   // Padding of C
 
     //------------------------------------------------------
     // output parameters
@@ -75,6 +77,7 @@ static const char *ParamUsage[][2] = {
     {"--m=", "M dimension (number of rows) [default: 1000]"},
     {"--n=", "N dimension (number of columns) [default: 1000]"},
     {"--k=", "K dimension (number of rows or columns) [default: 1000]"},
+    {"--nrhs=", "Number of right hand sides (number of columns of matrix B) [default: 1000]"},
     {"--nb=", "NB size of tile (NB by NB) [default: 256]"},
     {"--alpha=", "scalar alpha"},
     {"--beta=", "scalar beta"},

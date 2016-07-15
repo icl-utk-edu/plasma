@@ -386,8 +386,8 @@ void PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
         return;
     }
     if (plasma_desc_check(A) != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         plasma_error("invalid A");
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
     if (plasma_desc_check(B) != PLASMA_SUCCESS) {
