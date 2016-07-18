@@ -56,13 +56,13 @@
  *  iterative refinement.
  *
  *  The iterative refinement process is stopped if iter > itermax or
- *  for all the RHS we have: Rnrm < n*Xnrm*Anrm*eps*BWDmax
+ *  for all the RHS we have: Rnorm < n*Xnorm*Anorm*eps*BWDmax
  *  where:
  *
  *  - iter is the number of the current iteration in the iterative refinement process
- *  - Rnrm is the infinity-norm of the residual
- *  - Xnrm is the infinity-norm of the solution
- *  - Anrm is the infinity-operator-norm of the matrix A
+ *  - Rnorm is the infinity-norm of the residual
+ *  - Xnorm is the infinity-norm of the solution
+ *  - Anorm is the infinity-operator-norm of the matrix A
  *  - eps is the machine epsilon returned by DLAMCH('Epsilon').
  *
  *  Actually, in its current state (PLASMA 2.1.0), the test is slightly relaxed.
@@ -350,8 +350,9 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     const double bwdmax = 1.0;
     const PLASMA_Complex64_t negone = -1.0;
     const PLASMA_Complex64_t one = 1.0;
-    int iiter;
-    double Anrm, cte, eps, Rnrm, Xnrm;
+    int iiter, retval;
+    double Anorm = 0.0, Rnorm = 0.0, Xnorm = 0.0;
+    double cte, eps;
     *iter = 0;
 
     /* Get PLASMA context */
@@ -428,12 +429,23 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     n  = descA.m;
     nb = descA.nb;
 
+    /*
     wrk = (double *)plasma_shared_alloc(plasma, PLASMA_SIZE, PlasmaRealDouble);
 
     if (wrk == NULL) {
         plasma_error("plasma_shared_alloc() failed");
         plasma_shared_free(plasma, wrk);
         return PLASMA_ERR_OUT_OF_RESOURCES;
+    }
+    */
+
+    wrk = (double *) malloc(sizeof(double) * imax(1,n));
+
+    if (wrk == NULL) {
+        plasma_error("malloc() failed");
+        plasma_request_fail(sequence, request, PLASMA_ERR_OUT_OF_RESOURCES);
+        free(wrk);
+        return;
     }
 
     /* Initialise additional matrix descriptors */
@@ -451,24 +463,27 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
 
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");
-        return retval;
+        plasma_request_fail(sequence, request, PLASMA_ERR_OUT_OF_RESOURCES);
+        return;
     }
 
     retval = plasma_desc_mat_alloc(&descAs);
 
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");
+        plasma_request_fail(sequence, request, PLASMA_ERR_OUT_OF_RESOURCES);
         plasma_desc_mat_free(&descR);
-        return retval;
+        return;
     }
 
     retval = plasma_desc_mat_alloc(&descXs);
 
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");
+        plasma_request_fail(sequence, request, PLASMA_ERR_OUT_OF_RESOURCES);
         plasma_desc_mat_free(&descR);
         plasma_desc_mat_free(&descAs);
-        return retval;
+        return;
     }
 
     /* Compute constants */
@@ -498,15 +513,15 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
 
     /* Solve system As*Xs = Bs */
     /* Forward substitution */
-    uplo == PlasmaUpper ? transAs = PlasmaConjTrans : transAs = PlasmaNoTrans;
+    transA = (uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans);
 
-    plasma_pctrsm(PlasmaLeft, uplo, transAs, PlasmaNonUnit,
+    plasma_pctrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit,
                  (PLASMA_Complex32_t) 1.0, descAs, descXs, sequence, request);
 
     /* Backward substitution */
-    uplo == PlasmaUpper ? transAs = PlasmaNoTrans : transAs = PlasmaConjTrans;
+    transA = (uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans);
 
-    plasma_pctrsm(PlasmaLeft, uplo, transAs, PlasmaNonUnit,
+    plasma_pctrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit,
                  (PLASMA_Complex32_t) 1.0, descAs, descXs, sequence, request);
 
     /* Convert Xs to double precision */
@@ -520,83 +535,87 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
 
     /* Check, whether nrhs normwise backward error satisfies the
        stopping criterion. If yes, return. Note that iter = 0 (already set) */
-    plasma_pzlange(PlasmaInfNorm, descX, Xnrm, wrk);
-    plasma_pzlange(PlasmaInfNorm, descR, Rnrm, wrk);
+    plasma_pzlange(PlasmaInfNorm, descX, Xnorm, wrk);
+    plasma_pzlange(PlasmaInfNorm, descR, Rnorm, wrk);
 
     /* Wait for end of Anorm, Xnorm and Bnorm computations */
     // plasma_dynamic_sync();
 
-    cte = Anrm * eps * ((double)n) * bwdmax;
+    cte = Anorm * eps * ((double)n) * bwdmax;
 
     /* The nrhs normwise backward errors satisfy the
        stopping criterion. We are good to exit */
 
-    if (Rnrm < Xnrm * cte) {
+    if (Rnorm < Xnorm * cte) {
 
         plasma_desc_mat_free(&descAs);
         plasma_desc_mat_free(&descXs);
         plasma_desc_mat_free(&descR);
-        plasma_shared_free(plasma, wrk);
+        // plasma_shared_free(plasma, wrk);
+        free(wrk);
 
-        return PLASMA_SUCCESS;
+        return;
 
     }
 
     /* Iterative refinement */
-//    for (iiter = 0; iiter < itermax; iiter++) {
-//
-//        /* Convert R from double to single precision, store result in Xs */
-//        plasma_pzlag2c(descR, descXs);
-//
-//        /* Solve system As*Xs = Rs */
-//        /* Forward substitution */
-//        uplo == PlasmaUpper ? transA = PlasmaConjTrans : transA = PlasmaNoTrans;
-//
-//        plasma_pctrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit,
-//                     (PLASMA_Complex32_t) 1.0, descAs, descXs, sequence, request);
-//
-//        /* Backward substitution */
-//        uplo == PlasmaUpper ? transA = PlasmaNoTrans : transA = PlasmaConjTrans;
-//
-//        plasma_pctrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit,
-//                     (PLASMA_Complex32_t) 1.0, descAs, descXs, sequence, request);
-//
-//        /* Revert Xs to double precision, update current iteration */
-//        plasma_pclag2z(descXs, descR);
-//
-//        plasma_pztradd(PlasmaUpperLower, PlasmaNoTrans, (PLASMA_Complex64_t) one,
-//                       descR, (PLASMA_Complex64_t) 1.0, descX, sequence, request);
-//
-//        /* Compute R = B-A*X */
-//        plasma_pzlacpy(descB, descR);
-//
-//        plasma_pzhemm(PlasmaLeft, uplo, negone, descA, descX, &
-//                      one, descR, sequence, request);
-//
-//        /* Check, whether nrhs normwise backward errors satisfy the
-//           stopping criterion. If yes, set iter = iiter > 0 and return */
-//        plasma_pzlange(PlasmaInfNorm, descX, Xnrm, wrk);
-//        plasma_pzlange(PlasmaInfNorm, descR, Rnrm, wrk);
-//
-//        /* Wait for the end of Xnorm and Bnorm computations */
-//        // plasma_dynamic_sync();
-//
-//        /* nrhs normwise backward errors satisfy the
-//           stopping criterion. We are good to exit. */
-//
-//        if (Rnrm < Xnrm * cte) {
-//
-//            *iter = iiter;
-//
-//            plasma_desc_mat_free(&descAs);
-//            plasma_desc_mat_free(&descXs);
-//            plasma_desc_mat_free(&descR);
-//            plasma_shared_free(plasma, wrk);
-//
-//            return PLASMA_SUCCESS;
-//
-//        }
-//    }
+    for (iiter = 0; iiter < itermax; iiter++) {
+
+        /* Convert R from double to single precision, store result in Xs */
+        plasma_pzlag2c(descR, descXs);
+
+        /* Solve system As*Xs = Rs */
+        /* Forward substitution */
+        transA = (uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans);
+
+        plasma_pctrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit,
+                     (PLASMA_Complex32_t) 1.0, descAs, descXs, sequence, request);
+
+        /* Backward substitution */
+        transA = (uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans);
+
+        plasma_pctrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit,
+                     (PLASMA_Complex32_t) 1.0, descAs, descXs, sequence, request);
+
+        /* Revert Xs to double precision, update current iteration */
+        plasma_pclag2z(descXs, descR);
+
+        plasma_pztradd(PlasmaFull, PlasmaNoTrans, (PLASMA_Complex64_t) one,
+                       descR, (PLASMA_Complex64_t) 1.0, descX, sequence, request);
+
+        /* Compute R = B-A*X */
+        plasma_pzlacpy(descB, descR);
+
+        plasma_pzhemm(PlasmaLeft, uplo, negone, descA, descX,
+                      one, descR, sequence, request);
+
+        /* Check, whether nrhs normwise backward errors satisfy the
+           stopping criterion. If yes, set iter = iiter > 0 and return */
+        plasma_pzlange(PlasmaInfNorm, descX, Xnorm, wrk);
+        plasma_pzlange(PlasmaInfNorm, descR, Rnorm, wrk);
+
+        /* Wait for the end of Xnorm and Bnorm computations */
+        // plasma_dynamic_sync();
+
+        /* nrhs normwise backward errors satisfy the
+           stopping criterion. We are good to exit. */
+
+        if (Rnorm < Xnorm * cte) {
+
+            *iter = iiter;
+
+            plasma_desc_mat_free(&descAs);
+            plasma_desc_mat_free(&descXs);
+            plasma_desc_mat_free(&descR);
+            // plasma_shared_free(plasma, wrk);
+            free(wrk);
+
+            return;
+
+        }
+
+        Xnorm = 0.0; Rnorm = 0.0;
+    }
 
     /* We have performed iter = itermax iterations and never satisified
        the stopping criterion, set up iter flag accordingly and
@@ -607,7 +626,8 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     plasma_desc_mat_free(&descXs);
     plasma_desc_mat_free(&descR);
 
-    plasma_shared_free(plasma, wrk);
+    // plasma_shared_free(plasma, wrk);
+    free(wrk);
 
     /* Single-precision iterative refinement failed to converge to
        satisfactory solution => resort to double precision */
@@ -616,12 +636,12 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
 
     plasma_pzlacpy(descB, descX);
 
-    uplo == PlasmaUpper ? transA = PlasmaConjTrans : transA = PlasmaNoTrans;
+    transA = (uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans);
 
     plasma_pztrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit, (PLASMA_Complex64_t) 1.0,
                   descA, descX, sequence, request);
 
-    uplo == PlasmaUpper ? transA = PlasmaNoTrans : transA = PlasmaConjTrans;
+    transA = (uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans);
 
     plasma_pztrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit, (PLASMA_Complex64_t) 1.0,
                   descA, descX, sequence, request);

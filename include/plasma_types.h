@@ -7,8 +7,9 @@
  *  Univ. of California Berkeley and Univ. of Colorado Denver.
  *
  * @version 3.0.0
- * @author Jakub Kurzak
- * @date 2016-01-01
+ * @author  Jakub Kurzak
+ * @author  Maksims Abalenkovs
+ * @date    2016-07-18
  *
  **/
 #ifndef ICL_PLASMA_TYPES_H
@@ -63,7 +64,9 @@ enum {
     PlasmaUnit       = 132,
 
     PlasmaLeft       = 141,
-    PlasmaRight      = 142
+    PlasmaRight      = 142,
+
+    PlasmaInfNorm    = 175
 };
 
 enum {
