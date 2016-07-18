@@ -11,7 +11,7 @@
  * @author  Jakub Kurzak
  * @author  Samuel D. Relton
  * @author  Maksims Abalenkovs
- * @date    2016-06-22
+ * @date    2016-07-18
  * @precisions normal z -> s d c
  *
  **/
@@ -80,6 +80,11 @@ int PLASMA_ztrmm(PLASMA_enum side, PLASMA_enum uplo,
                  PLASMA_Complex64_t *A, int lda,
                  PLASMA_Complex64_t *B, int ldb);
 
+int PLASMA_zcposv(PLASMA_enum uplo, int n, int nrhs,
+                  PLASMA_Complex64_t *A, int lda,
+                  PLASMA_Complex64_t *B, int ldb,
+                  PLASMA_Complex64_t *X, int ldx, int *iter);
+
 /***************************************************************************//**
  *  Tile asynchronous interface.
  **/
@@ -146,6 +151,10 @@ void PLASMA_ztrmm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
                              PLASMA_enum transA, PLASMA_enum diag,
                              PLASMA_Complex64_t alpha, PLASMA_desc *A, PLASMA_desc *B,
                              PLASMA_sequence *sequence, PLASMA_request *request);
+
+void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
+                              PLASMA_desc *X, int *iter,
+                              PLASMA_sequence *sequence, PLASMA_request *request);
 
 /***************************************************************************//**
  *  Layout translation async.

@@ -9,14 +9,10 @@
  * @version 3.0.0
  * @author  Emmanuel Agullo
  * @author  Maksims Abalenkovs
- * @date    2016-07-15
+ * @date    2016-07-18
  * @precisions mixed zc -> ds
  *
  **/
-#include <stdlib.h>
-#include <math.h>
-#include <lapacke.h>
-#include "common.h"
 
 #include "plasma_types.h"
 #include "plasma_async.h"
@@ -25,67 +21,19 @@
 #include "plasma_internal.h"
 #include "plasma_z.h"
 
-#define PLASMA_zlag2c(_descA, _descSB)                \
-  plasma_parallel_call_4(plasma_pzlag2c,              \
-                         PLASMA_desc,      (_descA),  \
-                         PLASMA_desc,      (_descSB), \
-                         PLASMA_sequence*, sequence,  \
-                         PLASMA_request*,  request)
-
-#define PLASMA_clag2z(_descSA, _descB)                \
-  plasma_parallel_call_4(plasma_pclag2z,              \
-                         PLASMA_desc,      (_descSA), \
-                         PLASMA_desc,      (_descB),  \
-                         PLASMA_sequence*, sequence,  \
-                         PLASMA_request*,  request)
-
-#define PLASMA_zlange(_norm, _descA, _result, _work)   \
-  _result = 0;                                         \
-  plasma_parallel_call_6(plasma_pzlange,               \
-                         PLASMA_enum,      (_norm),    \
-                         PLASMA_desc,      (_descA),   \
-                         double*,          (_work),    \
-                         double*,          &(_result), \
-                         PLASMA_sequence*, sequence,   \
-                         PLASMA_request*,  request);
-
-#define PLASMA_zlanhe(_norm, _uplo, _descA, _result, _work) \
-  _result = 0;                                              \
-  plasma_parallel_call_7(plasma_pzlanhe,                    \
-                         PLASMA_enum,      (_norm),         \
-                         PLASMA_enum,      (_uplo),         \
-                         PLASMA_desc,      (_descA),        \
-                         double*,          (_work),         \
-                         double*,          &(_result),      \
-                         PLASMA_sequence*, sequence,        \
-                         PLASMA_request*,  request);
-
-#define PLASMA_zlacpy(_descA, _descB)                        \
-  plasma_parallel_call_5(plasma_pzlacpy,                     \
-                         PLASMA_enum,      PlasmaUpperLower, \
-                         PLASMA_desc,      (_descA),         \
-                         PLASMA_desc,      (_descB),         \
-                         PLASMA_sequence*, sequence,         \
-                         PLASMA_request*,  request)
-
-#define PLASMA_zgeadd(_alpha, _descA, _descB)           \
-  plasma_parallel_call_8(plasma_pztradd,                \
-                         PLASMA_enum, PlasmaUpperLower, \
-                         PLASMA_enum, PlasmaNoTrans,    \
-                         PLASMA_Complex64_t, (_alpha),  \
-                         PLASMA_desc,        (_descA),  \
-                         PLASMA_Complex64_t, (1.0),     \
-                         PLASMA_desc,        (_descB),  \
-                         PLASMA_sequence*,   sequence,  \
-                         PLASMA_request*,    request)
+#ifdef PLASMA_WITH_MKL
+    #include <mkl_lapacke.h>
+#else
+    #include <lapacke.h>
+#endif
 
 /***************************************************************************//**
  *
  * @ingroup plasma_zcposv
  *
  *  PLASMA_zcposv - Computes the solution to a system of linear equations A * X = B,
- *  where A is an N-by-N symmetric positive definite (or Hermitian positive definite
- *  in the complex case) matrix and X and B are N-by-NRHS matrices.
+ *  where A is an n-by-n symmetric positive definite (or Hermitian positive definite
+ *  in the complex case) matrix and X and B are n-by-nrhs matrices.
  *  The Cholesky decomposition is used to factor A as
  *
  *    A = U**H * U, if uplo = PlasmaUpper, or
@@ -107,19 +55,19 @@
  *  with a call to ILAENV in the future. Up to now, we always try
  *  iterative refinement.
  *
- *  The iterative refinement process is stopped if ITER > ITERMAX or
- *  for all the RHS we have: RNRM < N*XNRM*ANRM*EPS*BWDMAX
+ *  The iterative refinement process is stopped if iter > itermax or
+ *  for all the RHS we have: Rnrm < n*Xnrm*Anrm*eps*BWDmax
  *  where:
  *
- *  - ITER is the number of the current iteration in the iterative refinement process
- *  - RNRM is the infinity-norm of the residual
- *  - XNRM is the infinity-norm of the solution
- *  - ANRM is the infinity-operator-norm of the matrix A
- *  - EPS is the machine epsilon returned by DLAMCH('Epsilon').
+ *  - iter is the number of the current iteration in the iterative refinement process
+ *  - Rnrm is the infinity-norm of the residual
+ *  - Xnrm is the infinity-norm of the solution
+ *  - Anrm is the infinity-operator-norm of the matrix A
+ *  - eps is the machine epsilon returned by DLAMCH('Epsilon').
  *
  *  Actually, in its current state (PLASMA 2.1.0), the test is slightly relaxed.
  *
- *  The values ITERMAX and BWDMAX are fixed to 30 and 1.0D+00 respectively.
+ *  The values itermax and BWDmax are fixed to 30 and 1.0D+00 respectively.
  *
  *******************************************************************************
  *
@@ -158,7 +106,7 @@
  *          If return value = 0, the n-by-nrhs solution matrix X.
  *
  * @param[in] ldx
- *          The leading dimension of the array B. ldx >= max(1,n).
+ *          The leading dimension of the array X. ldx >= max(1,n).
  *
  * @param[out] iter
  *          The number of the current iteration in the iterative refinement process
@@ -182,14 +130,15 @@ int PLASMA_zcposv(PLASMA_enum uplo, int n, int nrhs,
                   PLASMA_Complex64_t *B, int ldb,
                   PLASMA_Complex64_t *X, int ldx, int *iter)
 {
+    int retval;
     int nb;
     int status;
     PLASMA_desc descA;
     PLASMA_desc descB;
     PLASMA_desc descX;
     plasma_context_t *plasma;
-    PLASMA_sequence  *seq = NULL;
-    PLASMA_request    req = PLASMA_REQUEST_INITIALIZER;
+    PLASMA_sequence  *sequence = NULL;
+    PLASMA_request    request = PLASMA_REQUEST_INITIALIZER;
 
     /* Get PLASMA context */
     plasma = plasma_context_self();
@@ -214,22 +163,22 @@ int PLASMA_zcposv(PLASMA_enum uplo, int n, int nrhs,
         plasma_error("illegal value of nrhs");
         return -3;
     }
-    if (lda < max(1, n)) {
+    if (lda < imax(1, n)) {
         plasma_error("illegal value of lda");
         return -5;
     }
-    if (ldb < max(1, n)) {
+    if (ldb < imax(1, n)) {
         plasma_error("illegal value of ldb");
         return -7;
     }
-    if (ldx < max(1, n)) {
+    if (ldx < imax(1, n)) {
         plasma_error("illegal value of ldx");
         return -9;
     }
 
     /* Quick return - currently NOT equivalent to LAPACK's
      * LAPACK does not have such check for ZCPOSV */
-    if (min(n, nrhs) == 0)
+    if (imin(n, nrhs) == 0)
         return PLASMA_SUCCESS;
 
     /* Tune nb depending on m, n & nrhs; Set nbnbsize */
@@ -277,7 +226,7 @@ int PLASMA_zcposv(PLASMA_enum uplo, int n, int nrhs,
     }
 
     /* Create sequence */
-    retval = plasma_sequence_create(plasma, &seq);
+    retval = plasma_sequence_create(&sequence);
 
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_sequence_create() failed");
@@ -289,44 +238,44 @@ int PLASMA_zcposv(PLASMA_enum uplo, int n, int nrhs,
     {
         /*
          * the Async functions are submitted here.  If an error occurs
-         * (at submission time or at run time) the seq->status
+         * (at submission time or at run time) the sequence->status
          * will be marked with an error.  After an error, the next
          * Async will not _insert_ more tasks into the runtime.  The
-         * seq->status can be checked after each call to _Async
+         * sequence->status can be checked after each call to _Async
          * or at the end of the parallel region.
          */
 
         /* Translate matrices to tile layout */
-        PLASMA_zcm2ccrb_Async(A, lda, &descA, seq, &req);
+        PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
     
-        if (seq->status == PLASMA_SUCCESS)
-            PLASMA_zcm2ccrb_Async(B, ldb, &descB, seq, &req);
+        if (sequence->status == PLASMA_SUCCESS)
+            PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
     
-        if (seq->status == PLASMA_SUCCESS)
-            PLASMA_zcm2ccrb_Async(X, ldx, &descX, seq, &req);
+        if (sequence->status == PLASMA_SUCCESS)
+            PLASMA_zcm2ccrb_Async(X, ldx, &descX, sequence, &request);
 
         /* Call the tile async interface */
-        if (seq->status == PLASMA_SUCCESS) {
+        if (sequence->status == PLASMA_SUCCESS) {
 
             PLASMA_zcposv_Tile_Async(uplo, &descA, &descB, &descX,
-                                     iter, seq, &req);
+                                     iter, sequence, &request);
         }
     
         /* Revert matrices to LAPACK layout */
-        if (seq->status == PLASMA_SUCCESS)
-            PLASMA_zccrb2cm_Async(&descA, A, lda, seq, &req);
+        if (sequence->status == PLASMA_SUCCESS)
+            PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
         
-        if (seq->status == PLASMA_SUCCESS)
-            PLASMA_zccrb2cm_Async(&descB, B, ldb, seq, &req);
+        if (sequence->status == PLASMA_SUCCESS)
+            PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
 
-        if (seq->status == PLASMA_SUCCESS)
-            PLASMA_zccrb2cm_Async(&descX, X, ldx, seq, &req);
+        if (sequence->status == PLASMA_SUCCESS)
+            PLASMA_zccrb2cm_Async(&descX, X, ldx, sequence, &request);
 
     } /* pragma omp parallel block closed */
 
     /* Check for errors in async execution */
-    if (seq->status != PLASMA_SUCCESS)
-        return seq->status;
+    if (sequence->status != PLASMA_SUCCESS)
+        return sequence->status;
 
     /* Free matrices in tile layout */
     plasma_desc_mat_free(&descA);
@@ -334,10 +283,10 @@ int PLASMA_zcposv(PLASMA_enum uplo, int n, int nrhs,
     plasma_desc_mat_free(&descX);
 
     /* Destroy sequence */
-    plasma_sequence_destroy(seq);
+    plasma_sequence_destroy(sequence);
 
     /* Return status */
-    status = seq->status;
+    status = sequence->status;
     return status;
 }
 
@@ -384,25 +333,26 @@ int PLASMA_zcposv(PLASMA_enum uplo, int n, int nrhs,
  * @sa PLASMA_zposv_Tile_Async
  *
  ******************************************************************************/
-int PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
-                             PLASMA_desc *X, int *iter,
-                             PLASMA_sequence *sequence, PLASMA_request *request)
+void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
+                              PLASMA_desc *X, int *iter,
+                              PLASMA_sequence *sequence, PLASMA_request *request)
 {
     int n, nb;
     PLASMA_desc descA;
     PLASMA_desc descB;
     PLASMA_desc descX;
     plasma_context_t *plasma;
-    double *work;
-    PLASMA_desc descR, descSA, descSX;
+    double *wrk;
+    PLASMA_desc descR, descAs, descXs;
+    PLASMA_enum transA;
 
     const int itermax = 30;
     const double bwdmax = 1.0;
     const PLASMA_Complex64_t negone = -1.0;
     const PLASMA_Complex64_t one = 1.0;
     int iiter;
-    double Anorm, cte, eps, Rnorm, Xnorm;
-    *iter=0;
+    double Anrm, cte, eps, Rnrm, Xnrm;
+    *iter = 0;
 
     /* Get PLASMA context */
     plasma = plasma_context_self();
@@ -471,18 +421,18 @@ int PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     /* Quick return - currently NOT equivalent to LAPACK's
      * LAPACK does not have such check for DPOSV */
 
-    if (A->m == 0 || A->n == 0 || B->m == 0 || B->n == 0 || X->m == 0 || X->n == 0 || min(n, nrhs) == 0)
+    if (A->m == 0 || A->n == 0 || B->m == 0 || B->n == 0 || X->m == 0 || X->n == 0)
         return;
 
     /* Set n, nb */
     n  = descA.m;
     nb = descA.nb;
 
-    work = (double *)plasma_shared_alloc(plasma, PLASMA_SIZE, PlasmaRealDouble);
+    wrk = (double *)plasma_shared_alloc(plasma, PLASMA_SIZE, PlasmaRealDouble);
 
-    if (work == NULL) {
+    if (wrk == NULL) {
         plasma_error("plasma_shared_alloc() failed");
-        plasma_shared_free(plasma, work);
+        plasma_shared_free(plasma, wrk);
         return PLASMA_ERR_OUT_OF_RESOURCES;
     }
 
@@ -522,7 +472,7 @@ int PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     }
 
     /* Compute constants */
-    plasma_pzlanhe(PlasmaInfNorm, uplo, descA, Anorm, work);
+    plasma_pzlanhe(PlasmaInfNorm, uplo, descA, Anorm, wrk);
     eps = LAPACKE_dlamch_work('e');
 
     /* Convert B from double to single precision, store result in Xs */
@@ -570,139 +520,111 @@ int PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
 
     /* Check, whether nrhs normwise backward error satisfies the
        stopping criterion. If yes, return. Note that iter = 0 (already set) */
-    plasma_pzlange(PlasmaInfNorm, descX, Xnorm, work);
-    plasma_pzlange(PlasmaInfNorm, descR, Rnorm, work);
-
-
+    plasma_pzlange(PlasmaInfNorm, descX, Xnrm, wrk);
+    plasma_pzlange(PlasmaInfNorm, descR, Rnrm, wrk);
 
     /* Wait for end of Anorm, Xnorm and Bnorm computations */
     // plasma_dynamic_sync();
 
-    cte = Anorm*eps*((double) N)*bwdmax;
+    cte = Anrm * eps * ((double)n) * bwdmax;
 
-    if (Rnorm < Xnorm * cte){
-        /* The NRHS normwise backward errors satisfy the
-           stopping criterion. We are good to exit. */
-        plasma_desc_mat_free(&descSA);
-        plasma_desc_mat_free(&descSX);
+    /* The nrhs normwise backward errors satisfy the
+       stopping criterion. We are good to exit */
+
+    if (Rnrm < Xnrm * cte) {
+
+        plasma_desc_mat_free(&descAs);
+        plasma_desc_mat_free(&descXs);
         plasma_desc_mat_free(&descR);
-        plasma_shared_free(plasma, work);
+        plasma_shared_free(plasma, wrk);
+
         return PLASMA_SUCCESS;
+
     }
 
     /* Iterative refinement */
-    for (iiter = 0; iiter < itermax; iiter++){
+//    for (iiter = 0; iiter < itermax; iiter++) {
+//
+//        /* Convert R from double to single precision, store result in Xs */
+//        plasma_pzlag2c(descR, descXs);
+//
+//        /* Solve system As*Xs = Rs */
+//        /* Forward substitution */
+//        uplo == PlasmaUpper ? transA = PlasmaConjTrans : transA = PlasmaNoTrans;
+//
+//        plasma_pctrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit,
+//                     (PLASMA_Complex32_t) 1.0, descAs, descXs, sequence, request);
+//
+//        /* Backward substitution */
+//        uplo == PlasmaUpper ? transA = PlasmaNoTrans : transA = PlasmaConjTrans;
+//
+//        plasma_pctrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit,
+//                     (PLASMA_Complex32_t) 1.0, descAs, descXs, sequence, request);
+//
+//        /* Revert Xs to double precision, update current iteration */
+//        plasma_pclag2z(descXs, descR);
+//
+//        plasma_pztradd(PlasmaUpperLower, PlasmaNoTrans, (PLASMA_Complex64_t) one,
+//                       descR, (PLASMA_Complex64_t) 1.0, descX, sequence, request);
+//
+//        /* Compute R = B-A*X */
+//        plasma_pzlacpy(descB, descR);
+//
+//        plasma_pzhemm(PlasmaLeft, uplo, negone, descA, descX, &
+//                      one, descR, sequence, request);
+//
+//        /* Check, whether nrhs normwise backward errors satisfy the
+//           stopping criterion. If yes, set iter = iiter > 0 and return */
+//        plasma_pzlange(PlasmaInfNorm, descX, Xnrm, wrk);
+//        plasma_pzlange(PlasmaInfNorm, descR, Rnrm, wrk);
+//
+//        /* Wait for the end of Xnorm and Bnorm computations */
+//        // plasma_dynamic_sync();
+//
+//        /* nrhs normwise backward errors satisfy the
+//           stopping criterion. We are good to exit. */
+//
+//        if (Rnrm < Xnrm * cte) {
+//
+//            *iter = iiter;
+//
+//            plasma_desc_mat_free(&descAs);
+//            plasma_desc_mat_free(&descXs);
+//            plasma_desc_mat_free(&descR);
+//            plasma_shared_free(plasma, wrk);
+//
+//            return PLASMA_SUCCESS;
+//
+//        }
+//    }
 
-        /* Convert R from double precision to single precision
-           and store the result in SX. */
-        PLASMA_zlag2c(descR, descSX);
-
-        /* Solve the system SA*SX = SR */
-        /* Forward substitution */
-        plasma_parallel_call_9(plasma_pctrsm,
-            PLASMA_enum, PlasmaLeft,
-            PLASMA_enum, uplo,
-            PLASMA_enum, uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans,
-            PLASMA_enum, PlasmaNonUnit,
-            PLASMA_Complex32_t, 1.0,
-            PLASMA_desc, descSA,
-            PLASMA_desc, descSX,
-            PLASMA_sequence*, sequence,
-            PLASMA_request*, request);
-
-        /* Backward substitution */
-        plasma_parallel_call_9(plasma_pctrsm,
-            PLASMA_enum, PlasmaLeft,
-            PLASMA_enum, uplo,
-            PLASMA_enum, uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans,
-            PLASMA_enum, PlasmaNonUnit,
-            PLASMA_Complex32_t, 1.0,
-            PLASMA_desc, descSA,
-            PLASMA_desc, descSX,
-            PLASMA_sequence*, sequence,
-            PLASMA_request*, request);
-
-        /* Convert SX back to double precision and update the current
-           iterate. */
-        PLASMA_clag2z(descSX, descR);
-        PLASMA_zgeadd(one, descR, descX);
-
-        /* Compute R = B - AX. */
-        PLASMA_zlacpy(descB,descR);
-        plasma_parallel_call_9(plasma_pzhemm,
-            PLASMA_enum, PlasmaLeft,
-            PLASMA_enum, uplo,
-            PLASMA_Complex64_t, negone,
-            PLASMA_desc, descA,
-            PLASMA_desc, descX,
-            PLASMA_Complex64_t, one,
-            PLASMA_desc, descR,
-            PLASMA_sequence*, sequence,
-            PLASMA_request*, request);
-
-        /* Check whether the NRHS normwise backward errors satisfy the
-           stopping criterion. If yes, set ITER=IITER>0 and return. */
-        PLASMA_zlange(PlasmaInfNorm, descX, Xnorm, work);
-        PLASMA_zlange(PlasmaInfNorm, descR, Rnorm, work);
-
-        /* Wait for the end of Xnorm and Bnorm computations */
-        plasma_dynamic_sync();
-
-        if (Rnorm < Xnorm * cte){
-            /* The NRHS normwise backward errors satisfy the
-               stopping criterion. We are good to exit. */
-            *ITER = iiter;
-
-            plasma_desc_mat_free(&descSA);
-            plasma_desc_mat_free(&descSX);
-            plasma_desc_mat_free(&descR);
-            plasma_shared_free(plasma, work);
-            return PLASMA_SUCCESS;
-        }
-    }
-
-    /* We have performed ITER=itermax iterations and never satisified
-       the stopping criterion, set up the ITER flag accordingly and
+    /* We have performed iter = itermax iterations and never satisified
+       the stopping criterion, set up iter flag accordingly and
        follow up on double precision routine. */
-    *ITER = -itermax - 1;
+    *iter = -itermax - 1;
 
-    plasma_desc_mat_free(&descSA);
-    plasma_desc_mat_free(&descSX);
+    plasma_desc_mat_free(&descAs);
+    plasma_desc_mat_free(&descXs);
     plasma_desc_mat_free(&descR);
-    plasma_shared_free(plasma, work);
 
-    /* Single-precision iterative refinement failed to converge to a
-       satisfactory solution, so we resort to double precision. */
+    plasma_shared_free(plasma, wrk);
 
-    plasma_parallel_call_4(plasma_pzpotrf,
-        PLASMA_enum, uplo,
-        PLASMA_desc, descA,
-        PLASMA_sequence*, sequence,
-        PLASMA_request*, request);
+    /* Single-precision iterative refinement failed to converge to
+       satisfactory solution => resort to double precision */
 
-    PLASMA_zlacpy(descB,descX);
+    plasma_pzpotrf(uplo, descA, sequence, request);
 
-    plasma_parallel_call_9(plasma_pztrsm,
-        PLASMA_enum, PlasmaLeft,
-        PLASMA_enum, uplo,
-        PLASMA_enum, uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans,
-        PLASMA_enum, PlasmaNonUnit,
-        PLASMA_Complex64_t, 1.0,
-        PLASMA_desc, descA,
-        PLASMA_desc, descX,
-        PLASMA_sequence*, sequence,
-        PLASMA_request*, request);
+    plasma_pzlacpy(descB, descX);
 
-    plasma_parallel_call_9(plasma_pztrsm,
-        PLASMA_enum, PlasmaLeft,
-        PLASMA_enum, uplo,
-        PLASMA_enum, uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans,
-        PLASMA_enum, PlasmaNonUnit,
-        PLASMA_Complex64_t, 1.0,
-        PLASMA_desc, descA,
-        PLASMA_desc, descX,
-        PLASMA_sequence*, sequence,
-        PLASMA_request*, request);
+    uplo == PlasmaUpper ? transA = PlasmaConjTrans : transA = PlasmaNoTrans;
+
+    plasma_pztrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit, (PLASMA_Complex64_t) 1.0,
+                  descA, descX, sequence, request);
+
+    uplo == PlasmaUpper ? transA = PlasmaNoTrans : transA = PlasmaConjTrans;
+
+    plasma_pztrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit, (PLASMA_Complex64_t) 1.0,
+                  descA, descX, sequence, request);
 
     return;
 }
