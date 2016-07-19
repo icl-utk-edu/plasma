@@ -37,6 +37,7 @@ typedef enum {
     PARAM_DIAG,   // Upper or lower triangular
     PARAM_M,      // M dimension
     PARAM_N,      // N dimension
+    PARAM_NRHS,   // Number of RHS
     PARAM_K,      // K dimension
     PARAM_NB,     // tile size NBxNB
     PARAM_ALPHA,  // scalar alpha

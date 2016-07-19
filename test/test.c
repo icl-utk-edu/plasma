@@ -264,6 +264,15 @@ void run_routine(const char *name, param_value_t pval[], char *info)
     else if (strcmp(name, "cherk") == 0)
         test_cherk(pval, info);
 
+    else if (strcmp(name, "zposv") == 0)
+        test_zposv(pval, info);
+    else if (strcmp(name, "dposv") == 0)
+        test_dposv(pval, info);
+    else if (strcmp(name, "cposv") == 0)
+        test_cposv(pval, info);
+    else if (strcmp(name, "sposv") == 0)
+        test_sposv(pval, info);
+    
     else if (strcmp(name, "zpotrf") == 0)
         test_zpotrf(pval, info);
     else if (strcmp(name, "dpotrf") == 0)
@@ -391,6 +400,8 @@ int param_read(int argc, char **argv, param_t param[])
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_M]);
         else if (param_starts_with(argv[i], "--n="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_N]);
+	else if (param_starts_with(argv[i], "--nrhs="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NRHS]);
         else if (param_starts_with(argv[i], "--k="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_K]);
 
@@ -469,6 +480,8 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_int(1000, &param[PARAM_M]);
     if (param[PARAM_N].num == 0)
         param_add_int(1000, &param[PARAM_N]);
+    if (param[PARAM_NRHS].num == 0)
+        param_add_int(1000, &param[PARAM_NRHS]);
     if (param[PARAM_K].num == 0)
         param_add_int(1000, &param[PARAM_K]);
 
