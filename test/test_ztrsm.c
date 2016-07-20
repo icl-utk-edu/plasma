@@ -32,6 +32,8 @@
 
 #define COMPLEX
 
+#define A(i,j)  A[i + j*lda]
+
 /***************************************************************************//**
  *
  * @brief Tests ZTRSM.
@@ -164,7 +166,7 @@ void test_ztrsm(param_value_t param[], char *info)
 
     for(int j = 0; j < Am; j++)
         for(int i = 0; i < j; i++)
-            A[i,j] = A[j,i];
+	  A(i,j) = A(j,i);
 
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*n, B);
     assert(retval == 0);
