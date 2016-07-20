@@ -1,6 +1,6 @@
 /**
  *
- * @file test_zpotrf.c
+ * @file test_zgeqrf.c
  *
  *  PLASMA test routine.
  *  PLASMA is a software package provided by Univ. of Tennessee,

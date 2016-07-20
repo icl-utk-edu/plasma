@@ -21,6 +21,12 @@ extern "C" {
 #endif
 
 /******************************************************************************/
+#ifdef PLASMA_WITH_MKL
+#define lapack_complex_float PLASMA_Complex32_t
+#define lapack_complex_double PLASMA_Complex64_t
+#endif
+
+/******************************************************************************/
 #ifndef CBLAS_SADDR
 #define CBLAS_SADDR(var) &(var)
 #endif
