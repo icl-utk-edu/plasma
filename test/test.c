@@ -240,79 +240,75 @@ void time_routine(const char *name, param_value_t pval[])
  ******************************************************************************/
 void run_routine(const char *name, param_value_t pval[], char *info)
 {
-    if      (strcmp(name, "zgemm") == 0)
-        test_zgemm(pval, info);
-    else if (strcmp(name, "dgemm") == 0)
-        test_dgemm(pval, info);
-    else if (strcmp(name, "cgemm") == 0)
-        test_cgemm(pval, info);
-    else if (strcmp(name, "sgemm") == 0)
-        test_sgemm(pval, info);
-
-    else if (strcmp(name, "zhemm") == 0)
-        test_zher2k(pval, info);
-    else if (strcmp(name, "chemm") == 0)
-        test_cher2k(pval, info);
-
-    else if (strcmp(name, "zher2k") == 0)
-        test_zher2k(pval, info);
-    else if (strcmp(name, "cher2k") == 0)
-        test_cher2k(pval, info);
-
-    else if (strcmp(name, "zherk") == 0)
-        test_zherk(pval, info);
-    else if (strcmp(name, "cherk") == 0)
-        test_cherk(pval, info);
-
-    else if (strcmp(name, "zpotrf") == 0)
-        test_zpotrf(pval, info);
-    else if (strcmp(name, "dpotrf") == 0)
-        test_dpotrf(pval, info);
-    else if (strcmp(name, "cpotrf") == 0)
-        test_cpotrf(pval, info);
-    else if (strcmp(name, "spotrf") == 0)
-        test_spotrf(pval, info);
-
-    else if (strcmp(name, "zsymm") == 0)
-        test_zsyr2k(pval, info);
-    else if (strcmp(name, "dsymm") == 0)
-        test_dsyr2k(pval, info);
-    else if (strcmp(name, "csymm") == 0)
-        test_csyr2k(pval, info);
-    else if (strcmp(name, "ssymm") == 0)
-        test_ssyr2k(pval, info);
-
-    else if (strcmp(name, "zsyr2k") == 0)
-        test_zsyr2k(pval, info);
-    else if (strcmp(name, "dsyr2k") == 0)
-        test_dsyr2k(pval, info);
-    else if (strcmp(name, "csyr2k") == 0)
-        test_csyr2k(pval, info);
-    else if (strcmp(name, "ssyr2k") == 0)
-        test_ssyr2k(pval, info);
-
-    else if (strcmp(name, "zsyrk") == 0)
-        test_zsyrk(pval, info);
-    else if (strcmp(name, "dsyrk") == 0)
-        test_dsyrk(pval, info);
-    else if (strcmp(name, "csyrk") == 0)
-        test_csyrk(pval, info);
-    else if (strcmp(name, "ssyrk") == 0)
-        test_ssyrk(pval, info);
-
-    else if (strcmp(name, "ztrsm") == 0)
-        test_ztrsm(pval, info);
-    else if (strcmp(name, "dtrsm") == 0)
-        test_dtrsm(pval, info);
-    else if (strcmp(name, "ctrsm") == 0)
-        test_ctrsm(pval, info);
-    else if (strcmp(name, "strsm") == 0)
-        test_strsm(pval, info);
-
-    else {
-        printf("unknown routine: %s\n", name);
-        exit(EXIT_FAILURE);
-    }
+  // -----
+  if      (strcmp(name, "zgemm") == 0)
+    test_zgemm(pval, info);
+  else if (strcmp(name, "dgemm") == 0)
+    test_dgemm(pval, info);
+  else if (strcmp(name, "cgemm") == 0)
+    test_cgemm(pval, info);
+  else if (strcmp(name, "sgemm") == 0)
+    test_sgemm(pval, info);
+  // -----
+  else if (strcmp(name, "zherk") == 0)
+    test_zherk(pval, info);
+  else if (strcmp(name, "cherk") == 0)
+    test_cherk(pval, info);
+  // ----
+  else if (strcmp(name, "zsyrk") == 0)
+    test_zsyrk(pval, info);
+  else if (strcmp(name, "dsyrk") == 0)
+    test_dsyrk(pval, info);
+  else if (strcmp(name, "csyrk") == 0)
+    test_csyrk(pval, info);
+  else if (strcmp(name, "ssyrk") == 0)
+    test_ssyrk(pval, info);
+  // -----
+  else if (strcmp(name, "zher2k") == 0)
+    test_zher2k(pval, info);
+  else if (strcmp(name, "cher2k") == 0)
+    test_cher2k(pval, info);
+  // -----
+  else if (strcmp(name, "zsyr2k") == 0)
+    test_zsyr2k(pval, info);
+  else if (strcmp(name, "dsyr2k") == 0)
+    test_dsyr2k(pval, info);
+  else if (strcmp(name, "csyr2k") == 0)
+    test_csyr2k(pval, info);
+  else if (strcmp(name, "ssyr2k") == 0)
+    test_ssyr2k(pval, info);
+  // -----
+  else if (strcmp(name, "zpotrf") == 0)
+    test_zpotrf(pval, info);
+  else if (strcmp(name, "dpotrf") == 0)
+    test_dpotrf(pval, info);
+  else if (strcmp(name, "cpotrf") == 0)
+    test_cpotrf(pval, info);
+  else if (strcmp(name, "spotrf") == 0)
+    test_spotrf(pval, info);
+  // ----
+  else if (strcmp(name, "ztrsm") == 0)
+    test_ztrsm(pval, info);
+  else if (strcmp(name, "dtrsm") == 0)
+    test_dtrsm(pval, info);
+  else if (strcmp(name, "ctrsm") == 0)
+    test_ctrsm(pval, info);
+  else if (strcmp(name, "strsm") == 0)
+    test_strsm(pval, info);
+  // -----
+  else if (strcmp(name, "zgeqrf") == 0)
+    test_zgeqrf(pval, info);
+  else if (strcmp(name, "dgeqrf") == 0)
+    test_dgeqrf(pval, info);
+  else if (strcmp(name, "cgeqrf") == 0)
+    test_cgeqrf(pval, info);
+  else if (strcmp(name, "sgeqrf") == 0)
+    test_sgeqrf(pval, info);
+  // ----
+  else {
+    printf("unknown routine: %s\n", name);
+    exit(EXIT_FAILURE);
+  }
 }
 
 /***************************************************************************//**
@@ -378,9 +374,6 @@ int param_read(int argc, char **argv, param_t param[])
 
         else if (param_starts_with(argv[i], "--uplo="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_UPLO]);
-
-	else if (param_starts_with(argv[i], "--diag="))
-	  err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_DIAG]);
         //--------------------------------------------------
         // Scan integer parameters.
         //--------------------------------------------------
@@ -460,7 +453,7 @@ int param_read(int argc, char **argv, param_t param[])
     if (param[PARAM_UPLO].num == 0)
         param_add_char('l', &param[PARAM_UPLO]);
     if (param[PARAM_DIAG].num == 0)
-      param_add_char('n', &param[PARAM_DIAG]);
+        param_add_char('n', &param[PARAM_DIAG]);
 
     //--------------------------------------------------
     // Set integer parameters.

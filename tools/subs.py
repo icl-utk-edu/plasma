@@ -244,6 +244,8 @@ lapack = [
     ('sormtr',               'dormtr',               'cunmtr',               'zunmtr'              ),
     ('sort01',               'dort01',               'cunt01',               'zunt01'              ),
     ('spack',                'dpack',                'cpack',                'zpack'               ),
+    ('spamm',                'dpamm',                'cpamm',                'zpamm'               ),
+    ('sparfb',               'dparfb',               'cparfb',               'zparfb'              ),
     ('splgsy',               'dplgsy',               'cplghe',               'zplghe'              ),
     ('splgsy',               'dplgsy',               'cplgsy',               'zplgsy'              ),
     ('splrnt',               'dplrnt',               'cplrnt',               'zplrnt'              ),
@@ -322,7 +324,7 @@ subs = {
 
     # ----- Constants
     # See note in "normal" section below about ConjTrans
-    ('MagmaTrans',           'Magma_ConjTrans'     ),
+    ('PlasmaTrans',           'Plasma_ConjTrans'     ),
 
     # ----- BLAS & LAPACK
     ]
@@ -390,7 +392,7 @@ subs = {
     # E.g., dgemm( ConjTrans, ConjTrans, ... ) should be valid; if ConjTrans is
     # converted, then dgemm will have 2 Trans cases and no ConjTrans case.
     # Only for zlarfb and zunm*, convert it using special Magma_ConjTrans alias.
-    ('MagmaTrans',           'MagmaTrans',           'Magma_ConjTrans',      'Magma_ConjTrans'     ),
+    ('PlasmaTrans',           'PlasmaTrans',           'Plasma_ConjTrans',      'Plasma_ConjTrans'     ),
 
     # ----- BLAS & LAPACK
     ]

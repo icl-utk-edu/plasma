@@ -34,7 +34,7 @@ typedef enum {
     PARAM_TRANSB, // transposition of B
     PARAM_SIDE,   // Left of right side application
     PARAM_UPLO,   // Upper or lower triangular
-    PARAM_DIAG,   // Upper or lower triangular
+    PARAM_DIAG,   // Non-unit or unit diagonal
     PARAM_M,      // M dimension
     PARAM_N,      // N dimension
     PARAM_K,      // K dimension
@@ -67,11 +67,12 @@ static const char *ParamUsage[][2] = {
     {"--outer=[y|n]", "outer product iteration [default: n]"},
     {"--test=[y|n]", "test the solution [default: y]"},
     {"--tol=", "tolerance [default: 50]"},
+    {"--trans=[n|t|c]", "transposition [default: n]"},
     {"--transa=[n|t|c]", "transposition of A [default: n]"},
     {"--transb=[n|t|c]", "transposition of B [default: n]"},
     {"--side=[l|r]", "left of right side application [default: l]"},
     {"--uplo=[u|l]", "upper or lower triangular matrix [default: l]"},
-    {"--diag=[n|u]", "not unit triangular or unit matrix [default: n]"},
+    {"--diag=[n|u]", "nonunit or unit diagonal [default: n]"},
     {"--m=", "M dimension (number of rows) [default: 1000]"},
     {"--n=", "N dimension (number of columns) [default: 1000]"},
     {"--k=", "K dimension (number of rows or columns) [default: 1000]"},
