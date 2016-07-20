@@ -9,7 +9,7 @@
  * @version 3.0.0
  * @author  Emmanuel Agullo
  * @author  Maksims Abalenkovs
- * @date    2016-07-18
+ * @date    2016-07-20
  * @precisions mixed zc -> ds
  *
  **/
@@ -140,7 +140,7 @@ int PLASMA_zcposv(PLASMA_enum uplo, int n, int nrhs,
     PLASMA_sequence  *sequence = NULL;
     PLASMA_request    request = PLASMA_REQUEST_INITIALIZER;
 
-    /* Get PLASMA context */
+    // Get PLASMA context
     plasma = plasma_context_self();
 
     if (plasma == NULL) {
@@ -150,7 +150,7 @@ int PLASMA_zcposv(PLASMA_enum uplo, int n, int nrhs,
 
     *iter = 0;
 
-    /* Check input arguments */
+    // Check input arguments
     if (uplo != PlasmaUpper && uplo != PlasmaLower) {
         plasma_error("illegal value of uplo");
         return -1;
@@ -176,12 +176,12 @@ int PLASMA_zcposv(PLASMA_enum uplo, int n, int nrhs,
         return -9;
     }
 
-    /* Quick return - currently NOT equivalent to LAPACK's
-     * LAPACK does not have such check for ZCPOSV */
+    // Quick return - currently NOT equivalent to LAPACK's
+    // LAPACK does not have such check for ZCPOSV
     if (imin(n, nrhs) == 0)
         return PLASMA_SUCCESS;
 
-    /* Tune nb depending on m, n & nrhs; Set nbnbsize */
+    // Tune nb depending on m, n & nrhs; Set nbnbsize
     /*
     if (plasma_tune(PLASMA_FUNC_ZCPOSV, n, n, nrhs) != PLASMA_SUCCESS) {
         plasma_error("plasma_tune() failed");
@@ -190,7 +190,7 @@ int PLASMA_zcposv(PLASMA_enum uplo, int n, int nrhs,
     */
     nb = plasma->nb;
 
-    /* Initialise matrix descriptors */
+    // Initialise matrix descriptors
     descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
                              nb*nb, lda, n, 0, 0, n, n);
 
@@ -200,7 +200,7 @@ int PLASMA_zcposv(PLASMA_enum uplo, int n, int nrhs,
     descX = plasma_desc_init(PlasmaComplexDouble, nb, nb,
                              nb*nb, ldx, nrhs, 0, 0, n, nrhs);
 
-    /* Allocate matrices in tile layout */
+    // Allocate matrices in tile layout
     retval = plasma_desc_mat_alloc(&descA);
 
     if (retval != PLASMA_SUCCESS) {
@@ -225,7 +225,7 @@ int PLASMA_zcposv(PLASMA_enum uplo, int n, int nrhs,
         return retval;
     }
 
-    /* Create sequence */
+    // Create sequence
     retval = plasma_sequence_create(&sequence);
 
     if (retval != PLASMA_SUCCESS) {
@@ -245,7 +245,7 @@ int PLASMA_zcposv(PLASMA_enum uplo, int n, int nrhs,
          * or at the end of the parallel region.
          */
 
-        /* Translate matrices to tile layout */
+        // Translate matrices to tile layout
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
     
         if (sequence->status == PLASMA_SUCCESS)
@@ -254,14 +254,14 @@ int PLASMA_zcposv(PLASMA_enum uplo, int n, int nrhs,
         if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zcm2ccrb_Async(X, ldx, &descX, sequence, &request);
 
-        /* Call the tile async interface */
+        // Call the tile async interface
         if (sequence->status == PLASMA_SUCCESS) {
 
             PLASMA_zcposv_Tile_Async(uplo, &descA, &descB, &descX,
                                      iter, sequence, &request);
         }
     
-        /* Revert matrices to LAPACK layout */
+        // Revert matrices to LAPACK layout
         if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
         
@@ -271,21 +271,21 @@ int PLASMA_zcposv(PLASMA_enum uplo, int n, int nrhs,
         if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zccrb2cm_Async(&descX, X, ldx, sequence, &request);
 
-    } /* pragma omp parallel block closed */
+    } // pragma omp parallel block closed
 
-    /* Check for errors in async execution */
+    // Check for errors in async execution
     if (sequence->status != PLASMA_SUCCESS)
         return sequence->status;
 
-    /* Free matrices in tile layout */
+    // Free matrices in tile layout
     plasma_desc_mat_free(&descA);
     plasma_desc_mat_free(&descB);
     plasma_desc_mat_free(&descX);
 
-    /* Destroy sequence */
+    // Destroy sequence
     plasma_sequence_destroy(sequence);
 
-    /* Return status */
+    // Return status
     status = sequence->status;
     return status;
 }
@@ -355,7 +355,7 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     double cte, eps;
     *iter = 0;
 
-    /* Get PLASMA context */
+    // Get PLASMA context
     plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
@@ -375,13 +375,13 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
         return;
     }
 
-    /* Check sequence status */
+    // Check sequence status
     if (sequence->status != PLASMA_SUCCESS) {
         plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
         return;
     }
 
-    /* Check descriptors for correctness */
+    // Check descriptors for correctness
     if (plasma_desc_check(A) != PLASMA_SUCCESS) {
         plasma_error("invalid first descriptor");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
@@ -406,7 +406,7 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
         descX = *X;
     }
 
-    /* Check input arguments */
+    // Check input arguments
     if (descA.nb != descA.mb || descB.nb != descB.mb || descX.nb != descX.mb) {
         plasma_error("only square tiles supported");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
@@ -425,7 +425,7 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     if (A->m == 0 || A->n == 0 || B->m == 0 || B->n == 0 || X->m == 0 || X->n == 0)
         return;
 
-    /* Set n, nb */
+    // Set n, nb
     n  = descA.m;
     nb = descA.nb;
 
@@ -448,7 +448,7 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
         return;
     }
 
-    /* Initialise additional matrix descriptors */
+    // Initialise additional matrix descriptors
     descR  = plasma_desc_init(PlasmaComplexDouble, nb, nb, nb*nb,
                               descB.m, descB.n, 0, 0, descB.m, descB.n);
 
@@ -458,7 +458,7 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     descXs = plasma_desc_init(PlasmaComplexFloat, nb, nb, nb*nb,
                               descX.m, descX.n, 0, 0, descX.m, descX.n);
 
-    /* Allocate additional matrices in tile layout */
+    // Allocate additional matrices in tile layout
     retval = plasma_desc_mat_alloc(&descR);
 
     if (retval != PLASMA_SUCCESS) {
@@ -486,11 +486,11 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
         return;
     }
 
-    /* Compute constants */
+    // Compute constants
     plasma_pzlanhe(PlasmaInfNorm, uplo, descA, Anorm, wrk);
     eps = LAPACKE_dlamch_work('e');
 
-    /* Convert B from double to single precision, store result in Xs */
+    // Convert B from double to single precision, store result in Xs
     plasma_pzlag2c(descB, descXs);
 
     if (sequence->status != PLASMA_SUCCESS) {
@@ -499,7 +499,7 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
         return;
     }
 
-    /* Convert A from double to single precision, store result in As */
+    // Convert A from double to single precision, store result in As
     plasma_pzlag2c(descA, descAs);
 
     if (sequence->status != PLASMA_SUCCESS) {
@@ -508,26 +508,26 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
         return;
     }
 
-    /* Compute Cholesky factorization of As */
+    // Compute Cholesky factorization of As
     plasma_pcpotrf(uplo, descAs, sequence, request);
 
-    /* Solve system As*Xs = Bs */
-    /* Forward substitution */
+    /* Solve system As*Xs = Bs
+     * Forward substitution */
     transA = (uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans);
 
     plasma_pctrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit,
                  (PLASMA_Complex32_t) 1.0, descAs, descXs, sequence, request);
 
-    /* Backward substitution */
+    // Backward substitution
     transA = (uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans);
 
     plasma_pctrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit,
                  (PLASMA_Complex32_t) 1.0, descAs, descXs, sequence, request);
 
-    /* Convert Xs to double precision */
+    // Convert Xs to double precision
     plasma_pclag2z(descXs, descX);
 
-    /* Compute R = B-A*X */
+    // Compute R = B-A*X
     plasma_pzlacpy(descB, descR);
 
     plasma_pzhemm(PlasmaLeft, uplo, negone, descA, descX, one, descR,
@@ -538,7 +538,7 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     plasma_pzlange(PlasmaInfNorm, descX, Xnorm, wrk);
     plasma_pzlange(PlasmaInfNorm, descR, Rnorm, wrk);
 
-    /* Wait for end of Anorm, Xnorm and Bnorm computations */
+    // Wait for end of Anorm, Xnorm and Bnorm computations
     // plasma_dynamic_sync();
 
     cte = Anorm * eps * ((double)n) * bwdmax;
@@ -558,32 +558,32 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
 
     }
 
-    /* Iterative refinement */
+    // Iterative refinement
     for (iiter = 0; iiter < itermax; iiter++) {
 
-        /* Convert R from double to single precision, store result in Xs */
+        // Convert R from double to single precision, store result in Xs
         plasma_pzlag2c(descR, descXs);
 
-        /* Solve system As*Xs = Rs */
-        /* Forward substitution */
+        /* Solve system As*Xs = Rs
+         * Forward substitution */
         transA = (uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans);
 
         plasma_pctrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit,
                      (PLASMA_Complex32_t) 1.0, descAs, descXs, sequence, request);
 
-        /* Backward substitution */
+        // Backward substitution
         transA = (uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans);
 
         plasma_pctrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit,
                      (PLASMA_Complex32_t) 1.0, descAs, descXs, sequence, request);
 
-        /* Revert Xs to double precision, update current iteration */
+        // Revert Xs to double precision, update current iteration
         plasma_pclag2z(descXs, descR);
 
         plasma_pztradd(PlasmaFull, PlasmaNoTrans, (PLASMA_Complex64_t) one,
                        descR, (PLASMA_Complex64_t) 1.0, descX, sequence, request);
 
-        /* Compute R = B-A*X */
+        // Compute R = B-A*X
         plasma_pzlacpy(descB, descR);
 
         plasma_pzhemm(PlasmaLeft, uplo, negone, descA, descX,

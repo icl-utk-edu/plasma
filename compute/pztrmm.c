@@ -9,7 +9,7 @@
  * @version 3.0.0
  * @author  Mathieu Faverge
  * @author  Maksims Abalenkovs
- * @date    2016-06-22
+ * @date    2016-07-20
  * @precisions normal z -> s d c
  *
  **/
@@ -41,11 +41,11 @@ void plasma_pztrmm(PLASMA_enum side, PLASMA_enum uplo,
     if (sequence->status != PLASMA_SUCCESS)
         return;
 
-    //==========================================
-    // PlasmaLeft / PlasmaUpper / PlasmaNoTrans
-    //==========================================
     if (side == PlasmaLeft) {
         if (uplo == PlasmaUpper) {
+            //==========================================
+            // PlasmaLeft / PlasmaUpper / PlasmaNoTrans
+            //==========================================
             if (trans == PlasmaNoTrans) {
                 for (m = 0; m < B.mt; m++) {
                     tempmm = m == B.mt-1 ? B.m-m*B.mb : B.mb;
@@ -56,8 +56,8 @@ void plasma_pztrmm(PLASMA_enum side, PLASMA_enum uplo,
                         CORE_OMP_ztrmm(
                             side, uplo, trans, diag,
                             tempmm, tempnn,
-                            alpha, A(m, m), ldam,  /* lda * tempkm */
-                                   B(m, n), ldbm); /* ldb * tempnn */
+                            alpha, A(m, m), ldam,
+                                   B(m, n), ldbm);
 
                         for (k = m+1; k < A.mt; k++) {
                             tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
@@ -85,8 +85,8 @@ void plasma_pztrmm(PLASMA_enum side, PLASMA_enum uplo,
                         CORE_OMP_ztrmm(
                             side, uplo, trans, diag,
                             tempmm, tempnn,
-                            alpha, A(m, m), ldam,  /* lda * tempkm */
-                                   B(m, n), ldbm); /* ldb * tempnn */
+                            alpha, A(m, m), ldam,
+                                   B(m, n), ldbm);
 
                         for (k = 0; k < m; k++) {
                             ldbk = BLKLDD(B, k);
@@ -102,10 +102,10 @@ void plasma_pztrmm(PLASMA_enum side, PLASMA_enum uplo,
                 }
             }
         }
-        //==========================================
-        // PlasmaLeft / PlasmaLower / PlasmaNoTrans
-        //==========================================
         else {
+            //==========================================
+            // PlasmaLeft / PlasmaLower / PlasmaNoTrans
+            //==========================================
             if (trans == PlasmaNoTrans) {
                 for (m = B.mt-1; m > -1; m--) {
                     tempmm = m == B.mt-1 ? B.m-m*B.mb : B.mb;
@@ -116,8 +116,8 @@ void plasma_pztrmm(PLASMA_enum side, PLASMA_enum uplo,
                         CORE_OMP_ztrmm(
                             side, uplo, trans, diag,
                             tempmm, tempnn,
-                            alpha, A(m, m), ldam,  /* lda * tempkm */
-                                   B(m, n), ldbm); /* ldb * tempnn */
+                            alpha, A(m, m), ldam,
+                                   B(m, n), ldbm);
 
                         for (k = 0; k < m; k++) {
                             ldbk = BLKLDD(B, k);
@@ -144,8 +144,8 @@ void plasma_pztrmm(PLASMA_enum side, PLASMA_enum uplo,
                         CORE_OMP_ztrmm(
                             side, uplo, trans, diag,
                             tempmm, tempnn,
-                            alpha, A(m, m), ldam,  /* lda * tempkm */
-                                   B(m, n), ldbm); /* ldb * tempnn */
+                            alpha, A(m, m), ldam,
+                                   B(m, n), ldbm);
 
                         for (k = m+1; k < A.mt; k++) {
                             tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
@@ -163,11 +163,11 @@ void plasma_pztrmm(PLASMA_enum side, PLASMA_enum uplo,
             }
         }
     }
-    //===========================================
-    // PlasmaRight / PlasmaUpper / PlasmaNoTrans
-    //===========================================
     else {
         if (uplo == PlasmaUpper) {
+            //===========================================
+            // PlasmaRight / PlasmaUpper / PlasmaNoTrans
+            //===========================================
             if (trans == PlasmaNoTrans) {
                 for (n = B.nt-1; n > -1; n--) {
                     tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
@@ -178,8 +178,8 @@ void plasma_pztrmm(PLASMA_enum side, PLASMA_enum uplo,
                         CORE_OMP_ztrmm(
                             side, uplo, trans, diag,
                             tempmm, tempnn,
-                            alpha, A(n, n), ldan,  /* lda * tempkm */
-                                   B(m, n), ldbm); /* ldb * tempnn */
+                            alpha, A(n, n), ldan,
+                                   B(m, n), ldbm);
 
                         for (k = 0; k < n; k++) {
                             ldak = BLKLDD(A, k);
@@ -206,8 +206,8 @@ void plasma_pztrmm(PLASMA_enum side, PLASMA_enum uplo,
                         CORE_OMP_ztrmm(
                             side, uplo, trans, diag,
                             tempmm, tempnn,
-                            alpha, A(n, n), ldan,  /* lda * tempkm */
-                                   B(m, n), ldbm); /* ldb * tempnn */
+                            alpha, A(n, n), ldan,
+                                   B(m, n), ldbm);
 
                         for (k = n+1; k < A.mt; k++) {
                             tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
@@ -222,10 +222,10 @@ void plasma_pztrmm(PLASMA_enum side, PLASMA_enum uplo,
                 }
             }
         }
-        //===========================================
-        // PlasmaRight / PlasmaLower / PlasmaNoTrans
-        //===========================================
         else {
+            //===========================================
+            // PlasmaRight / PlasmaLower / PlasmaNoTrans
+            //===========================================
             if (trans == PlasmaNoTrans) {
                 for (n = 0; n < B.nt; n++) {
                     tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
@@ -236,8 +236,8 @@ void plasma_pztrmm(PLASMA_enum side, PLASMA_enum uplo,
                         CORE_OMP_ztrmm(
                             side, uplo, trans, diag,
                             tempmm, tempnn,
-                            alpha, A(n, n), ldan,  /* lda * tempkm */
-                                   B(m, n), ldbm); /* ldb * tempnn */
+                            alpha, A(n, n), ldan,
+                                   B(m, n), ldbm);
 
                         for (k = n+1; k < A.mt; k++) {
                             tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
@@ -265,8 +265,8 @@ void plasma_pztrmm(PLASMA_enum side, PLASMA_enum uplo,
                         CORE_OMP_ztrmm(
                             side, uplo, trans, diag,
                             tempmm, tempnn,
-                            alpha, A(n, n), ldan,  /* lda * tempkm */
-                                   B(m, n), ldbm); /* ldb * tempnn */
+                            alpha, A(n, n), ldan,
+                                   B(m, n), ldbm);
 
                         for (k = 0; k < n; k++) {
                             CORE_OMP_zgemm(
