@@ -31,8 +31,8 @@
 #include <plasma.h>
 
 #define COMPLEX
-#define A(i_, j_)  (A + (i_) + (size_t)lda*(j_))
 
+#define A(i_, j_)  (A + (i_) + (size_t)lda*(j_))
 
 /***************************************************************************//**
  *
