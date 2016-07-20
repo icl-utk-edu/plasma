@@ -114,7 +114,6 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
     int retval;
     int status;
     PLASMA_Complex64_t zzero = 0.0;
-    PLASMA_Complex64_t zone  = 1.0;
 
     PLASMA_desc descA;
     PLASMA_desc descB;
@@ -129,12 +128,12 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
 
     // Check input arguments.
     if ((uplo != PlasmaUpper) &&
-	(uplo != PlasmaLower)) {
+        (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
         return -1;
     }
     if ((trans != PlasmaNoTrans) &&
-	(trans != PlasmaConjTrans)) {
+        (trans != PlasmaConjTrans)) {
         plasma_error("illegal value of trans");
         return -2;
     }
@@ -181,7 +180,7 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
     //     return status;
     // }
 
-    // Set NT & KT 
+    // Set NT & KT
     nb = plasma->nb;
     // Initialize tile matrix descriptors.
     descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
@@ -243,8 +242,8 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
             PLASMA_zher2k_Tile_Async(uplo, trans,
                                      alpha, &descA,
                                      &descB,
-				     beta, &descC,
-				     sequence, &request);
+                                     beta, &descC,
+                                     sequence, &request);
         }
 
         // Translate back to LAPACK layout.
@@ -328,9 +327,9 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
  ******************************************************************************/
 void PLASMA_zher2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
                               PLASMA_Complex64_t alpha, PLASMA_desc *A,
-			                                PLASMA_desc *B,
-			                  double beta,  PLASMA_desc *C,
-			      PLASMA_sequence *sequence, PLASMA_request *request)
+                                                        PLASMA_desc *B,
+                                          double beta,  PLASMA_desc *C,
+                              PLASMA_sequence *sequence, PLASMA_request *request)
 {
 
     PLASMA_Complex64_t zzero = 0.0;
@@ -426,7 +425,7 @@ void PLASMA_zher2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
     // Call the parallel function.
     plasma_pzher2k(uplo, trans,
                    alpha, *A,
-		          *B,
+                          *B,
                     beta, *C,
                    sequence, request);
     return;

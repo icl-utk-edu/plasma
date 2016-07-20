@@ -226,9 +226,9 @@ void CORE_OMP_zunmqr(PLASMA_enum side, PLASMA_enum trans,
                      const PLASMA_Complex64_t *T, int ldt,
                      PLASMA_Complex64_t *C,       int ldc)
 {
-#pragma omp task depend(in:A[0:nb*nb]) \
-                 depend(in:T[0:ib*nb]) \
-                 depend(inout:C[0:nb*nb])
+    #pragma omp task depend(in:A[0:nb*nb]) \
+                     depend(in:T[0:ib*nb]) \
+                     depend(inout:C[0:nb*nb])
     CORE_zunmqr(side, trans,
                 m, n, k, ib, nb,
                 A, lda,

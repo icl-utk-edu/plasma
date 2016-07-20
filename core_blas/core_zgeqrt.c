@@ -166,8 +166,8 @@ void CORE_OMP_zgeqrt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A, int lda,
                      PLASMA_Complex64_t *T, int ldt)
 {
-#pragma omp task depend(inout:A[0:lda*nb]) \
-                 depend(out:T[0:ldt*nb])
+    #pragma omp task depend(inout:A[0:lda*nb]) \
+                     depend(out:T[0:ldt*nb])
     CORE_zgeqrt(m, n, ib, nb,
                 A, lda,
                 T, ldt);

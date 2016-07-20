@@ -115,9 +115,9 @@ void CORE_OMP_zgemm(
 {
     // omp depends assume lda == m or k, ldb == k or n, and ldc == m,
     // depending on transposes
-#pragma omp task depend(in:A[0:m*k]) \
-                 depend(in:B[0:k*n]) \
-                 depend(inout:C[0:m*n])
+    #pragma omp task depend(in:A[0:m*k]) \
+                     depend(in:B[0:k*n]) \
+                     depend(inout:C[0:m*n])
     CORE_zgemm(transA, transB,
                m, n, k,
                alpha, A, lda,

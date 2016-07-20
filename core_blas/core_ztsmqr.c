@@ -264,10 +264,10 @@ void CORE_OMP_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
                      const PLASMA_Complex64_t *V, int ldv,
                      const PLASMA_Complex64_t *T, int ldt)
 {
-#pragma omp task depend(inout:A1[0:nb*nb]) \
-                 depend(inout:A2[0:nb*nb]) \
-                 depend(in:V[0:nb*nb]) \
-                 depend(in:T[0:ib*nb])
+    #pragma omp task depend(inout:A1[0:nb*nb]) \
+                     depend(inout:A2[0:nb*nb]) \
+                     depend(in:V[0:nb*nb]) \
+                     depend(in:T[0:ib*nb])
     CORE_ztsmqr(side, trans,
                 m1, n1, m2, n2, k, ib, nb,
                 A1, lda1,

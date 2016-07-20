@@ -209,9 +209,9 @@ void CORE_OMP_ztsqrt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A2, int lda2,
                      PLASMA_Complex64_t *T,  int ldt)
 {
-#pragma omp task depend(inout:A1[0:nb*nb]) \
-                 depend(inout:A2[0:nb*nb]) \
-                 depend(out:T[0:ib*nb])
+    #pragma omp task depend(inout:A1[0:nb*nb]) \
+                     depend(inout:A2[0:nb*nb]) \
+                     depend(out:T[0:ib*nb])
     CORE_ztsqrt(m, n, ib, nb,
                 A1, lda1,
                 A2, lda2,

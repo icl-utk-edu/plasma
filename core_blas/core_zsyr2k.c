@@ -106,7 +106,7 @@ void CORE_zsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
                  (CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)trans,
                  n, k,
                  CBLAS_SADDR(alpha), A, lda,
-	                                 B, ldb,
+                                     B, ldb,
                  CBLAS_SADDR(beta),  C, ldc);
 }
 
@@ -125,7 +125,7 @@ void CORE_OMP_zsyr2k(
                      depend(inout:C[0:n*n])
     CORE_zsyr2k(uplo, trans,
                 n, k,
-	            alpha, A, lda,
-	                   B, ldb,
+                alpha, A, lda,
+                       B, ldb,
                 beta,  C, ldc);
 }
