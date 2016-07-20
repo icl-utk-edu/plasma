@@ -107,10 +107,10 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
         plasma_error("PLASMA not initialized");
         return PLASMA_ERR_NOT_INITIALIZED;
     }
-
+    
     // Check input arguments
     if ((uplo != PlasmaUpper) &&
-	(uplo != PlasmaLower)) {
+        (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
         return -1;
     }
@@ -147,10 +147,10 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
     // Initialize tile matrix descriptors.
     descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
                              nb*nb, lda, n, 0, 0, n, n);
-
+    
     descB = plasma_desc_init(PlasmaComplexDouble, nb, nb,
                              nb*nb, ldb, nrhs, 0, 0, n, nrhs);
-
+    
     // Allocate matrices in tile layout.
     retval = plasma_desc_mat_alloc(&descA);
     if (retval != PLASMA_SUCCESS) {
@@ -163,7 +163,7 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
         plasma_desc_mat_free(&descA);
         return retval;
     }
-
+    
     // Create sequence.
     PLASMA_sequence *sequence = NULL;
     retval = plasma_sequence_create(&sequence);
@@ -173,9 +173,9 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
     }
     // Initialize request.
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
-
-    #pragma omp parallel
-    #pragma omp master
+    
+#pragma omp parallel
+#pragma omp master
     {
         // the Async functions are submitted here.  If an error occurs
         // (at submission time or at run time) the sequence->status
@@ -183,12 +183,12 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
         // Async will not _insert_ more tasks into the runtime.  The
         // sequence->status can be checked after each call to _Async
         // or at the end of the parallel region.
-
+        
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
         if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
-
+        
         // Call the tile async function.
         if (sequence->status == PLASMA_SUCCESS) {
             PLASMA_zposv_Tile_Async(uplo,
@@ -196,16 +196,16 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
                                     &descB,
                                     sequence, &request);
         }
-
+        
         // Translate back to LAPACK layout.
         if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
     } // pragma omp parallel block closed
-
+    
     // Check for errors in the async execution
     if (sequence->status != PLASMA_SUCCESS)
         return sequence->status;
-
+    
     // Free matrices in tile layout.
     plasma_desc_mat_free(&descA);
     plasma_desc_mat_free(&descB);
@@ -217,7 +217,7 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
 }
 
 /***************************************************************************//**
- *
+                                                                              *
  * @ingroup PLASMA_Complex64_t_Tile_Async
  *
  *  Solves a symmetric positive definite or Hermitian
@@ -273,7 +273,7 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
  *
  ******************************************************************************/
 void PLASMA_zposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
-                            PLASMA_sequence *sequence, PLASMA_request *request)
+                             PLASMA_sequence *sequence, PLASMA_request *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -282,10 +282,10 @@ void PLASMA_zposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-
+    
     // Check input arguments.
     if ((uplo != PlasmaUpper) &&
-	(uplo != PlasmaLower)) {
+        (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
         return;
     }
@@ -309,7 +309,7 @@ void PLASMA_zposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-
+    
     // Check sequence status.
     if (sequence->status != PLASMA_SUCCESS) {
         plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
@@ -322,7 +322,7 @@ void PLASMA_zposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     //  if (min(n, nrhs == 0)
     //      return PLASMA_SUCCESS;
     //
-
+    
     PLASMA_enum trans;
     PLASMA_Complex64_t zone = 1.0;
     
@@ -346,4 +346,4 @@ void PLASMA_zposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
                   sequence, request);
     return;
 }
- 
+
