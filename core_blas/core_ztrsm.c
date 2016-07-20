@@ -115,7 +115,7 @@ void CORE_OMP_ztrsm(
     #pragma omp task depend(in:A[0:m*m]) depend(inout:B[0:m*n])
     CORE_ztrsm(side, uplo,
                transA, diag,
-	           m, n,
+               m, n,
                alpha, A, lda,
-	                  B, ldb);
+                      B, ldb);
 }

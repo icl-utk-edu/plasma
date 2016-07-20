@@ -127,7 +127,7 @@ void plasma_pzsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
                 ldbk = BLKLDD(B, k);
                 zbeta = k == 0 ? beta : zone;
                 CORE_OMP_zsyr2k(
-		    uplo, trans,
+                    uplo, trans,
                           tempnn, tempkm,
                     alpha, A(k, n), ldak,
                            B(k, n), ldbk,
@@ -155,8 +155,8 @@ void plasma_pzsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
                         CORE_OMP_zgemm(
                             trans, PlasmaNoTrans,
                             tempmm, tempnn, tempkm,
-			    alpha, B(k, m), ldbk,
-			           A(k, n), ldak,
+                            alpha, B(k, m), ldbk,
+                                   A(k, n), ldak,
                             zone, C(m, n), ldcm);
                     }
                 }

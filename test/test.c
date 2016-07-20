@@ -379,8 +379,9 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--uplo="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_UPLO]);
 
-	else if (param_starts_with(argv[i], "--diag="))
-	  err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_DIAG]);
+        else if (param_starts_with(argv[i], "--diag="))
+            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_DIAG]);
+
         //--------------------------------------------------
         // Scan integer parameters.
         //--------------------------------------------------
