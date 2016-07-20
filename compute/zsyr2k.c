@@ -131,12 +131,12 @@ int PLASMA_zsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
 
     // Check input arguments.
     if ((uplo != PlasmaUpper) &&
-	(uplo != PlasmaLower)) {
+        (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
         return -1;
     }
     if ((trans != PlasmaNoTrans) &&
-	(trans != PlasmaConjTrans)) {
+        (trans != PlasmaConjTrans)) {
         plasma_error("illegal value of trans");
         return -2;
     }
@@ -330,9 +330,9 @@ int PLASMA_zsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
  ******************************************************************************/
 void PLASMA_zsyr2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
                               PLASMA_Complex64_t alpha, PLASMA_desc *A,
-			                                PLASMA_desc *B,
-			      PLASMA_Complex64_t beta,  PLASMA_desc *C,
-			      PLASMA_sequence *sequence, PLASMA_request *request)
+                                                        PLASMA_desc *B,
+                              PLASMA_Complex64_t beta,  PLASMA_desc *C,
+                              PLASMA_sequence *sequence, PLASMA_request *request)
 {
 
     PLASMA_Complex64_t zzero = 0.0;
@@ -428,7 +428,7 @@ void PLASMA_zsyr2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
     // Call the parallel function.
     plasma_pzsyr2k(uplo, trans,
                    alpha, *A,
-		          *B,
+                          *B,
                     beta, *C,
                    sequence, request);
     return;

@@ -34,8 +34,6 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_sequence *sequence, PLASMA_request *request)
 {
     int k, m, n;
-    int next_m;
-    int next_n;
     int ldak, ldam, ldan, ldbk, ldbm, ldcm;
     int tempmm, tempnn, tempkn, tempkm;
 

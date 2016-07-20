@@ -333,19 +333,17 @@ void PLASMA_zsyrk_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
         return;
     }
 
-    int Am, An, Amb, Anb;
+    int Am, An, Amb;
 
     if (trans == PlasmaNoTrans) {
         Am  = A->m;
         An  = A->n;
         Amb = A->mb;
-        Anb = A->nb;
     }
     else {
         Am  = A->n;
         An  = A->m;
         Amb = A->nb;
-        Anb = A->mb;
     }
 
     if (C->mb != C->nb) {
@@ -376,8 +374,8 @@ void PLASMA_zsyrk_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
     }
 
     // quick return
-    if (C->m == 0 || 
-	((alpha == 0.0 || An == 0) && beta == 1.0))
+    if (C->m == 0 ||
+        ((alpha == 0.0 || An == 0) && beta == 1.0))
         return;
 
     // Call the parallel function.
