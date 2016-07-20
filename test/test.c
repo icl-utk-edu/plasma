@@ -305,8 +305,8 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_sgeqrf(pval, info);
     
     else {
-      printf("unknown routine: %s\n", name);
-      exit(EXIT_FAILURE);
+        printf("unknown routine: %s\n", name);
+        exit(EXIT_FAILURE);
     }
 }
 
