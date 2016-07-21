@@ -29,22 +29,15 @@
  *
  * @ingroup CORE_PLASMA_Complex64_t
  *
- *  CORE_zher2k - Performs one of the hermitian rank 2k operations
+ *  CORE_zher2k - Performs one of the Hermitian rank 2k operations
  *
- *    \f[ C = \alpha [ op( A ) \times conjg( op( B )' )] +
- *      conjg( \alpha ) [ op( B ) \times conjg( op( A )' )] + \beta C \f],
+ *    \f[ C = \alpha A \times B^H + conjg( \alpha ) B \times A^H + \beta C \f],
  *    or
- *    \f[ C = \alpha [ conjg( op( A )' ) \times op( B ) ] +
- *     conjg( \alpha ) [ conjg( op( B )' ) \times op( A ) ] + \beta C \f],
+ *    \f[ C = \alpha A^H \times B + conjg( \alpha ) B^H \times A + \beta C \f],
  *
- *  where op( X ) is one of
- *
- *    op( X ) = X  or op( X ) = conjg( X' )
- *
- *  where alpha  is a complex scalar, beta is real scalars,
- *  C is an n-by-n symmetric
- *  matrix and A and B are an n-by-k matrices the first case and k-by-n
- *  matrices in the second case.
+ *  where alpha is a complex scalar, beta is a real scalar,
+ *  C is an n-by-n Hermitian matrix, and A and B are n-by-k matrices
+ *  in the first case and k-by-n matrices in the second case.
  *
  *******************************************************************************
  *
@@ -53,11 +46,12 @@
  *          - PlasmaLower: Lower triangle of C is stored.
  *
  * @param[in] trans
- *          Specifies whether A is transposed or conjugate transposed:
- *          - PlasmaNoTrans: \f[ C = \alpha [ op( A ) \times conjg( op( B )')] +
- *            conjg( \alpha ) [ op( B ) \times conjg( op( A )' )] + \beta C \f]
- *          - PlasmaConjTrans: \f[ C = \alpha[conjg( op( A )') \times op( B )] +
- *            conjg( \alpha ) [ conjg( op( B )' ) \times op( A ) ] + \beta C \f]
+ *          - PlasmaNoTrans:
+ *            \f[ C = \alpha A \times B^H
+ *                  + conjg( \alpha ) B \times A^H + \beta C \f];
+ *          - PlasmaConjTrans:
+ *            \f[ C = \alpha A^H \times B
+ *                  + conjg( \alpha ) B^H \times A + \beta C \f].
  *
  * @param[in] n
  *          The order of the matrix C. n must be at least zero.

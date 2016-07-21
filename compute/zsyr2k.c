@@ -24,20 +24,14 @@
  *
  * @ingroup PLASMA_Complex64_t
  *
- *  PLASMA_zsyr2k - Performs one of the symmetric rank-2k operations
+ *  PLASMA_zsyr2k - Performs one of the symmetric rank 2k operations
  *
- *    \f[ C = \alpha [ op( A ) \times conjg( op( B )' )] +
- *      \alpha [ op( B ) \times conjg( op( A )' )] + \beta C \f],
+ *    \f[ C = \alpha A \times B^T + \alpha B \times A^T + \beta C \f],
  *    or
- *    \f[ C = \alpha [ conjg( op( A )' ) \times op( B ) ] +
- *    \alpha  [ conjg( op( B )' ) \times op( A ) ] + \beta C \f],
- *
- *  where op( X ) is one of
- *
- *    op( X ) = X  or op( X ) = conjg( X' )
+ *    \f[ C = \alpha A^T \times B + \alpha B^T \times A + \beta C \f],
  *
  *  where alpha and beta are complex scalars, C is an n-by-n symmetric
- *  matrix and A and B are an n-by-k matrices the first case and k-by-n
+ *  matrix, and A and B are n-by-k matrices in the first case and k-by-n
  *  matrices in the second case.
  *
  *******************************************************************************
@@ -47,11 +41,10 @@
  *          - PlasmaLower: Lower triangle of C is stored.
  *
  * @param[in] trans
- *          Specifies whether A is transposed or conjugate transposed:
- *          - PlasmaNoTrans: \f[ C = \alpha [ op( A ) \times conjg( op( B )')] +
- *            \alpha [ op( B ) \times conjg( op( A )' )] + \beta C \f]
- *          - PlasmaConjTrans: \f[ C = \alpha[ conjg(op( A )') \times op( B )] +
- *            \alpha [ conjg( op( B )' ) \times op( A ) ] + \beta C \f]
+ *          - PlasmaNoTrans:
+ *            \f[ C = \alpha A \times B^T + \alpha B \times A^T + \beta C \f];
+ *          - PlasmaTrans:
+ *            \f[ C = \alpha A^T \times B + \alpha B^T \times A + \beta C \f].
  *
  * @param[in] n
  *          The order of the matrix C. n must be at least zero.
@@ -136,7 +129,7 @@ int PLASMA_zsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
         return -1;
     }
     if ((trans != PlasmaNoTrans) &&
-        (trans != PlasmaConjTrans)) {
+        (trans != PlasmaTrans)) {
         plasma_error("illegal value of trans");
         return -2;
     }
@@ -145,7 +138,8 @@ int PLASMA_zsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
         An = k;
         Bm = n;
         Bn = k;
-    } else {
+    }
+    else {
         Am = k;
         An = n;
         Bm = k;
@@ -183,7 +177,7 @@ int PLASMA_zsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
     //     return status;
     // }
 
-    // Set NT & KT 
+    // Set NT & KT
     nb = plasma->nb;
     // Initialize tile matrix descriptors.
     descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
@@ -288,8 +282,10 @@ int PLASMA_zsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
  *          - PlasmaLower: Lower triangle of C is stored.
  *
  * @param[in] trans
- *          - PlasmaNoTrans:   A is not transposed;
- *          - PlasmaConjTrans: A is conjugate transposed.
+ *          - PlasmaNoTrans:
+ *            \f[ C = \alpha A \times B^T + \alpha B \times A^T + \beta C \f];
+ *          - PlasmaTrans:
+ *            \f[ C = \alpha A^T \times B + \alpha B^T \times A + \beta C \f].
  *
  * @param[in] alpha
  *          The scalar alpha.
@@ -334,7 +330,6 @@ void PLASMA_zsyr2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
                               PLASMA_Complex64_t beta,  PLASMA_desc *C,
                               PLASMA_sequence *sequence, PLASMA_request *request)
 {
-
     PLASMA_Complex64_t zzero = 0.0;
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -350,7 +345,7 @@ void PLASMA_zsyr2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if ((trans != PlasmaNoTrans) && (trans != PlasmaConjTrans)) {
+    if ((trans != PlasmaNoTrans) && (trans != PlasmaTrans)) {
         plasma_error("illegal value of trans");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -388,7 +383,8 @@ void PLASMA_zsyr2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
         Am  = A->m;
         An  = A->n;
         Amb = A->mb;
-    } else {
+    }
+    else {
         Am  = A->n;
         An  = A->m;
         Amb = A->nb;
@@ -399,7 +395,7 @@ void PLASMA_zsyr2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if ( (B->mb != A->mb) || (B->nb != A->nb) || (Amb != C->mb) ) {
+    if ((B->mb != A->mb) || (B->nb != A->nb) || (Amb != C->mb)) {
         plasma_error("tile sizes mismatch");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -409,7 +405,7 @@ void PLASMA_zsyr2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if ( (B->m != A->m) || (B->n != A->n) || (Am != C->m) ) {
+    if ((B->m != A->m) || (B->n != A->n) || (Am != C->m)) {
         plasma_error("matrix sizes mismatch");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;

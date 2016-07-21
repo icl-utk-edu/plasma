@@ -7,9 +7,9 @@
  *  Univ. of California Berkeley, Univ. of Colorado Denver and
  *  Univ. of Manchester.
  *
- * @version 
+ * @version 3.0.0
  * @author Pedro V. Lara
- * @date 
+ * @date
  * @precisions normal z -> s d c
  *
  **/
@@ -67,7 +67,6 @@ void test_zpotrf(param_value_t param[], char *info)
                 InfoSpacing, "Uplo",
                 InfoSpacing, "N",
                 InfoSpacing, "PadA");
-
         }
         return;
     }
@@ -85,9 +84,9 @@ void test_zpotrf(param_value_t param[], char *info)
 
     if (param[PARAM_UPLO].c == 'l')
         uplo = PlasmaLower;
-    else 
+    else
         uplo = PlasmaUpper;
-    
+
     int n = param[PARAM_N].i;
 
     int Am, An;
@@ -115,13 +114,13 @@ void test_zpotrf(param_value_t param[], char *info)
     //================================================================
     // Make the A matrix symmetric/Hermitian positive definite.
     // It increases diagonal by n, and makes it real.
-    // It sets Aji = conj( Aij ) for j < i, that is, copy lower 
+    // It sets Aji = conj( Aij ) for j < i, that is, copy lower
     // triangle to upper triangle.
     //================================================================
     int i, j;
-    for( i=0; i < n; ++i ) {
+    for (i=0; i < n; ++i) {
         A(i,i) = (creal(A(i,i)) + n) + 0. * I;
-        for( j=0; j < i; ++j ) {
+        for (j=0; j < i; ++j) {
             A(j,i) = conj(A(i,j));
         }
     }
@@ -150,12 +149,11 @@ void test_zpotrf(param_value_t param[], char *info)
     // Test results by comparing to a reference implementation.
     //================================================================
     if (test) {
-
         LAPACKE_zpotrf(
             LAPACK_COL_MAJOR,
-            lapack_const(uplo), n, 
+            lapack_const(uplo), n,
             Aref, lda);
-        
+
         PLASMA_Complex64_t zmone = -1.0;
         cblas_zaxpy((size_t)lda*An, CBLAS_SADDR(zmone), Aref, 1, A, 1);
 

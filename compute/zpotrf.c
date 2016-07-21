@@ -7,9 +7,9 @@
  *  Univ. of California Berkeley, Univ. of Colorado Denver and
  *  Univ. of Manchester.
  *
- * @version 
+ * @version 3.0.0
  * @author Pedro V. Lara
- * @date 
+ * @date
  * @precisions normal z -> s d c
  *
  **/
@@ -53,7 +53,7 @@
  *          triangular part of the matrix A, and the strictly upper triangular part of A is not
  *          referenced.
  *          On exit, if return value = 0, the factor U or L from the Cholesky factorization
- *          A = U**H*U or A = L*L**H.
+ *          A = U^H*U or A = L*L^H.
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,n).
@@ -86,8 +86,8 @@ int PLASMA_zpotrf(PLASMA_enum uplo, int n,
         return PLASMA_ERR_NOT_INITIALIZED;
     }
 
-    // Check input arguments 
-    if ((uplo != PlasmaUpper) && 
+    // Check input arguments
+    if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
         return -1;
@@ -101,7 +101,7 @@ int PLASMA_zpotrf(PLASMA_enum uplo, int n,
         return -4;
     }
 
-    // quick return 
+    // quick return
     if (imax(n, 0) == 0)
         return PLASMA_SUCCESS;
 
@@ -112,12 +112,12 @@ int PLASMA_zpotrf(PLASMA_enum uplo, int n,
     //     return status;
     // }
 
-    /* Set NT & KT */
+    // Set NT & KT
     nb = plasma->nb;
     // Initialize tile matrix descriptors.
     descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
                              nb*nb, n, n, 0, 0, n, n);
-   
+
     // Allocate matrices in tile layout.
     retval = plasma_desc_mat_alloc(&descA);
     if (retval != PLASMA_SUCCESS) {
@@ -134,7 +134,7 @@ int PLASMA_zpotrf(PLASMA_enum uplo, int n,
     }
     // Initialize request.
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
-    
+
 #pragma omp parallel
 #pragma omp master
     {
@@ -147,17 +147,17 @@ int PLASMA_zpotrf(PLASMA_enum uplo, int n,
 
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
-    
+
         // Call the tile async function.
         if (sequence->status == PLASMA_SUCCESS) {
             PLASMA_zpotrf_Tile_Async(uplo, &descA, sequence, &request);
         }
 
         // Translate back to LAPACK layout.
-        if (sequence->status == PLASMA_SUCCESS) 
+        if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
-    } // pragma omp parallel block closed 
- 
+    } // pragma omp parallel block closed
+
     // Check for errors in the async execution
     if (sequence->status != PLASMA_SUCCESS)
         return sequence->status;
@@ -199,12 +199,12 @@ int PLASMA_zpotrf(PLASMA_enum uplo, int n,
  *          triangular part of the matrix A, and the strictly upper triangular part of A is not
  *          referenced.
  *          On exit, if return value = 0, the factor U or L from the Cholesky factorization
- *          A = U**H*U or A = L*L**H.
+ *          A = U^H*U or A = L*L^H.
  *
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
- * @retval void 
+ * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
  *          request->status should never be set to PLASMA_SUCCESS (the
@@ -254,13 +254,6 @@ void PLASMA_zpotrf_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A,
         return;
     }
 
-    int Am, An, Amb, Anb;
-    
-    Am  = A->m;
-    An  = A->n;
-    Amb = A->mb;
-    Anb = A->nb;
-
     if (A->mb != A->nb) {
         plasma_error("only square tiles supported");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
@@ -277,11 +270,11 @@ void PLASMA_zpotrf_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A,
         plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
         return;
     }
-    
+
     // quick return
-    if (A->m == 0) 
+    if (A->m == 0)
         return;
-    
+
     // Call the parallel function.
     plasma_pzpotrf(uplo, *A, sequence, request);
 

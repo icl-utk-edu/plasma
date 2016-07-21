@@ -63,7 +63,8 @@ void test_zher2k(param_value_t param[], char *info)
             print_usage(PARAM_PADA);
             print_usage(PARAM_PADB);
             print_usage(PARAM_PADC);
-        } else {
+        }
+        else {
             // Return column labels.
             snprintf(info, InfoLen,
                      "%*s %*s %*s %*s %*s %*s %*s %*s %*s",
@@ -122,12 +123,12 @@ void test_zher2k(param_value_t param[], char *info)
         An = k;
         Bm = n;
         Bn = k;
-    } else {
+    }
+    else {
         Am = k;
         An = n;
         Bm = k;
         Bn = n;
-
     }
     Cm = n;
     Cn = n;

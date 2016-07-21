@@ -92,8 +92,8 @@ PLASMA_desc plasma_desc_init(PLASMA_enum dtyp, int mb, int nb, int bsiz,
     // large matrix derived parameters
     desc.lm1 = (lm/mb);
     desc.ln1 = (ln/nb);
-    desc.lmt = (lm%mb==0) ? (lm/mb) : (lm/mb+1);
-    desc.lnt = (ln%nb==0) ? (ln/nb) : (ln/nb+1);
+    desc.lmt = (lm%mb == 0) ? (lm/mb) : (lm/mb+1);
+    desc.lnt = (ln%nb == 0) ? (ln/nb) : (ln/nb+1);
 
     // submatrix parameters
     desc.i = i;

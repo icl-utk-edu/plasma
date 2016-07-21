@@ -52,7 +52,7 @@ void plasma_pzpotrf(PLASMA_enum uplo, PLASMA_desc A,
                 tempmm = m == A.mt-1 ? A.m-m*A.mb : A.mb;
                 ldam = BLKLDD(A, m);
                 CORE_OMP_ztrsm(
-                    PlasmaRight, PlasmaLower, 
+                    PlasmaRight, PlasmaLower,
                     PlasmaConjTrans, PlasmaNonUnit,
                     tempmm, A.mb,
                     zone, A(k, k), ldak,
@@ -91,7 +91,7 @@ void plasma_pzpotrf(PLASMA_enum uplo, PLASMA_desc A,
             for (m = k+1; m < A.nt; m++) {
                 tempmm = m == A.nt-1 ? A.n-m*A.nb : A.nb;
                 CORE_OMP_ztrsm(
-                    PlasmaLeft, PlasmaUpper, 
+                    PlasmaLeft, PlasmaUpper,
                     PlasmaConjTrans, PlasmaNonUnit,
                     A.nb, tempmm,
                     zone, A(k, k), ldak,
@@ -109,7 +109,7 @@ void plasma_pzpotrf(PLASMA_enum uplo, PLASMA_desc A,
                     ldan = BLKLDD(A, n);
                     CORE_OMP_zgemm(
                         PlasmaConjTrans, PlasmaNoTrans,
-                        A.mb, tempmm, A.mb, 
+                        A.mb, tempmm, A.mb,
                         mzone, A(k, n), ldak,
                                A(k, m), ldak,
                         zone,  A(n, m), ldan);

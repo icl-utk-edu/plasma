@@ -25,7 +25,7 @@
  *
  * @ingroup PLASMA_Complex64_t
  *
- *  Performs one of the symmetric rank-k operations
+ *  Performs one of the symmetric rank k operations
  *
  *    \f[ C = \alpha A \times A^T + \beta C \f],
  *    or
@@ -42,8 +42,8 @@
  *          - PlasmaLower: Lower triangle of C is stored.
  *
  * @param[in] trans
- *          - PlasmaNoTrans:   A is not transposed;
- *          - PlasmaTrans  :   A is transposed.
+ *          - PlasmaNoTrans: \f[ C = \alpha A \times A^T + \beta C \f];
+ *          - PlasmaTrans:   \f[ C = \alpha A^T \times A + \beta C \f].
  *
  * @param[in] n
  *          The order of the matrix C. n >= 0.
@@ -106,19 +106,19 @@ int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
     }
 
     // Check input arguments.
-    if ((uplo != PlasmaUpper) && 
+    if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
         return -1;
     }
-    if ((trans != PlasmaNoTrans) && 
+    if ((trans != PlasmaNoTrans) &&
         (trans != PlasmaTrans)) {
         plasma_error("illegal value of trans");
         return -2;
     }
     if (trans == PlasmaNoTrans) {
         Am = n; An = k;
-    } 
+    }
     else {
         Am = k; An = n;
     }
@@ -151,8 +151,8 @@ int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
     //     return status;
     // }
 
-    
-    /* Set NT & KT */
+
+    // Set NT & KT
     nb = plasma->nb;
     // Initialize tile matrix descriptors.
     descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
@@ -196,7 +196,7 @@ int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
 
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
-        if (sequence->status == PLASMA_SUCCESS) 
+        if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zcm2ccrb_Async(C, ldc, &descC, sequence, &request);
 
         // Call the tile async function.
@@ -208,9 +208,9 @@ int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
         }
 
         // Translate back to LAPACK layout.
-        if (sequence->status == PLASMA_SUCCESS) 
+        if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
-    } // pragma omp parallel block closed 
+    } // pragma omp parallel block closed
 
     // Check for errors in the async execution
     if (sequence->status != PLASMA_SUCCESS)
@@ -230,7 +230,7 @@ int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
  *
  * @ingroup PLASMA_Complex64_t_Tile_Async
  *
- *  Performs rank-k update.
+ *  Performs rank k update.
  *  Non-blocking tile version of PLASMA_zherk().
  *  May return before the computation is finished.
  *  Operates on matrices stored by tiles.
@@ -247,8 +247,8 @@ int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
  *          - PlasmaLower: Lower triangle of C is stored.
  *
  * @param[in] trans
- *          - PlasmaNoTrans:   A is not transposed;
- *          - PlasmaTrans:     A is transposed.
+ *          - PlasmaNoTrans: \f[ C = \alpha A \times A^T + \beta C \f];
+ *          - PlasmaTrans:   \f[ C = \alpha A^T \times A + \beta C \f].
  *
  * @param[in] alpha
  *          The scalar alpha.
@@ -264,13 +264,13 @@ int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
  *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to
- *          (for completion checks and exception handling purposes).  Check 
+ *          (for completion checks and exception handling purposes).  Check
  *          the sequence->status for errors.
  *
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
- * @retval void 
+ * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
  *          request->status should never be set to PLASMA_SUCCESS (the

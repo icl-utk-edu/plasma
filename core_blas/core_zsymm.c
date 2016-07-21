@@ -54,13 +54,13 @@
  *                             symmetric matrix A is to be referenced.
  *
  * @param[in] m
- *          Specifies the number of rows of the matrix C. m >= 0.
+ *          The number of rows of the matrix C. m >= 0.
  *
  * @param[in] n
- *          Specifies the number of columns of the matrix C. n >= 0.
+ *          The number of columns of the matrix C. n >= 0.
  *
  * @param[in] alpha
- *          Specifies the scalar alpha.
+ *          The scalar alpha.
  *
  * @param[in] A
  *          A is a lda-by-ka matrix, where ka is m when side = PlasmaLeft,
@@ -77,7 +77,7 @@
  *          The leading dimension of the array B. ldb >= max(1,m).
  *
  * @param[in] beta
- *          Specifies the scalar beta.
+ *          The scalar beta.
  *
  * @param[in,out] C
  *          C is a ldc-by-n matrix.
@@ -100,6 +100,7 @@ void CORE_zsymm(PLASMA_enum side, PLASMA_enum uplo,
                                     B, ldb,
                 CBLAS_SADDR(beta),  C, ldc);
 }
+
 /******************************************************************************/
 void CORE_OMP_zsymm(
     PLASMA_enum side, PLASMA_enum uplo,

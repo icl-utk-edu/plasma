@@ -43,7 +43,7 @@ void plasma_pzhemm(PLASMA_enum side, PLASMA_enum uplo,
     if (sequence->status != PLASMA_SUCCESS)
         return;
 
-    for(m = 0; m < C.mt; m++) {
+    for (m = 0; m < C.mt; m++) {
         tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
         ldcm = BLKLDD(C, m);
         for (n = 0; n < C.nt; n++) {
