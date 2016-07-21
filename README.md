@@ -39,7 +39,7 @@ Get Assistance
 To get assistance with PLASMA, join the *PLASMA User* Google group by going to
 https://groups.google.com/a/icl.utk.edu/forum/#!forum/plasma-user and clicking
 `Apply to join group`.
-Then email your questions and comments to `plasma-user@icl.utk.com`.
+Then email your questions and comments to `plasma-user@icl.utk.edu`.
 
 Cite PLASMA
 ===========
