@@ -27,21 +27,14 @@
  *
  * @ingroup CORE_PLASMA_Complex64_t
  *
- *  CORE_zsyr2k - Performs one of the symmetric rank-2k operations
+ *  CORE_zsyr2k - Performs one of the symmetric rank 2k operations
  *
- *    \f[ C = \alpha [ op( A ) \times conjg( op( B )' )] +
- *      \alpha  [ op( B ) \times conjg( op( A )' )] + \beta C \f],
+ *    \f[ C = \alpha A \times B^T + \alpha B \times A^T + \beta C \f],
  *    or
- *    \f[ C = \alpha [ conjg( op( A )' ) \times op( B ) ] +
- *     \alpha [ conjg( op( B )' ) \times op( A ) ] + \beta C \f],
+ *    \f[ C = \alpha A^T \times B + \alpha B^T \times A + \beta C \f],
  *
- *  where op( X ) is one of
- *
- *    op( X ) = X  or op( X ) = conjg( X' )
- *
- *  where alpha  and beta  are complex scalars
- *  C is an n-by-n symmetric
- *  matrix and A and B are an n-by-k matrices the first case and k-by-n
+ *  where alpha and beta are complex scalars, C is an n-by-n symmetric
+ *  matrix, and A and B are n-by-k matrices the first case and k-by-n
  *  matrices in the second case.
  *
  *******************************************************************************
@@ -51,11 +44,10 @@
  *          - PlasmaLower: Lower triangle of C is stored.
  *
  * @param[in] trans
- *          Specifies whether A is transposed or conjugate transposed:
- *          - PlasmaNoTrans: \f[ C = \alpha [ op( A ) \times conjg( op( B )')] +
- *            conjg( \alpha ) [ op( B ) \times conjg( op( A )' )] + \beta C \f]
- *          - PlasmaConjTrans: \f[ C = \alpha[conjg( op( A )') \times op( B )] +
- *            conjg( \alpha ) [ conjg( op( B )' ) \times op( A ) ] + \beta C \f]
+ *          - PlasmaNoTrans:
+ *            \f[ C = \alpha A \times B^T + \alpha B \times A^T + \beta C \f];
+ *          - PlasmaTrans:
+ *            \f[ C = \alpha A^T \times B + \alpha B^T \times A + \beta C \f].
  *
  * @param[in] n
  *          The order of the matrix C. n must be at least zero.
@@ -106,7 +98,7 @@ void CORE_zsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
                  (CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)trans,
                  n, k,
                  CBLAS_SADDR(alpha), A, lda,
-	                                 B, ldb,
+                                     B, ldb,
                  CBLAS_SADDR(beta),  C, ldc);
 }
 
@@ -125,7 +117,7 @@ void CORE_OMP_zsyr2k(
                      depend(inout:C[0:n*n])
     CORE_zsyr2k(uplo, trans,
                 n, k,
-	            alpha, A, lda,
-	                   B, ldb,
+                alpha, A, lda,
+                       B, ldb,
                 beta,  C, ldc);
 }

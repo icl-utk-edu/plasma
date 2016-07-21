@@ -56,7 +56,7 @@
  *          triangular part of the matrix A, and the strictly upper triangular part of A is not
  *          referenced.
  *          On exit, if return value = 0, the factor U or L from the Cholesky factorization
- *          A = U**H*U or A = L*L**H.
+ *          A = U^H*U or A = L*L^H.
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,n).

@@ -97,9 +97,9 @@ void test_zherk(param_value_t param[], char *info)
 
     if (param[PARAM_UPLO].c == 'l')
         uplo = PlasmaLower;
-    else 
+    else
         uplo = PlasmaUpper;
-    
+
     if (param[PARAM_TRANS].c == 'n')
         trans = PlasmaNoTrans;
     else if (param[PARAM_TRANS].c == 't')
@@ -171,7 +171,7 @@ void test_zherk(param_value_t param[], char *info)
         n, k,
         alpha, A, lda,
         beta, C, ldc);
-         
+
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
@@ -182,7 +182,6 @@ void test_zherk(param_value_t param[], char *info)
     // Test results by comparing to a reference implementation.
     //================================================================
     if (test) {
-
         cblas_zherk(
             CblasColMajor,
             (CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)trans,

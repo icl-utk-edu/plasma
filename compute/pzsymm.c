@@ -34,8 +34,6 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_sequence *sequence, PLASMA_request *request)
 {
     int k, m, n;
-    int next_m;
-    int next_n;
     int ldak, ldam, ldan, ldbk, ldbm, ldcm;
     int tempmm, tempnn, tempkn, tempkm;
 
@@ -45,7 +43,7 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
     if (sequence->status != PLASMA_SUCCESS)
         return;
 
-    for(m = 0; m < C.mt; m++) {
+    for (m = 0; m < C.mt; m++) {
         tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
         ldcm = BLKLDD(C, m);
         for (n = 0; n < C.nt; n++) {

@@ -51,13 +51,13 @@
  *                             symmetric matrix A is to be referenced.
  *
  * @param[in] m
- *          Specifies the number of rows of the matrix C. m >= 0.
+ *          The number of rows of the matrix C. m >= 0.
  *
  * @param[in] n
- *          Specifies the number of columns of the matrix C. n >= 0.
+ *          The number of columns of the matrix C. n >= 0.
  *
  * @param[in] alpha
- *          Specifies the scalar alpha.
+ *          The scalar alpha.
  *
  * @param[in] A
  *          A is a lda-by-ka matrix, where ka is m when side = PlasmaLeft,
@@ -74,7 +74,7 @@
  *          The leading dimension of the array B. ldb >= max(1,m).
  *
  * @param[in] beta
- *          Specifies the scalar beta.
+ *          The scalar beta.
  *
  * @param[in,out] C
  *          C is a ldc-by-n matrix.
@@ -120,7 +120,7 @@ int PLASMA_zsymm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
     }
 
     // Check input arguments.
-    if ( (side != PlasmaLeft) && (side != PlasmaRight) ){
+    if ((side != PlasmaLeft) && (side != PlasmaRight)) {
         plasma_error("illegal value of side");
         return -1;
     }
@@ -303,7 +303,7 @@ void PLASMA_zsymm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
 
     // Check input arguments.
     if ((side != PlasmaLeft) &&
-        (side != PlasmaRight)){
+        (side != PlasmaRight)) {
         plasma_error("illegal value of side");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;

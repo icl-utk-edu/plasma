@@ -97,9 +97,9 @@ void test_zsyrk(param_value_t param[], char *info)
 
     if (param[PARAM_UPLO].c == 'l')
         uplo = PlasmaLower;
-    else 
+    else
         uplo = PlasmaUpper;
-    
+
     if (param[PARAM_TRANS].c == 'n')
         trans = PlasmaNoTrans;
     else if (param[PARAM_TRANS].c == 't')
