@@ -85,14 +85,14 @@
  *         Dimension (min(m,n)).
  *         The scalar factors of the elementary reflectors. 
  *         This array is used just internally, and is not supposed to be 
- *         referenced outside of the routine. It is passed to the routine 
+ *         accessed outside of the routine. It is passed to the routine 
  *         just to avoid possible re-allocations should the routine be 
  *         called repeatedly.
  *
  * @param WORK
  *         Dimension ib*n.
  *         This array is used just internally, and is not supposed to be 
- *         referenced outside of the routine. It is passed to the routine 
+ *         accessed outside of the routine. It is passed to the routine 
  *         just to avoid possible re-allocations should the routine be 
  *         called repeatedly.
  *
@@ -166,8 +166,7 @@ void CORE_zgeqrt(int m, int n, int ib,
 /******************************************************************************/
 void CORE_OMP_zgeqrt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A, int lda,
-                     PLASMA_Complex64_t *T, int ldt,
-                     )
+                     PLASMA_Complex64_t *T, int ldt)
 {
     // prepare memory for auxiliary arrays
     PLASMA_Complex64_t *TAU  = 

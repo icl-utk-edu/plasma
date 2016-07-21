@@ -32,9 +32,11 @@ void CORE_zgemm(
     PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc);
 
 void CORE_zgeqrt(
-    int m, int n, int ib, int nb, 
+    int m, int n, int ib, 
     PLASMA_Complex64_t *A, int lda,
-    PLASMA_Complex64_t *T, int ldt);
+    PLASMA_Complex64_t *T, int ldt,
+    PLASMA_Complex64_t *TAU,
+    PLASMA_Complex64_t *WORK);
 
 void CORE_zhemm(
     PLASMA_enum side, PLASMA_enum uplo,
