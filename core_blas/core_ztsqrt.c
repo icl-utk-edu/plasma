@@ -55,9 +55,6 @@
  * @param[in] ib
  *         The inner-blocking size.  ib >= 0.
  *
- * @param[in] nb
- *         Number of rows in a block.  nb >= 0.
- *
  * @param[in,out] A1
  *         On entry, the n-by-n tile A1.
  *         On exit, the elements on and above the diagonal of the array
@@ -85,24 +82,13 @@
  *         The leading dimension of the array T. ldt >= ib.
  *
  ******************************************************************************/
-void CORE_ztsqrt(int m, int n, int ib, int nb,
+void CORE_ztsqrt(int m, int n, int ib, 
                  PLASMA_Complex64_t *A1, int lda1,
                  PLASMA_Complex64_t *A2, int lda2,
-                 PLASMA_Complex64_t *T,  int ldt)
+                 PLASMA_Complex64_t *T, int ldt)
 {
-    // prepare memory for auxiliary arrays
-    int ltau  = nb;
-    int lwork = ib*nb;
-    PLASMA_Complex64_t *TAU  = 
-        (PLASMA_Complex64_t *) malloc(sizeof(PLASMA_Complex64_t) * ltau);
-    PLASMA_Complex64_t *WORK = 
-        (PLASMA_Complex64_t *) malloc(sizeof(PLASMA_Complex64_t) * lwork);
-
-    static PLASMA_Complex64_t zone  = 1.0;
-    static PLASMA_Complex64_t zzero = 0.0;
-
-    PLASMA_Complex64_t alpha;
-    int i, ii, sb;
+    // block size is assumed to be equal to n
+    int nb = n;
 
     // Check input arguments
     if (m < 0) {
@@ -125,6 +111,29 @@ void CORE_ztsqrt(int m, int n, int ib, int nb,
     // Quick return
     if ((m == 0) || (n == 0) || (ib == 0))
         return;
+
+    // prepare memory for auxiliary arrays
+    int ltau  = nb;
+    PLASMA_Complex64_t *TAU  = 
+        (PLASMA_Complex64_t *) malloc(sizeof(PLASMA_Complex64_t) * ltau);
+    if (TAU == NULL) {
+        plasma_error("malloc() failed");
+        return;
+    }
+    int lwork = ib*nb;
+    PLASMA_Complex64_t *WORK = 
+        (PLASMA_Complex64_t *) malloc(sizeof(PLASMA_Complex64_t) * lwork);
+    if (WORK == NULL) {
+        plasma_error("malloc() failed");
+        return;
+    }
+
+    // variable storing 1 and 0 constants
+    static PLASMA_Complex64_t zone  = 1.0;
+    static PLASMA_Complex64_t zzero = 0.0;
+
+    PLASMA_Complex64_t alpha;
+    int i, ii, sb;
 
     for(ii = 0; ii < n; ii += ib) {
         sb = imin(n-ii, ib);
@@ -189,7 +198,7 @@ void CORE_ztsqrt(int m, int n, int ib, int nb,
         if (n > ii+sb) {
             CORE_ztsmqr(
                 PlasmaLeft, Plasma_ConjTrans,
-                sb, n-(ii+sb), m, n-(ii+sb), ib, ib, nb,
+                sb, n-(ii+sb), m, n-(ii+sb), ib, ib,
                 &A1[lda1*(ii+sb)+ii], lda1,
                 &A2[lda2*(ii+sb)], lda2,
                 &A2[lda2*ii], lda2,
@@ -209,10 +218,11 @@ void CORE_OMP_ztsqrt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A2, int lda2,
                      PLASMA_Complex64_t *T,  int ldt)
 {
+    // assuming m == nb, n == nb
     #pragma omp task depend(inout:A1[0:nb*nb]) \
                      depend(inout:A2[0:nb*nb]) \
                      depend(out:T[0:ib*nb])
-    CORE_ztsqrt(m, n, ib, nb,
+    CORE_ztsqrt(m, n, ib, 
                 A1, lda1,
                 A2, lda2,
                 T,  ldt);

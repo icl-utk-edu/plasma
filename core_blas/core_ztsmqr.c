@@ -86,9 +86,6 @@
  * @param[in] ib
  *         The inner-blocking size.  ib >= 0.
  *
- * @param[in] nb
- *         Number of rows in a block.  nb >= 0.
- *
  * @param[in,out] A1
  *         On entry, the m1-by-n1 tile A1.
  *         On exit, A1 is overwritten by the application of Q.
@@ -121,17 +118,14 @@
  *
  ******************************************************************************/
 void CORE_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
-                 int m1, int n1, int m2, int n2, int k, int ib, int nb,
+                 int m1, int n1, int m2, int n2, int k, int ib,
                  PLASMA_Complex64_t *A1, int lda1,
                  PLASMA_Complex64_t *A2, int lda2,
                  const PLASMA_Complex64_t *V, int ldv,
                  const PLASMA_Complex64_t *T, int ldt)
 {
-    // prepare memory for the auxiliary array
-    int lwork = ib*nb;
-    PLASMA_Complex64_t *WORK = 
-        (PLASMA_Complex64_t *) malloc(sizeof(PLASMA_Complex64_t) * lwork);
-    int ldwork = nb;
+    // block size is assumed to be equal to n1
+    int nb = n1;
 
     int i, i1, i3;
     int nq, nw;
@@ -156,6 +150,8 @@ void CORE_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
         nq = n2;
         nw = m1;
     }
+
+    int ldwork = nw;
 
     // Plasma_ConjTrans will be converted to PlasmaTrans in 
     // automatic datatype conversion, which is what we want here.
@@ -218,6 +214,15 @@ void CORE_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
         (n2 == 0) || (k == 0) || (ib == 0))
         return;
 
+    // prepare memory for the auxiliary array
+    int lwork = ib*nb;
+    PLASMA_Complex64_t *WORK = 
+        (PLASMA_Complex64_t *) malloc(sizeof(PLASMA_Complex64_t) * lwork);
+    if (WORK == NULL) {
+        plasma_error("malloc() failed");
+        return;
+    }
+
     if (((side == PlasmaLeft)  && (trans != PlasmaNoTrans))
         || ((side == PlasmaRight) && (trans == PlasmaNoTrans))) {
         i1 = 0;
@@ -264,12 +269,13 @@ void CORE_OMP_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
                      const PLASMA_Complex64_t *V, int ldv,
                      const PLASMA_Complex64_t *T, int ldt)
 {
+    // assuming m1 == nb, n1 == nb, m2 == nb, n2 == nb
     #pragma omp task depend(inout:A1[0:nb*nb]) \
                      depend(inout:A2[0:nb*nb]) \
                      depend(in:V[0:nb*nb]) \
                      depend(in:T[0:ib*nb])
     CORE_ztsmqr(side, trans,
-                m1, n1, m2, n2, k, ib, nb,
+                m1, n1, m2, n2, k, ib, 
                 A1, lda1,
                 A2, lda2,
                 V, ldv,

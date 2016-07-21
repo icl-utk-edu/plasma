@@ -73,9 +73,6 @@
  * @param[in] ib
  *         The inner-blocking size.  ib >= 0.
  *
- * @param[in] nb
- *         Number of rows in a block.  nb >= 0.
- *
  * @param[in] A
  *         Dimension:  (lda,k)
  *         The i-th column must contain the vector which defines the
@@ -105,14 +102,14 @@
  *
  ******************************************************************************/
 void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
-                 int m, int n, int k, int ib, int nb,
+                 int m, int n, int k, int ib, 
                  const PLASMA_Complex64_t *A, int lda,
                  const PLASMA_Complex64_t *T, int ldt,
                  PLASMA_Complex64_t *C, int ldc)
 {
-    // prepare memory for the auxiliary array
-    int lwork = ib*nb;
-    PLASMA_Complex64_t *WORK = (PLASMA_Complex64_t *) malloc(sizeof(PLASMA_Complex64_t) * lwork);
+    // block size is assumed to be equal to n
+    int nb = n;
+
     int ldwork = nb;
 
     int i, kb;
@@ -178,6 +175,15 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
     if ((m == 0) || (n == 0) || (k == 0))
         return;
 
+    // prepare memory for the auxiliary array
+    int lwork = ib*nb;
+    PLASMA_Complex64_t *WORK = 
+        (PLASMA_Complex64_t *) malloc(sizeof(PLASMA_Complex64_t) * lwork);
+    if (WORK == NULL) {
+        plasma_error("malloc() failed");
+        return;
+    }
+
     if (((side == PlasmaLeft) && (trans != PlasmaNoTrans))
         || ((side == PlasmaRight) && (trans == PlasmaNoTrans))) {
         i1 = 0;
@@ -226,11 +232,12 @@ void CORE_OMP_zunmqr(PLASMA_enum side, PLASMA_enum trans,
                      const PLASMA_Complex64_t *T, int ldt,
                      PLASMA_Complex64_t *C,       int ldc)
 {
+    // assuming m == nb, n == nb
     #pragma omp task depend(in:A[0:nb*nb]) \
                      depend(in:T[0:ib*nb]) \
                      depend(inout:C[0:nb*nb])
     CORE_zunmqr(side, trans,
-                m, n, k, ib, nb,
+                m, n, k, ib, 
                 A, lda,
                 T, ldt,
                 C, ldc);

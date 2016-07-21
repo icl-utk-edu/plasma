@@ -81,28 +81,14 @@
  * @param[in] ldt
  *         The leading dimension of the array T. ldt >= ib.
  *
- * @param TAU
- *         Dimension (min(m,n)).
- *         The scalar factors of the elementary reflectors. 
- *         This array is used just internally, and is not supposed to be 
- *         accessed outside of the routine. It is passed to the routine 
- *         just to avoid possible re-allocations should the routine be 
- *         called repeatedly.
- *
- * @param WORK
- *         Dimension ib*n.
- *         This array is used just internally, and is not supposed to be 
- *         accessed outside of the routine. It is passed to the routine 
- *         just to avoid possible re-allocations should the routine be 
- *         called repeatedly.
- *
  ******************************************************************************/
 void CORE_zgeqrt(int m, int n, int ib, 
                  PLASMA_Complex64_t *A, int lda,
-                 PLASMA_Complex64_t *T, int ldt,
-                 PLASMA_Complex64_t *TAU,
-                 PLASMA_Complex64_t *WORK)
+                 PLASMA_Complex64_t *T, int ldt)
 {
+    // block size is assumed to be equal to n
+    int nb = n;
+
     // Check input arguments
     if (m < 0) {
         plasma_error("Illegal value of m");
@@ -128,6 +114,22 @@ void CORE_zgeqrt(int m, int n, int ib,
     // Quick return 
     if ((m == 0) || (n == 0) || (ib == 0))
         return;
+
+    // prepare memory for auxiliary arrays
+    int ltau  = nb;
+    PLASMA_Complex64_t *TAU  = 
+        (PLASMA_Complex64_t *) malloc(sizeof(PLASMA_Complex64_t) * ltau);
+    if (TAU == NULL) {
+        plasma_error("malloc() failed");
+        return;
+    }
+    int lwork = ib*nb;
+    PLASMA_Complex64_t *WORK = 
+        (PLASMA_Complex64_t *) malloc(sizeof(PLASMA_Complex64_t) * lwork);
+    if (WORK == NULL) {
+        plasma_error("malloc() failed");
+        return;
+    }
 
     int k = imin(m, n);
     for(int i = 0; i < k; i += ib) {
@@ -161,6 +163,10 @@ void CORE_zgeqrt(int m, int n, int ib,
                 WORK, n-i-sb);
         }
     }
+
+    // deallocate auxiliary arrays
+    free(TAU);
+    free(WORK);
 }
 
 /******************************************************************************/
@@ -168,21 +174,10 @@ void CORE_OMP_zgeqrt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A, int lda,
                      PLASMA_Complex64_t *T, int ldt)
 {
-    // prepare memory for auxiliary arrays
-    PLASMA_Complex64_t *TAU  = 
-        (PLASMA_Complex64_t *) malloc(sizeof(PLASMA_Complex64_t) * nb);
-    PLASMA_Complex64_t *WORK = 
-        (PLASMA_Complex64_t *) malloc(sizeof(PLASMA_Complex64_t) * ib * nb);
-
+    // assuming lda == m and nb == n 
     #pragma omp task depend(inout:A[0:lda*nb]) \
                      depend(out:T[0:ldt*nb])
-    CORE_zgeqrt(m, n, ib,
+    CORE_zgeqrt(m, n, ib, 
                 A, lda,
-                T, ldt,
-                TAU,
-                WORK);
-
-    // deallocate auxiliary arrays
-    free(TAU);
-    free(WORK);
+                T, ldt);
 }
