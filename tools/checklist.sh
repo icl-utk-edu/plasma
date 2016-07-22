@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # This does some simple searches to look for common formatting issues,
 # and a few potential bugs. As it uses regular expressions, it may have
