@@ -108,7 +108,7 @@ void test_zgels(param_value_t param[], char *info)
         (PLASMA_Complex64_t*)malloc((size_t)lda*n*sizeof(PLASMA_Complex64_t));
     assert(A != NULL);
 
-    PLASMA_Complex64_t *B = 
+    PLASMA_Complex64_t *B =
         (PLASMA_Complex64_t*)malloc((size_t)ldb*nrhs*
                                     sizeof(PLASMA_Complex64_t));
     assert(B != NULL);
@@ -157,15 +157,15 @@ void test_zgels(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zgels(PlasmaNoTrans, m, n, nrhs, 
-                 A, lda, 
+    PLASMA_zgels(PlasmaNoTrans, m, n, nrhs,
+                 A, lda,
                  &descT,
                  B, ldb);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = 
+    param[PARAM_GFLOPS].d =
         (flops_zgeqrf(m,n) + flops_zgeqrs(m,n,nrhs)) / time / 1e9;
 
     //================================================================

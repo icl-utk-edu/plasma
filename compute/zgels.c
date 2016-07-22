@@ -368,7 +368,7 @@ void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *A,
         plasma_error("LQ factorization not supported yet");
         plasma_request_fail(sequence, request, PLASMA_ERR_NOT_SUPPORTED);
 
-    //    plasma_pztile_zero(plasma_desc_submatrix(B, A->m, 0, 
+    //    plasma_pztile_zero(plasma_desc_submatrix(B, A->m, 0,
     //                                             A->n - A->m, B->n),
     //                       sequence, request);
 

@@ -99,7 +99,7 @@ int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
  **/
 void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *A,
                              PLASMA_desc *T, PLASMA_desc *B,
-                             PLASMA_sequence *sequence, 
+                             PLASMA_sequence *sequence,
                              PLASMA_request *request);
 
 void PLASMA_zgemm_Tile_Async(
