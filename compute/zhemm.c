@@ -268,6 +268,35 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
  *
  *******************************************************************************
  *
+ * @param[in] side
+ *          Specifies whether the hemmetric matrix A appears on the
+ *          left or right in the operation as follows:
+ *          - PlasmaLeft:  \f[ C = \alpha \times A \times B + \beta \times C \f]
+ *          - PlasmaRight: \f[ C = \alpha \times B \times A + \beta \times C \f]
+ *
+ * @param[in] uplo
+ *          Specifies whether the upper or lower triangular part of
+ *          the Hermitian matrix A is to be referenced as follows:
+ *          - PlasmaLower:     Only the lower triangular part of the
+ *                             Hermitian matrix A is to be referenced.
+ *          - PlasmaUpper:     Only the upper triangular part of the
+ *                             Hermitian matrix A is to be referenced.
+ *
+ * @param[in] alpha
+ *          The scalar alpha.
+ *
+ * @param[in] A
+ *          Descriptor of matrix A.
+ *
+ * @param[in] B
+ *          Descriptor of matrix B.
+ *
+ * @param[in] beta
+ *          The scalar beta.
+ *
+ * @param[in,out] C
+ *          Descriptor of matrix C.
+ *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to
  *          (for completion checks and exception handling purposes).

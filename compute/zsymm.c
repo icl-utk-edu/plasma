@@ -23,7 +23,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup plasma_hemm
+ * @ingroup plasma_symm
  *
  *  Performs one of the matrix-matrix operations
  *
@@ -262,7 +262,7 @@ int PLASMA_zsymm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
 
 /***************************************************************************//**
  *
- * @ingroup plasma_hemm
+ * @ingroup plasma_symm
  *
  *  Performs symmetric matrix multiplication.
  *  Non-blocking equivalent of PLASMA_zsymm_Tile().
@@ -270,6 +270,35 @@ int PLASMA_zsymm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
  *  Allows for pipelining of operations at runtime.
  *
  *******************************************************************************
+ *
+ * @param[in] side
+ *          Specifies whether the symmetric matrix A appears on the
+ *          left or right in the operation as follows:
+ *          - PlasmaLeft:  \f[ C = \alpha \times A \times B + \beta \times C \f]
+ *          - PlasmaRight: \f[ C = \alpha \times B \times A + \beta \times C \f]
+ *
+ * @param[in] uplo
+ *          Specifies whether the upper or lower triangular part of
+ *          the symmetric matrix A is to be referenced as follows:
+ *          - PlasmaLower:     Only the lower triangular part of the
+ *                             symmetric matrix A is to be referenced.
+ *          - PlasmaUpper:     Only the upper triangular part of the
+ *                             symmetric matrix A is to be referenced.
+ *
+ * @param[in] alpha
+ *          The scalar alpha.
+ *
+ * @param[in] A
+ *          Descriptor of matrix A.
+ *
+ * @param[in] B
+ *          Descriptor of matrix B.
+ *
+ * @param[in] beta
+ *          The scalar beta.
+ *
+ * @param[in,out] C
+ *          Descriptor of matrix C.
  *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to

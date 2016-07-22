@@ -23,7 +23,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_potrf
  *
  *  Performs the Cholesky factorization of a symmetric positive definite
  *  (or Hermitian positive definite in the complex case) matrix A.
@@ -173,7 +173,7 @@ int PLASMA_zpotrf(PLASMA_enum uplo, int n,
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t_Tile
+ * @ingroup plasma_potrf
  *
  *  Performs the Cholesky factorization of a symmetric positive definite
  *  or Hermitian positive definite matrix.
@@ -200,6 +200,11 @@ int PLASMA_zpotrf(PLASMA_enum uplo, int n,
  *          referenced.
  *          On exit, if return value = 0, the factor U or L from the Cholesky factorization
  *          A = U^H*U or A = L*L^H.
+ *
+ * @param[in] sequence
+ *          Identifies the sequence of function calls that this call belongs to
+ *          (for completion checks and exception handling purposes).  Check
+ *          the sequence->status for errors.
  *
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).

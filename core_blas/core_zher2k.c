@@ -27,7 +27,7 @@
 #define COMPLEX
 /***************************************************************************//**
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_her2k
  *
  *  CORE_zher2k - Performs one of the Hermitian rank 2k operations
  *

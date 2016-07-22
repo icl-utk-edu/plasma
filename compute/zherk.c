@@ -23,7 +23,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_herk
  *
  *  Performs one of the Hermitian rank k operations
  *
@@ -226,7 +226,7 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t_Tile_Async
+ * @ingroup plasma_herk
  *
  *  Performs rank k update.
  *  Non-blocking tile version of PLASMA_zherk().

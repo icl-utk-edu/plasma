@@ -22,7 +22,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_syr2k
  *
  *  PLASMA_zsyr2k - Performs one of the symmetric rank 2k operations
  *
@@ -265,7 +265,7 @@ int PLASMA_zsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t_Tile_Async
+ * @ingroup plasma_syr2k
  *
  *  Performs rank 2k update.
  *  Non-blocking tile version of PLASMA_zsyr2k().

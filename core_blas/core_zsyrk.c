@@ -26,7 +26,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_syrk
  *
  *  Performs one of the symmetric rank k operations
  *
