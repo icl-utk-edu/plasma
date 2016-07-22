@@ -23,6 +23,7 @@
 //==============================================================================
 // test routines
 //==============================================================================
+void test_zgels(param_value_t param[], char *info);
 void test_zgemm(param_value_t param[], char *info);
 void test_zsymm(param_value_t param[], char *info);
 void test_zsyrk(param_value_t param[], char *info);

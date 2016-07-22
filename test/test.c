@@ -240,7 +240,16 @@ void time_routine(const char *name, param_value_t pval[])
  ******************************************************************************/
 void run_routine(const char *name, param_value_t pval[], char *info)
 {
-    if      (strcmp(name, "zgemm") == 0)
+    if      (strcmp(name, "zgels") == 0)
+        test_zgels(pval, info);
+    else if (strcmp(name, "dgels") == 0)
+        test_dgels(pval, info);
+    else if (strcmp(name, "cgels") == 0)
+        test_cgels(pval, info);
+    else if (strcmp(name, "sgels") == 0)
+        test_sgels(pval, info);
+
+    else if (strcmp(name, "zgemm") == 0)
         test_zgemm(pval, info);
     else if (strcmp(name, "dgemm") == 0)
         test_dgemm(pval, info);
@@ -399,6 +408,9 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--padc="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_PADC]);
 
+        else if (param_starts_with(argv[i], "--nrhs="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NRHS]);
+
         //--------------------------------------------------
         // Scan double precision parameters.
         //--------------------------------------------------
@@ -476,6 +488,8 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_int(0, &param[PARAM_PADB]);
     if (param[PARAM_PADC].num == 0)
         param_add_int(0, &param[PARAM_PADC]);
+    if (param[PARAM_NRHS].num == 0)
+        param_add_int(1, &param[PARAM_NRHS]);
 
     //--------------------------------------------------
     // Set double precision parameters.

@@ -44,6 +44,7 @@ typedef enum {
     PARAM_PADA,   // padding of A
     PARAM_PADB,   // padding of B
     PARAM_PADC,   // padding of C
+    PARAM_NRHS,   // number of right-hand sides
 
     //------------------------------------------------------
     // output parameters
@@ -81,7 +82,8 @@ static const char *ParamUsage[][2] = {
     {"--beta=", "scalar beta"},
     {"--pada=", "padding added to lda [default: 0]"},
     {"--padb=", "padding added to ldb [default: 0]"},
-    {"--padc=", "padding added to ldc [default: 0]"}
+    {"--padc=", "padding added to ldc [default: 0]"},
+    {"--nrhs=", "number of right-hand sides [default: 1]"}
 };
 
 //==============================================================================

@@ -24,6 +24,11 @@ extern "C" {
 /***************************************************************************//**
  *  Standard interface.
  **/
+int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
+                 PLASMA_Complex64_t *A, int lda,
+                 PLASMA_desc *descT,
+                 PLASMA_Complex64_t *B, int ldb);
+
 int PLASMA_zgemm(
     PLASMA_enum transA, PLASMA_enum transB,
     int m, int n, int k,
@@ -92,6 +97,11 @@ int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
 /***************************************************************************//**
  *  Tile asynchronous interface.
  **/
+void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *A,
+                             PLASMA_desc *T, PLASMA_desc *B,
+                             PLASMA_sequence *sequence, 
+                             PLASMA_request *request);
+
 void PLASMA_zgemm_Tile_Async(
     PLASMA_enum transA, PLASMA_enum transB,
     PLASMA_Complex64_t alpha, PLASMA_desc *descA,
