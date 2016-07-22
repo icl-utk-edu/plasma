@@ -30,8 +30,8 @@ to [OpenMP](http://openmp.org/wp/).
 At the same time, it is moving from its ICL SVN repository
 to this Bitbucket Mercurial repository.
 The content of this repository reflects the progress of the transition.
-Before the transition is complete, the old releases of PLASMA are available at
-http://icl.cs.utk.edu/plasma/software/.
+Before the transition is complete, the last release of the old PLASMA
+is available here: https://bitbucket.org/icl/plasma/downloads/plasma_2.8.0.tar.gz
 
 Get Assistance
 ==============
@@ -39,7 +39,7 @@ Get Assistance
 To get assistance with PLASMA, join the *PLASMA User* Google group by going to
 https://groups.google.com/a/icl.utk.edu/forum/#!forum/plasma-user and clicking
 `Apply to join group`.
-Then email your questions and comments to `plasma-user@icl.utk.com`.
+Then email your questions and comments to `plasma-user@icl.utk.edu`.
 
 Cite PLASMA
 ===========
