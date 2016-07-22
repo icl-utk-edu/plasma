@@ -60,7 +60,7 @@
  *******************************************************************************
  *
  * @retval PLASMA_SUCCESS successful exit
- * @retval <0 if -i, the i-th argument had an illegal value
+ * @retval < 0 if -i, the i-th argument had an illegal value
  *
  *******************************************************************************
  *
@@ -116,7 +116,7 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
         return PLASMA_SUCCESS;
     }
 
-    // Tune NB & IB depending on M, N & NRHS; Set NBNBSIZE 
+    // Tune NB & IB depending on M, N & NRHS; Set NBNBSIZE
     //status = plasma_tune(PLASMA_FUNC_ZGELS, M, N, NRHS);
     //if (status != PLASMA_SUCCESS) {
     //    plasma_error("plasma_tune() failed");
@@ -166,7 +166,7 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
         // Async will not _insert_ more tasks into the runtime.  The
         // sequence->status can be checked after each call to _Async
         // or at the end of the parallel region.
-        
+
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
         if (sequence->status == PLASMA_SUCCESS)
@@ -185,7 +185,7 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
         if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
     } // pragma omp parallel block closed
-    
+
     // Free matrices in tile layout.
     plasma_desc_mat_free(&descA);
     plasma_desc_mat_free(&descB);
@@ -254,7 +254,7 @@ void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *A, PLASMA_desc *T, PLASMA_desc *B,
         plasma_error("invalid first descriptor");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
-    } 
+    }
     if (plasma_desc_check(T) != PLASMA_SUCCESS) {
         plasma_error("invalid second descriptor");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
@@ -288,13 +288,14 @@ void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *A, PLASMA_desc *T, PLASMA_desc *B,
     }
 
     // Quick return
-    // Jakub S.: Why was it commented out in version 2.8.0 ? 
+    // Jakub S.: Why was it commented out in version 2.8.0 ?
     // I leave it like that till explained.
     //if (min(M, min(N, NRHS)) == 0) {
     //    return PLASMA_SUCCESS;
     //}
 
-    // Call the parallel function for Q'*B
+    // Call the parallel function for Q^T * B (in real case) 
+    //                             or Q^H * B (in complex case)
     // Plasma_ConjTrans will be converted to PlasmaTrans by the
     // automatic datatype conversion, which is what we want here.
     // Note that PlasmaConjTrans is protected from this conversion.
@@ -302,8 +303,9 @@ void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *A, PLASMA_desc *T, PLASMA_desc *B,
                    *A, *B, *T,
                    sequence, request);
 
-    // Call the parallel function for solving R*X = Q'*B
-    plasma_pztrsm(PlasmaLeft, PlasmaUpper, 
+    // Call the parallel function for solving R * X = Q^T * B (in real case)
+    //                                     or R * X = Q^H * B (in complex case)
+    plasma_pztrsm(PlasmaLeft, PlasmaUpper,
                   PlasmaNoTrans, PlasmaNonUnit,
                   1.0, plasma_desc_submatrix(*A, 0, 0, A->n, A->n),
                   plasma_desc_submatrix(*B, 0, 0, A->n, B->n),

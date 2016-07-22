@@ -248,12 +248,12 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_cgemm(pval, info);
     else if (strcmp(name, "sgemm") == 0)
         test_sgemm(pval, info);
-    
+
     else if (strcmp(name, "zherk") == 0)
         test_zherk(pval, info);
     else if (strcmp(name, "cherk") == 0)
         test_cherk(pval, info);
-    
+
     else if (strcmp(name, "zsyrk") == 0)
         test_zsyrk(pval, info);
     else if (strcmp(name, "dsyrk") == 0)
@@ -262,12 +262,12 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_csyrk(pval, info);
     else if (strcmp(name, "ssyrk") == 0)
         test_ssyrk(pval, info);
-    
+
     else if (strcmp(name, "zher2k") == 0)
         test_zher2k(pval, info);
     else if (strcmp(name, "cher2k") == 0)
         test_cher2k(pval, info);
-    
+
     else if (strcmp(name, "zsyr2k") == 0)
         test_zsyr2k(pval, info);
     else if (strcmp(name, "dsyr2k") == 0)
@@ -276,7 +276,7 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_csyr2k(pval, info);
     else if (strcmp(name, "ssyr2k") == 0)
         test_ssyr2k(pval, info);
-    
+
     else if (strcmp(name, "zpotrf") == 0)
         test_zpotrf(pval, info);
     else if (strcmp(name, "dpotrf") == 0)
@@ -285,7 +285,7 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_cpotrf(pval, info);
     else if (strcmp(name, "spotrf") == 0)
         test_spotrf(pval, info);
-    
+
     else if (strcmp(name, "ztrsm") == 0)
         test_ztrsm(pval, info);
     else if (strcmp(name, "dtrsm") == 0)
@@ -294,7 +294,7 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_ctrsm(pval, info);
     else if (strcmp(name, "strsm") == 0)
         test_strsm(pval, info);
-    
+
     else if (strcmp(name, "zgeqrf") == 0)
         test_zgeqrf(pval, info);
     else if (strcmp(name, "dgeqrf") == 0)
@@ -303,7 +303,7 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_cgeqrf(pval, info);
     else if (strcmp(name, "sgeqrf") == 0)
         test_sgeqrf(pval, info);
-    
+
     else {
         printf("unknown routine: %s\n", name);
         exit(EXIT_FAILURE);
@@ -373,7 +373,7 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--uplo="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_UPLO]);
 
- 	else if (param_starts_with(argv[i], "--diag="))
+        else if (param_starts_with(argv[i], "--diag="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_DIAG]);
 
         //--------------------------------------------------

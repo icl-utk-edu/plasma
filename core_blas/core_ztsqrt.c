@@ -82,7 +82,7 @@
  *         The leading dimension of the array T. ldt >= ib.
  *
  ******************************************************************************/
-void CORE_ztsqrt(int m, int n, int ib, 
+void CORE_ztsqrt(int m, int n, int ib,
                  PLASMA_Complex64_t *A1, int lda1,
                  PLASMA_Complex64_t *A2, int lda2,
                  PLASMA_Complex64_t *T, int ldt)
@@ -114,14 +114,14 @@ void CORE_ztsqrt(int m, int n, int ib,
 
     // prepare memory for auxiliary arrays
     int ltau  = nb;
-    PLASMA_Complex64_t *TAU  = 
+    PLASMA_Complex64_t *TAU  =
         (PLASMA_Complex64_t *) malloc(sizeof(PLASMA_Complex64_t) * ltau);
     if (TAU == NULL) {
         plasma_error("malloc() failed");
         return;
     }
     int lwork = ib*nb;
-    PLASMA_Complex64_t *WORK = 
+    PLASMA_Complex64_t *WORK =
         (PLASMA_Complex64_t *) malloc(sizeof(PLASMA_Complex64_t) * lwork);
     if (WORK == NULL) {
         plasma_error("malloc() failed");
@@ -135,16 +135,16 @@ void CORE_ztsqrt(int m, int n, int ib,
     PLASMA_Complex64_t alpha;
     int i, ii, sb;
 
-    for(ii = 0; ii < n; ii += ib) {
+    for (ii = 0; ii < n; ii += ib) {
         sb = imin(n-ii, ib);
-        for(i = 0; i < sb; i++) {
-            // Generate elementary reflector H( II*IB+I ) to annihilate 
+        for (i = 0; i < sb; i++) {
+            // Generate elementary reflector H( II*IB+I ) to annihilate
             // A( II*IB+I:M, II*IB+I )
             LAPACKE_zlarfg_work(m+1, &A1[lda1*(ii+i)+ii+i], &A2[lda2*(ii+i)], 1,
                                 &TAU[ii+i]);
 
             if (ii+i+1 < n) {
-                // Apply H( II*IB+I ) to A( II*IB+I:M, II*IB+I+1:II*IB+IB ) 
+                // Apply H( II*IB+I ) to A( II*IB+I:M, II*IB+I+1:II*IB+IB )
                 // from the left
                 alpha = -conj(TAU[ii+i]);
                 cblas_zcopy(
@@ -154,7 +154,7 @@ void CORE_ztsqrt(int m, int n, int ib,
 #ifdef COMPLEX
                 LAPACKE_zlacgv_work(sb-i-1, WORK, 1);
 #endif
-                // Plasma_ConjTrans will be converted do PlasmaTrans in 
+                // Plasma_ConjTrans will be converted do PlasmaTrans in
                 // automatic datatype conversion, which is what we want here.
                 // PlasmaConjTrans is protected from this conversion.
                 cblas_zgemv(
@@ -222,7 +222,7 @@ void CORE_OMP_ztsqrt(int m, int n, int ib, int nb,
     #pragma omp task depend(inout:A1[0:nb*nb]) \
                      depend(inout:A2[0:nb*nb]) \
                      depend(out:T[0:ib*nb])
-    CORE_ztsqrt(m, n, ib, 
+    CORE_ztsqrt(m, n, ib,
                 A1, lda1,
                 A2, lda2,
                 T,  ldt);

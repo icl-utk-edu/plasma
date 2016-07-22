@@ -58,7 +58,7 @@
  * @param[in] trans
  *         - PlasmaNoTrans   : No transpose, apply Q;
  *         - PlasmaTrans     : Transpose, apply Q';
- *         - PlasmaConjTrans : ConjTranspose, apply Q**H.
+ *         - PlasmaConjTrans : ConjTranspose, apply Q^H.
  *
  * @param[in] direct
  *         Indicates how H is formed from a product of elementary
@@ -132,7 +132,7 @@
  *         The leading dimension of the array WORK.
  *
  ******************************************************************************/
-void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans, 
+void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
                  PLASMA_enum direct, PLASMA_enum storev,
                  int m1, int n1, int m2, int n2, int k, int l,
                  PLASMA_Complex64_t *A1, int lda1,
@@ -151,7 +151,7 @@ void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
         plasma_error("Illegal value of side");
         return;
     }
-    // Plasma_ConjTrans will be converted to PlasmaTrans in 
+    // Plasma_ConjTrans will be converted to PlasmaTrans in
     // automatic datatype conversion, which is what we want here.
     // PlasmaConjTrans is protected from this conversion.
     if ((trans != PlasmaNoTrans) && (trans != Plasma_ConjTrans)) {
@@ -194,7 +194,6 @@ void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
         return;
 
     if (direct == PlasmaForward) {
-
         if (side == PlasmaLeft) {
             // Column or Rowwise / Forward / Left
             // ----------------------------------
@@ -202,7 +201,7 @@ void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
             // Form  H * A  or  H' * A  where  A = ( A1 )
             //                                     ( A2 )
 
-            // W = A1 + op(V) * A2 
+            // W = A1 + op(V) * A2
             CORE_zpamm(PlasmaW, PlasmaLeft, storev,
                        k, n1, m2, l,
                        A1, lda1,
@@ -210,20 +209,20 @@ void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
                        V,  ldv,
                        WORK, ldwork);
 
-            // W = op(T) * W 
+            // W = op(T) * W
             cblas_ztrmm(CblasColMajor, CblasLeft, CblasUpper,
                         (CBLAS_TRANSPOSE)trans, CblasNonUnit, k, n2,
                         CBLAS_SADDR(zone), T, ldt, WORK, ldwork);
 
-            // A1 = A1 - W 
-            for(j = 0; j < n1; j++) {
+            // A1 = A1 - W
+            for (j = 0; j < n1; j++) {
                 cblas_zaxpy(k, CBLAS_SADDR(mzone),
                             &WORK[ldwork*j], 1,
                             &A1[lda1*j], 1);
             }
 
-            // A2 = A2 - op(V) * W 
-            // W also changes: W = V * W, A2 = A2 - W 
+            // A2 = A2 - op(V) * W
+            // W also changes: W = V * W, A2 = A2 - W
             CORE_zpamm(PlasmaA2, PlasmaLeft, storev,
                        m2, n2, k, l,
                        A1, lda1,
@@ -250,15 +249,15 @@ void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
                         (CBLAS_TRANSPOSE)trans, CblasNonUnit, m2, k,
                         CBLAS_SADDR(zone), T, ldt, WORK, ldwork);
 
-            // A1 = A1 - W 
-            for(j = 0; j < k; j++) {
+            // A1 = A1 - W
+            for (j = 0; j < k; j++) {
                 cblas_zaxpy(m1, CBLAS_SADDR(mzone),
                             &WORK[ldwork*j], 1,
                             &A1[lda1*j], 1);
             }
 
-            // A2 = A2 - W * op(V) 
-            // W also changes: W = W * V', A2 = A2 - W 
+            // A2 = A2 - W * op(V)
+            // W also changes: W = W * V', A2 = A2 - W
             CORE_zpamm(PlasmaA2, PlasmaRight, storev,
                        m2, n2, k, l,
                        A1, lda1,

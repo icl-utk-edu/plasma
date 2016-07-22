@@ -396,7 +396,7 @@ void PLASMA_zher2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if ( (B->mb != A->mb) || (B->nb != A->nb) || (Amb != C->mb) ) {
+    if ((B->mb != A->mb) || (B->nb != A->nb) || (Amb != C->mb)) {
         plasma_error("tile sizes mismatch");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -406,7 +406,7 @@ void PLASMA_zher2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if ( (B->m != A->m) || (B->n != A->n) || (Am != C->m) ) {
+    if ((B->m != A->m) || (B->n != A->n) || (Am != C->m)) {
         plasma_error("matrix sizes mismatch");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;

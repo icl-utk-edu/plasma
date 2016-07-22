@@ -32,7 +32,7 @@ void CORE_zgemm(
     PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc);
 
 void CORE_zgeqrt(
-    int m, int n, int ib, 
+    int m, int n, int ib,
     PLASMA_Complex64_t *A, int lda,
     PLASMA_Complex64_t *T, int ldt);
 
@@ -114,21 +114,21 @@ void CORE_ztrsm(
 
 void CORE_ztsmqr(
     PLASMA_enum side, PLASMA_enum trans,
-    int m1, int n1, int m2, int n2, int k, int ib, 
+    int m1, int n1, int m2, int n2, int k, int ib,
     PLASMA_Complex64_t *A1, int lda1,
     PLASMA_Complex64_t *A2, int lda2,
     const PLASMA_Complex64_t *V, int ldv,
     const PLASMA_Complex64_t *T, int ldt);
 
 void CORE_ztsqrt(
-    int m, int n, int ib, 
+    int m, int n, int ib,
     PLASMA_Complex64_t *A1, int lda1,
     PLASMA_Complex64_t *A2, int lda2,
     PLASMA_Complex64_t *T,  int ldt);
 
 void CORE_zunmqr(
     PLASMA_enum side, PLASMA_enum trans,
-    int m, int n, int k, int ib, 
+    int m, int n, int k, int ib,
     const PLASMA_Complex64_t *A, int lda,
     const PLASMA_Complex64_t *T, int ldt,
     PLASMA_Complex64_t *C, int ldc);

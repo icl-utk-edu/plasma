@@ -37,11 +37,11 @@
  *                    SIDE = 'L'     SIDE = 'R'
  *    TRANS = 'N':      Q * C          C * Q
  *    TRANS = 'T':      Q' * C         C * Q'
- *    TRANS = 'C':      Q**H * C       C * Q**H
+ *    TRANS = 'C':      Q^H * C        C * Q^H
  *
  *  where Q is a unitary matrix defined as the product of k
  *  elementary reflectors
- *    \f[ 
+ *    \f[
  *        Q = H(1) H(2) ... H(k)
  *    \f]
  *  as returned by CORE_zgeqrt. Q is of order m if side = 'L' and of order n
@@ -50,13 +50,13 @@
  *******************************************************************************
  *
  * @param[in] side
- *         - PlasmaLeft  : apply Q or Q**H from the Left;
- *         - PlasmaRight : apply Q or Q**H from the Right.
+ *         - PlasmaLeft  : apply Q or Q^H from the Left;
+ *         - PlasmaRight : apply Q or Q^H from the Right.
  *
  * @param[in] trans
  *         - PlasmaNoTrans   :  No transpose, apply Q;
- *         - PlasmaTrans     :  Transpose, apply Q'.
- *         - PlasmaConjTrans :  Transpose, apply Q**H.
+ *         - PlasmaTrans     :  Transpose, apply Q^T;
+ *         - PlasmaConjTrans :  Transpose, apply Q^H.
  *
  * @param[in] m
  *         The number of rows of the tile C.  m >= 0.
@@ -76,8 +76,8 @@
  * @param[in] A
  *         Dimension:  (lda,k)
  *         The i-th column must contain the vector which defines the
- *         elementary reflector H(i), for i = 1,2,...,k, 
- *         as returned by CORE_zgeqrt in the first k columns of its 
+ *         elementary reflector H(i), for i = 1,2,...,k,
+ *         as returned by CORE_zgeqrt in the first k columns of its
  *         array argument A.
  *
  * @param[in] lda
@@ -95,14 +95,14 @@
  *
  * @param[in,out] C
  *         On entry, the m-by-n tile C.
- *         On exit, C is overwritten by Q*C or Q**T*C or C*Q**T or C*Q.
+ *         On exit, C is overwritten by Q*C or Q^T*C or C*Q^T or C*Q.
  *
  * @param[in] ldc
  *         The leading dimension of the array C. ldc >= max(1,m).
  *
  ******************************************************************************/
 void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
-                 int m, int n, int k, int ib, 
+                 int m, int n, int k, int ib,
                  const PLASMA_Complex64_t *A, int lda,
                  const PLASMA_Complex64_t *T, int ldt,
                  PLASMA_Complex64_t *C, int ldc)
@@ -135,7 +135,7 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
         nw = m;
     }
 
-    // Plasma_ConjTrans will be converted to PlasmaTrans in 
+    // Plasma_ConjTrans will be converted to PlasmaTrans in
     // automatic datatype conversion, which is what we want here.
     // PlasmaConjTrans is protected from this conversion.
     if ((trans != PlasmaNoTrans) && (trans != Plasma_ConjTrans)) {
@@ -177,7 +177,7 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
 
     // prepare memory for the auxiliary array
     int lwork = ib*nb;
-    PLASMA_Complex64_t *WORK = 
+    PLASMA_Complex64_t *WORK =
         (PLASMA_Complex64_t *) malloc(sizeof(PLASMA_Complex64_t) * lwork);
     if (WORK == NULL) {
         plasma_error("malloc() failed");
@@ -194,7 +194,7 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
         i3 = -ib;
     }
 
-    for(i = i1; (i >- 1) && (i < k); i+=i3 ) {
+    for (i = i1; (i > -1) && (i < k); i += i3) {
         kb = imin(ib, k-i);
 
         if (side == PlasmaLeft) {
@@ -237,7 +237,7 @@ void CORE_OMP_zunmqr(PLASMA_enum side, PLASMA_enum trans,
                      depend(in:T[0:ib*nb]) \
                      depend(inout:C[0:nb*nb])
     CORE_zunmqr(side, trans,
-                m, n, k, ib, 
+                m, n, k, ib,
                 A, lda,
                 T, ldt,
                 C, ldc);

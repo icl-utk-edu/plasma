@@ -72,10 +72,10 @@ static const char *lapack_constants[] = {
     "", "", "", "", "", "", "", "", "", "",
     "", "", "", "", "", "", "", "", "", "",
     "", "", "", "", "", "", "", "", "", "",
-    "", "", "", "", "", "", "", "", 
+    "", "", "", "", "", "", "", "",
     "Forward",                             ///< 391: PlasmaForward
     "Backward",                            ///< 392: PlasmaBackward
-    "", "", "", "", "", "", "", "",  
+    "", "", "", "", "", "", "", "",
     "Columnwise",                          ///< 401: PlasmaColumnwise
     "Rowwise"                              ///< 402: PlasmaRowwise
 };

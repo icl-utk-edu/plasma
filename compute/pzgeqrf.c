@@ -54,8 +54,8 @@ void plasma_pzgeqrf(PLASMA_desc A, PLASMA_desc T,
 
         for (n = k+1; n < A.nt; n++) {
             tempnn = n == A.nt-1 ? A.n-n*A.nb : A.nb;
-            // Plasma_ConjTrans will be converted to PlasmaTrans in 
-            // automatic datatype conversion, which is what we 
+            // Plasma_ConjTrans will be converted to PlasmaTrans in
+            // automatic datatype conversion, which is what we
             // want here.
             // PlasmaConjTrans is protected from this conversion.
             CORE_OMP_zunmqr(

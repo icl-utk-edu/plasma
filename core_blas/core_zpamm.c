@@ -32,7 +32,7 @@ static inline void CORE_zpamm_a2(PLASMA_enum side, PLASMA_enum trans, PLASMA_enu
                                        PLASMA_Complex64_t *A2, int lda2,
                                  const PLASMA_Complex64_t *V,  int ldv,
                                        PLASMA_Complex64_t *W,  int ldw);
- 
+
 static inline void CORE_zpamm_w(PLASMA_enum side, PLASMA_enum trans, PLASMA_enum uplo,
                                 int m, int n, int k, int l,
                                 int vi2, int vi3,
@@ -53,7 +53,7 @@ static inline void CORE_zpamm_w(PLASMA_enum side, PLASMA_enum trans, PLASMA_enum
  *
  *  where  op( V ) is one of
  *
- *     op( V ) = V   or   op( V ) = V**T   or   op( V ) = V**H,
+ *     op( V ) = V   or   op( V ) = V^T   or   op( V ) = V^H,
  *
  *  A1, A2 and W are general matrices, and V is:
  *
@@ -182,7 +182,6 @@ void CORE_zpamm(int op, PLASMA_enum side, PLASMA_enum storev,
                 const PLASMA_Complex64_t *V, int ldv,
                 PLASMA_Complex64_t *W, int ldw)
 {
-
     int vi2, vi3, uplo, trans, info;
 
     // Check input arguments
@@ -277,10 +276,11 @@ void CORE_zpamm(int op, PLASMA_enum side, PLASMA_enum storev,
         vi3  = l;
     }
 
-    if (op==PlasmaW) {
+    if (op == PlasmaW) {
         CORE_zpamm_w(side, trans, uplo, m, n, k, l, vi2, vi3,
                      A1, lda1, A2, lda2, V, ldv, W, ldw);
-    } else if (op==PlasmaA2) {
+    }
+    else if (op == PlasmaA2) {
         CORE_zpamm_a2(side, trans, uplo, m, n, k, l, vi2, vi3,
                       A2, lda2, V, ldv, W, ldw);
     }
@@ -296,7 +296,6 @@ static inline void CORE_zpamm_w(
         const PLASMA_Complex64_t *V, int ldv,
         PLASMA_Complex64_t *W, int ldw)
 {
-
    // W = A1 + op(V) * A2  or  W = A1 + A2 * op(V)
 
     int j;
@@ -304,28 +303,26 @@ static inline void CORE_zpamm_w(
     static PLASMA_Complex64_t zzero =  0.0;
 
     if (side == PlasmaLeft) {
-
         if (((trans == Plasma_ConjTrans) && (uplo == CblasUpper)) ||
             ((trans == PlasmaNoTrans) && (uplo == CblasLower))) {
-
             // W = A1 + V' * A2
 
-            // W = A2_2 
+            // W = A2_2
             LAPACKE_zlacpy_work(LAPACK_COL_MAJOR,
                 lapack_const(PlasmaFull),
                 l, n,
                 &A2[k-l], lda2, W, ldw);
 
-            // W = V_2' * W + V_1' * A2_1 (ge+tr, top L rows of V') 
+            // W = V_2' * W + V_1' * A2_1 (ge+tr, top L rows of V')
             if (l > 0) {
-                // W = V_2' * W 
+                // W = V_2' * W
                 cblas_ztrmm(
                     CblasColMajor, CblasLeft, (CBLAS_UPLO)uplo,
                     (CBLAS_TRANSPOSE)trans, CblasNonUnit, l, n,
                     CBLAS_SADDR(zone), &V[vi2], ldv,
                     W, ldw);
 
-                // W = W + V_1' * A2_1 
+                // W = W + V_1' * A2_1
                 if (k > l) {
                     cblas_zgemm(
                         CblasColMajor, (CBLAS_TRANSPOSE)trans, CblasNoTrans,
@@ -336,7 +333,7 @@ static inline void CORE_zpamm_w(
                 }
             }
 
-            // W_2 = V_3' * A2: (ge, bottom M-L rows of V') 
+            // W_2 = V_3' * A2: (ge, bottom M-L rows of V')
             if (m > l) {
                 cblas_zgemm(
                     CblasColMajor, (CBLAS_TRANSPOSE)trans, CblasNoTrans,
@@ -346,8 +343,8 @@ static inline void CORE_zpamm_w(
                     CBLAS_SADDR(zzero), &W[l], ldw);
             }
 
-            // W = A1 + W 
-            for(j = 0; j < n; j++) {
+            // W = A1 + W
+            for (j = 0; j < n; j++) {
                 cblas_zaxpy(
                         m, CBLAS_SADDR(zone),
                         &A1[lda1*j], 1,
@@ -360,25 +357,21 @@ static inline void CORE_zpamm_w(
         }
     }
     else { //side right
-
         if (((trans == Plasma_ConjTrans) && (uplo == CblasUpper)) ||
             ((trans == PlasmaNoTrans) && (uplo == CblasLower))) {
             plasma_error("Right Upper/[Conj]Trans & Lower/NoTrans not implemented yet\n");
             return;
-
         }
         else {
-
             // W = A1 + A2 * V
             if (l > 0) {
-
                 // W = A2_2
                 LAPACKE_zlacpy_work(LAPACK_COL_MAJOR,
                     lapack_const(PlasmaFull),
                     m, l,
                     &A2[lda2*(k-l)], lda2, W, ldw);
 
-                // W = W * V_2 --> W = A2_2 * V_2 
+                // W = W * V_2 --> W = A2_2 * V_2
                 cblas_ztrmm(
                     CblasColMajor, CblasRight, (CBLAS_UPLO)uplo,
                     (CBLAS_TRANSPOSE)trans, CblasNonUnit, m, l,
@@ -433,19 +426,16 @@ static inline void CORE_zpamm_a2(
     static PLASMA_Complex64_t mzone  =  -1.0;
 
     if (side == PlasmaLeft) {
-
         if (((trans == Plasma_ConjTrans) && (uplo == CblasUpper)) ||
             ((trans == PlasmaNoTrans) && (uplo == CblasLower))) {
-
             plasma_error(
                 "Left Upper/[Conj]Trans & Lower/NoTrans not implemented yet\n");
             return;
         }
         else {  //trans
-
             // A2 = A2 - V * W
 
-            // A2_1 = A2_1 - V_1  * W_1 
+            // A2_1 = A2_1 - V_1  * W_1
             if (m > l) {
                 cblas_zgemm(
                     CblasColMajor, (CBLAS_TRANSPOSE)trans, CblasNoTrans,
@@ -463,7 +453,7 @@ static inline void CORE_zpamm_a2(
                 W, ldw);
 
             // A2_2 = A2_2 - W_1
-            for(j = 0; j < n; j++) {
+            for (j = 0; j < n; j++) {
                 cblas_zaxpy(
                     l, CBLAS_SADDR(mzone),
                     &W[ldw*j], 1,
@@ -482,13 +472,11 @@ static inline void CORE_zpamm_a2(
         }
     }
     else { //side right
-
         if (((trans == Plasma_ConjTrans) && (uplo == CblasUpper)) ||
             ((trans == PlasmaNoTrans) && (uplo == CblasLower))) {
-
             // A2 = A2 - W * V'
 
-            // A2 = A2 - W_2 * V_3' 
+            // A2 = A2 - W_2 * V_3'
             if (k > l) {
                 cblas_zgemm(
                     CblasColMajor, CblasNoTrans, (CBLAS_TRANSPOSE)trans,
@@ -498,7 +486,7 @@ static inline void CORE_zpamm_a2(
                     CBLAS_SADDR(zone), A2, lda2);
             }
 
-            // A2_1 = A2_1 - W_1 * V_1' 
+            // A2_1 = A2_1 - W_1 * V_1'
             if (n > l) {
                 cblas_zgemm(
                     CblasColMajor, CblasNoTrans, (CBLAS_TRANSPOSE)trans,

@@ -67,7 +67,7 @@ enum {
     PlasmaRight      = 142,
 
     PlasmaForward    = 391,
-    PlasmaBackward   = 392, 
+    PlasmaBackward   = 392,
 
     PlasmaColumnwise = 401,
     PlasmaRowwise    = 402,

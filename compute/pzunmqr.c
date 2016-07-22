@@ -28,7 +28,7 @@
 #define B(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(B, m, n))
 #define T(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(T, m, n))
 /***************************************************************************//**
- *  Parallel application of Q using tile V - QR factorization 
+ *  Parallel application of Q using tile V - QR factorization
  * @see PLASMA_zgeqrs_Tile_Async
  **/
 void plasma_pzunmqr(PLASMA_enum side, PLASMA_enum trans,
@@ -42,21 +42,22 @@ void plasma_pzunmqr(PLASMA_enum side, PLASMA_enum trans,
 
     if (sequence->status != PLASMA_SUCCESS)
         return;
-    
+
     // Jakub S.: How to set inner blocking?
     ib = A.nb;
 
     if (A.m > A.n) {
       minM  = A.n;
       minMT = A.nt;
-    } else {
+    }
+    else {
       minM  = A.m;
       minMT = A.mt;
     }
 
     // PlasmaLeft / Plasma[Conj]Trans
     if (side == PlasmaLeft ) {
-        // Plasma_ConjTrans will be converted do PlasmaTrans in 
+        // Plasma_ConjTrans will be converted do PlasmaTrans in
         // automatic datatype conversion, which is what we  want here.
         // PlasmaConjTrans is protected from this conversion.
         if (trans == Plasma_ConjTrans) {
@@ -127,7 +128,7 @@ void plasma_pzunmqr(PLASMA_enum side, PLASMA_enum trans,
     }
     // PlasmaRight / Plasma[Conj]Trans
     else {
-        // Plasma_ConjTrans will be converted do PlasmaTrans in 
+        // Plasma_ConjTrans will be converted do PlasmaTrans in
         // automatic datatype conversion, which is what we want here.
         // PlasmaConjTrans is protected from this conversion.
         if (trans == Plasma_ConjTrans) {

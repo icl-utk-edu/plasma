@@ -26,40 +26,40 @@
  *
  * @ingroup PLASMA_Complex64_t
  *
- *  Computes the tile QR factorization of a real or complex m-by-n matrix A. 
+ *  Computes the tile QR factorization of a real or complex m-by-n matrix A.
  *  The factorization has the form
  *    \f[ A = Q \times R \f],
- *  where Q is a matrix with orthonormal columns and R is an upper triangular 
+ *  where Q is a matrix with orthonormal columns and R is an upper triangular
  *  with positive diagonal.
  *
  *******************************************************************************
  *
  * @param[in] m
- *          The number of rows of the matrix A. 
+ *          The number of rows of the matrix A.
  *          m >= 0.
  *
  * @param[in] n
- *          The number of columns of the matrix A.  
+ *          The number of columns of the matrix A.
  *          n >= 0.
  *
  * @param[in,out] A
  *          On entry, the m-by-n matrix A.
- *          On exit, the elements on and above the diagonal of the array contain 
- *          the min(m,n)-by-n upper trapezoidal matrix R (R is upper triangular 
- *          if m >= n); the elements below the diagonal represent the unitary 
+ *          On exit, the elements on and above the diagonal of the array contain
+ *          the min(m,n)-by-n upper trapezoidal matrix R (R is upper triangular
+ *          if m >= n); the elements below the diagonal represent the unitary
  *          matrix Q as a product of elementary reflectors stored by tiles.
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,m).
  *
  * @param[out] descT
- *          On exit, auxiliary factorization data, required by PLASMA_zgeqrs to 
+ *          On exit, auxiliary factorization data, required by PLASMA_zgeqrs to
  *          solve the system of equations.
  *
  *******************************************************************************
  *
  * @retval PLASMA_SUCCESS successful exit
- * @retval <0 if -i, the i-th argument had an illegal value
+ * @retval < 0 if -i, the i-th argument had an illegal value
  *
  *******************************************************************************
  *
@@ -88,7 +88,7 @@ int PLASMA_zgeqrf(int m, int n,
         return PLASMA_ERR_NOT_INITIALIZED;
     }
 
-    // Check input arguments 
+    // Check input arguments
     if (m < 0) {
         plasma_error("illegal value of m");
         return -1;
@@ -102,17 +102,17 @@ int PLASMA_zgeqrf(int m, int n,
         return -4;
     }
 
-    // quick return 
+    // quick return
     if (imin(m, n) == 0)
         return PLASMA_SUCCESS;
 
-    // Tune NB & IB depending on M, N & NRHS; Set NBNBSIZE 
+    // Tune NB & IB depending on M, N & NRHS; Set NBNBSIZE
     //status = plasma_tune(PLASMA_FUNC_ZGELS, M, N, 0);
     //if (status != PLASMA_SUCCESS) {
     //    plasma_error("PLASMA_zgeqrf", "plasma_tune() failed");
     //    return status;
     //}
-    
+
     nb = plasma->nb;
 
     // Initialize tile matrix descriptor.
@@ -133,7 +133,7 @@ int PLASMA_zgeqrf(int m, int n,
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
- 
+
     // Initialize request.
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
 
@@ -149,16 +149,16 @@ int PLASMA_zgeqrf(int m, int n,
 
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
-    
+
         // Call the tile async function.
         if (sequence->status == PLASMA_SUCCESS) {
             PLASMA_zgeqrf_Tile_Async(&descA, descT, sequence, &request);
         }
 
         // Translate back to LAPACK layout.
-        if (sequence->status == PLASMA_SUCCESS) 
+        if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
-    } // pragma omp parallel block closed 
+    } // pragma omp parallel block closed
 
     // Free matrix A in tile layout.
     plasma_desc_mat_free(&descA);
@@ -189,7 +189,7 @@ int PLASMA_zgeqrf(int m, int n,
  *
  * @param[out] T
  *          Descriptor of matrix T.
- *          On exit, auxiliary factorization data, required by PLASMA_zgeqrs to 
+ *          On exit, auxiliary factorization data, required by PLASMA_zgeqrs to
  *          solve the system of equations.
  *
  * @param[in] sequence
@@ -213,7 +213,6 @@ int PLASMA_zgeqrf(int m, int n,
 void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *A, PLASMA_desc *T,
                               PLASMA_sequence *sequence, PLASMA_request *request)
 {
-
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -256,11 +255,11 @@ void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *A, PLASMA_desc *T,
     }
 
     // quick return
-    // Jakub S.: Why was it commented out in version 2.8.0 ? 
+    // Jakub S.: Why was it commented out in version 2.8.0 ?
     // I leave it like that till explained.
     //if (imin(m, n) == 0)
     //    return PLASMA_SUCCESS;
-        
+
     // Call the parallel function.
     plasma_pzgeqrf(*A, *T, sequence, request);
 

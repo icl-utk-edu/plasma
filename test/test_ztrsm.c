@@ -162,8 +162,8 @@ void test_ztrsm(param_value_t param[], char *info)
     int ipiv[lda];
     LAPACKE_zgetrf(CblasColMajor, Am, Am, A, lda, ipiv);
 
-    for(int j = 0; j < Am; j++)
-        for(int i = 0; i < j; i++)
+    for (int j = 0; j < Am; j++)
+        for (int i = 0; i < j; i++)
             A[i,j] = A[j,i];
 
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*n, B);

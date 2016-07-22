@@ -44,7 +44,7 @@
  *    TRANS = 'T':        Q' * | A1 |     | A1 A2 | * Q'
  *                             | A2 |
  *
- *    TRANS = 'C':      Q**H * | A1 |     | A1 A2 | * Q**H
+ *    TRANS = 'C':       Q^H * | A1 |     | A1 A2 | * Q^H
  *                             | A2 |
  *
  *  where Q is a complex unitary matrix defined as the product of k
@@ -63,7 +63,7 @@
  * @param[in] trans
  *         - PlasmaNoTrans   :  No transpose, apply Q;
  *         - PlasmaTrans     :  Transpose, apply Q'.
- *         - PlasmaConjTrans :  ConjTranspose, apply Q**H.
+ *         - PlasmaConjTrans :  ConjTranspose, apply Q^H.
  *
  * @param[in] m1
  *         The number of rows of the tile A1. m1 >= 0.
@@ -141,7 +141,7 @@ void CORE_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
         return;
     }
 
-    // nq is the order of Q 
+    // nq is the order of Q
     if (side == PlasmaLeft) {
         nq = m2;
         nw = ib;
@@ -153,7 +153,7 @@ void CORE_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
 
     int ldwork = nw;
 
-    // Plasma_ConjTrans will be converted to PlasmaTrans in 
+    // Plasma_ConjTrans will be converted to PlasmaTrans in
     // automatic datatype conversion, which is what we want here.
     // PlasmaConjTrans is protected from this conversion.
     if ((trans != PlasmaNoTrans) && (trans != Plasma_ConjTrans)) {
@@ -168,19 +168,19 @@ void CORE_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
         plasma_error("Illegal value of n1");
         return;
     }
-    if ( (m2 < 0) ||
-         ( (m2 != m1) && (side == PlasmaRight) ) ){
+    if ((m2 < 0) ||
+         ((m2 != m1) && (side == PlasmaRight))) {
         plasma_error("Illegal value of m2");
         return;
     }
-    if ( (n2 < 0) ||
-         ( (n2 != n1) && (side == PlasmaLeft) ) ){
+    if ((n2 < 0) ||
+         ((n2 != n1) && (side == PlasmaLeft))) {
         plasma_error("Illegal value of n2");
         return;
     }
     if ((k < 0) ||
-        ( (side == PlasmaLeft)  && (k > m1) ) ||
-        ( (side == PlasmaRight) && (k > n1) ) ) {
+        ((side == PlasmaLeft)  && (k > m1)) ||
+        ((side == PlasmaRight) && (k > n1))) {
         plasma_error("Illegal value of k");
         return;
     }
@@ -188,35 +188,35 @@ void CORE_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
         plasma_error("Illegal value of ib");
         return;
     }
-    if (lda1 < imax(1,m1)){
+    if (lda1 < imax(1,m1)) {
         plasma_error("Illegal value of lda1");
         return;
     }
-    if (lda2 < imax(1,m2)){
+    if (lda2 < imax(1,m2)) {
         plasma_error("Illegal value of lda2");
         return;
     }
-    if (ldv < imax(1,nq)){
+    if (ldv < imax(1,nq)) {
         plasma_error("Illegal value of ldv");
         return;
     }
-    if (ldt < imax(1,ib)){
+    if (ldt < imax(1,ib)) {
         plasma_error("Illegal value of ldt");
         return;
     }
-    if (ldwork < imax(1,nw)){
+    if (ldwork < imax(1,nw)) {
         plasma_error("Illegal value of ldwork");
         return;
     }
 
     // Quick return
-    if ((m1 == 0) || (n1 == 0) || (m2 == 0) || 
+    if ((m1 == 0) || (n1 == 0) || (m2 == 0) ||
         (n2 == 0) || (k == 0) || (ib == 0))
         return;
 
     // prepare memory for the auxiliary array
     int lwork = ib*nb;
-    PLASMA_Complex64_t *WORK = 
+    PLASMA_Complex64_t *WORK =
         (PLASMA_Complex64_t *) malloc(sizeof(PLASMA_Complex64_t) * lwork);
     if (WORK == NULL) {
         plasma_error("malloc() failed");
@@ -233,7 +233,7 @@ void CORE_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
         i3 = -ib;
     }
 
-    for(i = i1; (i > -1) && (i < k); i += i3) {
+    for (i = i1; (i > -1) && (i < k); i += i3) {
         kb = imin(ib, k-i);
 
         if (side == PlasmaLeft) {
@@ -275,7 +275,7 @@ void CORE_OMP_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
                      depend(in:V[0:nb*nb]) \
                      depend(in:T[0:ib*nb])
     CORE_ztsmqr(side, trans,
-                m1, n1, m2, n2, k, ib, 
+                m1, n1, m2, n2, k, ib,
                 A1, lda1,
                 A2, lda2,
                 V, ldv,

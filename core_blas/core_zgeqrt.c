@@ -34,17 +34,17 @@
  *
  *  Computes a QR factorization of an m-by-n tile A:
  *  The factorization has the form
- *    \f[ 
+ *    \f[
  *        A = Q \times R
  *    \f]
  *  The tile Q is represented as a product of elementary reflectors
- *    \f[ 
- *        Q = H(1) H(2) ... H(k), 
+ *    \f[
+ *        Q = H(1) H(2) ... H(k),
  *    \f]
- *  where \f$ k = min(m,n) \f$. 
+ *  where \f$ k = min(m,n) \f$.
  *
  *  Each \f$ H(i) \f$ has the form
- *    \f[ 
+ *    \f[
  *        H(i) = I - \tau \times v \times v'
  *    \f]
  *  where \f$ tau \f$ is a scalar, and \f$ v \f$ is a vector with
@@ -82,7 +82,7 @@
  *         The leading dimension of the array T. ldt >= ib.
  *
  ******************************************************************************/
-void CORE_zgeqrt(int m, int n, int ib, 
+void CORE_zgeqrt(int m, int n, int ib,
                  PLASMA_Complex64_t *A, int lda,
                  PLASMA_Complex64_t *T, int ldt)
 {
@@ -111,20 +111,20 @@ void CORE_zgeqrt(int m, int n, int ib,
         return;
     }
 
-    // Quick return 
+    // Quick return
     if ((m == 0) || (n == 0) || (ib == 0))
         return;
 
     // prepare memory for auxiliary arrays
     int ltau  = nb;
-    PLASMA_Complex64_t *TAU  = 
+    PLASMA_Complex64_t *TAU  =
         (PLASMA_Complex64_t *) malloc(sizeof(PLASMA_Complex64_t) * ltau);
     if (TAU == NULL) {
         plasma_error("malloc() failed");
         return;
     }
     int lwork = ib*nb;
-    PLASMA_Complex64_t *WORK = 
+    PLASMA_Complex64_t *WORK =
         (PLASMA_Complex64_t *) malloc(sizeof(PLASMA_Complex64_t) * lwork);
     if (WORK == NULL) {
         plasma_error("malloc() failed");
@@ -132,7 +132,7 @@ void CORE_zgeqrt(int m, int n, int ib,
     }
 
     int k = imin(m, n);
-    for(int i = 0; i < k; i += ib) {
+    for (int i = 0; i < k; i += ib) {
         int sb = imin(ib, k-i);
 
         LAPACKE_zgeqr2_work(LAPACK_COL_MAJOR, m-i, sb,
@@ -147,7 +147,7 @@ void CORE_zgeqrt(int m, int n, int ib,
             &T[ldt*i], ldt);
 
         if (n > i+sb) {
-            // Plasma_ConjTrans will be converted to PlasmaTrans in 
+            // Plasma_ConjTrans will be converted to PlasmaTrans in
             // automatic datatype conversion, which is what we want here.
             // PlasmaConjTrans is protected from this conversion.
             LAPACKE_zlarfb_work(
@@ -174,10 +174,10 @@ void CORE_OMP_zgeqrt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A, int lda,
                      PLASMA_Complex64_t *T, int ldt)
 {
-    // assuming lda == m and nb == n 
+    // assuming lda == m and nb == n
     #pragma omp task depend(inout:A[0:lda*nb]) \
                      depend(out:T[0:ldt*nb])
-    CORE_zgeqrt(m, n, ib, 
+    CORE_zgeqrt(m, n, ib,
                 A, lda,
                 T, ldt);
 }

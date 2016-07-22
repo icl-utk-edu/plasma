@@ -117,13 +117,13 @@ void test_zgeqrf(param_value_t param[], char *info)
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
-    // Initialize tile matrix descriptor for matrix T 
+    // Initialize tile matrix descriptor for matrix T
     // using multiples of tile size.
     int nb = plasma->nb;
     int ib = nb;
-    int mt = (m%nb==0) ? (m/nb) : (m/nb+1);
-    int nt = (n%nb==0) ? (n/nb) : (n/nb+1);
-    PLASMA_desc descT = plasma_desc_init(PlasmaComplexDouble, ib, nb, ib*nb, 
+    int mt = (m%nb == 0) ? (m/nb) : (m/nb+1);
+    int nt = (n%nb == 0) ? (n/nb) : (n/nb+1);
+    PLASMA_desc descT = plasma_desc_init(PlasmaComplexDouble, ib, nb, ib*nb,
                                          mt*ib, nt*nb, 0, 0, mt*ib, nt*nb);
     // allocate memory for the matrix T
     retval = plasma_desc_mat_alloc(&descT);
@@ -144,13 +144,12 @@ void test_zgeqrf(param_value_t param[], char *info)
     // Test results by solving a linear system.
     //================================================================
     if (test) {
-
         const int nrhs = 1;
         const int ldb  = m;
 
-        // ||A||_F
+        // |A|_F
         double work[1];
-        double Anorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'F', m, n, 
+        double Anorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'F', m, n,
                                            Aref, lda, work);
 
         // prepare right-hand side B, store into initial X
@@ -168,32 +167,32 @@ void test_zgeqrf(param_value_t param[], char *info)
         assert(retval == 0);
         memcpy(X, B, (size_t)ldb*nrhs*sizeof(PLASMA_Complex64_t));
 
-        // ||B||_F
-        double Bnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'F', m, nrhs, 
+        // |B|_F
+        double Bnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'F', m, nrhs,
                                            B, ldb, work);
 
         // Call PLASMA function for solving R*X = Q'*B
         PLASMA_zgeqrs(m, n, nrhs, A, lda, &descT, X, ldb);
 
-        // ||X||_F
-        double Xnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'F', n, nrhs, 
+        // |X|_F
+        double Xnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'F', n, nrhs,
                                            X, ldb, work);
 
-        // compute residual and store it in B <- A*X - B
+        // compute residual and store it in B = A*X - B
         PLASMA_Complex64_t zone  =  1.0;
         PLASMA_Complex64_t mzone = -1.0;
         PLASMA_Complex64_t zzero =  0.0;
-        cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, nrhs, n, 
-                    CBLAS_SADDR(zone), Aref, lda, X, ldb, 
+        cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, nrhs, n,
+                    CBLAS_SADDR(zone), Aref, lda, X, ldb,
                     CBLAS_SADDR(mzone), B, ldb);
 
-        // Compute A' * (Ax - b) 
-        cblas_zgemm(CblasColMajor, CblasConjTrans, CblasNoTrans, n, nrhs, m, 
-                    CBLAS_SADDR(zone), Aref, lda, B, ldb, 
+        // Compute A' * (Ax - b)
+        cblas_zgemm(CblasColMajor, CblasConjTrans, CblasNoTrans, n, nrhs, m,
+                    CBLAS_SADDR(zone), Aref, lda, B, ldb,
                     CBLAS_SADDR(zzero), X, ldb);
 
-        // ||RES||_F
-        double Rnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'F', n, nrhs, 
+        // |RES|_F
+        double Rnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'F', n, nrhs,
                                            X, ldb, work);
 
         // normalize the result
@@ -202,7 +201,7 @@ void test_zgeqrf(param_value_t param[], char *info)
         param[PARAM_ERROR].d = result;
         param[PARAM_SUCCESS].i = result < tol;
 
-        free(B); 
+        free(B);
         free(X);
     }
 
