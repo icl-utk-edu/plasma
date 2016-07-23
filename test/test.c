@@ -46,7 +46,7 @@ int main(int argc, char **argv)
         return EXIT_SUCCESS;
     }
 
-    const char* routine = argv[1];
+    const char *routine = argv[1];
 
     param_t param[PARAM_SIZEOF];      // set of parameters
     param_value_t pval[PARAM_SIZEOF]; // snapshot of values
@@ -360,13 +360,12 @@ int param_read(int argc, char **argv, param_t param[])
 {
     int err = 0;
     int iter = 1;
-    const char* routine = argv[1];
+    const char *routine = argv[1];
 
     //================================================================
     // Initialize parameters from the command line.
     //================================================================
     for (int i = 2; i < argc && argv[i]; i++) {
-
         //--------------------------------------------------
         // Scan character parameters.
         //--------------------------------------------------

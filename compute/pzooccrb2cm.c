@@ -34,10 +34,8 @@ void plasma_pzooccrb2cm(PLASMA_desc A, PLASMA_Complex64_t *Af77, int lda,
         return;
 
     for (m = 0; m < A.mt; m++) {
-
         ldt = BLKLDD(A, m);
         for (n = 0; n < A.nt; n++) {
-
             x1 = n == 0 ? A.j%A.nb : 0;
             y1 = m == 0 ? A.i%A.mb : 0;
             x2 = n == A.nt-1 ? (A.j+A.n-1)%A.nb+1 : A.nb;

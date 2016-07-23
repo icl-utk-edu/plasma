@@ -23,7 +23,7 @@
 #define A(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(A, m, n))
 #define C(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(C, m, n))
 /***************************************************************************//**
- * Parallel tile symetric rank-k update.
+ * Parallel tile symetric rank k update.
  * @see PLASMA_zsyrk_Tile_Async
  ******************************************************************************/
 void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
@@ -40,7 +40,7 @@ void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
 
     if (sequence->status != PLASMA_SUCCESS)
         return;
-    
+
     for (n = 0; n < C.nt; n++) {
         tempnn = n == C.nt-1 ? C.n-n*C.nb : C.nb;
         ldan = BLKLDD(A, n);
@@ -91,9 +91,9 @@ void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
                         CORE_OMP_zgemm(
                             trans, PlasmaTrans,
                             tempnn, tempmm, tempkn,
-                            alpha, A(n, k), ldan, 
-                                   A(m, k), ldam, 
-                            zbeta, C(n, m), ldcn); 
+                            alpha, A(n, k), ldan,
+                                   A(m, k), ldam,
+                            zbeta, C(n, m), ldcn);
                     }
                 }
             }
@@ -109,8 +109,8 @@ void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
                 CORE_OMP_zsyrk(
                     uplo, trans,
                     tempnn, tempkm,
-                    alpha, A(k, n), ldak,  
-                    zbeta, C(n, n), ldcn); 
+                    alpha, A(k, n), ldak,
+                    zbeta, C(n, n), ldcn);
             }
             //=======================================
             // PlasmaTrans / PlasmaLower
@@ -126,9 +126,9 @@ void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
                         CORE_OMP_zgemm(
                             trans, PlasmaNoTrans,
                             tempmm, tempnn, tempkm,
-                            alpha, A(k, m), ldak, 
-                                   A(k, n), ldak,  
-                            zbeta, C(m, n), ldcm); 
+                            alpha, A(k, m), ldak,
+                                   A(k, n), ldak,
+                            zbeta, C(m, n), ldcm);
                     }
                 }
             }
@@ -146,8 +146,8 @@ void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
                             trans, PlasmaNoTrans,
                             tempnn, tempmm, tempkm,
                             alpha, A(k, n), ldak,
-                                   A(k, m), ldak, 
-                            zbeta, C(n, m), ldcn); 
+                                   A(k, m), ldak,
+                            zbeta, C(n, m), ldcn);
                     }
                 }
             }

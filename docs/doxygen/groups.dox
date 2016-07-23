@@ -218,25 +218,34 @@
         @defgroup plasma_geadd      geadd: Add matrices
         @brief    \f$ B = \alpha A + \beta B \f$
 
-        @defgroup plasma_gemv       gemv:       General matrix-vector multiply
+        @defgroup plasma_gemv       gemv:   General matrix-vector multiply
         @brief    \f$ y = \alpha Ax + \beta y \f$
 
-        @defgroup plasma_ger        ger:        General matrix rank 1 update
+        @defgroup plasma_ger        ger:    General matrix rank 1 update
         @brief    \f$ A = \alpha xy^T + A \f$
 
-        @defgroup plasma_hemv       sy/hemv:    Symmetric/Hermitian matrix-vector multiply
+        @defgroup plasma_hemv       hemv:   Hermitian matrix-vector multiply
         @brief    \f$ y = \alpha Ax + \beta y \f$
 
-        @defgroup plasma_her        sy/her:     Symmetric/Hermitian rank 1 update
+        @defgroup plasma_her        her:    Hermitian rank 1 update
         @brief    \f$ A = \alpha xx^T + A \f$
 
-        @defgroup plasma_her2       sy/her2:    Symmetric/Hermitian rank 2 update
+        @defgroup plasma_her2       her2:   Hermitian rank 2 update
         @brief    \f$ A = \alpha xy^T + \alpha yx^T + A \f$
 
-        @defgroup plasma_trmv       trmv:       Triangular matrix-vector multiply
+        @defgroup plasma_symv       symv:   Symmetric matrix-vector multiply
+        @brief    \f$ y = \alpha Ax + \beta y \f$
+
+        @defgroup plasma_syr        syr:    Symmetric rank 1 update
+        @brief    \f$ A = \alpha xx^T + A \f$
+
+        @defgroup plasma_syr2       syr2:   Symmetric rank 2 update
+        @brief    \f$ A = \alpha xy^T + \alpha yx^T + A \f$
+
+        @defgroup plasma_trmv       trmv:   Triangular matrix-vector multiply
         @brief    \f$ x = Ax \f$
 
-        @defgroup plasma_trsv       trsv:       Triangular matrix-vector solve
+        @defgroup plasma_trsv       trsv:   Triangular matrix-vector solve
         @brief    \f$ x = op(A^{-1})\; b \f$
 
         @defgroup plasma_lacpy      lacpy:  Copy matrix
@@ -261,14 +270,24 @@
         @defgroup plasma_gemm       gemm:  General matrix multiply: C = AB + C
         @brief    \f$ C = \alpha \;op(A) \;op(B) + \beta C \f$
 
-        @defgroup plasma_hemm       sy/hemm:  Symmetric/Hermitian matrix multiply
+        @defgroup plasma_hemm       hemm:  Hermitian matrix multiply
+        @brief    \f$ C = \alpha A B + \beta C \f$
+               or \f$ C = \alpha B A + \beta C \f$ where \f$ A \f$ is Hermitian
+
+        @defgroup plasma_herk       herk:  Hermitian rank k update
+        @brief    \f$ C = \alpha A A^T + \beta C \f$ where \f$ C \f$ is Hermitian
+
+        @defgroup plasma_her2k      her2k: Hermitian rank 2k update
+        @brief    \f$ C = \alpha A B^T + \alpha B A^T + \beta C \f$ where \f$ C \f$ is Hermitian
+
+        @defgroup plasma_symm       symm:  Symmetric matrix multiply
         @brief    \f$ C = \alpha A B + \beta C \f$
                or \f$ C = \alpha B A + \beta C \f$ where \f$ A \f$ is symmetric
 
-        @defgroup plasma_herk       sy/herk:  Symmetric/Hermitian rank k update
+        @defgroup plasma_syrk       syrk:  Symmetric rank k update
         @brief    \f$ C = \alpha A A^T + \beta C \f$ where \f$ C \f$ is symmetric
 
-        @defgroup plasma_her2k      sy/her2k: Symmetric/Hermitian rank 2k update
+        @defgroup plasma_syr2k      syr2k: Symmetric rank 2k update
         @brief    \f$ C = \alpha A B^T + \alpha B A^T + \beta C \f$ where \f$ C \f$ is symmetric
 
         @defgroup plasma_trmm       trmm:  Triangular matrix multiply
@@ -366,13 +385,22 @@
         @defgroup core_ger          ger:        General matrix rank 1 update
         @brief    \f$ A = \alpha xy^T + A \f$
 
-        @defgroup core_hemv         sy/hemv:    Symmetric/Hermitian matrix-vector multiply
+        @defgroup core_hemv         hemv:    Hermitian matrix-vector multiply
         @brief    \f$ y = \alpha Ax + \beta y \f$
 
-        @defgroup core_her          sy/her:     Symmetric/Hermitian rank 1 update
+        @defgroup core_her          her:     Hermitian rank 1 update
         @brief    \f$ A = \alpha xx^T + A \f$
 
-        @defgroup core_her2         sy/her2:    Symmetric/Hermitian rank 2 update
+        @defgroup core_her2         her2:    Hermitian rank 2 update
+        @brief    \f$ A = \alpha xy^T + \alpha yx^T + A \f$
+
+        @defgroup core_symv         symv:    Symmetric matrix-vector multiply
+        @brief    \f$ y = \alpha Ax + \beta y \f$
+
+        @defgroup core_syr          syr:     Symmetric rank 1 update
+        @brief    \f$ A = \alpha xx^T + A \f$
+
+        @defgroup core_syr2         syr2:    Symmetric rank 2 update
         @brief    \f$ A = \alpha xy^T + \alpha yx^T + A \f$
 
         @defgroup core_trmv         trmv:       Triangular matrix-vector multiply
@@ -403,14 +431,24 @@
         @defgroup core_gemm         gemm:  General matrix multiply: C = AB + C
         @brief    \f$ C = \alpha \;op(A) \;op(B) + \beta C \f$
 
-        @defgroup core_hemm         sy/hemm:  Symmetric/Hermitian matrix multiply
+        @defgroup core_hemm         hemm:  Hermitian matrix multiply
+        @brief    \f$ C = \alpha A B + \beta C \f$
+               or \f$ C = \alpha B A + \beta C \f$ where \f$ A \f$ is Hermitian
+
+        @defgroup core_herk         herk:  Hermitian rank k update
+        @brief    \f$ C = \alpha A A^T + \beta C \f$ where \f$ C \f$ is Hermitian
+
+        @defgroup core_her2k        her2k: Hermitian rank 2k update
+        @brief    \f$ C = \alpha A B^T + \alpha B A^T + \beta C \f$ where \f$ C \f$ is Hermitian
+
+        @defgroup core_symm         symm:  Symmetric matrix multiply
         @brief    \f$ C = \alpha A B + \beta C \f$
                or \f$ C = \alpha B A + \beta C \f$ where \f$ A \f$ is symmetric
 
-        @defgroup core_herk         sy/herk:  Symmetric/Hermitian rank k update
+        @defgroup core_syrk         syrk:  Symmetric rank k update
         @brief    \f$ C = \alpha A A^T + \beta C \f$ where \f$ C \f$ is symmetric
 
-        @defgroup core_her2k        sy/her2k: Symmetric/Hermitian rank 2k update
+        @defgroup core_syr2k        syr2k: Symmetric rank 2k update
         @brief    \f$ C = \alpha A B^T + \alpha B A^T + \beta C \f$ where \f$ C \f$ is symmetric
 
         @defgroup core_trmm         trmm:  Triangular matrix multiply
@@ -441,14 +479,24 @@
 
     @defgroup core_norms            Matrix norms
     @{
-        @defgroup core_lange        lange:    General matrix norm
+        @defgroup core_lange        lange: General matrix norm
         @brief 1, Frobenius, or Infinity norm; or largest element
 
-        @defgroup core_lanhe        lansy/he: Symmetric/Hermitian matrix norm
+        @defgroup core_lanhe        lanhe: Hermitian matrix norm
         @brief 1, Frobenius, or Infinity norm; or largest element
 
-        @defgroup core_lantr        lantr:    Triangular matrix norm
+        @defgroup core_lansy        lansy: Symmetric matrix norm
+        @brief 1, Frobenius, or Infinity norm; or largest element
+
+        @defgroup core_lantr        lantr: Triangular matrix norm
         @brief 1, Frobenius, or Infinity norm; or largest element
     @}
+
+    @defgroup group_solvers         Linear system solvers
+    @{
+        @defgroup core_potrf        potrf: Cholesky factorization
+    @}
+@}
+
 @}
 */

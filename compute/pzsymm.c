@@ -43,16 +43,16 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
     if (sequence->status != PLASMA_SUCCESS)
         return;
 
-    for(m = 0; m < C.mt; m++) {
+    for (m = 0; m < C.mt; m++) {
         tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
         ldcm = BLKLDD(C, m);
         for (n = 0; n < C.nt; n++) {
             tempnn = n == C.nt-1 ? C.n-n*C.nb : C.nb;
-            //=======================================
-            // SIDE: PlasmaLeft / UPLO: PlasmaLower
-            //=======================================
             if (side == PlasmaLeft) {
                 ldam = BLKLDD(A, m);
+                //=======================================
+                // SIDE: PlasmaLeft / UPLO: PlasmaLower
+                //=======================================
                 if (uplo == PlasmaLower) {
                     for (k = 0; k < C.mt; k++) {
                         tempkm = k == C.mt-1 ? C.m-k*C.mb : C.mb;
@@ -125,12 +125,12 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
                     }
                 }
             }
-            //=======================================
-            // SIDE: PlasmaRight / UPLO: PlasmaLower
-            //=======================================
             else {
                 ldan = BLKLDD(A, n);
                 ldbm = BLKLDD(B, m);
+                //=======================================
+                // SIDE: PlasmaRight / UPLO: PlasmaLower
+                //=======================================
                 if (uplo == PlasmaLower) {
                     for (k = 0; k < C.nt; k++) {
                         tempkn = k == C.nt-1 ? C.n-k*C.nb : C.nb;

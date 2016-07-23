@@ -34,7 +34,7 @@
  *  or
  *     \f[ C = \alpha \times B \times A + \beta \times C \f]
  *
- *  where alpha and beta are scalars, A is a hermitian matrix and B and
+ *  where alpha and beta are scalars, A is a Hermitian matrix and B and
  *  C are m by n matrices.
  *
  *******************************************************************************
@@ -47,20 +47,20 @@
  *
  * @param[in] uplo
  *          Specifies whether the upper or lower triangular part of
- *          the hermitian matrix A is to be referenced as follows:
+ *          the Hermitian matrix A is to be referenced as follows:
  *          - PlasmaLower:     Only the lower triangular part of the
- *                             hermitian matrix A is to be referenced.
+ *                             Hermitian matrix A is to be referenced.
  *          - PlasmaUpper:     Only the upper triangular part of the
- *                             hermitian matrix A is to be referenced.
+ *                             Hermitian matrix A is to be referenced.
  *
  * @param[in] m
- *          Specifies the number of rows of the matrix C. m >= 0.
+ *          The number of rows of the matrix C. m >= 0.
  *
  * @param[in] n
- *          Specifies the number of columns of the matrix C. n >= 0.
+ *          The number of columns of the matrix C. n >= 0.
  *
  * @param[in] alpha
- *          Specifies the scalar alpha.
+ *          The scalar alpha.
  *
  * @param[in] A
  *          A is a lda-by-ka matrix, where ka is m when side = PlasmaLeft,
@@ -77,7 +77,7 @@
  *          The leading dimension of the array B. ldb >= max(1,m).
  *
  * @param[in] beta
- *          Specifies the scalar beta.
+ *          The scalar beta.
  *
  * @param[in,out] C
  *          C is a ldc-by-n matrix.
@@ -100,6 +100,7 @@ void CORE_zhemm(PLASMA_enum side, PLASMA_enum uplo,
                                     B, ldb,
                 CBLAS_SADDR(beta),  C, ldc);
 }
+
 /******************************************************************************/
 void CORE_OMP_zhemm(
     PLASMA_enum side, PLASMA_enum uplo,

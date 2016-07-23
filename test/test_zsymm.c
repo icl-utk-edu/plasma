@@ -32,6 +32,8 @@
 #include <omp.h>
 #include <plasma.h>
 
+#define COMPLEX
+
 /***************************************************************************//**
  *
  * @brief Tests ZSYMM.

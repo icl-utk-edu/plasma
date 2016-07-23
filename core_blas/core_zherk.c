@@ -26,19 +26,15 @@
 
 /***************************************************************************//**
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_herk
  *
- *  Performs one of the hermitian rank k operations
+ *  Performs one of the Hermitian rank k operations
  *
  *    \f[ C = \alpha A \times A^H + \beta C \f],
  *    or
  *    \f[ C = \alpha A^H \times A + \beta C \f],
  *
- *  where op( X ) is one of:
- *          - op( X ) = X  or
- *          - op( X ) = conjg( X' )
- *
- *  alpha and beta are real scalars, C is an n-by-n hermitian
+ *  where alpha and beta are real scalars, C is an n-by-n Hermitian
  *  matrix and A is an n-by-k matrix in the first case and a k-by-n
  *  matrix in the second case.
  *
@@ -49,8 +45,8 @@
  *          - PlasmaLower: Lower triangle of C is stored.
  *
  * @param[in] trans
- *          - PlasmaNoTrans:   A is not transposed;
- *          - PlasmaConjTrans  :   A is conjugate transposed.
+ *          - PlasmaNoTrans:   \f[ C = \alpha A \times A^H + \beta C \f];
+ *          - PlasmaConjTrans: \f[ C = \alpha A^H \times A + \beta C \f].
  *
  * @param[in] n
  *          The order of the matrix C. n >= 0.
