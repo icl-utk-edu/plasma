@@ -22,7 +22,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_zher2k
  *
  *  PLASMA_zher2k - Performs one of the hermitian rank 2k operations
  *
@@ -47,10 +47,11 @@
  *          - PlasmaLower: Lower triangle of C is stored.
  *
  * @param[in] trans
- *          Specifies whether A is transposed or conjugate transposed:
- *          - PlasmaNoTrans: \f[ C = \alpha [ op( A ) \times conjg( op( B )')] +
+ *          - PlasmaNoTrans:
+ *            \f[ C = \alpha [ op( A ) \times conjg( op( B )')] +
  *            conjg( \alpha ) [ op( B ) \times conjg( op( A )' )] + \beta C \f]
- *          - PlasmaConjTrans: \f[ C = \alpha[ conjg(op( A )') \times op( B )] +
+ *          - PlasmaConjTrans:
+ *            \f[ C = \alpha[ conjg(op( A )') \times op( B )] +
  *            conjg( \alpha ) [ conjg( op( B )' ) \times op( A ) ] + \beta C \f]
  *
  * @param[in] n
@@ -268,7 +269,7 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t_Tile_Async
+ * @ingroup plasma_herr2k
  *
  *  Performs rank 2k update.
  *  Non-blocking tile version of PLASMA_zher2k().

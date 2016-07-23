@@ -80,7 +80,7 @@
  *          The scalar beta.
  *
  * @param[in,out] C
- *          C is a ldc-by-n matrix.
+ *          C  ldc-by-n matrix.
  *          On exit, the array uplo part of the matrix is overwritten
  *          by the uplo part of the updated matrix.
  *
