@@ -22,7 +22,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup plasma_zher2k
+ * @ingroup plasma_her2k
  *
  *  PLASMA_zher2k - Performs one of the hermitian rank 2k operations
  *
@@ -269,7 +269,7 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
 
 /***************************************************************************//**
  *
- * @ingroup plasma_herr2k
+ * @ingroup plasma_her2k
  *
  *  Performs rank 2k update.
  *  Non-blocking tile version of PLASMA_zher2k().
