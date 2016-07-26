@@ -9,7 +9,7 @@
  * @version 3.0.0
  * @author  Emmanuel Agullo
  * @author  Maksims Abalenkovs
- * @date    2016-07-20
+ * @date    2016-07-26
  * @precisions mixed zc -> ds
  *
  **/
@@ -342,7 +342,7 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     PLASMA_desc descB;
     PLASMA_desc descX;
     plasma_context_t *plasma;
-    double *wrk;
+    double *work;
     PLASMA_desc descR, descAs, descXs;
     PLASMA_enum transA;
 
@@ -354,6 +354,9 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     double Anorm = 0.0, Rnorm = 0.0, Xnorm = 0.0;
     double cte, eps;
     *iter = 0;
+
+    PLASMA_enum mtrxLayout = LAPACK_COL_MAJOR;
+    char        mtrxNorm   = 'I';
 
     // Get PLASMA context
     plasma = plasma_context_self();
@@ -430,21 +433,21 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     nb = descA.nb;
 
     /*
-    wrk = (double *)plasma_shared_alloc(plasma, PLASMA_SIZE, PlasmaRealDouble);
+    work = (double *)plasma_shared_alloc(plasma, PLASMA_SIZE, PlasmaRealDouble);
 
-    if (wrk == NULL) {
+    if (work == NULL) {
         plasma_error("plasma_shared_alloc() failed");
-        plasma_shared_free(plasma, wrk);
+        plasma_shared_free(plasma, work);
         return PLASMA_ERR_OUT_OF_RESOURCES;
     }
     */
 
-    wrk = (double *) malloc(sizeof(double) * imax(1,n));
+    work = (double *) malloc(sizeof(double) * imax(1,n));
 
-    if (wrk == NULL) {
+    if (work == NULL) {
         plasma_error("malloc() failed");
         plasma_request_fail(sequence, request, PLASMA_ERR_OUT_OF_RESOURCES);
-        free(wrk);
+        free(work);
         return;
     }
 
@@ -487,11 +490,16 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     }
 
     // Compute constants
-    plasma_pzlanhe(PlasmaInfNorm, uplo, descA, work, Anorm, sequence, request);
+    // @todo Convert to OpenMP
+    // plasma_pzlanhe(PlasmaInfNorm, uplo, descA, work, Anorm, sequence, request);
+    Anorm = LAPACKE_zlanhe(mtrxLayout, mtrxNorm, uplo, n, descA.mat, descA.lm);
     eps = LAPACKE_dlamch_work('e');
 
     // Convert B from double to single precision, store result in Xs
-    plasma_pzlag2c(descB, descXs);
+    // @todo Convert to OpenMP
+    // plasma_pzlag2c(descB, descXs);
+    LAPACKE_zlag2c(mtrxLayout, descB.lm, descB.ln, descB.mat, descB.lm,
+                   descXs.mat, descXs.lm);
 
     if (sequence->status != PLASMA_SUCCESS) {
         plasma_error("unable to convert matrix B from double to single precision");
@@ -500,7 +508,10 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     }
 
     // Convert A from double to single precision, store result in As
-    plasma_pzlag2c(descA, descAs);
+    // @todo Convert to OpenMP
+    // plasma_pzlag2c(descA, descAs);
+    LAPACKE_zlag2c(mtrxLayout, descA.lm, descA.ln, descA.mat, descA.lm, 
+                   descAs.mat, descAs.lm);
 
     if (sequence->status != PLASMA_SUCCESS) {
         plasma_error("unable to convert matrix A from double to single precision");
@@ -525,18 +536,30 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
                  (PLASMA_Complex32_t) 1.0, descAs, descXs, sequence, request);
 
     // Convert Xs to double precision
-    plasma_pclag2z(descXs, descX);
+    // @todo Convert to OpenMP
+    // plasma_pclag2z(descXs, descX);
+    LAPACKE_clag2z(mtrxLayout, descXs.lm, descXs.ln, descXs.mat, descXs.lm,
+                   descX.mat, descX.lm);
 
     // Compute R = B-A*X
-    plasma_pzlacpy(descB, descR);
+    // @todo COnvert to OpenMP
+    // plasma_pzlacpy(descB, descR);
+    LAPACKE_zlacpy(mtrxLayout, uplo, descB.lm, descB.ln, descB.mat, descB.lm,
+                   descR.mat, descR.lm);
 
     plasma_pzhemm(PlasmaLeft, uplo, negone, descA, descX, one, descR,
                   sequence, request);
 
     /* Check, whether nrhs normwise backward error satisfies the
        stopping criterion. If yes, return. Note that iter = 0 (already set) */
-    plasma_pzlange(PlasmaInfNorm, descX, Xnorm, wrk);
-    plasma_pzlange(PlasmaInfNorm, descR, Rnorm, wrk);
+    // @todo Convert to OpenMP
+    // plasma_pzlange(PlasmaInfNorm, descX, Xnorm, wrk);
+    // plasma_pzlange(PlasmaInfNorm, descR, Rnorm, wrk);
+    Xnorm = LAPACKE_zlange(mtrxLayout, mtrxNorm, descX.lm, descX.ln,
+                           descX.mat, descX.lm);
+
+    Rnorm = LAPACKE_zlange(mtrxLayout, mtrxNorm, descR.lm, descR.ln,
+                           descR.mat, descR.lm);
 
     // Wait for end of Anorm, Xnorm and Bnorm computations
     // plasma_dynamic_sync();
@@ -552,17 +575,23 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
         plasma_desc_mat_free(&descXs);
         plasma_desc_mat_free(&descR);
         // plasma_shared_free(plasma, wrk);
-        free(wrk);
+        free(work);
 
         return;
 
     }
 
+    double *Xmtrx = (double *) malloc(sizeof(double)*descX.lm*descX.ln);
+    double *Rmtrx = (double *) malloc(sizeof(double)*descR.lm*descR.ln);
+
     // Iterative refinement
     for (iiter = 0; iiter < itermax; iiter++) {
 
         // Convert R from double to single precision, store result in Xs
-        plasma_pzlag2c(descR, descXs);
+        // @todo Convert to OpenMP
+        // plasma_pzlag2c(descR, descXs);
+        LAPACKE_zlag2c(mtrxLayout, descR.lm, descR.ln, descR.mat, descR.lm,
+                       descXs.mat, descXs.lm);
 
         /* Solve system As*Xs = Rs
          * Forward substitution */
@@ -578,21 +607,42 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
                      (PLASMA_Complex32_t) 1.0, descAs, descXs, sequence, request);
 
         // Revert Xs to double precision, update current iteration
-        plasma_pclag2z(descXs, descR);
+        // @todo Convert to OpenMP
+        // plasma_pclag2z(descXs, descR);
+        LAPACKE_clag2z(mtrxLayout, descXs.lm, descXs.ln, descXs.mat, descXs.lm,
+                       descR.mat, descR.lm);
 
-        plasma_pztradd(PlasmaFull, PlasmaNoTrans, (PLASMA_Complex64_t) one,
-                       descR, (PLASMA_Complex64_t) 1.0, descX, sequence, request);
+        // @todo Convert to OpenMP
+        // plasma_pztradd(PlasmaFull, PlasmaNoTrans, (PLASMA_Complex64_t) one,
+        //                descR, (PLASMA_Complex64_t) 1.0, descX, sequence, request);
+        Xmtrx = descX.mat;
+        Rmtrx = descR.mat;
+
+        for (int i = 0; i < descX.lm*descX.ln; i++) {
+            Xmtrx[i] = Xmtrx[i] + Rmtrx[i];
+        }
+
+        descX.mat = Xmtrx;
 
         // Compute R = B-A*X
-        plasma_pzlacpy(descB, descR);
+        // @todo Convert to OpenMP
+        // plasma_pzlacpy(descB, descR);
+        LAPACKE_zlacpy(mtrxLayout, uplo, descB.lm, descB.ln, descB.mat, descB.lm,
+                       descR.mat, descR.lm);
 
         plasma_pzhemm(PlasmaLeft, uplo, negone, descA, descX,
                       one, descR, sequence, request);
 
         /* Check, whether nrhs normwise backward errors satisfy the
            stopping criterion. If yes, set iter = iiter > 0 and return */
-        plasma_pzlange(PlasmaInfNorm, descX, Xnorm, wrk);
-        plasma_pzlange(PlasmaInfNorm, descR, Rnorm, wrk);
+        // @todo Convert to OpenMP
+        // plasma_pzlange(PlasmaInfNorm, descX, Xnorm, wrk);
+        // plasma_pzlange(PlasmaInfNorm, descR, Rnorm, wrk);
+        Xnorm = LAPACKE_zlange(mtrxLayout, mtrxNorm, descX.lm, descX.ln,
+                               descX.mat, descX.lm);
+    
+        Rnorm = LAPACKE_zlange(mtrxLayout, mtrxNorm, descR.lm, descR.ln,
+                               descR.mat, descR.lm);
 
         /* Wait for the end of Xnorm and Bnorm computations */
         // plasma_dynamic_sync();
@@ -608,7 +658,7 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
             plasma_desc_mat_free(&descXs);
             plasma_desc_mat_free(&descR);
             // plasma_shared_free(plasma, wrk);
-            free(wrk);
+            free(work);
 
             return;
 
@@ -627,14 +677,17 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     plasma_desc_mat_free(&descR);
 
     // plasma_shared_free(plasma, wrk);
-    free(wrk);
+    free(work);
 
     /* Single-precision iterative refinement failed to converge to
        satisfactory solution => resort to double precision */
 
     plasma_pzpotrf(uplo, descA, sequence, request);
 
-    plasma_pzlacpy(descB, descX);
+    // @todo Convert to OpenMP
+    // plasma_pzlacpy(descB, descX);
+    LAPACKE_zlacpy(mtrxLayout, uplo, descB.lm, descB.ln, descB.mat, descB.lm,
+                   descX.mat, descX.lm);
 
     transA = (uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans);
 

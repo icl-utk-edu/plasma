@@ -53,7 +53,7 @@ void test_ztrmm(param_value_t param[], char *info)
     //================================================================
     if (param == NULL) {
         if (info == NULL) {
-            // Print usage info.
+            // Print usage info
             print_usage(PARAM_SIDE);
             print_usage(PARAM_UPLO);
             print_usage(PARAM_TRANSA);
