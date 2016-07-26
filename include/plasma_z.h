@@ -88,6 +88,11 @@ int PLASMA_zpotrf(
     PLASMA_enum uplo, int n,
     PLASMA_Complex64_t *A, int lda);
 
+int PLASMA_zpotrs(
+    PLASMA_enum uplo, int n, int nrhs,
+    PLASMA_Complex64_t *A, int lda,
+    PLASMA_Complex64_t *B, int ldb);
+
 int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
                  PLASMA_enum transA, PLASMA_enum diag,
                  int n, int nrhs, PLASMA_Complex64_t alpha,
@@ -152,8 +157,12 @@ void PLASMA_zsyr2k_Tile_Async(
     PLASMA_sequence *sequence, PLASMA_request *request);
 
 void PLASMA_zpotrf_Tile_Async(
-     PLASMA_enum uplo, PLASMA_desc *A,
-     PLASMA_sequence *sequence, PLASMA_request *request);
+    PLASMA_enum uplo, PLASMA_desc *A,
+    PLASMA_sequence *sequence, PLASMA_request *request);
+
+void PLASMA_zpotrs_Tile_Async(
+    PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
+    PLASMA_sequence *sequence, PLASMA_request *request);
 
 void PLASMA_ztrsm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
                              PLASMA_enum transA, PLASMA_enum diag,

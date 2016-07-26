@@ -162,7 +162,7 @@ $(test_exe): $(test_obj) $(libs) Makefile.test.gen
 
 .PHONY: docs
 
-docs:
+docs: generate
 	doxygen docs/doxygen/doxyfile.conf
 
 

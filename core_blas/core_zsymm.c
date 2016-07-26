@@ -26,7 +26,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup core_hemm
+ * @ingroup core_symm
  *
  *  Performs one of the matrix-matrix operations
  *

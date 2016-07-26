@@ -25,7 +25,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_syr2k
  *
  *  CORE_zsyr2k - Performs one of the symmetric rank 2k operations
  *

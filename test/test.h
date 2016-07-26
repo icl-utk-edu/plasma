@@ -37,6 +37,7 @@ typedef enum {
     PARAM_DIAG,   // Non-unit or unit diagonal
     PARAM_M,      // M dimension
     PARAM_N,      // N dimension
+    PARAM_NRHS,   // Number of RHS
     PARAM_K,      // K dimension
     PARAM_NB,     // tile size NBxNB
     PARAM_ALPHA,  // scalar alpha
@@ -44,7 +45,6 @@ typedef enum {
     PARAM_PADA,   // padding of A
     PARAM_PADB,   // padding of B
     PARAM_PADC,   // padding of C
-    PARAM_NRHS,   // number of right-hand sides
 
     //------------------------------------------------------
     // output parameters
@@ -76,6 +76,7 @@ static const char *ParamUsage[][2] = {
     {"--diag=[n|u]", "not unit triangular or unit matrix [default: n]"},
     {"--m=", "M dimension (number of rows) [default: 1000]"},
     {"--n=", "N dimension (number of columns) [default: 1000]"},
+    {"--nrhs=", "NHRS dimension (number of columns) [default: 1000]"},
     {"--k=", "K dimension (number of rows or columns) [default: 1000]"},
     {"--nb=", "NB size of tile (NB by NB) [default: 256]"},
     {"--alpha=", "scalar alpha"},
@@ -83,7 +84,6 @@ static const char *ParamUsage[][2] = {
     {"--pada=", "padding added to lda [default: 0]"},
     {"--padb=", "padding added to ldb [default: 0]"},
     {"--padc=", "padding added to ldc [default: 0]"},
-    {"--nrhs=", "number of right-hand sides [default: 1]"}
 };
 
 //==============================================================================

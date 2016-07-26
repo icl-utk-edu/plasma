@@ -26,7 +26,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_herk
  *
  *  Performs one of the Hermitian rank k operations
  *

@@ -133,3 +133,9 @@ grep -P "'" $src | grep -v -P "'[a-zA-Z=:+]'|'\\\0'"
 echo
 
 grep_src "Hermitian should be capitalized" "hermitian"
+
+echo "===== @ingroup (plasma|core)_{routine}, no precision: plasma_gemm, not plasma_zgemm."
+echo "===== See docs/doxygen/groups.dox for available groups."
+echo "===== Use docs/doxygen/groups.sh to see what groups are defined vs. in use."
+grep -P '@ingroup' $src | grep -v -P '@ingroup (plasma|core)_[^z]\w+'
+echo

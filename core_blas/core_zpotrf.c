@@ -26,7 +26,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup core_potrf
  *
  *  Performs the Cholesky factorization of a symmetric positive definite
  *  (or Hermitian positive definite in the complex case) matrix A.
