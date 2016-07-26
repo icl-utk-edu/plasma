@@ -164,7 +164,12 @@ void test_zposv(param_value_t param[], char *info)
     param[PARAM_GFLOPS].d = flops / time / 1e9;
     
     //================================================================
-    // Test results by comparing to a reference implementation.
+    // Test results by checking the residual
+    //
+    //                      || B - AX ||_I
+    //                --------------------------- < espilon
+    //                 || A ||_I * || X ||_I * N
+    //
     //================================================================
     if (test) {
         PLASMA_Complex64_t zone =   1.0;
