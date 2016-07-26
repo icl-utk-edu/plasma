@@ -37,6 +37,7 @@ typedef enum {
     PARAM_DIAG,   // Upper or lower triangular
     PARAM_M,      // M dimension
     PARAM_N,      // N dimension
+    PARAM_NRHS,   // Number of RHS
     PARAM_K,      // K dimension
     PARAM_NB,     // tile size NBxNB
     PARAM_ALPHA,  // scalar alpha
@@ -74,6 +75,7 @@ static const char *ParamUsage[][2] = {
     {"--diag=[n|u]", "not unit triangular or unit matrix [default: n]"},
     {"--m=", "M dimension (number of rows) [default: 1000]"},
     {"--n=", "N dimension (number of columns) [default: 1000]"},
+    {"--nrhs=", "NHRS dimension (number of columns) [default: 1000]"},
     {"--k=", "K dimension (number of rows or columns) [default: 1000]"},
     {"--nb=", "NB size of tile (NB by NB) [default: 256]"},
     {"--alpha=", "scalar alpha"},
