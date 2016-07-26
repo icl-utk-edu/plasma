@@ -215,9 +215,9 @@ void CORE_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
         return;
 
     // prepare memory for the auxiliary array
-    int lwork = ib*nb;
     PLASMA_Complex64_t *WORK =
-        (PLASMA_Complex64_t *) malloc(sizeof(PLASMA_Complex64_t) * lwork);
+        (PLASMA_Complex64_t *) malloc((size_t)ib*nb * 
+                                      sizeof(PLASMA_Complex64_t));
     if (WORK == NULL) {
         plasma_error("malloc() failed");
         return;

@@ -140,7 +140,7 @@ int PLASMA_zgeqrf(int m, int n,
 #pragma omp parallel
 #pragma omp master
     {
-        // the Async functions are submitted here.  If an error occurs
+        // The Async functions are submitted here.  If an error occurs
         // (at submission time or at run time) the sequence->status
         // will be marked with an error.  After an error, the next
         // Async will not _insert_ more tasks into the runtime.  The
@@ -173,7 +173,7 @@ int PLASMA_zgeqrf(int m, int n,
  *
  * @ingroup PLASMA_Complex64_t
  *
- *  PLASMA_zgeqrf_Tile_Async - Computes the tile QR factorization of a matrix.
+ *  Computes the tile QR factorization of a matrix.
  *  Non-blocking tile version of PLASMA_zgeqrf().
  *  May return before the computation is finished.
  *  Operates on matrices stored by tiles.
@@ -183,12 +183,12 @@ int PLASMA_zgeqrf(int m, int n,
  *
  *******************************************************************************
  *
- * @param[in,out] A
+ * @param[in,out] descA
  *          Descriptor of matrix A.
  *          A is stored in the tile layout.
  *
  * @param[out] T
- *          Descriptor of matrix T.
+ *          Descriptor of matrix descT.
  *          On exit, auxiliary factorization data, required by PLASMA_zgeqrs to
  *          solve the system of equations.
  *
@@ -198,6 +198,13 @@ int PLASMA_zgeqrf(int m, int n,
  *
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
+ *
+ * @retval void
+ *          Errors are returned by setting sequence->status and
+ *          request->status to error values.  The sequence->status and
+ *          request->status should never be set to PLASMA_SUCCESS (the
+ *          initial values) since another async call may be setting a
+ *          failure value at the same time.
  *
  *******************************************************************************
  *
@@ -210,7 +217,7 @@ int PLASMA_zgeqrf(int m, int n,
  * @sa PLASMA_zgels_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *A, PLASMA_desc *T,
+void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
                               PLASMA_sequence *sequence, PLASMA_request *request)
 {
     // Get PLASMA context.
@@ -222,12 +229,12 @@ void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *A, PLASMA_desc *T,
     }
 
     // Check input arguments.
-    if (plasma_desc_check(A) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(descA) != PLASMA_SUCCESS) {
         plasma_error("invalid A");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (plasma_desc_check(T) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(descT) != PLASMA_SUCCESS) {
         plasma_error("invalid T");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -242,7 +249,7 @@ void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *A, PLASMA_desc *T,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (A->nb != A->mb) {
+    if (descA->nb != descA->mb) {
         plasma_error("only square tiles supported");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -261,7 +268,7 @@ void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *A, PLASMA_desc *T,
     //    return PLASMA_SUCCESS;
 
     // Call the parallel function.
-    plasma_pzgeqrf(*A, *T, sequence, request);
+    plasma_pzgeqrf(*descA, *descT, sequence, request);
 
     return;
 }

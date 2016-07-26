@@ -280,8 +280,8 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
  * @sa PLASMA_sgels_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *A,
-                             PLASMA_desc *T, PLASMA_desc *B,
+void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *descA,
+                             PLASMA_desc *descT, PLASMA_desc *descB,
                              PLASMA_sequence *sequence,
                              PLASMA_request *request)
 {
@@ -299,17 +299,17 @@ void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *A,
         plasma_request_fail(sequence, request, PLASMA_ERR_NOT_SUPPORTED);
         return;
     }
-    if (plasma_desc_check(A) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(descA) != PLASMA_SUCCESS) {
         plasma_error("invalid descriptor A");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (plasma_desc_check(T) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(descT) != PLASMA_SUCCESS) {
         plasma_error("invalid descriptor T");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (plasma_desc_check(B) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(descB) != PLASMA_SUCCESS) {
         plasma_error("invalid descriptor B");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -324,7 +324,7 @@ void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *A,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (A->nb != A->mb || B->nb != B->mb) {
+    if (descA->nb != descA->mb || descB->nb != descB->mb) {
         plasma_error("only square tiles supported");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -345,22 +345,22 @@ void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *A,
     //    return PLASMA_SUCCESS;
     //}
 
-    if (A->m >= A->n) {
+    if (descA->m >= descA->n) {
         // solution based on QR factorization
-        plasma_pzgeqrf(*A, *T, sequence, request);
+        plasma_pzgeqrf(*descA, *descT, sequence, request);
 
         // Plasma_ConjTrans will be converted to PlasmaTrans by the
         // automatic datatype conversion, which is what we want here.
         // Note that PlasmaConjTrans is protected from this conversion.
         plasma_pzunmqr(PlasmaLeft, Plasma_ConjTrans,
-                       *A, *B, *T,
+                       *descA, *descB, *descT,
                        sequence, request);
 
         plasma_pztrsm(PlasmaLeft, PlasmaUpper,
                       PlasmaNoTrans, PlasmaNonUnit,
                       1.0,
-                      plasma_desc_submatrix(*A, 0, 0, A->n, A->n),
-                      plasma_desc_submatrix(*B, 0, 0, A->n, B->n),
+                      plasma_desc_submatrix(*descA, 0, 0, descA->n, descA->n),
+                      plasma_desc_submatrix(*descB, 0, 0, descA->n, descB->n),
                       sequence, request);
     }
     else {

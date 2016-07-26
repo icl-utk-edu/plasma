@@ -116,16 +116,16 @@ void CORE_zgeqrt(int m, int n, int ib,
         return;
 
     // prepare memory for auxiliary arrays
-    int ltau  = nb;
     PLASMA_Complex64_t *TAU  =
-        (PLASMA_Complex64_t *) malloc(sizeof(PLASMA_Complex64_t) * ltau);
+        (PLASMA_Complex64_t *) malloc((size_t)nb *
+                                      sizeof(PLASMA_Complex64_t));
     if (TAU == NULL) {
         plasma_error("malloc() failed");
         return;
     }
-    int lwork = ib*nb;
     PLASMA_Complex64_t *WORK =
-        (PLASMA_Complex64_t *) malloc(sizeof(PLASMA_Complex64_t) * lwork);
+        (PLASMA_Complex64_t *) malloc((size_t)ib*nb * 
+                                      sizeof(PLASMA_Complex64_t));
     if (WORK == NULL) {
         plasma_error("malloc() failed");
         return;

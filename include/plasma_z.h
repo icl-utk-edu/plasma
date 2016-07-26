@@ -97,8 +97,8 @@ int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
 /***************************************************************************//**
  *  Tile asynchronous interface.
  **/
-void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *A,
-                             PLASMA_desc *T, PLASMA_desc *B,
+void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *descA,
+                             PLASMA_desc *descT, PLASMA_desc *descB,
                              PLASMA_sequence *sequence,
                              PLASMA_request *request);
 
@@ -109,10 +109,11 @@ void PLASMA_zgemm_Tile_Async(
     PLASMA_Complex64_t beta,  PLASMA_desc *descC,
     PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *A, PLASMA_desc *T,
+void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
                               PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *A, PLASMA_desc *T, PLASMA_desc *B,
+void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT, 
+                              PLASMA_desc *descB,
                               PLASMA_sequence *sequence, PLASMA_request *request);
 
 void PLASMA_zsymm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,

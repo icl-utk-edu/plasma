@@ -227,6 +227,13 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
+ * @retval void
+ *          Errors are returned by setting sequence->status and
+ *          request->status to error values.  The sequence->status and
+ *          request->status should never be set to PLASMA_SUCCESS (the
+ *          initial values) since another async call may be setting a
+ *          failure value at the same time.
+ *
  *******************************************************************************
  *
  * @sa PLASMA_zgeqrs
@@ -238,7 +245,8 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
  * @sa PLASMA_zgels_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *A, PLASMA_desc *T, PLASMA_desc *B,
+void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT, 
+                              PLASMA_desc *descB,
                               PLASMA_sequence *sequence, PLASMA_request *request)
 {
     // Get PLASMA context.
@@ -250,22 +258,22 @@ void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *A, PLASMA_desc *T, PLASMA_desc *B,
     }
 
     // Check input arguments.
-    if (plasma_desc_check(A) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(descA) != PLASMA_SUCCESS) {
         plasma_error("invalid descriptor A");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (plasma_desc_check(T) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(descT) != PLASMA_SUCCESS) {
         plasma_error("invalid descriptor T");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (plasma_desc_check(B) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(descB) != PLASMA_SUCCESS) {
         plasma_error("invalid descriptor B");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (A->nb != A->mb || B->nb != B->mb) {
+    if (descA->nb != descA->mb || descB->nb != descB->mb) {
         plasma_error("only square tiles supported");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -300,15 +308,15 @@ void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *A, PLASMA_desc *T, PLASMA_desc *B,
     // automatic datatype conversion, which is what we want here.
     // Note that PlasmaConjTrans is protected from this conversion.
     plasma_pzunmqr(PlasmaLeft, Plasma_ConjTrans,
-                   *A, *B, *T,
+                   *descA, *descB, *descT,
                    sequence, request);
 
     // Call the parallel function for solving R * X = Q^T * B (in real case)
     //                                     or R * X = Q^H * B (in complex case)
     plasma_pztrsm(PlasmaLeft, PlasmaUpper,
                   PlasmaNoTrans, PlasmaNonUnit,
-                  1.0, plasma_desc_submatrix(*A, 0, 0, A->n, A->n),
-                  plasma_desc_submatrix(*B, 0, 0, A->n, B->n),
+                  1.0, plasma_desc_submatrix(*descA, 0, 0, descA->n, descA->n),
+                  plasma_desc_submatrix(*descB, 0, 0, descA->n, descB->n),
                   sequence, request);
 
     return;
