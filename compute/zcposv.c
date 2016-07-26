@@ -487,7 +487,7 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     }
 
     // Compute constants
-    plasma_pzlanhe(PlasmaInfNorm, uplo, descA, Anorm, wrk);
+    plasma_pzlanhe(PlasmaInfNorm, uplo, descA, work, Anorm, sequence, request);
     eps = LAPACKE_dlamch_work('e');
 
     // Convert B from double to single precision, store result in Xs

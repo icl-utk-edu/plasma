@@ -9,7 +9,7 @@
  * @version 3.0.0
  * @author  Mathieu Faverge
  * @author  Maksims Abalenkovs
- * @date    2016-07-15
+ * @date    2016-07-21
  * @precisions normal z -> s d c
  *
  **/
@@ -116,7 +116,7 @@ int PLASMA_ztrmm(PLASMA_enum side, PLASMA_enum uplo,
     PLASMA_request    request = PLASMA_REQUEST_INITIALIZER;
     PLASMA_desc descA, descB;
 
-    /* Get PLASMA context */
+    // Get PLASMA context
     plasma = plasma_context_self();
 
     if (plasma == NULL) {
@@ -130,7 +130,7 @@ int PLASMA_ztrmm(PLASMA_enum side, PLASMA_enum uplo,
       na = nrhs;
     }
 
-    /* Check input arguments */
+    // Check input arguments
     if (side != PlasmaLeft && side != PlasmaRight) {
         plasma_error("illegal value of side");
         return -1;
@@ -151,43 +151,45 @@ int PLASMA_ztrmm(PLASMA_enum side, PLASMA_enum uplo,
         return -4;
     }
     if (n < 0) {
-        plasma_error("illegal value of N");
+        plasma_error("illegal value of n");
         return -5;
     }
     if (nrhs < 0) {
-        plasma_error("illegal value of NRHS");
+        plasma_error("illegal value of nrhs");
         return -6;
     }
     if (lda < imax(1, na)) {
-        plasma_error("illegal value of LDA");
+        plasma_error("illegal value of lda");
         return -8;
     }
     if (ldb < imax(1, n)) {
-        plasma_error("illegal value of LDB");
+        plasma_error("illegal value of ldb");
         return -10;
     }
 
-    /* Quick return */
+    // Quick return
     if (imin(n, nrhs) == 0)
         return PLASMA_SUCCESS;
 
     /* Tune nb depending on m, n & nrhs; Set nbnb */
     /*
-    if (plasma_tune(PLASMA_FUNC_ZPOSV, n, n, nrhs) != PLASMA_SUCCESS) {
+    status = plasma_tune(PLASMA_FUNC_ZPOSV, n, n, nrhs);
+
+    if (status != PLASMA_SUCCESS) {
         plasma_error("plasma_tune() failed");
         return status;
     }
     */
     nb = plasma->nb;
 
-    /* Initialise matrix descriptors */
+    // Initialise matrix descriptors
     descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
                              nb*nb, na, n,  0, 0, na, n);
 
     descB = plasma_desc_init(PlasmaComplexDouble, nb, nb,
                              nb*nb, n,  na, 0, 0, n,  na);
 
-    /* Allocate matrices in tile layout */
+    // Allocate matrices in tile layout
     retval = plasma_desc_mat_alloc(&descA);
 
     if (retval != PLASMA_SUCCESS) {
@@ -203,7 +205,7 @@ int PLASMA_ztrmm(PLASMA_enum side, PLASMA_enum uplo,
         return retval;
     }
 
-    /* Create sequence */
+    // Create sequence
     retval = plasma_sequence_create(&sequence);
 
     if (retval != PLASMA_SUCCESS) {
@@ -223,13 +225,13 @@ int PLASMA_ztrmm(PLASMA_enum side, PLASMA_enum uplo,
          * or at the end of the parallel region.
          */
 
-        /* Translate matrices to tile layout */
+        // Translate matrices to tile layout
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
 
         if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
 
-        /* Call the tile async interface */
+        // Call tile async interface
         if (sequence->status == PLASMA_SUCCESS) {
             
             PLASMA_ztrmm_Tile_Async(side, uplo, transA, diag, alpha,
@@ -243,21 +245,22 @@ int PLASMA_ztrmm(PLASMA_enum side, PLASMA_enum uplo,
         if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
 
-    } /* pragma omp parallel block closed */
+    } // pragma omp parallel block closed
 
-    /* Check for errors in async execution */
+    // Check for errors in async execution
     if (sequence->status != PLASMA_SUCCESS)
         return sequence->status;
 
-    /* Free matrices in tile layout */
+    // Free matrices in tile layout
     plasma_desc_mat_free(&descA);
     plasma_desc_mat_free(&descB);
 
-    /* Destroy sequence */
+    // Destroy sequence
     plasma_sequence_destroy(sequence);
 
-    /* Return status */
+    // Return status
     status = sequence->status;
+
     return status;
 }
 
@@ -310,38 +313,40 @@ void PLASMA_ztrmm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
     PLASMA_desc descB;
     plasma_context_t *plasma;
 
-    /* Get PLASMA context */
+    // Get PLASMA context
     plasma = plasma_context_self();
+
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PLASMA_ERR_NOT_INITIALIZED);
         return;
     }
 
     if (sequence == NULL) {
         plasma_error("NULL sequence");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PLASMA_ERR_UNALLOCATED);
         return;
     }
 
     if (request == NULL) {
         plasma_error("NULL request");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PLASMA_ERR_UNALLOCATED);
         return;
     }
 
-    /* Check sequence status */
+    // Check sequence status
     if (sequence->status != PLASMA_SUCCESS) {
         plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
         return;
     }
 
-    /* Check descriptors for correctness */
+    // Check descriptors for correctness
     if (plasma_desc_check(A) != PLASMA_SUCCESS) {
         plasma_error("invalid first descriptor");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
-    } else {
+    }
+    else {
         descA = *A;
     }
 
@@ -349,11 +354,12 @@ void PLASMA_ztrmm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
         plasma_error("invalid second descriptor");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
-    } else {
+    }
+    else {
         descB = *B;
     }
 
-    /* Check input arguments */
+    // Check input arguments
     if (descA.nb != descA.mb || descB.nb != descB.mb) {
         plasma_error("only square tiles supported");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
@@ -384,11 +390,11 @@ void PLASMA_ztrmm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
         return;
     }
 
-    /* Quick return */
+    // Quick return
     if (A->m == 0 || A->n == 0 || alpha == 0.0 || B->m == 0 || B->n == 0)
         return;
 
-    /* Call parallel function */
+    // Call parallel function
     plasma_pztrmm(side, uplo, transA, diag, alpha,
                   descA, descB, sequence, request);
 
