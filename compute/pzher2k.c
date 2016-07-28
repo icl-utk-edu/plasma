@@ -23,7 +23,7 @@
 #define B(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(B, m, n))
 #define C(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(C, m, n))
 /***************************************************************************//**
- * Parallel tile hermitian rank 2k update.
+ * Parallel tile Hermitian rank 2k update.
  * @see PLASMA_zher2k_Tile_Async
  ******************************************************************************/
 void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,

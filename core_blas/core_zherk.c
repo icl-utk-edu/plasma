@@ -35,7 +35,7 @@
  *    \f[ C = \alpha A^H \times A + \beta C \f],
  *
  *  where alpha and beta are real scalars, C is an n-by-n Hermitian
- *  matrix and A is an n-by-k matrix in the first case and a k-by-n
+ *  matrix, and A is an n-by-k matrix in the first case and a k-by-n
  *  matrix in the second case.
  *
  *******************************************************************************
@@ -52,26 +52,28 @@
  *          The order of the matrix C. n >= 0.
  *
  * @param[in] k
- *          The number of columns of the matrix op( A ).
+ *          If trans = PlasmaNoTrans, number of columns of the A matrix;
+ *          if trans = PlasmaConjTrans, number of rows of the A matrix.
  *
  * @param[in] alpha
  *          The scalar alpha.
  *
  * @param[in] A
- *          A is a lda-by-ka matrix, where ka is k when trans = PlasmaNoTrans,
- *          and is n otherwise.
+ *          A is a lda-by-ka matrix.
+ *          If trans = PlasmaNoTrans,   ka = k;
+ *          if trans = PlasmaConjTrans, ka = n.
  *
  * @param[in] lda
- *          The leading dimension of the array A. lda must be at least
- *          max(1, n) if trans == PlasmaNoTrans, otherwise lda must
- *          be at least max(1, k).
+ *          The leading dimension of the array A.
+ *          If trans = PlasmaNoTrans,   lda >= max(1, n);
+ *          if trans = PlasmaConjTrans, lda >= max(1, k).
  *
  * @param[in] beta
- *          beta specifies the scalar beta
+ *          The scalar beta.
  *
  * @param[in,out] C
  *          C is a ldc-by-n matrix.
- *          On exit, the array uplo part of the matrix is overwritten
+ *          On exit, the uplo part of the matrix is overwritten
  *          by the uplo part of the updated matrix.
  *
  * @param[in] ldc

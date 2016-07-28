@@ -30,9 +30,9 @@
  *    or
  *    \f[ C = \alpha A^T \times B + \alpha B^T \times A + \beta C \f],
  *
- *  where alpha and beta are complex scalars, C is an n-by-n symmetric
- *  matrix, and A and B are n-by-k matrices in the first case and k-by-n
- *  matrices in the second case.
+ *  where alpha and beta are scalars,
+ *  C is an n-by-n symmetric matrix, and A and B are n-by-k matrices
+ *  in the first case and k-by-n matrices in the second case.
  *
  *******************************************************************************
  *
@@ -47,42 +47,45 @@
  *            \f[ C = \alpha A^T \times B + \alpha B^T \times A + \beta C \f].
  *
  * @param[in] n
- *          The order of the matrix C. n must be at least zero.
+ *          The order of the matrix C. n >= zero.
  *
  * @param[in] k
- *          The number of columns of the A and B matrices
- *          with trans = PlasmaNoTrans. Or the number of rows of the A
- *          and B matrices with trans = PlasmaTrans.
+ *          If trans = PlasmaNoTrans, number of columns of the A and B matrices;
+ *          if trans = PlasmaTrans, number of rows of the A and B matrices.
  *
  * @param[in] alpha
  *          The scalar alpha.
  *
  * @param[in] A
- *          A  lda-by-ka matrix, where ka is k when trans = PlasmaNoTrans,
- *          and is n otherwise.
+ *          A lda-by-ka matrix.
+ *          If trans = PlasmaNoTrans, ka = k;
+ *          if trans = PlasmaTrans,   ka = n.
  *
  * @param[in] lda
- *          The leading dimension of the array A. lda must be at least
- *          max( 1, n ), otherwise lda must be at least max( 1, k ).
+ *          The leading dimension of the array A.
+ *          If trans = PlasmaNoTrans, lda >= max(1, n);
+ *          if trans = PlasmaTrans,   lda >= max(1, k).
  *
  * @param[in] B
- *          A ldb-by-kb matrix, where kb is k when trans = PlasmaNoTrans,
- *          and is n otherwise.
+ *          A ldb-by-kb matrix.
+ *          If trans = PlasmaNoTrans, kb = k;
+ *          if trans = PlasmaTrans,   kb = n.
  *
  * @param[in] ldb
- *          The leading dimension of the array B. ldb must be at least
- *          max( 1, n ), otherwise ldb must be at least max( 1, k ).
+ *          The leading dimension of the array B.
+ *          If trans = PlasmaNoTrans, ldb >= max(1, n);
+ *          if trans = PlasmaTrans,   ldb >= max(1, k).
  *
  * @param[in] beta
  *          The scalar beta.
  *
  * @param[in,out] C
  *          A ldc-by-n matrix.
- *          On exit, the array uplo part of the matrix is overwritten
+ *          On exit, the uplo part of the matrix is overwritten
  *          by the uplo part of the updated matrix.
  *
  * @param[in] ldc
- *          The leading dimension of the array C. ldc >= max( 1, n ).
+ *          The leading dimension of the array C. ldc >= max(1, n).
  *
  *******************************************************************************
  *
