@@ -23,24 +23,25 @@
  *
  * @ingroup plasma_trsm
  *
- *  Performs one of the matrix equations
+ *  Solves one of the matrix equations
  *
- *    \f[ op( A )\times X  = \alpha B, \f] or
- *    \f[ op( X )\times A  = \alpha B, \f]
+ *    \f[ op( A ) \times X = \alpha B, \f] or
+ *    \f[ X \times op( A ) = \alpha B, \f]
  *
- *  where op( X ) is one of:
- *          - op( X ) = X   or
- *          - op( X ) = X^T or
- *          - op( X ) = X^H,
+ *  where op( A ) is one of:
+ *    \f[ op( A ) = A,   \f]
+ *    \f[ op( A ) = A^T, \f]
+ *    \f[ op( A ) = A^H, \f]
  *
- *  alpha is a scalar, A and are B m by n matrices.
- *  The matrix X is overwritten by B.
+ *  alpha is a scalar, X and B are m-by-n matrices, and
+ *  A is a unit or non-unit, upper or lower triangular matrix.
+ *  The matrix X overwrites B.
  *
  *******************************************************************************
  *
  * @param[in] side
- *          - PlasmaLeft:  A*X = B,
- *          - PlasmaRight: X*A = B.
+ *          - PlasmaLeft:  op(A)*X = B,
+ *          - PlasmaRight: X*op(A) = B.
  *
  * @param[in] uplo
  *          - PlasmaUpper: A is upper triangular,
@@ -52,37 +53,40 @@
  *          - PlasmaConjTrans: A is conjugate transposed.
  *
  * @param[in] diag
- *          - PlasmaNonUnit: A is non unit,
- *          - PlasmaUnit:    A us unit.
+ *          - PlasmaNonUnit: A has non-unit diagonal,
+ *          - PlasmaUnit:    A has unit diagonal.
+ *
+ * @param[in] m
+ *          The number of rows of the matrix B. m >= 0.
  *
  * @param[in] n
- *          The order of the matrix A. n >= 0.
- *
- * @param[in] nrhs
- *          The number of columns of the matrix B. nrhs >= 0.
+ *          The number of columns of the matrix B. n >= 0.
  *
  * @param[in] alpha
  *          The scalar alpha.
  *
  * @param[in] A
- *          The triangular matrix. If uplo = PlasmaUpper, the leading n-by-n
- *          upper triangular part of the array A contains the upper triangular
- *          matrix, and the strictly lower triangular part of A is not
- *          referenced. If uplo = PlasmaLower, the leading n-by-n lower
- *          triangular part of A contains the lower triangular matrix,
- *          and the strictly upper triangular part of A is not referenced.
+ *          The k-by-k triangular matrix,
+ *          where k = m if side = PlasmaLeft,
+ *            and k = n if side = PlasmaRight.
+ *          If uplo = PlasmaUpper, the leading k-by-k upper triangular part
+ *          of the array A contains the upper triangular matrix, and the
+ *          strictly lower triangular part of A is not referenced.
+ *          If uplo = PlasmaLower, the leading k-by-k lower triangular part
+ *          of the array A contains the lower triangular matrix, and the
+ *          strictly upper triangular part of A is not referenced.
  *          If diag = PlasmaUnit, the diagonal elements of A are also not
  *          referenced and are assumed to be 1.
  *
  * @param[in] lda
- *          The leading dimension of the array A. lda >= max(1,n).
+ *          The leading dimension of the array A. lda >= max(1,k).
  *
  * @param[in,out] B
- *          On entry, the n-by-nrhs right hand side matrix B.
- *          On exit, if return value = 0, the n-by-nrhs solution matrix X.
+ *          On entry, the m-by-n right hand side matrix B.
+ *          On exit, if return value = 0, the m-by-n solution matrix X.
  *
  * @param[in] ldb
- *          The leading dimension of the array B. ldb >= max(1,n).
+ *          The leading dimension of the array B. ldb >= max(1,m).
  *
  *
  *******************************************************************************
@@ -99,7 +103,7 @@
  ******************************************************************************/
 int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
                  PLASMA_enum transA, PLASMA_enum diag,
-                 int n, int nrhs, PLASMA_Complex64_t alpha,
+                 int m, int n, PLASMA_Complex64_t alpha,
                  PLASMA_Complex64_t *A, int lda,
                  PLASMA_Complex64_t *B, int ldb)
 {
@@ -116,6 +120,13 @@ int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
     if (plasma == NULL) {
         plasma_fatal_error("PLASMA not initialized");
         return PLASMA_ERR_NOT_INITIALIZED;
+    }
+
+    if (side == PlasmaLeft) {
+        An = m;
+    }
+    else {
+        An = n;
     }
 
     // Check input arguments
@@ -140,36 +151,29 @@ int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
         plasma_error("illegal value of diag");
         return -4;
     }
-    if (n < 0) {
-        plasma_error("illegal value of n");
+    if (m < 0) {
+        plasma_error("illegal value of m");
         return -5;
     }
-    if (nrhs < 0) {
-        plasma_error("illegal value of nrhs");
+    if (n < 0) {
+        plasma_error("illegal value of n");
         return -6;
     }
     if (lda < imax(1, An)) {
         plasma_error("illegal value of lda");
         return -8;
     }
-    if (ldb < imax(1, n)) {
+    if (ldb < imax(1, m)) {
         plasma_error("illegal value of ldb");
         return -10;
     }
 
-    if (side == PlasmaLeft) {
-        An = n;
-    }
-    else {
-        An = nrhs;
-    }
-
     // quick return
-    if ((n == 0) || (nrhs == 0))
+    if ((m == 0) || (n == 0))
         return PLASMA_SUCCESS;
 
     // Tune.
-    // if (plasma_tune(PLASMA_FUNC_ZTRSM, n, nrhs, 0) != PLASMA_SUCCESS) {
+    // if (plasma_tune(PLASMA_FUNC_ZTRSM, m, n, 0) != PLASMA_SUCCESS) {
     //     plasma_error("plasma_tune() failed");
     //     return status;
     // }
@@ -180,7 +184,7 @@ int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
                              nb*nb, An, An, 0, 0, An, An);
 
     descB = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, n, nrhs, 0, 0, n, nrhs);
+                             nb*nb, m, n, 0, 0, m, n);
 
     // Allocate matrices in tile layout.
     retval = plasma_desc_mat_alloc(&descA);
@@ -262,21 +266,21 @@ int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
  *******************************************************************************
  *
  * @param[in] side
- *          - PlasmaLeft:  A*X = B,
- *          - PlasmaRight: X*A = B.
+ *          - PlasmaLeft:  op(A)*X = B,
+ *          - PlasmaRight: X*op(A) = B.
  *
  * @param[in] uplo
- *          - PlasmaUpper: A is uppert triangular,
+ *          - PlasmaUpper: A is upper triangular,
  *          - PlasmaLower: A is lower triangular.
  *
  * @param[in] transA
- *          - PlasmaNoTrans:   A is transposed,
- *          - PlasmaTrans:     A is not transposed,
+ *          - PlasmaNoTrans:   A is not transposed,
+ *          - PlasmaTrans:     A is transposed,
  *          - PlasmaConjTrans: A is conjugate transposed.
  *
  * @param[in] diag
- *          - PlasmaNonUnit: A is non unit,
- *          - PlasmaUnit:    A us unit.
+ *          - PlasmaNonUnit: A has non-unit diagonal,
+ *          - PlasmaUnit:    A has unit diagonal.
  *
  * @param[in] alpha
  *          The scalar alpha.
