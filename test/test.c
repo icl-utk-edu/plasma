@@ -282,6 +282,15 @@ void run_routine(const char *name, param_value_t pval[], char *info)
     else if (strcmp(name, "spotrf") == 0)
         test_spotrf(pval, info);
 
+    else if (strcmp(name, "zpotrs") == 0)
+        test_zpotrs(pval, info);
+    else if (strcmp(name, "dpotrs") == 0)
+        test_dpotrs(pval, info);
+    else if (strcmp(name, "cpotrs") == 0)
+        test_cpotrs(pval, info);
+    else if (strcmp(name, "spotrs") == 0)
+        test_spotrs(pval, info);
+
     else if (strcmp(name, "zsymm") == 0)
         test_zsyr2k(pval, info);
     else if (strcmp(name, "dsymm") == 0)
@@ -400,7 +409,7 @@ int param_read(int argc, char **argv, param_t param[])
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_M]);
         else if (param_starts_with(argv[i], "--n="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_N]);
-	else if (param_starts_with(argv[i], "--nrhs="))
+        else if (param_starts_with(argv[i], "--nrhs="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NRHS]);
         else if (param_starts_with(argv[i], "--k="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_K]);

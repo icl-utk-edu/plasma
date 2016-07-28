@@ -10,6 +10,7 @@
  * @version 3.0.0
  * @author Jakub Kurzak
  * @author Samuel D. Relton
+ * @author Pedro V. Lara
  * @date 2016-05-16
  * @precisions normal z -> s d c
  *
@@ -53,6 +54,10 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
 
 int PLASMA_zpotrf(PLASMA_enum uplo, int n,
                   PLASMA_Complex64_t *A, int lda);
+
+int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs, 
+                  PLASMA_Complex64_t *A, int lda, 
+                  PLASMA_Complex64_t *B, int ldb);
 
 int PLASMA_zsymm(PLASMA_enum side, PLASMA_enum uplo,
                  int m, int n,
@@ -115,6 +120,12 @@ void PLASMA_zposv_Tile_Async(PLASMA_enum uplo,
   
 void PLASMA_zpotrf_Tile_Async(PLASMA_enum uplo,
                               PLASMA_desc *A,
+                              PLASMA_sequence *sequence,
+                              PLASMA_request *request);
+
+void PLASMA_zpotrs_Tile_Async(PLASMA_enum uplo,
+                              PLASMA_desc *A,
+                              PLASMA_desc *B,
                               PLASMA_sequence *sequence,
                               PLASMA_request *request);
 
