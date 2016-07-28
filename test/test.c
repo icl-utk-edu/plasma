@@ -264,6 +264,15 @@ void run_routine(const char *name, param_value_t pval[], char *info)
     else if (strcmp(name, "cherk") == 0)
         test_cherk(pval, info);
 
+    else if (strcmp(name, "zposv") == 0)
+        test_zposv(pval, info);
+    else if (strcmp(name, "dposv") == 0)
+        test_dposv(pval, info);
+    else if (strcmp(name, "cposv") == 0)
+        test_cposv(pval, info);
+    else if (strcmp(name, "sposv") == 0)
+        test_sposv(pval, info);
+    
     else if (strcmp(name, "zpotrf") == 0)
         test_zpotrf(pval, info);
     else if (strcmp(name, "dpotrf") == 0)
