@@ -224,6 +224,14 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
  *          On entry, the n-by-nrhs right hand side matrix B.
  *          On exit, if return value = 0, the n-by-nrhs solution matrix X.
  *
+ * @param[in] sequence
+ *          Identifies the sequence of function calls that this call belongs to
+ *          (for completion checks and exception handling purposes).  Check
+ *          the sequence->status for errors.
+ *
+ * @param[out] request
+ *          Identifies this function call (for exception handling purposes).
+ *
  * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
