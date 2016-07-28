@@ -103,7 +103,7 @@ void test_zherk(param_value_t param[], char *info)
     if (param[PARAM_TRANS].c == 'n')
         trans = PlasmaNoTrans;
     else if (param[PARAM_TRANS].c == 't')
-        trans = PlasmaTrans;
+        trans = PlasmaTrans;  // illegal option in complex
     else
         trans = PlasmaConjTrans;
 

@@ -105,7 +105,7 @@ void test_zsyrk(param_value_t param[], char *info)
     else if (param[PARAM_TRANS].c == 't')
         trans = PlasmaTrans;
     else
-        trans = PlasmaConjTrans;
+        trans = PlasmaConjTrans;  // illegal option
 
     int n = param[PARAM_N].i;
     int k = param[PARAM_K].i;

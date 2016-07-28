@@ -108,7 +108,7 @@ void test_zsyr2k(param_value_t param[], char *info)
     else if (param[PARAM_TRANS].c == 't')
         trans = PlasmaTrans;
     else
-        trans = PlasmaConjTrans;
+        trans = PlasmaConjTrans;  // invalid option
 
     int n = param[PARAM_N].i;
     int k = param[PARAM_K].i;
