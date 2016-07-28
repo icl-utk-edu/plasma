@@ -220,11 +220,11 @@ int PLASMA_zsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
 #pragma omp master
     {
         // The Async functions are submitted here.  If an error occurs
-        //   (at submission time or at run time) the sequence->status
-        //   will be marked with an error.  After an error, the next
-        //   Async will not _insert_ more tasks into the runtime.  The
-        //   sequence->status can be checked after each call to _Async
-        //   or at the end of the parallel region.
+        // (at submission time or at run time) the sequence->status
+        // will be marked with an error.  After an error, the next
+        // Async will not _insert_ more tasks into the runtime.  The
+        // sequence->status can be checked after each call to _Async
+        // or at the end of the parallel region.
 
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);

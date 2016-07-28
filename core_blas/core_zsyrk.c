@@ -77,7 +77,7 @@
  * @param[in] ldc
  *          The leading dimension of the array C. ldc >= max( 1, n ).
  *
- *******************************************************************************/
+ ******************************************************************************/
 void CORE_zsyrk(PLASMA_enum uplo, PLASMA_enum trans,
                 int n, int k,
                 PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,

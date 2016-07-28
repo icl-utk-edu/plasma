@@ -143,7 +143,8 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
         An = k;
         Bm = n;
         Bn = k;
-    } else {
+    }
+    else {
         Am = k;
         An = n;
         Bm = k;
@@ -224,12 +225,12 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
 #pragma omp parallel
 #pragma omp master
     {
-        // the Async functions are submitted here.  If an error occurs
-        //   (at submission time or at run time) the sequence->status
-        //   will be marked with an error.  After an error, the next
-        //   Async will not _insert_ more tasks into the runtime.  The
-        //   sequence->status can be checked after each call to _Async
-        //   or at the end of the parallel region.
+        // The Async functions are submitted here.  If an error occurs
+        // (at submission time or at run time) the sequence->status
+        // will be marked with an error.  After an error, the next
+        // Async will not _insert_ more tasks into the runtime.  The
+        // sequence->status can be checked after each call to _Async
+        // or at the end of the parallel region.
 
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
@@ -332,7 +333,6 @@ void PLASMA_zher2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
                                           double beta,  PLASMA_desc *C,
                               PLASMA_sequence *sequence, PLASMA_request *request)
 {
-
     PLASMA_Complex64_t zzero = 0.0;
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -386,7 +386,8 @@ void PLASMA_zher2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
         Am  = A->m;
         An  = A->n;
         Amb = A->mb;
-    } else {
+    }
+    else {
         Am  = A->n;
         An  = A->m;
         Amb = A->nb;
@@ -397,7 +398,7 @@ void PLASMA_zher2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if ( (B->mb != A->mb) || (B->nb != A->nb) || (Amb != C->mb) ) {
+    if ((B->mb != A->mb) || (B->nb != A->nb) || (Amb != C->mb)) {
         plasma_error("tile sizes mismatch");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -407,7 +408,7 @@ void PLASMA_zher2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if ( (B->m != A->m) || (B->n != A->n) || (Am != C->m) ) {
+    if ((B->m != A->m) || (B->n != A->n) || (Am != C->m)) {
         plasma_error("matrix sizes mismatch");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;

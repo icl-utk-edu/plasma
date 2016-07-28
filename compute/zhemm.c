@@ -215,12 +215,12 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
 #pragma omp parallel
 #pragma omp master
     {
-        // the Async functions are submitted here.  If an error occurs
-        //   (at submission time or at run time) the sequence->status
-        //   will be marked with an error.  After an error, the next
-        //   Async will not _insert_ more tasks into the runtime.  The
-        //   sequence->status can be checked after each call to _Async
-        //   or at the end of the parallel region.
+        // The Async functions are submitted here.  If an error occurs
+        // (at submission time or at run time) the sequence->status
+        // will be marked with an error.  After an error, the next
+        // Async will not _insert_ more tasks into the runtime.  The
+        // sequence->status can be checked after each call to _Async
+        // or at the end of the parallel region.
 
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
@@ -262,7 +262,7 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
  * @ingroup plasma_hemm
  *
  *  Performs Hermitian matrix multiplication.
- *  Non-blocking equivalent of PLASMA_zhemm_Tile().
+ *  Non-blocking tile version of PLASMA_zhemm().
  *  May return before the computation is finished.
  *  Allows for pipelining of operations at runtime.
  *
@@ -307,7 +307,6 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
  *******************************************************************************
  *
  * @sa PLASMA_zhemm
- * @sa PLASMA_zhemm_Tile
  * @sa PLASMA_chemm_Tile_Async
  *
  ******************************************************************************/

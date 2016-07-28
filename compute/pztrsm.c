@@ -23,7 +23,7 @@
 /***************************************************************************//**
  * Parallel tile triangular solve.
  * @see PLASMA_ztrsm_Tile_Async
- *****************************************************************************/
+ ******************************************************************************/
 void plasma_pztrsm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_enum trans, PLASMA_enum diag,
                    PLASMA_Complex64_t alpha, PLASMA_desc A,

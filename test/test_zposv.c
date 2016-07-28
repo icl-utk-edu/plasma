@@ -7,9 +7,9 @@
  *  Univ. of California Berkeley, Univ. of Colorado Denver and
  *  Univ. of Manchester.
  *
- * @version 
+ * @version 3.0.0
  * @author Mawussi Zounon
- * @date 
+ * @date 2016-07-19
  * @precisions normal z -> s d c
  *
  **/
@@ -84,58 +84,57 @@ void test_zposv(param_value_t param[], char *info)
              InfoSpacing, param[PARAM_NRHS].i,
              InfoSpacing, param[PARAM_PADA].i,
              InfoSpacing, param[PARAM_PADB].i);
-    
+
     //================================================================
     // Set parameters.
     //================================================================
     PLASMA_enum uplo;
-    
+
     if (param[PARAM_UPLO].c == 'l')
         uplo = PlasmaLower;
-    else 
+    else
         uplo = PlasmaUpper;
-    
+
     int n = param[PARAM_N].i;
     int nrhs = param[PARAM_NRHS].i;
-    
+
     int lda = imax(1, n + param[PARAM_PADA].i);
     int ldb = imax(1, n + param[PARAM_PADB].i);
-    
+
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
-    
+
     //================================================================
     // Allocate and initialize arrays.
     //================================================================
     PLASMA_Complex64_t *A =
         (PLASMA_Complex64_t*)malloc((size_t)lda*n*sizeof(PLASMA_Complex64_t));
     assert(A != NULL);
-    
+
     PLASMA_Complex64_t *B =
         (PLASMA_Complex64_t*)malloc((size_t)ldb*nrhs*sizeof(PLASMA_Complex64_t));
     assert(B != NULL);
-    
+
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*nrhs, B);
     assert(retval == 0);
-    
+
     //================================================================
     // Make the A matrix symmetric/Hermitian positive definite.
     // It increases diagonal by n, and makes it real.
-    // It sets Aji = conj( Aij ) for j < i, that is, copy lower 
+    // It sets Aji = conj( Aij ) for j < i, that is, copy lower
     // triangle to upper triangle.
     //================================================================
-    
-    for(int i = 0; i < n; ++i ) {
-        A(i,i) = (creal(A(i,i)) + n) + 0.;
-        for(int j = 0; j < i; ++j ) {
+    for (int i = 0; i < n; ++i ) {
+        A(i,i) = creal(A(i,i)) + n;
+        for (int j = 0; j < i; ++j ) {
             A(j,i) = conj(A(i,j));
         }
     }
-    
+
     PLASMA_Complex64_t *Aref = NULL;
     PLASMA_Complex64_t *Bref = NULL;
     double *work = NULL;
@@ -143,15 +142,15 @@ void test_zposv(param_value_t param[], char *info)
         Aref = (PLASMA_Complex64_t*)malloc(
             (size_t)lda*n*sizeof(PLASMA_Complex64_t));
         assert(Aref != NULL);
-        
+
         Bref = (PLASMA_Complex64_t*)malloc(
             (size_t)ldb*nrhs*sizeof(PLASMA_Complex64_t));
         assert(Bref != NULL);
-        
+
         memcpy(Aref, A, (size_t)lda*n*sizeof(PLASMA_Complex64_t));
         memcpy(Bref, B, (size_t)ldb*nrhs*sizeof(PLASMA_Complex64_t));
     }
-    
+
     //================================================================
     // Run and time PLASMA.
     //================================================================
@@ -162,7 +161,7 @@ void test_zposv(param_value_t param[], char *info)
     double flops = flops_zpotrf(n) + 2*flops_ztrsm(uplo, n, nrhs);
     param[PARAM_TIME].d = time;
     param[PARAM_GFLOPS].d = flops / time / 1e9;
-    
+
     //================================================================
     // Test results by checking the residual
     //
@@ -175,32 +174,32 @@ void test_zposv(param_value_t param[], char *info)
         PLASMA_Complex64_t zone =   1.0;
         PLASMA_Complex64_t zmone = -1.0;
         work = (double*)malloc((size_t)n*sizeof(double));
-        assert(work !=NULL);
-        
+        assert(work != NULL);
+
         double Anorm = LAPACKE_zlange_work(
             LAPACK_COL_MAJOR, 'I', n, n, Aref, lda, work);
         double Xnorm = LAPACKE_zlange_work(
             LAPACK_COL_MAJOR, 'I', n, nrhs, B, ldb, work);
-        
+
         cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, nrhs, n,
                     CBLAS_SADDR(zmone), Aref, lda,
                     B, ldb,
                     CBLAS_SADDR(zone), Bref, ldb);
-        
+
         double Rnorm = LAPACKE_zlange_work(
             LAPACK_COL_MAJOR, 'I', n, nrhs, Bref, ldb, work);
         double residual = Rnorm/(n*Anorm*Xnorm);
-        
+
         param[PARAM_ERROR].d = residual;
         param[PARAM_SUCCESS].i = residual < tol;
     }
-    
+
     //================================================================
     // Free arrays.
     //================================================================
     free(A);
     free(B);
-    if (test){
+    if (test) {
         free(Aref);
         free(Bref);
         free(work);

@@ -151,7 +151,6 @@ int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
     //     return status;
     // }
 
-
     // Set NT & KT
     nb = plasma->nb;
     // Initialize tile matrix descriptors.
@@ -187,7 +186,7 @@ int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
 #pragma omp parallel
 #pragma omp master
     {
-        // the Async functions are submitted here.  If an error occurs
+        // The Async functions are submitted here.  If an error occurs
         // (at submission time or at run time) the sequence->status
         // will be marked with an error.  After an error, the next
         // Async will not _insert_ more tasks into the runtime.  The
@@ -231,10 +230,8 @@ int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
  * @ingroup plasma_syrk
  *
  *  Performs rank k update.
- *  Non-blocking tile version of PLASMA_zherk().
+ *  Non-blocking tile version of PLASMA_zsyrk().
  *  May return before the computation is finished.
- *  Operates on matrices stored by tiles.
- *  Tile equivalent of PLASMA_zsyrk().
  *  Operates on matrices stored by tiles.
  *  All matrices are passed through descriptors.
  *  All dimensions are taken from the descriptors.

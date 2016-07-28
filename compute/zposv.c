@@ -22,7 +22,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_posv
  *
  *  Computes the solution to a system of linear equations A * X = B,
  *  where A is an n by n  symmetric positive definite (or Hermitian
@@ -61,7 +61,7 @@
  *          contains the lower triangular part of the matrix A, and the strictly
  *          upper triangular part of A is not referenced.
  *          On exit, if return value = 0, the factor U or L from
- *          the Cholesky factorization  A = U**H*U or A = L*L**H.
+ *          the Cholesky factorization  A = U^H*U or A = L*L^H.
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,n).
@@ -77,8 +77,8 @@
  *
  * @return
  *          @retval PLASMA_SUCCESS successful exit
- *          @retval <0 if -i, the i-th argument had an illegal value
- *          @retval >0 if i, the leading minor of order i of A is not
+ *          @retval < 0 if -i, the i-th argument had an illegal value
+ *          @retval > 0 if i, the leading minor of order i of A is not
  *                  positive definite, so the factorization could not
  *                  be completed, and the solution has not been computed.
  *
@@ -100,14 +100,14 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
 
     PLASMA_desc descA;
     PLASMA_desc descB;
-    
+
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
         return PLASMA_ERR_NOT_INITIALIZED;
     }
-    
+
     // Check input arguments
     if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
@@ -147,10 +147,10 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
     // Initialize tile matrix descriptors.
     descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
                              nb*nb, lda, n, 0, 0, n, n);
-    
+
     descB = plasma_desc_init(PlasmaComplexDouble, nb, nb,
                              nb*nb, ldb, nrhs, 0, 0, n, nrhs);
-    
+
     // Allocate matrices in tile layout.
     retval = plasma_desc_mat_alloc(&descA);
     if (retval != PLASMA_SUCCESS) {
@@ -163,7 +163,7 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
         plasma_desc_mat_free(&descA);
         return retval;
     }
-    
+
     // Create sequence.
     PLASMA_sequence *sequence = NULL;
     retval = plasma_sequence_create(&sequence);
@@ -173,22 +173,22 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
     }
     // Initialize request.
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
-    
+
 #pragma omp parallel
 #pragma omp master
     {
-        // the Async functions are submitted here.  If an error occurs
+        // The Async functions are submitted here.  If an error occurs
         // (at submission time or at run time) the sequence->status
         // will be marked with an error.  After an error, the next
         // Async will not _insert_ more tasks into the runtime.  The
         // sequence->status can be checked after each call to _Async
         // or at the end of the parallel region.
-        
+
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
         if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
-        
+
         // Call the tile async function.
         if (sequence->status == PLASMA_SUCCESS) {
             PLASMA_zposv_Tile_Async(uplo,
@@ -196,16 +196,16 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
                                     &descB,
                                     sequence, &request);
         }
-        
+
         // Translate back to LAPACK layout.
         if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
     } // pragma omp parallel block closed
-    
+
     // Check for errors in the async execution
     if (sequence->status != PLASMA_SUCCESS)
         return sequence->status;
-    
+
     // Free matrices in tile layout.
     plasma_desc_mat_free(&descA);
     plasma_desc_mat_free(&descB);
@@ -217,12 +217,12 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
 }
 
 /***************************************************************************//**
-                                                                              *
- * @ingroup PLASMA_Complex64_t_Tile_Async
+ *
+ * @ingroup plasma_posv
  *
  *  Solves a symmetric positive definite or Hermitian
  *  positive definite system of linear equations using Cholesky factorization.
- *  Non-blocking equivalent of PLASMA_zposv().
+ *  Non-blocking tile version of PLASMA_zposv().
  *  Operates on matrices stored by tiles.
  *  All matrices are passed through descriptors.
  *  All dimensions are taken from the descriptors.
@@ -243,7 +243,7 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
  *          contains the lower triangular part of the matrix A, and the strictly
  *          upper triangular part of A is not referenced.
  *          On exit, if return value = 0, the factor U or L from
- *          the Cholesky factorization  A = U**H*U or A = L*L**H.
+ *          the Cholesky factorization  A = U^H*U or A = L*L^H.
  *
  * @param[in,out] B
  *          On entry, the n by nrhs right hand side matrix B.
@@ -282,7 +282,7 @@ void PLASMA_zposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    
+
     // Check input arguments.
     if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
@@ -309,26 +309,26 @@ void PLASMA_zposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    
+
     // Check sequence status.
     if (sequence->status != PLASMA_SUCCESS) {
         plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
         return;
     }
-    
+
     // Quick return - currently NOT equivalent to LAPACK's
     // LAPACK does not have such check for DPOSV
     //
     //  if (min(n, nrhs == 0)
     //      return PLASMA_SUCCESS;
     //
-    
+
     PLASMA_enum trans;
     PLASMA_Complex64_t zone = 1.0;
-    
+
     // Call the parallel functions.
     plasma_pzpotrf(uplo, *A, sequence, request);
-    
+
     trans = uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans;
     plasma_pztrsm(PlasmaLeft, uplo,
                   trans, PlasmaNonUnit,
@@ -336,7 +336,7 @@ void PLASMA_zposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
                   *A,
                   *B,
                   sequence, request);
-    
+
     trans = uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans;
     plasma_pztrsm(PlasmaLeft, uplo,
                   trans, PlasmaNonUnit,
@@ -346,4 +346,3 @@ void PLASMA_zposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
                   sequence, request);
     return;
 }
-

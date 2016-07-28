@@ -62,7 +62,8 @@ void test_ztrsm(param_value_t param[], char *info)
             print_usage(PARAM_ALPHA);
             print_usage(PARAM_PADA);
             print_usage(PARAM_PADB);
-        } else {
+        }
+        else {
             // Return column labels.
             snprintf(info, InfoLen,
                      "%*s %*s %*s %*s %*s %*s %*s %*s %*s",
@@ -90,7 +91,7 @@ void test_ztrsm(param_value_t param[], char *info)
              InfoSpacing, __real__(param[PARAM_ALPHA].z),
              InfoSpacing, param[PARAM_PADA].i,
              InfoSpacing, param[PARAM_PADB].i);
-    
+
     //================================================================
     // Set parameters.
     //================================================================
@@ -98,60 +99,60 @@ void test_ztrsm(param_value_t param[], char *info)
     PLASMA_enum uplo;
     PLASMA_enum transa;
     PLASMA_enum diag;
-    
+
     if (param[PARAM_SIDE].c == 'l')
         side = PlasmaLeft;
     else
         side = PlasmaRight;
-    
+
     if (param[PARAM_UPLO].c == 'l')
         uplo = PlasmaLower;
     else
         uplo = PlasmaUpper;
-    
+
     if (param[PARAM_TRANSA].c == 'n')
         transa = PlasmaNoTrans;
     else if (param[PARAM_TRANSA].c == 't')
         transa = PlasmaTrans;
     else
         transa = PlasmaConjTrans;
-    
+
     if (param[PARAM_DIAG].c == 'n')
         diag = PlasmaNonUnit;
     else
         diag = PlasmaUnit;
-    
+
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
     int Am;
-    
+
     if (side == PlasmaLeft) {
         Am = m;
     }
     else {
         Am = n;
     }
-    
+
     int lda = imax(1, Am + param[PARAM_PADA].i);
     int ldb = imax(1, m + param[PARAM_PADB].i);
-    
+
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
-    
+
     //================================================================
     // Allocate and initialize arrays.
     //================================================================
     PLASMA_Complex64_t *A =
         (PLASMA_Complex64_t*)malloc((size_t)lda*lda*sizeof(PLASMA_Complex64_t));
     assert(A != NULL);
-    
+
     PLASMA_Complex64_t *B =
         (PLASMA_Complex64_t*)malloc((size_t)ldb*n*sizeof(PLASMA_Complex64_t));
     assert(B != NULL);
-    
+
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
-    
+
     //=================================================================
     // Initialize the matrices.
     // Factor A into LU to get well-conditioned triangular matrix.
@@ -160,50 +161,52 @@ void test_ztrsm(param_value_t param[], char *info)
     //=================================================================
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*lda, A);
     assert(retval == 0);
-    
+
     int ipiv[lda];
     LAPACKE_zgetrf(CblasColMajor, Am, Am, A, lda, ipiv);
-    
-    for(int j = 0; j < Am; j++)
-        for(int i = 0; i < j; i++)
+
+    for (int j = 0; j < Am; j++) {
+        for (int i = 0; i < j; i++) {
             *A(i,j) = *A(j,i);
-    
+        }
+    }
+
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*n, B);
     assert(retval == 0);
-    
+
     PLASMA_Complex64_t *Bref = NULL;
     if (test) {
         Bref = (PLASMA_Complex64_t*)malloc(
             (size_t)ldb*n*sizeof(PLASMA_Complex64_t));
         assert(Bref != NULL);
-        
+
         memcpy(Bref, B, (size_t)ldb*n*sizeof(PLASMA_Complex64_t));
     }
-    
+
 #ifdef COMPLEX
     PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
 #else
     PLASMA_Complex64_t alpha = __real__(param[PARAM_ALPHA].z);
 #endif
-    
+
     //================================================================
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    
+
     PLASMA_ztrsm(
         (CBLAS_SIDE)side, (CBLAS_UPLO) uplo,
         (CBLAS_TRANSPOSE)transa, (CBLAS_DIAG)diag,
         m, n,
         alpha, A, lda,
         B, ldb);
-    
+
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
-    
+
     param[PARAM_TIME].d = time;
     param[PARAM_GFLOPS].d = flops_ztrsm(side, m, n) / time / 1e9;
-    
+
     //================================================================
     // Test results by comparing to a reference implementation.
     //================================================================
@@ -215,10 +218,10 @@ void test_ztrsm(param_value_t param[], char *info)
             m, n,
             CBLAS_SADDR(alpha), A, lda,
             Bref, ldb);
-        
+
         PLASMA_Complex64_t zmone = -1.0;
         cblas_zaxpy((size_t)ldb*n, CBLAS_SADDR(zmone), Bref, 1, B, 1);
-        
+
         double work[1];
         double Bnorm = LAPACKE_zlange_work(
             LAPACK_COL_MAJOR, 'F', m, n, Bref, ldb, work);
@@ -229,7 +232,7 @@ void test_ztrsm(param_value_t param[], char *info)
         param[PARAM_ERROR].d = error;
         param[PARAM_SUCCESS].i = error < tol*n;
     }
-    
+
     //================================================================
     // Free arrays.
     //================================================================

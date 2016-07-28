@@ -9,7 +9,7 @@
  *
  * @version 3.0.0
  * @author Pedro V. Lara
- * @date
+ * @date 2016-06-15
  * @precisions normal z -> s d c
  *
  **/

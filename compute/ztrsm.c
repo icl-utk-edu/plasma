@@ -6,7 +6,7 @@
  *  PLASMA is a software package provided by Univ. of Tennessee,
  *  Univ. of California Berkeley and Univ. of Colorado Denver
  *
- * @version 2.8.0
+ * @version 3.0.0
  * @author Mawussi Zounon
  * @precisions normal z -> s d c
  *
@@ -208,7 +208,7 @@ int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
     #pragma omp parallel
     #pragma omp master
     {
-        // the Async functions are submitted here.  If an error occurs
+        // The Async functions are submitted here.  If an error occurs
         // (at submission time or at run time) the sequence->status
         // will be marked with an error.  After an error, the next
         // Async will not _insert_ more tasks into the runtime.  The

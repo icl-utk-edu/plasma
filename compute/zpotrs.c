@@ -7,9 +7,9 @@
  *  Univ. of California Berkeley, Univ. of Colorado Denver and
  *  Univ. of Manchester.
  *
- * @version 
+ * @version 3.0.0
  * @author Pedro V. Lara
- * @date 
+ * @date 2016-07-26
  * @precisions normal z -> s d c
  *
  **/
@@ -23,12 +23,12 @@
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_potrs
  *
- *  Solves a system of linear equations A * X = B with a symmetric 
- *  positive definite (or Hermitian positive definite in the complex 
- *  case) matrix A using the Cholesky factorization A =
- *  U**H*U or A = L*L**H computed by PLASMA_zpotrf.
+ *  Solves a system of linear equations A * X = B with a symmetric
+ *  positive definite (or Hermitian positive definite in the complex
+ *  case) matrix A using the Cholesky factorization
+ *  A = U^H*U or A = L*L^H computed by PLASMA_zpotrf.
  *
  *******************************************************************************
  *
@@ -45,7 +45,7 @@
  *
  * @param[in,out] A
  *          The triangular factor U or L from the Cholesky
- *          factorization A = U**H*U or A = L*L**H, computed by
+ *          factorization A = U^H*U or A = L*L^H, computed by
  *          PLASMA_zpotrf.
  *          Remark: If out-of-place layout translation is used, the
  *          matrix A can be considered as input, however if inplace
@@ -62,8 +62,8 @@
  *
  * @param[in] ldb
  *          The leading dimension of the array B. ldb >= max(1,n).
-*
- * *******************************************************************************
+ *
+ *******************************************************************************
  *
  * @retval PLASMA_SUCCESS successful exit
  *
@@ -93,8 +93,8 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
         return PLASMA_ERR_NOT_INITIALIZED;
     }
 
-    // Check input arguments 
-    if ((uplo != PlasmaUpper) && 
+    // Check input arguments
+    if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
         return -1;
@@ -116,7 +116,7 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
         return -7;
     }
 
-    // quick return 
+    // quick return
     if (imax(n, nrhs) == 0)
         return PLASMA_SUCCESS;
 
@@ -127,15 +127,15 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
     //     return status;
     // }
 
-    /* Set NT & NHRS */
+    // Set NT & NHRS
     nb = plasma->nb;
     // Initialize tile matrix descriptors.
     descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
                              nb*nb, n, n, 0, 0, n, n);
-    
+
     descB = plasma_desc_init(PlasmaComplexDouble, nb, nb,
                              nb*nb, n, nrhs, 0, 0, n, nrhs);
-   
+
     // Allocate matrices in tile layout.
     retval = plasma_desc_mat_alloc(&descA);
     if (retval != PLASMA_SUCCESS) {
@@ -157,11 +157,11 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
     }
     // Initialize request.
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
-    
+
 #pragma omp parallel
 #pragma omp master
     {
-        // the Async functions are submitted here.  If an error occurs
+        // The Async functions are submitted here.  If an error occurs
         // (at submission time or at run time) the sequence->status
         // will be marked with an error.  After an error, the next
         // Async will not _insert_ more tasks into the runtime.  The
@@ -172,17 +172,17 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
         if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
-        
+
         // Call the tile async function.
         if (sequence->status == PLASMA_SUCCESS) {
             PLASMA_zpotrs_Tile_Async(uplo, &descA, &descB, sequence, &request);
         }
 
         // Translate back to LAPACK layout.
-        if (sequence->status == PLASMA_SUCCESS) 
+        if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
-    } // pragma omp parallel block closed 
- 
+    } // pragma omp parallel block closed
+
     // Check for errors in the async execution
     if (sequence->status != PLASMA_SUCCESS)
         return sequence->status;
@@ -199,7 +199,7 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t_Tile
+ * @ingroup plasma_potrs
  *
  *  Solves a system of linear equations using previously
  *  computed Cholesky factorization.
@@ -207,7 +207,7 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
  *  May return before the computation is finished.
  *  Operates on matrices stored by tiles.
  *  All matrices are passed through descriptors.
- *  All dimensions are taken from the descriptors. 
+ *  All dimensions are taken from the descriptors.
  *  Allows for pipelining of operations at runtime.
  *
  *******************************************************************************
@@ -217,20 +217,20 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
  *          - PlasmaLower: Lower triangle of A is stored.
  *
  * @param[in] A
- *          The triangular factor U or L from the Cholesky factorization A = U**H*U 
- *          or A = L*L**H, computed by PLASMA_zpotrf.
+ *          The triangular factor U or L from the Cholesky factorization
+ *          A = U^H*U or A = L*L^H, computed by PLASMA_zpotrf.
  *
  * @param[in,out] B
  *          On entry, the n-by-nrhs right hand side matrix B.
  *          On exit, if return value = 0, the n-by-nrhs solution matrix X.
- * 
+ *
  * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
  *          request->status should never be set to PLASMA_SUCCESS (the
  *          initial values) since another async call may be setting a
  *          failure value at the same time.
- 
+ *
  *******************************************************************************
  *
  * @sa PLASMA_zpotrs
@@ -301,15 +301,15 @@ void PLASMA_zpotrs_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
         plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
         return;
     }
-    
+
     // quick return
     /*
-    if (min(n, nrhs) == 0) 
+    if (min(n, nrhs) == 0)
         return;
-    */    
-    
+    */
+
     // Call the parallel functions.
-    plasma_pztrsm(PlasmaLeft, 
+    plasma_pztrsm(PlasmaLeft,
         uplo,
         uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans,
         PlasmaNonUnit,

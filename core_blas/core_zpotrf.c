@@ -7,9 +7,9 @@
  *  Univ. of California Berkeley and Univ. of Colorado Denver and
  *  Univ. of Manchester.
  *
- * @version
+ * @version 3.0.0
  * @author Pedro V. Lara
- * @date
+ * @date 2016-06-15
  * @precisions normal z -> c d s
  *
  **/
@@ -61,7 +61,7 @@
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,n).
  *
- *******************************************************************************/
+ ******************************************************************************/
 void CORE_zpotrf(PLASMA_enum uplo,
                  int n,
                  PLASMA_Complex64_t *A, int lda)

@@ -272,7 +272,7 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_cposv(pval, info);
     else if (strcmp(name, "sposv") == 0)
         test_sposv(pval, info);
-    
+
     else if (strcmp(name, "zpotrf") == 0)
         test_zpotrf(pval, info);
     else if (strcmp(name, "dpotrf") == 0)
