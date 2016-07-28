@@ -142,8 +142,7 @@ int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
     }
 
     // quick return
-    if (n == 0 ||
-        ((alpha == (PLASMA_Complex64_t)0.0 || k == 0.0) && beta == (PLASMA_Complex64_t)1.0))
+    if (n == 0 || ((alpha == 0.0 || k == 0) && beta == 1.0))
         return PLASMA_SUCCESS;
 
     // Tune
@@ -373,8 +372,7 @@ void PLASMA_zsyrk_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
     }
 
     // quick return
-    if (C->m == 0 ||
-        ((alpha == 0.0 || An == 0) && beta == 1.0))
+    if (C->m == 0 || ((alpha == 0.0 || An == 0) && beta == 1.0))
         return;
 
     // Call the parallel function.

@@ -168,7 +168,7 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
     }
 
     // quick return
-    if (n == 0 || ((alpha == zzero || k == 0.0) && beta == (double)1.0))
+    if (n == 0 || ((alpha == zzero || k == 0.0) && beta == 1.0))
         return PLASMA_SUCCESS;
 
     // Tune
@@ -421,7 +421,7 @@ void PLASMA_zher2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
     }
 
     // quick return
-    if (C->m == 0 || ((alpha == zzero || An == 0) && beta == (double)1.0))
+    if (C->m == 0 || ((alpha == zzero || An == 0) && beta == 1.0))
         return;
 
     // Call the parallel function.
