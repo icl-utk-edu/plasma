@@ -81,6 +81,8 @@ grep_src "Missing space before operators, e.g., (x== y)." '([\w\[\]\(\)])(==|!=|
 
 
 # ---------------------------------------- newlines
+grep_src "Line exceeds 80 characters" "^.{81}"
+
 grep_src "Cuddled curly braces: } else {. Add newline after {." '\} *else'
 
 echo "===== Extra blank lines after {."
