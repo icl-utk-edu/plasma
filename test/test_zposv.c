@@ -59,7 +59,7 @@ void test_zposv(param_value_t param[], char *info)
         if (info == NULL) {
             // Print usage info.
             print_usage(PARAM_UPLO);
-            print_usage(PARAM_M);
+            print_usage(PARAM_N);
             print_usage(PARAM_NRHS);
             print_usage(PARAM_PADA);
             print_usage(PARAM_PADB);
