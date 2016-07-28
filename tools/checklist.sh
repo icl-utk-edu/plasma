@@ -15,7 +15,7 @@
 
 hg st -a -c -m | perl -pe 's/^[MAC] //' > files.txt
 
-files=`cat files.txt | perl -pe 's/\n/ /'`
+files=`grep -v checklist.sh files.txt | perl -pe 's/\n/ /'`
 src=`grep -P '\.(c|h|cpp|hpp)\$' files.txt | perl -pe 's/\n/ /'`
 hdr=`grep -P '\.(h|hpp)\$' files.txt | perl -pe 's/\n/ /'`
 
@@ -129,13 +129,27 @@ grep_src "Using Fortran-style A**H or A**T. Please use A^H or A^T." '\*\*[TH].'
 grep_src "Using Matlab-style A'. Please use A^H or A^T. (This is really hard to search for.)" " [A-Z]'"
 
 echo "===== Using Matlab-style A'. (Second search.)"
-grep -P "'" $src | grep -v -P "'[a-zA-Z=:+]'|'\\\0'"
+grep -P "'" $src | grep -v -P "'[a-zA-Z=:+]'|'\\\0'|LAPACK's"
 echo
 
 grep_src "Hermitian should be capitalized" "hermitian"
 
 echo "===== @ingroup (plasma|core)_{routine}, no precision: plasma_gemm, not plasma_zgemm."
 echo "===== See docs/doxygen/groups.dox for available groups."
-echo "===== Use docs/doxygen/groups.sh to see what groups are defined vs. in use."
+echo "===== Use tools/doxygen_groups.sh to see what groups are defined vs. in use."
 grep -P '@ingroup' $src | grep -v -P '@ingroup (plasma|core)_[^z]\w+'
 echo
+
+echo "===== @version 3.0.0"
+grep -P '@version' $files | grep -v -P '@version 3.0.0'
+echo
+
+echo "===== @date yyyy-mm-dd"
+grep -P '@date' $files | grep -v -P '@date \d\d\d\d-\d\d-\d\d'
+echo
+
+echo "===== **** rule lines are exactly 80 characters"
+grep -P '\*\*\*' $files | grep -v -P ':.{80}$'
+echo
+
+grep_src "===== _Tile versions are removed" '_Tile\b'
