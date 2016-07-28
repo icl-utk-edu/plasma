@@ -27,11 +27,11 @@
  *
  * @ingroup core_syr2k
  *
- *  CORE_zsyr2k - Performs one of the symmetric rank 2k operations
+ *  Performs one of the symmetric rank 2k operations
  *
- *    \f[ C = \alpha A \times B^T + \alpha B \times A^T + \beta C \f],
+ *    \f[ C = \alpha A \times B^T + \alpha B \times A^T + \beta C, \f]
  *    or
- *    \f[ C = \alpha A^T \times B + \alpha B^T \times A + \beta C \f],
+ *    \f[ C = \alpha A^T \times B + \alpha B^T \times A + \beta C, \f]
  *
  *  where alpha and beta are scalars,
  *  C is an n-by-n symmetric matrix, and A and B are n-by-k matrices
@@ -45,9 +45,9 @@
  *
  * @param[in] trans
  *          - PlasmaNoTrans:
- *            \f[ C = \alpha A \times B^T + \alpha B \times A^T + \beta C \f];
+ *            \f[ C = \alpha A \times B^T + \alpha B \times A^T + \beta C; \f]
  *          - PlasmaTrans:
- *            \f[ C = \alpha A^T \times B + \alpha B^T \times A + \beta C \f].
+ *            \f[ C = \alpha A^T \times B + \alpha B^T \times A + \beta C. \f]
  *
  * @param[in] n
  *          The order of the matrix C. n >= zero.

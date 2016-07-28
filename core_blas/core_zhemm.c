@@ -35,7 +35,7 @@
  *     \f[ C = \alpha \times B \times A + \beta \times C \f]
  *
  *  where alpha and beta are scalars, A is a Hermitian matrix and B and
- *  C are m by n matrices.
+ *  C are m-by-n matrices.
  *
  *******************************************************************************
  *

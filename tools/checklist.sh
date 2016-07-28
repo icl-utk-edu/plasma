@@ -154,6 +154,16 @@ echo "===== **** rule lines are exactly 80 characters"
 grep -P '\*\*\*' $files | grep -v -P ':.{80}$'
 echo
 
-grep_src "===== _Tile versions are removed" '_Tile\b'
+grep_src "_Tile versions are removed" '_Tile\b'
+grep_src "#pragma omp should be indented" '^#pragma omp'
+grep_src "Use @retval; delete @return"    '@return'
+grep_src 'Use @retval instead of \\retval' '\\retval'
+grep_src 'Use hyphens in "m-by-n", instead of "m by n"' '\b(ld\w+|\w) by \w'
 
-grep_src "===== #pragma omp should be indented" '^#pragma omp'
+echo "===== Term 'symmetric' should not occur in complex (z) routines (except zsy routines); use Hermitian."
+grep -i symmetric */core_z*.c */z*.c */pz*.c | grep -v 'zsy'
+echo
+
+echo "===== Term 'Hermitian' should not occur in real (d) routines; bug in codegen?"
+grep -i Hermitian */core_d*.c */d*.c */pd*.c
+echo

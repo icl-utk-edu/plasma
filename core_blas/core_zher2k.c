@@ -29,11 +29,11 @@
  *
  * @ingroup core_her2k
  *
- *  CORE_zher2k - Performs one of the Hermitian rank 2k operations
+ *  Performs one of the Hermitian rank 2k operations
  *
- *    \f[ C = \alpha A \times B^H + conjg( \alpha ) B \times A^H + \beta C \f],
+ *    \f[ C = \alpha A \times B^H + conjg( \alpha ) B \times A^H + \beta C, \f]
  *    or
- *    \f[ C = \alpha A^H \times B + conjg( \alpha ) B^H \times A + \beta C \f],
+ *    \f[ C = \alpha A^H \times B + conjg( \alpha ) B^H \times A + \beta C, \f]
  *
  *  where alpha is a complex scalar, beta is a real scalar,
  *  C is an n-by-n Hermitian matrix, and A and B are n-by-k matrices
@@ -48,10 +48,10 @@
  * @param[in] trans
  *          - PlasmaNoTrans:
  *            \f[ C = \alpha A \times B^H
- *                  + conjg( \alpha ) B \times A^H + \beta C \f];
+ *                  + conjg( \alpha ) B \times A^H + \beta C; \f]
  *          - PlasmaConjTrans:
  *            \f[ C = \alpha A^H \times B
- *                  + conjg( \alpha ) B^H \times A + \beta C \f].
+ *                  + conjg( \alpha ) B^H \times A + \beta C. \f]
  *
  * @param[in] n
  *          The order of the matrix C. n >= zero.

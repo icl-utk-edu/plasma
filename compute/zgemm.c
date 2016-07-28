@@ -34,7 +34,7 @@
  *          - op( X ) = X^H
  *
  *  alpha and beta are scalars, and A, B and C are matrices, with op( A )
- *  an m by k matrix, op( B ) a k by n matrix and C an m by n matrix.
+ *  an m-by-k matrix, op( B ) a k-by-n matrix and C an m-by-n matrix.
  *
  *******************************************************************************
  *

@@ -32,7 +32,7 @@
  *     \f[ C = \alpha \times B \times A + \beta \times C \f]
  *
  *  where alpha and beta are scalars, A is a Hermitian matrix and B and
- *  C are m by n matrices.
+ *  C are m-by-n matrices.
  *
  *******************************************************************************
  *
@@ -67,7 +67,7 @@
  *          The leading dimension of the array A. lda >= max(1,ka).
  *
  * @param[in] B
- *          B is a ldb-by-n matrix, where the leading m-by-n part of
+ *          B is an ldb-by-n matrix, where the leading m-by-n part of
  *          the array B must contain the matrix B.
  *
  * @param[in] ldb

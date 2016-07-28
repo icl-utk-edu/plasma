@@ -25,13 +25,12 @@
  * @ingroup plasma_posv
  *
  *  Computes the solution to a system of linear equations A * X = B,
- *  where A is an n by n  symmetric positive definite (or Hermitian
- *  positive definite in the complex case) matrix  and X and B are
- *  n by nrhs matrices. The Cholesky decomposition is used to factor A as
+ *  where A is an n-by-n Hermitian positive definite matrix and X and B are
+ *  n-by-nrhs matrices. The Cholesky decomposition is used to factor A as
  *
- *    \f[ A =  L\times L^H, if uplo = PlasmaLower \f]
+ *    \f[ A =  L\times L^H, \f] if uplo = PlasmaLower,
  *    or
- *    \f[ A =  U^H\times U, if uplo = PlasmaUpper \f]
+ *    \f[ A =  U^H\times U, \f] if uplo = PlasmaUpper,
  *
  *  where U is an upper triangular matrix and  L is a lower triangular matrix.
  *  The factored form of A is then used to solve the system of equations:
@@ -53,11 +52,11 @@
  *          of the matrix B.  nrhs >= 0.
  *
  * @param[in,out] A
- *          On entry, the symmetric positive definite (or Hermitian) matrix A.
- *          If uplo = PlasmaUpper, the leading n by n upper triangular part of A
+ *          On entry, the Hermitian positive definite matrix A.
+ *          If uplo = PlasmaUpper, the leading n-by-n upper triangular part of A
  *          contains the upper triangular part of the matrix A, and the strictly
  *          lower triangular part of A is not referenced.
- *          If UPLO = 'L', the leading n by n lower triangular part of A
+ *          If UPLO = 'L', the leading n-by-n lower triangular part of A
  *          contains the lower triangular part of the matrix A, and the strictly
  *          upper triangular part of A is not referenced.
  *          On exit, if return value = 0, the factor U or L from
@@ -67,20 +66,19 @@
  *          The leading dimension of the array A. lda >= max(1,n).
  *
  * @param[in,out] B
- *          On entry, the n by nrhs right hand side matrix B.
- *          On exit, if return value = 0, the n by nrhs solution matrix X.
+ *          On entry, the n-by-nrhs right hand side matrix B.
+ *          On exit, if return value = 0, the n-by-nrhs solution matrix X.
  *
  * @param[in] ldb
  *          The leading dimension of the array B. ldb >= max(1,n).
  *
  *******************************************************************************
  *
- * @return
- *          @retval PLASMA_SUCCESS successful exit
- *          @retval < 0 if -i, the i-th argument had an illegal value
- *          @retval > 0 if i, the leading minor of order i of A is not
- *                  positive definite, so the factorization could not
- *                  be completed, and the solution has not been computed.
+ * @retval PLASMA_SUCCESS successful exit
+ * @retval  < 0 if -i, the i-th argument had an illegal value
+ * @retval  > 0 if i, the leading minor of order i of A is not
+ *          positive definite, so the factorization could not
+ *          be completed, and the solution has not been computed.
  *
  *******************************************************************************
  *
@@ -220,8 +218,8 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
  *
  * @ingroup plasma_posv
  *
- *  Solves a symmetric positive definite or Hermitian
- *  positive definite system of linear equations using Cholesky factorization.
+ *  Solves a Hermitian positive definite system of linear equations
+ *  using Cholesky factorization.
  *  Non-blocking tile version of PLASMA_zposv().
  *  Operates on matrices stored by tiles.
  *  All matrices are passed through descriptors.
@@ -235,19 +233,19 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
  *          - PlasmaLower: Lower triangle of A is stored.
  *
  * @param[in,out] A
- *          On entry, the symmetric positive definite (or Hermitian) matrix A.
- *          If uplo = PlasmaUpper, the leading n by n upper triangular part of A
+ *          On entry, the Hermitian positive definite matrix A.
+ *          If uplo = PlasmaUpper, the leading n-by-n upper triangular part of A
  *          contains the upper triangular part of the matrix A, and the strictly
  *          lower triangular part of A is not referenced.
- *          If UPLO = 'L', the leading n by n lower triangular part of A
+ *          If UPLO = 'L', the leading n-by-n lower triangular part of A
  *          contains the lower triangular part of the matrix A, and the strictly
  *          upper triangular part of A is not referenced.
  *          On exit, if return value = 0, the factor U or L from
  *          the Cholesky factorization  A = U^H*U or A = L*L^H.
  *
  * @param[in,out] B
- *          On entry, the n by nrhs right hand side matrix B.
- *          On exit, if return value = 0, the n by nrhs solution matrix X.
+ *          On entry, the n-by-nrhs right hand side matrix B.
+ *          On exit, if return value = 0, the n-by-nrhs solution matrix X.
  *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to

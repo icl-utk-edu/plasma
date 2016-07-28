@@ -30,9 +30,9 @@
  *
  *  Performs one of the symmetric rank k operations
  *
- *    \f[ C = \alpha A \times A^T + \beta C \f],
+ *    \f[ C = \alpha A \times A^T + \beta C, \f]
  *    or
- *    \f[ C = \alpha A^T \times A + \beta C \f],
+ *    \f[ C = \alpha A^T \times A + \beta C, \f]
  *
  *  where alpha and beta are scalars, C is an n-by-n symmetric
  *  matrix, and A is an n-by-k matrix in the first case and a k-by-n
@@ -45,8 +45,8 @@
  *          - PlasmaLower: Lower triangle of C is stored.
  *
  * @param[in] trans
- *          - PlasmaNoTrans: \f[ C = \alpha A \times A^T + \beta C \f];
- *          - PlasmaTrans:   \f[ C = \alpha A^T \times A + \beta C \f].
+ *          - PlasmaNoTrans: \f[ C = \alpha A \times A^T + \beta C; \f]
+ *          - PlasmaTrans:   \f[ C = \alpha A^T \times A + \beta C. \f]
  *
  * @param[in] n
  *          The order of the matrix C. n >= 0.

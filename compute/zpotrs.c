@@ -25,9 +25,8 @@
  *
  * @ingroup plasma_potrs
  *
- *  Solves a system of linear equations A * X = B with a symmetric
- *  positive definite (or Hermitian positive definite in the complex
- *  case) matrix A using the Cholesky factorization
+ *  Solves a system of linear equations A * X = B with a Hermitian positive
+ *  definite in the complex matrix A using the Cholesky factorization
  *  A = U^H*U or A = L*L^H computed by PLASMA_zpotrf.
  *
  *******************************************************************************
@@ -66,6 +65,7 @@
  *******************************************************************************
  *
  * @retval PLASMA_SUCCESS successful exit
+ * @retval  < 0 if -i, the i-th argument had an illegal value
  *
  *******************************************************************************
  *
