@@ -32,9 +32,9 @@
  *    \f[ C = \alpha [op( A )\times op( B )] + \beta C, \f]
  *
  *  where op( X ) is one of:
- *          - op( X ) = X   or
- *          - op( X ) = X^T or
- *          - op( X ) = X^H
+ *    \f[ op( X ) = X,   \f]
+ *    \f[ op( X ) = X^T, \f]
+ *    \f[ op( X ) = X^H, \f]
  *
  *  alpha and beta are scalars, and A, B and C  are matrices, with op( A )
  *  an m-by-k matrix, op( B ) a k-by-n matrix and C an m-by-n matrix.
