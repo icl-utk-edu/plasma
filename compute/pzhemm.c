@@ -24,7 +24,7 @@
 #define C(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(C, m, n))
 
 /***************************************************************************//**
- *  Parallel tile hemmetric matrix-matrix multiplication.
+ *  Parallel tile Hermitian matrix-matrix multiplication.
  *  @see PLASMA_zhemm_Tile_Async
  ******************************************************************************/
 void plasma_pzhemm(PLASMA_enum side, PLASMA_enum uplo,

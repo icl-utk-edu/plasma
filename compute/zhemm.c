@@ -37,7 +37,7 @@
  *******************************************************************************
  *
  * @param[in] side
- *          Specifies whether the hemmetric matrix A appears on the
+ *          Specifies whether the Hermitian matrix A appears on the
  *          left or right in the operation as follows:
  *          - PlasmaLeft:  \f[ C = \alpha \times A \times B + \beta \times C \f]
  *          - PlasmaRight: \f[ C = \alpha \times B \times A + \beta \times C \f]
@@ -269,7 +269,7 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
  *******************************************************************************
  *
  * @param[in] side
- *          Specifies whether the hemmetric matrix A appears on the
+ *          Specifies whether the Hermitian matrix A appears on the
  *          left or right in the operation as follows:
  *          - PlasmaLeft:  \f[ C = \alpha \times A \times B + \beta \times C \f]
  *          - PlasmaRight: \f[ C = \alpha \times B \times A + \beta \times C \f]
