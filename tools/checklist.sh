@@ -153,3 +153,5 @@ grep -P '\*\*\*' $files | grep -v -P ':.{80}$'
 echo
 
 grep_src "===== _Tile versions are removed" '_Tile\b'
+
+grep_src "===== #pragma omp should be indented" '^#pragma omp'
