@@ -216,8 +216,8 @@ int PLASMA_zsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
     // Initialize request.
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
 
-#pragma omp parallel
-#pragma omp master
+    #pragma omp parallel
+    #pragma omp master
     {
         // The Async functions are submitted here.  If an error occurs
         //   (at submission time or at run time) the sequence->status
