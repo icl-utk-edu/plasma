@@ -140,69 +140,78 @@ void test_zgeqrf(param_value_t param[], char *info)
     param[PARAM_TIME].d = time;
     param[PARAM_GFLOPS].d = flops_zgeqrf(m,n) / time / 1e9;
 
-    //================================================================
-    // Test results by solving a linear system.
-    //================================================================
+    //=================================================================
+    // Test results by checking orthogonality of Q and precision of Q*R
+    //=================================================================
     if (test) {
-        const int nrhs = 1;
-        const int ldb  = m;
+        // Check the orthogonality of Q
 
-        // |A|_F
-        double work[1];
-        double Anorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'F', m, n,
-                                           Aref, lda, work);
+        int minmn = imin(m, n);
 
-        // prepare right-hand side B, store into initial X
-        PLASMA_Complex64_t *X = NULL;
-        X = (PLASMA_Complex64_t*)malloc((size_t)ldb*nrhs*
-                                        sizeof(PLASMA_Complex64_t));
-        assert(X != NULL);
+        // comment out until routine for building explicit Q is ready
+        // Build the idendity matrix
+      //  PLASMA_Complex64_t *Id = 
+      //      (PLASMA_Complex64_t *) malloc((size_t)minmn*minmn*
+      //                                    sizeof(PLASMA_Complex64_t));
+      //  memset((void*)Id, 0, minmn*minmn*sizeof(PLASMA_Complex64_t));
+      //  for (int i = 0; i < minmn; i++)
+      //      Id[i*minmn+i] = (PLASMA_Complex64_t)1.0;
 
-        PLASMA_Complex64_t *B = NULL;
-        B = (PLASMA_Complex64_t*)malloc((size_t)ldb*nrhs*
-                                        sizeof(PLASMA_Complex64_t));
-        assert(B != NULL);
+      //  PLASMA_Complex64_t zone  =  1.0;
+      //  PLASMA_Complex64_t mzone = -1.0;
 
-        retval = LAPACKE_zlarnv(1, seed, (size_t)m*nrhs, B);
-        assert(retval == 0);
-        memcpy(X, B, (size_t)ldb*nrhs*sizeof(PLASMA_Complex64_t));
+      //  // Perform Id - Q^H * Q 
+      //  if (m >= n)
+      //      cblas_zherk(CblasColMajor, CblasUpper, CblasConjTrans, n, m, mzone, Q, ldq, zone, Id, n);
+      //  else
+      //      cblas_zherk(CblasColMajor, CblasUpper, CblasNoTrans,   m, n, mzone, Q, ldq, zone, Id, m);
 
-        // |B|_F
-        double Bnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'F', m, nrhs,
-                                           B, ldb, work);
+      //  // |Id - Q^H * Q|_oo 
+      //  double norm_orth = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', minmn, minmn, Id, minmn);
 
-        // Call PLASMA function for solving R*X = Q'*B
-        PLASMA_zgeqrs(m, n, nrhs, A, lda, &descT, X, ldb);
+      //  // normalize the result
+      //  // |Id - Q^H * Q|_oo / (n * eps)
+      //  double norm_norm_ortho = norm_orth/(minmn*eps);
+      //  if (norm_norm_ortho > tol)
+      //      plasma_warning("error in orthogonality is above tolerance %lf",norm_norm_ortho);
 
-        // |X|_F
-        double Xnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'F', n, nrhs,
-                                           X, ldb, work);
+      //  free(Id);
 
-        // compute residual and store it in B = A*X - B
-        PLASMA_Complex64_t zone  =  1.0;
-        PLASMA_Complex64_t mzone = -1.0;
-        PLASMA_Complex64_t zzero =  0.0;
-        cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, nrhs, n,
-                    CBLAS_SADDR(zone), Aref, lda, X, ldb,
-                    CBLAS_SADDR(mzone), B, ldb);
+        // Check the accuracy of A - Q * R
+        // LAPACK version does not construct Q, it uses only application of it
 
-        // Compute A' * (A*X - B)
-        cblas_zgemm(CblasColMajor, CblasConjTrans, CblasNoTrans, n, nrhs, m,
-                    CBLAS_SADDR(zone), Aref, lda, B, ldb,
-                    CBLAS_SADDR(zzero), X, ldb);
+        // Extract the R.
+        PLASMA_Complex64_t *R = 
+            (PLASMA_Complex64_t *)malloc((size_t)m*n*sizeof(PLASMA_Complex64_t));
+        memset((void*)R, 0., (size_t)m*n*sizeof(PLASMA_Complex64_t));
+        // WORK array of size M is needed for computing L_oo norm
+        double *WORK = (double *) malloc((size_t)m*sizeof(double));;
+        LAPACKE_zlacpy_work(LAPACK_COL_MAJOR,'u', m, n, A, lda, R, m);
 
-        // |RES|_F
-        double Rnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'F', n, nrhs,
-                                           X, ldb, work);
+        // Compute Q * R.
+        PLASMA_zunmqr(PlasmaLeft, PlasmaNoTrans, m, n, minmn, A, lda, &descT, R, m);
+
+        // Compute the difference.
+        // R = A - Q*R
+        for (int j = 0 ; j < n; j++)
+            for (int i = 0; i < m; i++)
+                R[j*m+i] = Aref[j*lda+i] - R[j*m+i];
+
+        // |A|_oo 
+        double normA = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', m, n, Aref, lda, WORK);
+
+        // |A - Q*R|_oo 
+        double norm_AmQR = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', m, n, R, m, WORK);
 
         // normalize the result
-        double result = Rnorm / ( (Anorm*Xnorm+Bnorm)*n*eps);
+        // |A-QR|_oo / (|A|_oo * n * eps)
+        double result = norm_AmQR / (normA * n * eps);
 
         param[PARAM_ERROR].d = result;
         param[PARAM_SUCCESS].i = result < tol;
 
-        free(B);
-        free(X);
+        free(WORK);
+        free(R);
     }
 
     //================================================================

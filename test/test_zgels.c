@@ -62,9 +62,9 @@ void test_zgels(param_value_t param[], char *info)
             // Print usage info.
             print_usage(PARAM_M);
             print_usage(PARAM_N);
+            print_usage(PARAM_NRHS);
             print_usage(PARAM_PADA);
             print_usage(PARAM_PADB);
-            print_usage(PARAM_NRHS);
         }
         else {
             // Return column labels.
@@ -72,9 +72,9 @@ void test_zgels(param_value_t param[], char *info)
                 "%*s %*s %*s %*s %*s",
                 InfoSpacing, "M",
                 InfoSpacing, "N",
+                InfoSpacing, "NRHS",
                 InfoSpacing, "PadA",
-                InfoSpacing, "PadB",
-                InfoSpacing, "NRHS");
+                InfoSpacing, "PadB");
         }
         return;
     }
@@ -83,9 +83,9 @@ void test_zgels(param_value_t param[], char *info)
         "%*d %*d %*d %*d %*d",
         InfoSpacing, param[PARAM_M].i,
         InfoSpacing, param[PARAM_N].i,
+        InfoSpacing, param[PARAM_NRHS].i,
         InfoSpacing, param[PARAM_PADA].i,
-        InfoSpacing, param[PARAM_PADB].i,
-        InfoSpacing, param[PARAM_NRHS].i);
+        InfoSpacing, param[PARAM_PADB].i);
 
     //================================================================
     // Set parameters.

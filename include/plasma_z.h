@@ -99,6 +99,11 @@ int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
                  PLASMA_Complex64_t *A, int lda,
                  PLASMA_Complex64_t *B, int ldb);
 
+int PLASMA_zunmqr(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
+                  PLASMA_Complex64_t *A, int lda,
+                  PLASMA_desc *descT,
+                  PLASMA_Complex64_t *C, int ldc);
+
 /***************************************************************************//**
  *  Tile asynchronous interface.
  **/
@@ -169,6 +174,12 @@ void PLASMA_ztrsm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
                              PLASMA_Complex64_t alpha, PLASMA_desc *A,
                              PLASMA_desc *B,
                              PLASMA_sequence *sequence, PLASMA_request *request);
+
+void PLASMA_zunmqr_Tile_Async(PLASMA_enum side, PLASMA_enum trans,
+                              PLASMA_desc *descA, PLASMA_desc *descT, 
+                              PLASMA_desc *descC,
+                              PLASMA_sequence *sequence, 
+                              PLASMA_request *request);
 
 /***************************************************************************//**
  *  Layout translation async.

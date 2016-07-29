@@ -258,6 +258,24 @@ void run_routine(const char *name, param_value_t pval[], char *info)
     else if (strcmp(name, "sgemm") == 0)
         test_sgemm(pval, info);
 
+    else if (strcmp(name, "zgeqrf") == 0)
+        test_zgeqrf(pval, info);
+    else if (strcmp(name, "dgeqrf") == 0)
+        test_dgeqrf(pval, info);
+    else if (strcmp(name, "cgeqrf") == 0)
+        test_cgeqrf(pval, info);
+    else if (strcmp(name, "sgeqrf") == 0)
+        test_sgeqrf(pval, info);
+
+    else if (strcmp(name, "zgeqrs") == 0)
+        test_zgeqrs(pval, info);
+    else if (strcmp(name, "dgeqrs") == 0)
+        test_dgeqrs(pval, info);
+    else if (strcmp(name, "cgeqrs") == 0)
+        test_cgeqrs(pval, info);
+    else if (strcmp(name, "sgeqrs") == 0)
+        test_sgeqrs(pval, info);
+
     else if (strcmp(name, "zherk") == 0)
         test_zherk(pval, info);
     else if (strcmp(name, "cherk") == 0)
@@ -303,15 +321,6 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_ctrsm(pval, info);
     else if (strcmp(name, "strsm") == 0)
         test_strsm(pval, info);
-
-    else if (strcmp(name, "zgeqrf") == 0)
-        test_zgeqrf(pval, info);
-    else if (strcmp(name, "dgeqrf") == 0)
-        test_dgeqrf(pval, info);
-    else if (strcmp(name, "cgeqrf") == 0)
-        test_cgeqrf(pval, info);
-    else if (strcmp(name, "sgeqrf") == 0)
-        test_sgeqrf(pval, info);
 
     else {
         printf("unknown routine: %s\n", name);
@@ -395,6 +404,8 @@ int param_read(int argc, char **argv, param_t param[])
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_M]);
         else if (param_starts_with(argv[i], "--n="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_N]);
+        else if (param_starts_with(argv[i], "--nrhs="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NRHS]);
         else if (param_starts_with(argv[i], "--k="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_K]);
 
@@ -407,9 +418,6 @@ int param_read(int argc, char **argv, param_t param[])
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_PADB]);
         else if (param_starts_with(argv[i], "--padc="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_PADC]);
-
-        else if (param_starts_with(argv[i], "--nrhs="))
-            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NRHS]);
 
         //--------------------------------------------------
         // Scan double precision parameters.
@@ -476,6 +484,8 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_int(1000, &param[PARAM_M]);
     if (param[PARAM_N].num == 0)
         param_add_int(1000, &param[PARAM_N]);
+    if (param[PARAM_NRHS].num == 0)
+        param_add_int(1000, &param[PARAM_NRHS]);
     if (param[PARAM_K].num == 0)
         param_add_int(1000, &param[PARAM_K]);
 
@@ -488,8 +498,6 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_int(0, &param[PARAM_PADB]);
     if (param[PARAM_PADC].num == 0)
         param_add_int(0, &param[PARAM_PADC]);
-    if (param[PARAM_NRHS].num == 0)
-        param_add_int(1, &param[PARAM_NRHS]);
 
     //--------------------------------------------------
     // Set double precision parameters.

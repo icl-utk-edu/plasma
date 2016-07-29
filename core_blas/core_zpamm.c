@@ -7,10 +7,10 @@
  *  Univ. of California Berkeley and Univ. of Colorado Denver and
  *  Univ. of Manchester.
  *
- * @version 2.8.0
+ * @version 3.0.0
  * @author Dulceneia Becker
  * @author Jakub Sistek
- * @date 2016-07-8
+ * @date 2016-07-28
  * @precisions normal z -> c d s
  *
  **/
@@ -53,7 +53,7 @@ static inline void CORE_zpamm_w(PLASMA_enum side, PLASMA_enum trans, PLASMA_enum
  *
  *  where  op( V ) is one of
  *
- *     op( V ) = V   or   op( V ) = V^T   or   op( V ) = V^H,
+ *     op( V ) = V   or   op( V ) = V^H
  *
  *  A1, A2 and W are general matrices, and V is:
  *
@@ -172,7 +172,7 @@ static inline void CORE_zpamm_w(PLASMA_enum side, PLASMA_enum trans, PLASMA_enum
  *         If OP is PlasmaA2, W is an input and is used as a workspace.
  *
  * @param[in] ldw
- *         The leading dimension of array WORK.
+ *         The leading dimension of array W.
  *
  ******************************************************************************/
 void CORE_zpamm(int op, PLASMA_enum side, PLASMA_enum storev,
@@ -234,7 +234,6 @@ void CORE_zpamm(int op, PLASMA_enum side, PLASMA_enum storev,
     if ((m == 0) || (n == 0) || (k == 0))
         return;
 
-    //
     // TRANS is set as:
     //
     //        -------------------------------------
@@ -245,7 +244,6 @@ void CORE_zpamm(int op, PLASMA_enum side, PLASMA_enum storev,
     //         right  colwise       N        T
     //                rowwise       T        N
     //        -------------------------------------
-    //
 
     // Columnwise
     if (storev == PlasmaColumnwise) {

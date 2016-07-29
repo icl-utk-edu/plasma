@@ -157,8 +157,8 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
     // Initialize request.
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
 
-#pragma omp parallel
-#pragma omp master
+    #pragma omp parallel
+    #pragma omp master
     {
         // the Async functions are submitted here.  If an error occurs
         // (at submission time or at run time) the sequence->status
@@ -207,15 +207,15 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
  *
  *******************************************************************************
  *
- * @param[in] A
+ * @param[in] descA
  *          Descriptor of matrix A.
  *          A is stored in the tile layout.
  *
- * @param[in] T
+ * @param[in] descT
  *          Descriptor of matrix T.
  *          Auxiliary factorization data, computed by PLASMA_zgeqrf.
  *
- * @param[in,out] B
+ * @param[in,out] descB
  *          Descriptor of matrix B.
  *          On entry, right-hand side matrix B in the tile layout.
  *          On exit, solution matrix X in the tile layout.
