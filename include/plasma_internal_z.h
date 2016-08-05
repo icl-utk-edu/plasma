@@ -2,18 +2,10 @@
  *
  * @file plasma_internal_z.h
  *
- *  PLASMA control routines.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of Manchester, Univ. of California Berkeley and
- *  Univ. of Colorado Denver.
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Jakub Kurzak
- * @author Mawussi Zounon
- * @author Pedro V. Lara
- * @author Maksims Abalenkovs
- * @author Samuel D. Relton
- * @date 2016-05-24
  * @precisions normal z -> s d c
  *
  **/

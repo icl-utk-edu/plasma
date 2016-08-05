@@ -2,17 +2,10 @@
  *
  * @file test_z.h
  *
- *  PLASMA test routines.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of Manchester, Univ. of California Berkeley and
- *  Univ. of Colorado Denver.
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Jakub Kurzak
- * @author Samuel D. Relton
- * @author Mawussi Zounon
- * @author Pedro V. Lara
- * @date 2016-05-17
  * @precisions normal z -> s d c
  *
  **/
