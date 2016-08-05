@@ -41,39 +41,6 @@ https://groups.google.com/a/icl.utk.edu/forum/#!forum/plasma-user and clicking
 `Apply to join group`.
 Then email your questions and comments to `plasma-user@icl.utk.edu`.
 
-PLASMA People
-=============
-
-The following people contributed to the development of PLASMA:
-
-<!-- Dulceneia Becker     |   Bilel Hadri     |   Zounon Mawussi
-Maksims Abalenkovs   |   Azzam Haidar    |   Samuel Relton
-Emmanuel Agullo      |   Blake Haugen    |   Pedro Valero Lara
-Wesley Alvaro        |   Vijay Joshi     |   Ichitaro Yamazaki
-Alfredo Buttari      |   Bo Kågström     |   Asim YarKhan
-Jack Dongarra        |   Lars Karlsson   |
-Joseph Dorris        |   Jakub Kurzak    |
-Mathieu Faverge      |   Julien Langou   |
-Mark Gates           |   Hatem Ltaief    |
-Fred Gustavson       |   Piotr Łuszczek  |
-
- -->
-| Function name | Description                    |
-| ------------- | ------------------------------ |
-| `help()`      | Display the __help__ window.   |
-| `destroy()`   | **Destroy your computer!**     |
-
-
-
-PLASMA Funding
-==============
-
-
-
-
-
-
-
 Cite PLASMA
 ===========
 
@@ -109,3 +76,65 @@ Feel free to use the following publications to reference PLASMA:
   **A class of parallel tiled linear algebra algorithms for multicore architectures**,
   *Parallel Computing*,
   [Volume 35, Issue 1, January 2009, Pages 38–53](http://dx.doi.org/10.1016/j.parco.2008.10.002).
+
+PLASMA Funding
+==============
+
+Primary funding for PLASMA was provided by NSF grants:
+
+* [CPA-ACR-T: PLASMA:
+   Parallel Linear Algebra Software for Multiprocessor Architectures]
+  (http://www.nsf.gov/awardsearch/showAward?AWD_ID=0811642),
+
+* [Collaborative CPA-ACR-T: PLASMA:
+   Parallel Linear Algebra Software for Multiprocessor Architectures.]
+  (http://www.nsf.gov/awardsearch/showAward?AWD_ID=0811520)
+
+Work on PLASMA was also partially funded by NSF grants:
+
+* [SI2-SSI: Collaborative Research:
+   Sustained Innovation for Linear Algebra Software (SILAS)]
+  (http://www.nsf.gov/awardsearch/showAward?AWD_ID=1339822),
+
+* [SHF: Small:
+   Empirical Autotuning of Parallel Computation for Scalable Hybrid Systems]
+  (http://nsf.gov/awardsearch/showAward?AWD_ID=1527706).
+
+Additional funding was provided by the following companies:
+
+* Microsoft Corporation,
+* Intel Corporation,
+* Advanced Micro Devices,
+* The MathWorks,
+* Fujitsu.
+
+PLASMA People
+=============
+
+The following people contributed to the development of PLASMA:
+
+Maksims Abalenkovs
+Emmanuel Agullo
+Wesley Alvaro
+Dulceneia Becker
+Alfredo Buttari
+Jack Dongarra
+Joseph Dorris
+Mathieu Faverge
+Mark Gates
+Fred Gustavson
+Bilel Hadri
+Azzam Haidar
+Blake Haugen
+Vijay Joshi
+Bo Kågström
+Lars Karlsson
+Jakub Kurzak
+Julien Langou
+Hatem Ltaief
+Piotr Łuszczek
+Zounon Mawussi
+Samuel Relton
+Pedro Valero Lara
+Ichitaro Yamazaki
+Asim YarKhan
