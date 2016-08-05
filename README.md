@@ -10,10 +10,6 @@ _|  ____|_/  _\____/_|  _|_/  _\
 
 **University of Manchester (UK)**
 
-**University of Colorado Denver (US)**
-
-**University of California, Berkeley (US)**
-
 About PLASMA
 ============
 
@@ -114,27 +110,51 @@ PLASMA People
 The following people contributed to the development of PLASMA:
 
 Maksims Abalenkovs
+
 Emmanuel Agullo
+
 Wesley Alvaro
+
 Dulceneia Becker
+
 Alfredo Buttari
+
 Jack Dongarra
+
 Joseph Dorris
+
 Mathieu Faverge
+
 Mark Gates
+
 Fred Gustavson
+
 Bilel Hadri
+
 Azzam Haidar
+
 Blake Haugen
+
 Vijay Joshi
+
 Bo Kågström
+
 Lars Karlsson
+
 Jakub Kurzak
+
 Julien Langou
+
 Hatem Ltaief
+
 Piotr Łuszczek
+
 Zounon Mawussi
+
 Samuel Relton
+
 Pedro Valero Lara
+
 Ichitaro Yamazaki
+
 Asim YarKhan
