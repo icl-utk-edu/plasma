@@ -10,8 +10,6 @@ _|  ____|_/  _\____/_|  _|_/  _\
 
 **University of Manchester (UK)**
 
-[TOC]
-
 About PLASMA
 ============
 
