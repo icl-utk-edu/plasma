@@ -133,5 +133,4 @@ The following people contributed to the development of PLASMA:
 * Samuel Relton
 * Pedro Valero Lara
 * Ichitaro Yamazaki
-
-Asim YarKhan
+* Asim YarKhan
