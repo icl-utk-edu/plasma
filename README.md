@@ -130,11 +130,11 @@ The following people contributed to the development of PLASMA:
 * Julie Langou
 * Hatem Ltaief
 * Piotr Łuszczek
-* Zounon Mawussi
 * Samuel Relton
 * Pedro Valero Lara
 * Ichitaro Yamazaki
 * Asim YarKhan
+* Mawussi Zounon
 
 PLASMA License
 ==============
