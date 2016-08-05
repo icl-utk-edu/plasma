@@ -46,6 +46,7 @@ PLASMA People
 
 The following people contributed to the development of PLASMA:
 
+Dulceneia Becker     |   Bilel Hadri     |   Zounon Mawussi
 ------------------   |   -------------   |   ----------------
 Dulceneia Becker     |   Bilel Hadri     |   Zounon Mawussi
 Maksims Abalenkovs   |   Azzam Haidar    |   Samuel Relton
