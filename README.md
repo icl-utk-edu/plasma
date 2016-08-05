@@ -46,18 +46,18 @@ PLASMA People
 
 The following people contributed to the development of PLASMA:
 
-------------------      -------------       ----------------
-Dulceneia Becker        Bilel Hadri         Zounon Mawussi
-Maksims Abalenkovs      Azzam Haidar        Samuel Relton
-Emmanuel Agullo         Blake Haugen        Pedro Valero Lara
-Wesley Alvaro           Vijay Joshi         Ichitaro Yamazaki
-Alfredo Buttari         Bo Kågström         Asim YarKhan
-Jack Dongarra           Lars Karlsson
-Joseph Dorris           Jakub Kurzak
-Mathieu Faverge         Julien Langou
-Mark Gates              Hatem Ltaief
-Fred Gustavson          Piotr Łuszczek
-------------------      -------------       ----------------
+------------------   |   -------------   |   ----------------
+Dulceneia Becker     |   Bilel Hadri     |   Zounon Mawussi
+Maksims Abalenkovs   |   Azzam Haidar    |   Samuel Relton
+Emmanuel Agullo      |   Blake Haugen    |   Pedro Valero Lara
+Wesley Alvaro        |   Vijay Joshi     |   Ichitaro Yamazaki
+Alfredo Buttari      |   Bo Kågström     |   Asim YarKhan
+Jack Dongarra        |   Lars Karlsson   |
+Joseph Dorris        |   Jakub Kurzak    |
+Mathieu Faverge      |   Julien Langou   |
+Mark Gates           |   Hatem Ltaief    |
+Fred Gustavson       |   Piotr Łuszczek  |
+------------------   |   -------------   |   ----------------
 
 PLASMA Funding
 ==============
