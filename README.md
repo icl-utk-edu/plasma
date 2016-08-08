@@ -129,7 +129,7 @@ The following people contributed to the development of PLASMA:
 * Julien Langou
 * Julie Langou
 * Hatem Ltaief
-* Piotr Łuszczek
+* Piotr Luszczek
 * Samuel Relton
 * Stanimire Tomov
 * Pedro Valero Lara
