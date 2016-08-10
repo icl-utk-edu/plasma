@@ -29,6 +29,11 @@ The content of this repository reflects the progress of the transition.
 Before the transition is complete, the last release of the old PLASMA
 is available here: https://bitbucket.org/icl/plasma/downloads/plasma_2.8.0.tar.gz
 
+Documentation
+=============
+
+http://icl.bitbucket.org/plasma/doxygen/
+
 Get Assistance
 ==============
 
