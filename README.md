@@ -72,13 +72,6 @@ Feel free to use the following publications to reference PLASMA:
   *Concurrency and Computation: Practice and Experience*,
   [Volume 22, Issue 1, January 2010, Pages 15–44](http://dx.doi.org/10.1002/cpe.1467).
 
-* Emmanuel Agullo, Jim Demmel, Jack Dongarra, Bilel Hadri, Jakub Kurzak, Julien Langou,
-  Hatem Ltaief, Piotr Luszczek and Stanimire Tomov,
-  **Numerical linear algebra on emerging architectures: The PLASMA and MAGMA projects**,
-  *Journal of Physics: Conference Series*,
-  [Volume 180, Number 1](http://dx.doi.org/10.1088/1742-6596/180/1/012037),
-  IOP Publishing, 2009.
-
 * Alfredo Buttari, Julien Langou, Jakub Kurzak, Jack Dongarra,
   **A class of parallel tiled linear algebra algorithms for multicore architectures**,
   *Parallel Computing*,
