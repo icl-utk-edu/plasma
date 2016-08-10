@@ -32,6 +32,7 @@ is available here: https://bitbucket.org/icl/plasma/downloads/plasma_2.8.0.tar.g
 Documentation
 =============
 
+Doxygen-generated PLASMA documentation is available at:
 http://icl.bitbucket.org/plasma/doxygen/
 
 Get Assistance
