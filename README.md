@@ -48,6 +48,11 @@ Cite PLASMA
 
 Feel free to use the following publications to reference PLASMA:
 
+* Asim YarKhan, Jakub Kurzak, Piotr Luszczek, Jack Dongarra,
+  **Porting the PLASMA Numerical Library to the OpenMP Standard**,
+  *International Journal of Parallel Programming*,
+  [First Online: 14 June 2016](http://dx.doi.org/10.1007/s10766-016-0441-6).
+
 * Simplice Donfack, Jack Dongarra, Mathieu Faverge, Mark Gates,
   Jakub Kurzak, Piotr Luszczek, Ichitaro Yamazaki,
   **A survey of recent developments in parallel implementations
