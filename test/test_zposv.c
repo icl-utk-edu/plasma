@@ -1,6 +1,6 @@
 /**
  *
- * @file test_zpotrf.c
+ * @file test_zposv.c
  *
  *  PLASMA test routine.
  *  PLASMA is a software package provided by Univ. of Tennessee,
@@ -8,8 +8,8 @@
  *  Univ. of Manchester.
  *
  * @version 3.0.0
- * @author Pedro V. Lara
- * @date 2016-06-15
+ * @author Mawussi Zounon
+ * @date 2016-07-19
  * @precisions normal z -> s d c
  *
  **/
@@ -39,7 +39,7 @@
 
 /***************************************************************************//**
  *
- * @brief Tests ZPOTRF.
+ * @brief Tests ZPOSV.
  *
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
@@ -49,7 +49,7 @@
  * If param is non-NULL and info is non-NULL, set info to column values
  * and run test.
  ******************************************************************************/
-void test_zpotrf(param_value_t param[], char *info)
+void test_zposv(param_value_t param[], char *info)
 {
     //================================================================
     // Print usage info or return column labels or values.
@@ -59,24 +59,30 @@ void test_zpotrf(param_value_t param[], char *info)
             // Print usage info.
             print_usage(PARAM_UPLO);
             print_usage(PARAM_N);
+            print_usage(PARAM_NRHS);
             print_usage(PARAM_PADA);
+            print_usage(PARAM_PADB);
         }
         else {
             // Return column labels.
             snprintf(info, InfoLen,
-                "%*s %*s %*s",
-                InfoSpacing, "Uplo",
-                InfoSpacing, "N",
-                InfoSpacing, "PadA");
+                     "%*s %*s %*s %*s %*s",
+                     InfoSpacing, "Uplo",
+                     InfoSpacing, "N",
+                     InfoSpacing, "NRHS",
+                     InfoSpacing, "PadA",
+                     InfoSpacing, "PadB");
         }
         return;
     }
     // Return column values.
     snprintf(info, InfoLen,
-        "%*c %*d %*d",
-        InfoSpacing, param[PARAM_UPLO].c,
-        InfoSpacing, param[PARAM_N].i,
-        InfoSpacing, param[PARAM_PADA].i);
+             "%*c %*d %*d %*d %*d",
+             InfoSpacing, param[PARAM_UPLO].c,
+             InfoSpacing, param[PARAM_N].i,
+             InfoSpacing, param[PARAM_NRHS].i,
+             InfoSpacing, param[PARAM_PADA].i,
+             InfoSpacing, param[PARAM_PADB].i);
 
     //================================================================
     // Set parameters.
@@ -89,13 +95,10 @@ void test_zpotrf(param_value_t param[], char *info)
         uplo = PlasmaUpper;
 
     int n = param[PARAM_N].i;
+    int nrhs = param[PARAM_NRHS].i;
 
-    int Am, An;
-
-    Am = n;
-    An = n;
-
-    int lda = imax(1, Am + param[PARAM_PADA].i);
+    int lda = imax(1, n + param[PARAM_PADA].i);
+    int ldb = imax(1, n + param[PARAM_PADB].i);
 
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
@@ -104,12 +107,18 @@ void test_zpotrf(param_value_t param[], char *info)
     // Allocate and initialize arrays.
     //================================================================
     PLASMA_Complex64_t *A =
-        (PLASMA_Complex64_t*)malloc((size_t)lda*An*sizeof(PLASMA_Complex64_t));
+        (PLASMA_Complex64_t*)malloc((size_t)lda*n*sizeof(PLASMA_Complex64_t));
     assert(A != NULL);
+
+    PLASMA_Complex64_t *B =
+        (PLASMA_Complex64_t*)malloc((size_t)ldb*nrhs*sizeof(PLASMA_Complex64_t));
+    assert(B != NULL);
 
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
-    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*An, A);
+    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
+    assert(retval == 0);
+    retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*nrhs, B);
     assert(retval == 0);
 
     //================================================================
@@ -118,62 +127,80 @@ void test_zpotrf(param_value_t param[], char *info)
     // It sets Aji = conj( Aij ) for j < i, that is, copy lower
     // triangle to upper triangle.
     //================================================================
-    int i, j;
-    for (i=0; i < n; ++i) {
-        A(i,i) = (creal(A(i,i)) + n) + 0. * I;
-        for (j=0; j < i; ++j) {
+    for (int i = 0; i < n; ++i ) {
+        A(i,i) = creal(A(i,i)) + n;
+        for (int j = 0; j < i; ++j ) {
             A(j,i) = conj(A(i,j));
         }
     }
 
     PLASMA_Complex64_t *Aref = NULL;
+    PLASMA_Complex64_t *Bref = NULL;
+    double *work = NULL;
     if (test) {
         Aref = (PLASMA_Complex64_t*)malloc(
-            (size_t)lda*An*sizeof(PLASMA_Complex64_t));
+            (size_t)lda*n*sizeof(PLASMA_Complex64_t));
         assert(Aref != NULL);
 
-        memcpy(Aref, A, (size_t)lda*An*sizeof(PLASMA_Complex64_t));
+        Bref = (PLASMA_Complex64_t*)malloc(
+            (size_t)ldb*nrhs*sizeof(PLASMA_Complex64_t));
+        assert(Bref != NULL);
+
+        memcpy(Aref, A, (size_t)lda*n*sizeof(PLASMA_Complex64_t));
+        memcpy(Bref, B, (size_t)ldb*nrhs*sizeof(PLASMA_Complex64_t));
     }
 
     //================================================================
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zpotrf((CBLAS_UPLO)uplo, n, A, lda);
+    PLASMA_zposv((CBLAS_UPLO)uplo, n, nrhs, A, lda, B, ldb);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
-
+    double flops = flops_zpotrf(n) + 2*flops_ztrsm(uplo, n, nrhs);
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = flops_zpotrf(n) / time / 1e9;
+    param[PARAM_GFLOPS].d = flops / time / 1e9;
 
     //================================================================
-    // Test results by comparing to a reference implementation.
+    // Test results by checking the residual
+    //
+    //                      || B - AX ||_I
+    //                --------------------------- < espilon
+    //                 || A ||_I * || X ||_I * N
+    //
     //================================================================
     if (test) {
-        LAPACKE_zpotrf(
-            LAPACK_COL_MAJOR,
-            lapack_const(uplo), n,
-            Aref, lda);
-
+        PLASMA_Complex64_t zone =   1.0;
         PLASMA_Complex64_t zmone = -1.0;
-        cblas_zaxpy((size_t)lda*An, CBLAS_SADDR(zmone), Aref, 1, A, 1);
+        work = (double*)malloc((size_t)n*sizeof(double));
+        assert(work != NULL);
 
-        double work[1];
         double Anorm = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', Am, An, Aref, lda, work);
-        double error = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', Am, An, A,    lda, work);
-        if (Anorm != 0)
-            error /= Anorm;
+            LAPACK_COL_MAJOR, 'I', n, n, Aref, lda, work);
+        double Xnorm = LAPACKE_zlange_work(
+            LAPACK_COL_MAJOR, 'I', n, nrhs, B, ldb, work);
 
-        param[PARAM_ERROR].d = error;
-        param[PARAM_SUCCESS].i = error < tol;
+        cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, nrhs, n,
+                    CBLAS_SADDR(zmone), Aref, lda,
+                    B, ldb,
+                    CBLAS_SADDR(zone), Bref, ldb);
+
+        double Rnorm = LAPACKE_zlange_work(
+            LAPACK_COL_MAJOR, 'I', n, nrhs, Bref, ldb, work);
+        double residual = Rnorm/(n*Anorm*Xnorm);
+
+        param[PARAM_ERROR].d = residual;
+        param[PARAM_SUCCESS].i = residual < tol;
     }
 
     //================================================================
     // Free arrays.
     //================================================================
     free(A);
-    if (test)
+    free(B);
+    if (test) {
         free(Aref);
+        free(Bref);
+        free(work);
+    }
 }

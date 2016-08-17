@@ -9,7 +9,7 @@
  *
  * @version 3.0.0
  * @author Pedro V. Lara
- * @date
+ * @date 2016-07-26
  * @precisions normal z -> s d c
  *
  **/
@@ -44,9 +44,10 @@
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
  *
- * If param is NULL     and info is NULL,     print usage and return.
- * If param is NULL     and info is non-NULL, set info to column headings and return.
- * If param is non-NULL and info is non-NULL, set info to column values   and run test.
+ * If param is NULL and info is NULL,     print usage and return.
+ * If param is NULL and info is non-NULL, set info to column labels and return.
+ * If param is non-NULL and info is non-NULL, set info to column values
+ * and run test.
  ******************************************************************************/
 void test_zpotrs(param_value_t param[], char *info)
 {
@@ -119,7 +120,7 @@ void test_zpotrs(param_value_t param[], char *info)
     PLASMA_Complex64_t *B =
         (PLASMA_Complex64_t*)malloc((size_t)ldb*Bn*sizeof(PLASMA_Complex64_t));
     assert(B != NULL);
-    
+
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*An, A);
@@ -127,7 +128,7 @@ void test_zpotrs(param_value_t param[], char *info)
 
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*Bn, B);
     assert(retval == 0);
-    
+
     //================================================================
     // Make the A matrix symmetric/Hermitian positive definite.
     // It increases diagonal by n, and makes it real.
@@ -136,7 +137,7 @@ void test_zpotrs(param_value_t param[], char *info)
     //================================================================
     int i, j;
     for (i=0; i < n; ++i) {
-        A(i,i) = (creal(A(i,i)) + n) + 0.;// * I;
+        A(i,i) = creal(A(i,i)) + n;
         for (j=0; j < i; ++j) {
             A(j,i) = conj(A(i,j));
         }
@@ -156,7 +157,7 @@ void test_zpotrs(param_value_t param[], char *info)
 
         work = (double*)malloc((size_t)n*sizeof(double));
         assert(work != NULL);
-        
+
         memcpy(Aref, A, (size_t)lda*An*sizeof(PLASMA_Complex64_t));
         memcpy(Bref, B, (size_t)ldb*Bn*sizeof(PLASMA_Complex64_t));
     }
@@ -165,7 +166,7 @@ void test_zpotrs(param_value_t param[], char *info)
     // Run POTRF
     //================================================================
     PLASMA_zpotrf(uplo, n, A, lda);
-    
+
     //================================================================
     // Run and time PLASMA.
     //================================================================
@@ -181,9 +182,9 @@ void test_zpotrs(param_value_t param[], char *info)
     // Test results by checking the residual (backward error)
     //================================================================
     if (test) {
-        PLASMA_Complex64_t zone  =   1.0;        
-        PLASMA_Complex64_t zmone =  -1.0;        
-    
+        PLASMA_Complex64_t zone  =   1.0;
+        PLASMA_Complex64_t zmone =  -1.0;
+
         double Anorm = LAPACKE_zlange_work(
                            LAPACK_COL_MAJOR, 'I', Am, An, Aref, lda, work);
         double Xnorm = LAPACKE_zlange_work(
@@ -193,10 +194,10 @@ void test_zpotrs(param_value_t param[], char *info)
                         CBLAS_SADDR(zmone), Aref, lda,
                                             B, ldb,
                         CBLAS_SADDR(zone), Bref, ldb);
-          
+
         double Rnorm = LAPACKE_zlange_work(
                             LAPACK_COL_MAJOR, 'I', n, nrhs, Bref, ldb, work);
-        double residual = Rnorm/(n*Anorm*Xnorm);  
+        double residual = Rnorm/(n*Anorm*Xnorm);
 
         param[PARAM_ERROR].d = residual;
         param[PARAM_SUCCESS].i = residual < tol;

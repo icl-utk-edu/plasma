@@ -23,7 +23,7 @@
 /***************************************************************************//**
  * Parallel tile triangular solve.
  * @see PLASMA_ztrsm_Tile_Async
- *****************************************************************************/
+ ******************************************************************************/
 void plasma_pztrsm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_enum trans, PLASMA_enum diag,
                    PLASMA_Complex64_t alpha, PLASMA_desc A,
@@ -42,11 +42,11 @@ void plasma_pztrsm(PLASMA_enum side, PLASMA_enum uplo,
     if (sequence->status != PLASMA_SUCCESS)
         return;
 
-    //============================================
-    //  PlasmaLeft / PlasmaUpper / PlasmaNoTrans
-    //============================================
     if (side == PlasmaLeft) {
         if (uplo == PlasmaUpper) {
+            //============================================
+            //  PlasmaLeft / PlasmaUpper / PlasmaNoTrans
+            //============================================
             if (trans == PlasmaNoTrans) {
                 for (k = 0; k < B.mt; k++) {
                     tempkm = k == 0 ? B.m-(B.mt-1)*B.mb : B.mb;
@@ -109,10 +109,10 @@ void plasma_pztrsm(PLASMA_enum side, PLASMA_enum uplo,
                 }
             }
         }
-        //===========================================
-        //  PlasmaLeft / PlasmaLower / PlasmaNoTrans
-        //===========================================
         else {
+            //===========================================
+            //  PlasmaLeft / PlasmaLower / PlasmaNoTrans
+            //===========================================
             if (trans == PlasmaNoTrans) {
                 for (k = 0; k < B.mt; k++) {
                     tempkm = k == B.mt-1 ? B.m-k*B.mb : B.mb;
@@ -177,11 +177,11 @@ void plasma_pztrsm(PLASMA_enum side, PLASMA_enum uplo,
             }
         }
     }
-    //===========================================
-    //  PlasmaRight / PlasmaUpper / PlasmaNoTrans
-    //===========================================
     else {
         if (uplo == PlasmaUpper) {
+            //===========================================
+            //  PlasmaRight / PlasmaUpper / PlasmaNoTrans
+            //===========================================
             if (trans == PlasmaNoTrans) {
                 for (k = 0; k < B.nt; k++) {
                     tempkn = k == B.nt-1 ? B.n-k*B.nb : B.nb;
@@ -240,10 +240,10 @@ void plasma_pztrsm(PLASMA_enum side, PLASMA_enum uplo,
                 }
             }
         }
-        //============================================
-        //  PlasmaRight / PlasmaLower / PlasmaNoTrans
-        //============================================
         else {
+            //============================================
+            //  PlasmaRight / PlasmaLower / PlasmaNoTrans
+            //============================================
             if (trans == PlasmaNoTrans) {
                 for (k = 0; k < B.nt; k++) {
                     tempkn = k == 0 ? B.n-(B.nt-1)*B.nb : B.nb;

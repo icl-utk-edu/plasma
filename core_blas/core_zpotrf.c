@@ -7,9 +7,9 @@
  *  Univ. of California Berkeley and Univ. of Colorado Denver and
  *  Univ. of Manchester.
  *
- * @version
+ * @version 3.0.0
  * @author Pedro V. Lara
- * @date
+ * @date 2016-06-15
  * @precisions normal z -> c d s
  *
  **/
@@ -28,13 +28,12 @@
  *
  * @ingroup core_potrf
  *
- *  Performs the Cholesky factorization of a symmetric positive definite
- *  (or Hermitian positive definite in the complex case) matrix A.
- *  The factorization has the form
+ *  Performs the Cholesky factorization of a Hermitian positive definite
+ *  matrix A. The factorization has the form
  *
- *    \f[ A = L \times L^H \f],
+ *    \f[ A = L \times L^H, \f]
  *    or
- *    \f[ A = U^H \times U \f],
+ *    \f[ A = U^H \times U, \f]
  *
  *  where U is an upper triangular matrix and L is a lower triangular matrix.
  *
@@ -48,7 +47,7 @@
  *          The order of the matrix A. n >= 0.
  *
  * @param[in,out] A
- *          On entry, the symmetric positive definite (or Hermitian) matrix A.
+ *          On entry, the Hermitian positive definite matrix A.
  *          If uplo = PlasmaUpper, the leading N-by-N upper triangular part of A
  *          contains the upper triangular part of the matrix A, and the strictly lower triangular
  *          part of A is not referenced.
@@ -61,7 +60,7 @@
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,n).
  *
- *******************************************************************************/
+ ******************************************************************************/
 void CORE_zpotrf(PLASMA_enum uplo,
                  int n,
                  PLASMA_Complex64_t *A, int lda)

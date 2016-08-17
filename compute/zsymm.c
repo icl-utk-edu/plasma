@@ -32,7 +32,7 @@
  *     \f[ C = \alpha \times B \times A + \beta \times C \f]
  *
  *  where alpha and beta are scalars, A is a symmetric matrix and B and
- *  C are m by n matrices.
+ *  C are m-by-n matrices.
  *
  *******************************************************************************
  *
@@ -214,12 +214,12 @@ int PLASMA_zsymm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
     // Initialize request.
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
 
-#pragma omp parallel
-#pragma omp master
+    #pragma omp parallel
+    #pragma omp master
     {
-        // the Async functions are submitted here.  If an error occurs
+        // The Async functions are submitted here.  If an error occurs
         // (at submission time or at run time) the sequence->status
-        //  will be marked with an error.  After an error, the next
+        // will be marked with an error.  After an error, the next
         // Async will not _insert_ more tasks into the runtime.  The
         // sequence->status can be checked after each call to _Async
         // or at the end of the parallel region.
@@ -265,7 +265,7 @@ int PLASMA_zsymm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
  * @ingroup plasma_symm
  *
  *  Performs symmetric matrix multiplication.
- *  Non-blocking equivalent of PLASMA_zsymm_Tile().
+ *  Non-blocking tile version of PLASMA_zsymm().
  *  May return before the computation is finished.
  *  Allows for pipelining of operations at runtime.
  *
@@ -310,7 +310,6 @@ int PLASMA_zsymm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
  *******************************************************************************
  *
  * @sa PLASMA_zsymm
- * @sa PLASMA_zsymm_Tile
  * @sa PLASMA_csymm_Tile_Async
  * @sa PLASMA_dsymm_Tile_Async
  * @sa PLASMA_ssymm_Tile_Async

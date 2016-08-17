@@ -41,9 +41,10 @@
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
  *
- * If param is NULL     and info is NULL,     print usage and return.
- * If param is NULL     and info is non-NULL, set info to column headings and return.
- * If param is non-NULL and info is non-NULL, set info to column values   and run test.
+ * If param is NULL and info is NULL,     print usage and return.
+ * If param is NULL and info is non-NULL, set info to column labels and return.
+ * If param is non-NULL and info is non-NULL, set info to column values
+ * and run test.
  ******************************************************************************/
 void test_zsyrk(param_value_t param[], char *info)
 {
@@ -105,7 +106,7 @@ void test_zsyrk(param_value_t param[], char *info)
     else if (param[PARAM_TRANS].c == 't')
         trans = PlasmaTrans;
     else
-        trans = PlasmaConjTrans;
+        trans = PlasmaConjTrans;  // illegal option
 
     int n = param[PARAM_N].i;
     int k = param[PARAM_K].i;

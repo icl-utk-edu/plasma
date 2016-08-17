@@ -492,7 +492,7 @@
         @brief 1, Frobenius, or Infinity norm; or largest element
     @}
 
-    @defgroup group_solvers         Linear system solvers
+    @defgroup core_solvers          Linear system solvers
     @{
         @defgroup core_potrf        potrf: Cholesky factorization
     @}

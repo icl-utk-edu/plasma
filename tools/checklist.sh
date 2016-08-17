@@ -15,7 +15,7 @@
 
 hg st -a -c -m | perl -pe 's/^[MAC] //' > files.txt
 
-files=`cat files.txt | perl -pe 's/\n/ /'`
+files=`grep -v checklist.sh files.txt | perl -pe 's/\n/ /'`
 src=`grep -P '\.(c|h|cpp|hpp)\$' files.txt | perl -pe 's/\n/ /'`
 hdr=`grep -P '\.(h|hpp)\$' files.txt | perl -pe 's/\n/ /'`
 
@@ -81,6 +81,8 @@ grep_src "Missing space before operators, e.g., (x== y)." '([\w\[\]\(\)])(==|!=|
 
 
 # ---------------------------------------- newlines
+grep_src "Line exceeds 80 characters" "^.{81}"
+
 grep_src "Cuddled curly braces: } else {. Add newline after {." '\} *else'
 
 echo "===== Extra blank lines after {."
@@ -129,13 +131,39 @@ grep_src "Using Fortran-style A**H or A**T. Please use A^H or A^T." '\*\*[TH].'
 grep_src "Using Matlab-style A'. Please use A^H or A^T. (This is really hard to search for.)" " [A-Z]'"
 
 echo "===== Using Matlab-style A'. (Second search.)"
-grep -P "'" $src | grep -v -P "'[a-zA-Z=:+]'|'\\\0'"
+grep -P "'" $src | grep -v -P "'[a-zA-Z=:+]'|'\\\0'|LAPACK's"
 echo
 
 grep_src "Hermitian should be capitalized" "hermitian"
 
 echo "===== @ingroup (plasma|core)_{routine}, no precision: plasma_gemm, not plasma_zgemm."
 echo "===== See docs/doxygen/groups.dox for available groups."
-echo "===== Use docs/doxygen/groups.sh to see what groups are defined vs. in use."
+echo "===== Use tools/doxygen_groups.sh to see what groups are defined vs. in use."
 grep -P '@ingroup' $src | grep -v -P '@ingroup (plasma|core)_[^z]\w+'
+echo
+
+echo "===== @version 3.0.0"
+grep -P '@version' $files | grep -v -P '@version 3.0.0'
+echo
+
+echo "===== @date yyyy-mm-dd"
+grep -P '@date' $files | grep -v -P '@date \d\d\d\d-\d\d-\d\d'
+echo
+
+echo "===== **** rule lines are exactly 80 characters"
+grep -P '\*\*\*' $files | grep -v -P ':.{80}$'
+echo
+
+grep_src "_Tile versions are removed" '_Tile\b'
+grep_src "#pragma omp should be indented" '^#pragma omp'
+grep_src "Use @retval; delete @return"    '@return'
+grep_src 'Use @retval instead of \\retval' '\\retval'
+grep_src 'Use hyphens in "m-by-n", instead of "m by n"' '\b(ld\w+|\w) by \w'
+
+echo "===== Term 'symmetric' should not occur in complex (z) routines (except zsy routines); use Hermitian."
+grep -i symmetric */core_z*.c */z*.c */pz*.c | grep -v 'zsy'
+echo
+
+echo "===== Term 'Hermitian' should not occur in real (d) routines; bug in codegen?"
+grep -i Hermitian */core_d*.c */d*.c */pd*.c
 echo

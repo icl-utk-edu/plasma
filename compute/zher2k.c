@@ -22,23 +22,17 @@
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_her2k
  *
- *  PLASMA_zher2k - Performs one of the hermitian rank 2k operations
+ *  Performs one of the Hermitian rank 2k operations
  *
- *    \f[ C = \alpha [ op( A ) \times conjg( op( B )' )] +
- *     conjg( \alpha ) [ op( B ) \times conjg( op( A )' )] + \beta C \f],
+ *    \f[ C = \alpha A \times B^H + conjg( \alpha ) B \times A^H + \beta C, \f]
  *    or
- *    \f[ C = \alpha [ conjg( op( A )' ) \times op( B ) ] +
- *    conjg( \alpha ) [ conjg( op( B )' ) \times op( A ) ] + \beta C \f],
+ *    \f[ C = \alpha A^H \times B + conjg( \alpha ) B^H \times A + \beta C, \f]
  *
- *  where op( X ) is one of
- *
- *    op( X ) = X  or op( X ) = conjg( X' )
- *
- *  where alpha is complex, beta  is real scalar, C is an n-by-n symmetric
- *  matrix and A and B are an n-by-k matrices the first case and k-by-n
- *  matrices in the second case.
+ *  where alpha is a complex scalar, beta is a real scalar,
+ *  C is an n-by-n Hermitian matrix, and A and B are n-by-k matrices
+ *  in the first case and k-by-n matrices in the second case.
  *
  *******************************************************************************
  *
@@ -47,54 +41,57 @@
  *          - PlasmaLower: Lower triangle of C is stored.
  *
  * @param[in] trans
- *          Specifies whether A is transposed or conjugate transposed:
- *          - PlasmaNoTrans: \f[ C = \alpha [ op( A ) \times conjg( op( B )')] +
- *            conjg( \alpha ) [ op( B ) \times conjg( op( A )' )] + \beta C \f]
- *          - PlasmaConjTrans: \f[ C = \alpha[ conjg(op( A )') \times op( B )] +
- *            conjg( \alpha ) [ conjg( op( B )' ) \times op( A ) ] + \beta C \f]
+ *          - PlasmaNoTrans:
+ *            \f[ C = \alpha A \times B^H
+ *                  + conjg( \alpha ) B \times A^H + \beta C; \f]
+ *          - PlasmaConjTrans:
+ *            \f[ C = \alpha A^H \times B
+ *                  + conjg( \alpha ) B^H \times A + \beta C. \f]
  *
  * @param[in] n
- *          The order of the matrix C. n must be at least zero.
+ *          The order of the matrix C. n >= zero.
  *
  * @param[in] k
- *          The number of columns of the A and B matrices
- *          with trans = PlasmaNoTrans. Or the number of rows of the A
- *          and B matrices with trans = PlasmaTrans.
+ *          If trans = PlasmaNoTrans, number of columns of the A and B matrices;
+ *          if trans = PlasmaConjTrans, number of rows of the A and B matrices.
  *
  * @param[in] alpha
  *          The scalar alpha.
  *
  * @param[in] A
- *          A lda-by-ka matrix, where ka is k when trans = PlasmaNoTrans,
- *          and is n otherwise.
+ *          A lda-by-ka matrix.
+ *          If trans = PlasmaNoTrans,   ka = k;
+ *          if trans = PlasmaConjTrans, ka = n.
  *
  * @param[in] lda
- *          The leading dimension of the array A. lda must be at least
- *          max( 1, n ), otherwise lda must be at least max( 1, k ).
+ *          The leading dimension of the array A.
+ *          If trans = PlasmaNoTrans,   lda >= max(1, n);
+ *          if trans = PlasmaConjTrans, lda >= max(1, k).
  *
  * @param[in] B
- *          A ldb-by-kb matrix, where kb is k when trans = PlasmaNoTrans,
- *          and is n otherwise.
+ *          A ldb-by-kb matrix.
+ *          If trans = PlasmaNoTrans,   kb = k;
+ *          if trans = PlasmaConjTrans, kb = n.
  *
  * @param[in] ldb
- *          The leading dimension of the array B. ldb must be at least
- *          max( 1, n ), otherwise ldb must be at least max( 1, k ).
+ *          The leading dimension of the array B.
+ *          If trans = PlasmaNoTrans,   ldb >= max(1, n);
+ *          if trans = PlasmaConjTrans, ldb >= max(1, k).
  *
  * @param[in] beta
- *          beta specifies the scalar beta.
+ *          The scalar beta.
  *
  * @param[in,out] C
  *          A ldc-by-n matrix.
- *          On exit, the array uplo part of the matrix is overwritten
+ *          On exit, the uplo part of the matrix is overwritten
  *          by the uplo part of the updated matrix.
  *
  * @param[in] ldc
- *          The leading dimension of the array C. ldc >= max( 1, n ).
+ *          The leading dimension of the array C. ldc >= max(1, n).
  *
  *******************************************************************************
  *
- * @return
- *          \retval PLASMA_SUCCESS successful exit
+ * @retval PLASMA_SUCCESS successful exit
  *
  *******************************************************************************
  *
@@ -142,7 +139,8 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
         An = k;
         Bm = n;
         Bn = k;
-    } else {
+    }
+    else {
         Am = k;
         An = n;
         Bm = k;
@@ -170,7 +168,7 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
     }
 
     // quick return
-    if (n == 0 || ((alpha == zzero || k == 0.0) && beta == (double)1.0))
+    if (n == 0 || ((alpha == zzero || k == 0.0) && beta == 1.0))
         return PLASMA_SUCCESS;
 
     // Tune
@@ -220,15 +218,15 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
     // Initialize request.
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
 
-#pragma omp parallel
-#pragma omp master
+    #pragma omp parallel
+    #pragma omp master
     {
-        // the Async functions are submitted here.  If an error occurs
-        //   (at submission time or at run time) the sequence->status
-        //   will be marked with an error.  After an error, the next
-        //   Async will not _insert_ more tasks into the runtime.  The
-        //   sequence->status can be checked after each call to _Async
-        //   or at the end of the parallel region.
+        // The Async functions are submitted here.  If an error occurs
+        // (at submission time or at run time) the sequence->status
+        // will be marked with an error.  After an error, the next
+        // Async will not _insert_ more tasks into the runtime.  The
+        // sequence->status can be checked after each call to _Async
+        // or at the end of the parallel region.
 
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
@@ -268,7 +266,7 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t_Tile_Async
+ * @ingroup plasma_her2k
  *
  *  Performs rank 2k update.
  *  Non-blocking tile version of PLASMA_zher2k().
@@ -285,8 +283,12 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
  *          - PlasmaLower: Lower triangle of C is stored.
  *
  * @param[in] trans
- *          - PlasmaNoTrans:   A is not transposed;
- *          - PlasmaConjTrans: A is conjugate transposed.
+ *          - PlasmaNoTrans:
+ *            \f[ C = \alpha A \times B^H
+ *                  + conjg( \alpha ) B \times A^H + \beta C; \f]
+ *          - PlasmaConjTrans:
+ *            \f[ C = \alpha A^H \times B
+ *                  + conjg( \alpha ) B^H \times A + \beta C. \f]
  *
  * @param[in] alpha
  *          The scalar alpha.
@@ -331,7 +333,6 @@ void PLASMA_zher2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
                                           double beta,  PLASMA_desc *C,
                               PLASMA_sequence *sequence, PLASMA_request *request)
 {
-
     PLASMA_Complex64_t zzero = 0.0;
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -385,7 +386,8 @@ void PLASMA_zher2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
         Am  = A->m;
         An  = A->n;
         Amb = A->mb;
-    } else {
+    }
+    else {
         Am  = A->n;
         An  = A->m;
         Amb = A->nb;
@@ -419,7 +421,7 @@ void PLASMA_zher2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
     }
 
     // quick return
-    if (C->m == 0 || ((alpha == zzero || An == 0) && beta == (double)1.0))
+    if (C->m == 0 || ((alpha == zzero || An == 0) && beta == 1.0))
         return;
 
     // Call the parallel function.

@@ -29,12 +29,12 @@
  *          \f[ C = \alpha [op( A )\times op( B )] + \beta C, \f]
  *
  *  where op( X ) is one of:
- *          - op( X ) = X   or
- *          - op( X ) = X^T or
- *          - op( X ) = X^H
+ *    \f[ op( X ) = X,   \f]
+ *    \f[ op( X ) = X^T, \f]
+ *    \f[ op( X ) = X^H, \f]
  *
  *  alpha and beta are scalars, and A, B and C are matrices, with op( A )
- *  an m by k matrix, op( B ) a k by n matrix and C an m by n matrix.
+ *  an m-by-k matrix, op( B ) a k-by-n matrix and C an m-by-n matrix.
  *
  *******************************************************************************
  *
@@ -251,7 +251,7 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
     #pragma omp parallel
     #pragma omp master
     {
-        // the Async functions are submitted here.  If an error occurs
+        // The Async functions are submitted here.  If an error occurs
         // (at submission time or at run time) the sequence->status
         // will be marked with an error.  After an error, the next
         // Async will not _insert_ more tasks into the runtime.  The

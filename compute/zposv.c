@@ -1,15 +1,14 @@
 /**
  *
- * @file zpotrs.c
+ * @file zposv.c
  *
  *  PLASMA computational routines
  *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley, Univ. of Colorado Denver and
- *  Univ. of Manchester.
+ *  Univ. of California Berkeley and Univ. of Colorado Denver
  *
  * @version 3.0.0
- * @author Pedro V. Lara
- * @date 2016-07-26
+ * @author Mawussi Zounon
+ * @date 2016-07-19
  * @precisions normal z -> s d c
  *
  **/
@@ -23,11 +22,20 @@
 
 /***************************************************************************//**
  *
- * @ingroup plasma_potrs
+ * @ingroup plasma_posv
  *
- *  Solves a system of linear equations A * X = B with a Hermitian positive
- *  definite in the complex matrix A using the Cholesky factorization
- *  A = U^H*U or A = L*L^H computed by PLASMA_zpotrf.
+ *  Computes the solution to a system of linear equations A * X = B,
+ *  where A is an n-by-n Hermitian positive definite matrix and X and B are
+ *  n-by-nrhs matrices. The Cholesky decomposition is used to factor A as
+ *
+ *    \f[ A =  L\times L^H, \f] if uplo = PlasmaLower,
+ *    or
+ *    \f[ A =  U^H\times U, \f] if uplo = PlasmaUpper,
+ *
+ *  where U is an upper triangular matrix and  L is a lower triangular matrix.
+ *  The factored form of A is then used to solve the system of equations:
+ *
+ *   A * X = B.
  *
  *******************************************************************************
  *
@@ -36,21 +44,23 @@
  *          - PlasmaLower: Lower triangle of A is stored.
  *
  * @param[in] n
- *          The order of the matrix A. n >= 0.
+ *          The number of linear equations, i.e., the order of the matrix A.
+ *          n >= 0.
  *
  * @param[in] nrhs
- *          The number of right hand sides, i.e., the number of
- *          columns of the matrix B. nrhs >= 0.
+ *          The number of right hand sides, i.e., the number of columns
+ *          of the matrix B.  nrhs >= 0.
  *
  * @param[in,out] A
- *          The triangular factor U or L from the Cholesky
- *          factorization A = U^H*U or A = L*L^H, computed by
- *          PLASMA_zpotrf.
- *          Remark: If out-of-place layout translation is used, the
- *          matrix A can be considered as input, however if inplace
- *          layout translation is enabled, the content of A will be
- *          reordered for computation and restored before exiting the
- *          function.
+ *          On entry, the Hermitian positive definite matrix A.
+ *          If uplo = PlasmaUpper, the leading n-by-n upper triangular part of A
+ *          contains the upper triangular part of the matrix A, and the strictly
+ *          lower triangular part of A is not referenced.
+ *          If UPLO = 'L', the leading n-by-n lower triangular part of A
+ *          contains the lower triangular part of the matrix A, and the strictly
+ *          upper triangular part of A is not referenced.
+ *          On exit, if return value = 0, the factor U or L from
+ *          the Cholesky factorization  A = U^H*U or A = L*L^H.
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,n).
@@ -66,30 +76,33 @@
  *
  * @retval PLASMA_SUCCESS successful exit
  * @retval  < 0 if -i, the i-th argument had an illegal value
+ * @retval  > 0 if i, the leading minor of order i of A is not
+ *          positive definite, so the factorization could not
+ *          be completed, and the solution has not been computed.
  *
  *******************************************************************************
  *
- * @sa PLASMA_zpotrs_Tile_Async
- * @sa PLASMA_cpotrs
- * @sa PLASMA_dpotrs
- * @sa PLASMA_spotrs
- * @sa PLASMA_zpotrf
+ * @sa PLASMA_zposv_Tile_Async
+ * @sa PLASMA_cposv
+ * @sa PLASMA_dposv
+ * @sa PLASMA_sposv
  *
  ******************************************************************************/
-int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
-                  PLASMA_Complex64_t *A, int lda,
-                  PLASMA_Complex64_t *B, int ldb)
+int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
+                 PLASMA_Complex64_t *A, int lda,
+                 PLASMA_Complex64_t *B, int ldb)
 {
     int nb;
-    int retval;
     int status;
+    int retval;
 
-    PLASMA_desc descA, descB;
+    PLASMA_desc descA;
+    PLASMA_desc descB;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
-        plasma_fatal_error("PLASMA not initialized");
+        plasma_error("PLASMA not initialized");
         return PLASMA_ERR_NOT_INITIALIZED;
     }
 
@@ -115,26 +128,26 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
         plasma_error("illegal value of ldb");
         return -7;
     }
+    // Quick return - currently NOT equivalent to LAPACK's
+    //LAPACK does not have such check for DPOSV
+    //
+    //if (min(n, nrhs) == 0)
+    //    return PLASMA_SUCCESS;
 
-    // quick return
-    if (imax(n, nrhs) == 0)
-        return PLASMA_SUCCESS;
-
-    // Tune
-    // status = plasma_tune(PLASMA_FUNC_ZPOSV, N, N, NHRS);
-    // if (status != PLASMA_SUCCESS) {
-    //     plasma_error("plasma_tune() failed");
-    //     return status;
+    // Tune.
+    //status = plasma_tune(PLASMA_FUNC_ZPOSV, N, N, nrhs);
+    //if (status != PLASMA_SUCCESS) {
+    //   plasma_error("PLASMA_zposv", "plasma_tune() failed");
+    //    return status;
     // }
+    nb    = plasma->nb;
 
-    // Set NT & NHRS
-    nb = plasma->nb;
     // Initialize tile matrix descriptors.
     descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, n, n, 0, 0, n, n);
+                             nb*nb, lda, n, 0, 0, n, n);
 
     descB = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, n, nrhs, 0, 0, n, nrhs);
+                             nb*nb, ldb, nrhs, 0, 0, n, nrhs);
 
     // Allocate matrices in tile layout.
     retval = plasma_desc_mat_alloc(&descA);
@@ -145,6 +158,7 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
     retval = plasma_desc_mat_alloc(&descB);
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");
+        plasma_desc_mat_free(&descA);
         return retval;
     }
 
@@ -175,7 +189,10 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
 
         // Call the tile async function.
         if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_zpotrs_Tile_Async(uplo, &descA, &descB, sequence, &request);
+            PLASMA_zposv_Tile_Async(uplo,
+                                    &descA,
+                                    &descB,
+                                    sequence, &request);
         }
 
         // Translate back to LAPACK layout.
@@ -187,7 +204,7 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
     if (sequence->status != PLASMA_SUCCESS)
         return sequence->status;
 
-    // Free matrix A in tile layout.
+    // Free matrices in tile layout.
     plasma_desc_mat_free(&descA);
     plasma_desc_mat_free(&descB);
 
@@ -199,12 +216,11 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
 
 /***************************************************************************//**
  *
- * @ingroup plasma_potrs
+ * @ingroup plasma_posv
  *
- *  Solves a system of linear equations using previously
- *  computed Cholesky factorization.
- *  Non-blocking tile version of PLASMA_zpotrs().
- *  May return before the computation is finished.
+ *  Solves a Hermitian positive definite system of linear equations
+ *  using Cholesky factorization.
+ *  Non-blocking tile version of PLASMA_zposv().
  *  Operates on matrices stored by tiles.
  *  All matrices are passed through descriptors.
  *  All dimensions are taken from the descriptors.
@@ -216,9 +232,16 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
  *          - PlasmaUpper: Upper triangle of A is stored;
  *          - PlasmaLower: Lower triangle of A is stored.
  *
- * @param[in] A
- *          The triangular factor U or L from the Cholesky factorization
- *          A = U^H*U or A = L*L^H, computed by PLASMA_zpotrf.
+ * @param[in,out] A
+ *          On entry, the Hermitian positive definite matrix A.
+ *          If uplo = PlasmaUpper, the leading n-by-n upper triangular part of A
+ *          contains the upper triangular part of the matrix A, and the strictly
+ *          lower triangular part of A is not referenced.
+ *          If UPLO = 'L', the leading n-by-n lower triangular part of A
+ *          contains the lower triangular part of the matrix A, and the strictly
+ *          upper triangular part of A is not referenced.
+ *          On exit, if return value = 0, the factor U or L from
+ *          the Cholesky factorization  A = U^H*U or A = L*L^H.
  *
  * @param[in,out] B
  *          On entry, the n-by-nrhs right hand side matrix B.
@@ -228,7 +251,7 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
  *          Identifies the sequence of function calls that this call belongs to
  *          (for completion checks and exception handling purposes).  Check
  *          the sequence->status for errors.
- *
+
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
@@ -241,21 +264,19 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
  *
  *******************************************************************************
  *
- * @sa PLASMA_zpotrs
- * @sa PLASMA_zpotrs_Tile_Async
- * @sa PLASMA_cpotrs_Tile_Async
- * @sa PLASMA_dpotrs_Tile_Async
- * @sa PLASMA_spotrs_Tile_Async
- * @sa PLASMA_zpotrf_Tile_Async
+ * @sa PLASMA_zposv
+ * @sa PLASMA_cposv_Tile_Async
+ * @sa PLASMA_dposv_Tile_Async
+ * @sa PLASMA_sposv_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zpotrs_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
-                              PLASMA_sequence *sequence, PLASMA_request *request)
+void PLASMA_zposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
+                             PLASMA_sequence *sequence, PLASMA_request *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
-        plasma_fatal_error("PLASMA not initialized");
+        plasma_error("PLASMA not initialized");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
@@ -264,7 +285,6 @@ void PLASMA_zpotrs_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
     if (plasma_desc_check(A) != PLASMA_SUCCESS) {
@@ -273,33 +293,17 @@ void PLASMA_zpotrs_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
         return;
     }
     if (plasma_desc_check(B) != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         plasma_error("invalid B");
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
     if (sequence == NULL) {
-        plasma_fatal_error("NULL sequence");
+        plasma_error("NULL sequence");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
     if (request == NULL) {
-        plasma_fatal_error("NULL request");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-
-    if (A->mb != A->nb) {
-        plasma_error("only square tiles supported");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-    if (A->m != A->n) {
-        plasma_error("only square matrix A is supported");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-    if (B->mb != B->nb) {
-        plasma_error("only square tiles supported");
+        plasma_error("NULL request");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
@@ -310,32 +314,33 @@ void PLASMA_zpotrs_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
         return;
     }
 
-    // quick return
-    /*
-    if (min(n, nrhs) == 0)
-        return;
-    */
+    // Quick return - currently NOT equivalent to LAPACK's
+    // LAPACK does not have such check for DPOSV
+    //
+    //  if (min(n, nrhs == 0)
+    //      return PLASMA_SUCCESS;
+    //
+
+    PLASMA_enum trans;
+    PLASMA_Complex64_t zone = 1.0;
 
     // Call the parallel functions.
-    plasma_pztrsm(PlasmaLeft,
-        uplo,
-        uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans,
-        PlasmaNonUnit,
-        1.0,
-        *A,
-        *B,
-        sequence,
-        request);
+    plasma_pzpotrf(uplo, *A, sequence, request);
 
-    plasma_pztrsm(PlasmaLeft,
-        uplo,
-        uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans,
-        PlasmaNonUnit,
-        1.0,
-        *A,
-        *B,
-        sequence,
-        request);
+    trans = uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans;
+    plasma_pztrsm(PlasmaLeft, uplo,
+                  trans, PlasmaNonUnit,
+                  zone,
+                  *A,
+                  *B,
+                  sequence, request);
 
+    trans = uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans;
+    plasma_pztrsm(PlasmaLeft, uplo,
+                  trans, PlasmaNonUnit,
+                  zone,
+                  *A,
+                  *B,
+                  sequence, request);
     return;
 }
