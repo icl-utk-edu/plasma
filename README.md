@@ -4,6 +4,8 @@
 _|  ____|_/  _\____/_|  _|_/  _\
 ~~~~
 
+* * *
+
 **Parallel Linear Algebra Software for Multicore Architectures**
 
 **University of Tennessee (US)**
@@ -15,6 +17,7 @@ _|  ____|_/  _\____/_|  _|_/  _\
 [TOC]
 
 * * *
+
 About
 =====
 
@@ -34,14 +37,12 @@ The content of this repository reflects the progress of the transition.
 Before the transition is complete, the last release of the old PLASMA
 is available here: https://bitbucket.org/icl/plasma/downloads/plasma_2.8.0.tar.gz
 
-* * *
 Documentation
 =============
 
 Doxygen-generated PLASMA documentation is available at:
 http://icl.bitbucket.org/plasma/doxygen/
 
-* * *
 Getting Assistance
 ==================
 
@@ -50,7 +51,6 @@ https://groups.google.com/a/icl.utk.edu/forum/#!forum/plasma-user and clicking
 `Apply to join group`.
 Then email your questions and comments to `plasma-user@icl.utk.edu`.
 
-* * *
 Citing
 ======
 
@@ -85,7 +85,6 @@ Feel free to use the following publications to reference PLASMA:
   *Parallel Computing*,
   [Volume 35, Issue 1, January 2009, Pages 38–53](http://dx.doi.org/10.1016/j.parco.2008.10.002).
 
-* * *
 Funding
 =======
 
@@ -107,7 +106,6 @@ Additional funding was provided by the following companies:
 * The MathWorks,
 * Fujitsu.
 
-* * *
 People
 ======
 
@@ -141,7 +139,6 @@ The following people contributed to the development of PLASMA:
 * Asim YarKhan
 * Mawussi Zounon
 
-* * *
 License
 =======
 
