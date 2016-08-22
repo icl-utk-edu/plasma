@@ -244,9 +244,9 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
  * @param[in,out] descA
  *          Descriptor of matrix A stored in the tile layout.
  *          On exit,
- *          if m >= n, descA is overwritten by details of its QR factorization 
+ *          if m >= n, descA is overwritten by details of its QR factorization
  *                     as returned by PLASMA_zgeqrf;
- *          if m < n,  descA is overwritten by details of its LQ factorization 
+ *          if m < n,  descA is overwritten by details of its LQ factorization
  *                     as returned by PLASMA_zgelqf.
  *
  * @param[out] descT

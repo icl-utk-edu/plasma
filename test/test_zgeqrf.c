@@ -45,8 +45,10 @@
  * @param[out] info  - string of column labels or column values; length InfoLen
  *
  * If param is NULL     and info is NULL,     print usage and return.
- * If param is NULL     and info is non-NULL, set info to column headings and return.
- * If param is non-NULL and info is non-NULL, set info to column values   and run test.
+ * If param is NULL     and info is non-NULL, set info to column headings
+ *                                            and return.
+ * If param is non-NULL and info is non-NULL, set info to column values
+ *                                            and run test.
  ******************************************************************************/
 void test_zgeqrf(param_value_t param[], char *info)
 {
@@ -119,7 +121,7 @@ void test_zgeqrf(param_value_t param[], char *info)
     int ib = plasma->ib;
     int mt = (m%nb == 0) ? (m/nb) : (m/nb+1);
     int nt = (n%nb == 0) ? (n/nb) : (n/nb+1);
-    // nt should be doubled if tree-reduction QR is performed, 
+    // nt should be doubled if tree-reduction QR is performed,
     // not implemented now
     PLASMA_desc descT = plasma_desc_init(PlasmaComplexDouble, ib, nb, ib*nb,
                                          mt*ib, nt*nb, 0, 0, mt*ib, nt*nb);
@@ -147,7 +149,7 @@ void test_zgeqrf(param_value_t param[], char *info)
         int minmn = imin(m, n);
 
         // Allocate space for Q.
-        PLASMA_Complex64_t *Q = 
+        PLASMA_Complex64_t *Q =
             (PLASMA_Complex64_t *)malloc((size_t)m*n*
                                          sizeof(PLASMA_Complex64_t));
 
@@ -156,7 +158,7 @@ void test_zgeqrf(param_value_t param[], char *info)
         PLASMA_zungqr(m, n, n, A, lda, &descT, Q, ldq);
 
         // Build the idendity matrix
-        PLASMA_Complex64_t *Id = 
+        PLASMA_Complex64_t *Id =
             (PLASMA_Complex64_t *) malloc((size_t)minmn*minmn*
                                           sizeof(PLASMA_Complex64_t));
         memset((void*)Id, 0, minmn*minmn*sizeof(PLASMA_Complex64_t));
@@ -166,19 +168,19 @@ void test_zgeqrf(param_value_t param[], char *info)
         PLASMA_Complex64_t zone  =  1.0;
         PLASMA_Complex64_t mzone = -1.0;
 
-        // Perform Id - Q^H * Q 
+        // Perform Id - Q^H * Q
         if (m >= n)
-            cblas_zherk(CblasColMajor, CblasUpper, CblasConjTrans, n, m, 
+            cblas_zherk(CblasColMajor, CblasUpper, CblasConjTrans, n, m,
                         mzone, Q, ldq, zone, Id, n);
         else
-            cblas_zherk(CblasColMajor, CblasUpper, CblasNoTrans,   m, n, 
+            cblas_zherk(CblasColMajor, CblasUpper, CblasNoTrans,   m, n,
                         mzone, Q, ldq, zone, Id, m);
 
         // WORK array of size m is needed for computing L_oo norm
-        double *WORK = (double *) malloc((size_t)m*sizeof(double));;
+        double *WORK = (double *) malloc((size_t)m*sizeof(double));
 
-        // |Id - Q^H * Q|_oo 
-        double norm_orth = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', 
+        // |Id - Q^H * Q|_oo
+        double norm_orth = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I',
                                                minmn, minmn, Id, minmn, WORK);
 
         // normalize the result
@@ -195,28 +197,28 @@ void test_zgeqrf(param_value_t param[], char *info)
         // LAPACK version does not construct Q, it uses only application of it
 
         // Extract the R.
-        PLASMA_Complex64_t *R = 
+        PLASMA_Complex64_t *R =
             (PLASMA_Complex64_t *)malloc((size_t)m*n*
                                          sizeof(PLASMA_Complex64_t));
         memset((void*)R, 0., (size_t)m*n*sizeof(PLASMA_Complex64_t));
         LAPACKE_zlacpy_work(LAPACK_COL_MAJOR,'u', m, n, A, lda, R, m);
 
         // Compute Q * R.
-        PLASMA_zunmqr(PlasmaLeft, PlasmaNoTrans, m, n, minmn, A, lda, &descT, 
+        PLASMA_zunmqr(PlasmaLeft, PlasmaNoTrans, m, n, minmn, A, lda, &descT,
                       R, m);
 
         // Compute the difference.
         // R = A - Q*R
-        for (int j = 0 ; j < n; j++)
+        for (int j = 0; j < n; j++)
             for (int i = 0; i < m; i++)
                 R[j*m+i] = Aref[j*lda+i] - R[j*m+i];
 
-        // |A|_oo 
-        double normA = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', m, n, 
+        // |A|_oo
+        double normA = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', m, n,
                                            Aref, lda, WORK);
 
-        // |A - Q*R|_oo 
-        double norm_AmQR = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', m, n, 
+        // |A - Q*R|_oo
+        double norm_AmQR = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', m, n,
                                                R, m, WORK);
 
         // normalize the result
@@ -224,8 +226,9 @@ void test_zgeqrf(param_value_t param[], char *info)
         double norm_norm_AmQR = norm_AmQR / (normA * n * eps);
 
         // print the worst of the two results
-        double result = 
-            (norm_norm_ortho > norm_norm_AmQR ? norm_norm_ortho : norm_norm_AmQR);
+        double result =
+            (norm_norm_ortho > norm_norm_AmQR ? norm_norm_ortho :
+                                                norm_norm_AmQR);
 
         param[PARAM_ERROR].d = result;
         param[PARAM_SUCCESS].i = result < tol;

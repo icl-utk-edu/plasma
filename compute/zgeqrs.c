@@ -66,7 +66,7 @@
  * @sa PLASMA_zgeqrf
  * @sa PLASMA_zgels
  *
- *******************************************************************************/
+ ******************************************************************************/
 int PLASMA_zgeqrs(int m, int n, int nrhs,
                   PLASMA_Complex64_t *A, int lda,
                   PLASMA_desc *descT,
@@ -196,7 +196,7 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
  * @ingroup PLASMA_Complex64_t_Tile_Async
  *
  *  Computes a minimum-norm solution using the tile QR factorization.
- *  Non-blocking equivalent of PLASMA_zgeqrs().
+ *  Non-blocking tile version of PLASMA_zgeqrs().
  *  May return before the computation is finished.
  *  Allows for pipelining of operations at runtime.
  *
@@ -232,7 +232,6 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
  *******************************************************************************
  *
  * @sa PLASMA_zgeqrs
- * @sa PLASMA_zgeqrs_Tile
  * @sa PLASMA_cgeqrs_Tile_Async
  * @sa PLASMA_dgeqrs_Tile_Async
  * @sa PLASMA_sgeqrs_Tile_Async
@@ -240,9 +239,10 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
  * @sa PLASMA_zgels_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT, 
+void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
                               PLASMA_desc *descB,
-                              PLASMA_sequence *sequence, PLASMA_request *request)
+                              PLASMA_sequence *sequence,
+                              PLASMA_request *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

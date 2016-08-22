@@ -21,14 +21,16 @@
     #include <lapacke.h>
 #endif
 
-static inline void CORE_zpamm_a2(PLASMA_enum side, PLASMA_enum trans, PLASMA_enum uplo,
+static inline void CORE_zpamm_a2(PLASMA_enum side, PLASMA_enum trans,
+                                 PLASMA_enum uplo,
                                  int m, int n, int k, int l,
                                  int vi2, int vi3,
                                        PLASMA_Complex64_t *A2, int lda2,
                                  const PLASMA_Complex64_t *V,  int ldv,
                                        PLASMA_Complex64_t *W,  int ldw);
 
-static inline void CORE_zpamm_w(PLASMA_enum side, PLASMA_enum trans, PLASMA_enum uplo,
+static inline void CORE_zpamm_w(PLASMA_enum side, PLASMA_enum trans,
+                                PLASMA_enum uplo,
                                 int m, int n, int k, int l,
                                 int vi2, int vi3,
                                 const PLASMA_Complex64_t *A1, int lda1,
@@ -279,7 +281,7 @@ void CORE_zpamm(int op, PLASMA_enum side, PLASMA_enum storev,
     }
 }
 
-/***************************************************************************/
+/******************************************************************************/
 static inline void CORE_zpamm_w(
         PLASMA_enum side, PLASMA_enum trans, PLASMA_enum uplo,
         int m, int n, int k, int l,
@@ -345,14 +347,16 @@ static inline void CORE_zpamm_w(
             }
         }
         else {
-            plasma_error("Left Upper/NoTrans & Lower/[Conj]Trans not implemented yet\n");
+            plasma_error(
+                "Left Upper/NoTrans & Lower/[Conj]Trans not implemented\n");
             return;
         }
     }
     else { //side right
         if (((trans == Plasma_ConjTrans) && (uplo == CblasUpper)) ||
             ((trans == PlasmaNoTrans) && (uplo == CblasLower))) {
-            plasma_error("Right Upper/[Conj]Trans & Lower/NoTrans not implemented yet\n");
+            plasma_error(
+                "Right Upper/[Conj]Trans & Lower/NoTrans not implemented\n");
             return;
         }
         else {
@@ -403,7 +407,7 @@ static inline void CORE_zpamm_w(
     }
 }
 
-/***************************************************************************/
+/******************************************************************************/
 static inline void CORE_zpamm_a2(
         PLASMA_enum side, PLASMA_enum trans, PLASMA_enum uplo,
         int m, int n, int k, int l,
@@ -422,7 +426,7 @@ static inline void CORE_zpamm_a2(
         if (((trans == Plasma_ConjTrans) && (uplo == CblasUpper)) ||
             ((trans == PlasmaNoTrans) && (uplo == CblasLower))) {
             plasma_error(
-                "Left Upper/[Conj]Trans & Lower/NoTrans not implemented yet\n");
+                "Left Upper/[Conj]Trans & Lower/NoTrans not implemented\n");
             return;
         }
         else {  //trans
@@ -507,7 +511,7 @@ static inline void CORE_zpamm_a2(
         }
         else {
             plasma_error(
-                "Right Upper/NoTrans & Lower/[Conj]Trans not implemented yet\n");
+                "Right Upper/NoTrans & Lower/[Conj]Trans not implemented\n");
             return;
         }
     }

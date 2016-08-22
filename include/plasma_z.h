@@ -129,11 +129,13 @@ void PLASMA_zgemm_Tile_Async(
     PLASMA_sequence *sequence, PLASMA_request *request);
 
 void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
-                              PLASMA_sequence *sequence, PLASMA_request *request);
+                              PLASMA_sequence *sequence,
+                              PLASMA_request *request);
 
-void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT, 
+void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
                               PLASMA_desc *descB,
-                              PLASMA_sequence *sequence, PLASMA_request *request);
+                              PLASMA_sequence *sequence,
+                              PLASMA_request *request);
 
 void PLASMA_zsymm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
                              PLASMA_Complex64_t alpha,
@@ -187,16 +189,16 @@ void PLASMA_ztrsm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
                              PLASMA_desc *B,
                              PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zungqr_Tile_Async(PLASMA_desc *descA, 
-                              PLASMA_desc *descT, 
+void PLASMA_zungqr_Tile_Async(PLASMA_desc *descA,
+                              PLASMA_desc *descT,
                               PLASMA_desc *descQ,
-                              PLASMA_sequence *sequence, 
+                              PLASMA_sequence *sequence,
                               PLASMA_request *request);
 
 void PLASMA_zunmqr_Tile_Async(PLASMA_enum side, PLASMA_enum trans,
-                              PLASMA_desc *descA, PLASMA_desc *descT, 
+                              PLASMA_desc *descA, PLASMA_desc *descT,
                               PLASMA_desc *descC,
-                              PLASMA_sequence *sequence, 
+                              PLASMA_sequence *sequence,
                               PLASMA_request *request);
 
 /***************************************************************************//**

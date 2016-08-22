@@ -213,7 +213,8 @@ int PLASMA_zgeqrf(int m, int n,
  *
  ******************************************************************************/
 void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
-                              PLASMA_sequence *sequence, PLASMA_request *request)
+                              PLASMA_sequence *sequence,
+                              PLASMA_request *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

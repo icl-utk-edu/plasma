@@ -74,6 +74,6 @@ void CORE_OMP_zlaset(PLASMA_enum uplo, int m, int n,
     // omp depends assume lda == m
     #pragma omp task depend(out:A[0:m*n])
     CORE_zlaset(uplo, m, n,
-                alpha, beta, 
+                alpha, beta,
                 A, lda);
 }

@@ -1,6 +1,6 @@
 /**
  *
- * @file 
+ * @file
  *
  *  PLASMA is a software package provided by:
  *  University of Tennessee, US,
@@ -36,55 +36,55 @@ void plasma_pzlaset(PLASMA_enum uplo,
         return;
 
     if (uplo == PlasmaLower) {
-       for (j = 0; j < minmn; j++){
-           tempjm = j == A.mt-1 ? A.m-j*A.mb : A.mb;
-           tempjn = j == A.nt-1 ? A.n-j*A.nb : A.nb;
-           ldaj = BLKLDD(A, j);
-           CORE_OMP_zlaset(PlasmaLower, tempjm, tempjn, alpha, beta,
-                           A(j, j), ldaj);
+        for (j = 0; j < minmn; j++) {
+            tempjm = j == A.mt-1 ? A.m-j*A.mb : A.mb;
+            tempjn = j == A.nt-1 ? A.n-j*A.nb : A.nb;
+            ldaj = BLKLDD(A, j);
+            CORE_OMP_zlaset(PlasmaLower, tempjm, tempjn, alpha, beta,
+                            A(j, j), ldaj);
 
-           for (i = j+1; i < A.mt; i++){
-               tempim = i == A.mt-1 ? A.m-i*A.mb : A.mb;
-               ldai = BLKLDD(A, i);
-               CORE_OMP_zlaset(PlasmaFull, tempim, tempjn, alpha, alpha,
-                               A(i, j), ldai);
-           }
-       }
+            for (i = j+1; i < A.mt; i++) {
+                tempim = i == A.mt-1 ? A.m-i*A.mb : A.mb;
+                ldai = BLKLDD(A, i);
+                CORE_OMP_zlaset(PlasmaFull, tempim, tempjn, alpha, alpha,
+                                A(i, j), ldai);
+            }
+        }
     }
     else if (uplo == PlasmaUpper) {
-       for (j = 1; j < A.nt; j++){
-           tempjn = j == A.nt-1 ? A.n-j*A.nb : A.nb;
-           for (i = 0; i < imin(j, A.mt); i++){
-               tempim = i == A.mt-1 ? A.m-i*A.mb : A.mb;
-               ldai = BLKLDD(A, i);
-               CORE_OMP_zlaset(PlasmaFull, tempim, tempjn, alpha, alpha,
-                               A(i, j), ldai);
-           }
-       }
-       for (j = 0; j < minmn; j++){
-           tempjm = j == A.mt-1 ? A.m-j*A.mb : A.mb;
-           tempjn = j == A.nt-1 ? A.n-j*A.nb : A.nb;
-           ldaj = BLKLDD(A, j);
-           CORE_OMP_zlaset(PlasmaUpper, tempjm, tempjn, alpha, beta,
-                           A(j, j), ldaj);
-       }
+        for (j = 1; j < A.nt; j++) {
+            tempjn = j == A.nt-1 ? A.n-j*A.nb : A.nb;
+            for (i = 0; i < imin(j, A.mt); i++) {
+                tempim = i == A.mt-1 ? A.m-i*A.mb : A.mb;
+                ldai = BLKLDD(A, i);
+                CORE_OMP_zlaset(PlasmaFull, tempim, tempjn, alpha, alpha,
+                                A(i, j), ldai);
+            }
+        }
+        for (j = 0; j < minmn; j++) {
+            tempjm = j == A.mt-1 ? A.m-j*A.mb : A.mb;
+            tempjn = j == A.nt-1 ? A.n-j*A.nb : A.nb;
+            ldaj = BLKLDD(A, j);
+            CORE_OMP_zlaset(PlasmaUpper, tempjm, tempjn, alpha, beta,
+                            A(j, j), ldaj);
+        }
     }
     else { // PlasmaFull, i.e. diagonal matrix
-       for (i = 0; i < A.mt; i++){
-           tempim = i == A.mt-1 ? A.m-i*A.mb : A.mb;
-           ldai = BLKLDD(A, i);
-           for (j = 0; j < A.nt; j++){
-               tempjn = j == A.nt-1 ? A.n-j*A.nb : A.nb;
-               CORE_OMP_zlaset(PlasmaFull, tempim, tempjn, alpha, alpha,
-                               A(i, j), ldai);
-           }
-       }
-       for (j = 0; j < minmn; j++){
-           tempjm = j == A.mt-1 ? A.m-j*A.mb : A.mb;
-           tempjn = j == A.nt-1 ? A.n-j*A.nb : A.nb;
-           ldaj = BLKLDD(A, j);
-           CORE_OMP_zlaset(PlasmaFull, tempjm, tempjn, alpha, beta,
-                           A(j, j), ldaj);
-       }
+        for (i = 0; i < A.mt; i++) {
+            tempim = i == A.mt-1 ? A.m-i*A.mb : A.mb;
+            ldai = BLKLDD(A, i);
+            for (j = 0; j < A.nt; j++) {
+                tempjn = j == A.nt-1 ? A.n-j*A.nb : A.nb;
+                CORE_OMP_zlaset(PlasmaFull, tempim, tempjn, alpha, alpha,
+                                A(i, j), ldai);
+            }
+        }
+        for (j = 0; j < minmn; j++) {
+            tempjm = j == A.mt-1 ? A.m-j*A.mb : A.mb;
+            tempjn = j == A.nt-1 ? A.n-j*A.nb : A.nb;
+            ldaj = BLKLDD(A, j);
+            CORE_OMP_zlaset(PlasmaFull, tempjm, tempjn, alpha, beta,
+                            A(j, j), ldaj);
+        }
     }
 }

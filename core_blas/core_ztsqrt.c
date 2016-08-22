@@ -203,12 +203,13 @@ void CORE_OMP_ztsqrt(int m, int n, int ib, int nb,
     {
         // prepare memory for auxiliary arrays
         PLASMA_Complex64_t *TAU  =
-            (PLASMA_Complex64_t *) malloc((size_t)nb * sizeof(PLASMA_Complex64_t));
+            (PLASMA_Complex64_t *) malloc((size_t)nb *
+                                          sizeof(PLASMA_Complex64_t));
         if (TAU == NULL) {
             plasma_error("malloc() failed");
         }
         PLASMA_Complex64_t *WORK =
-            (PLASMA_Complex64_t *) malloc((size_t)ib*nb * 
+            (PLASMA_Complex64_t *) malloc((size_t)ib*nb *
                                           sizeof(PLASMA_Complex64_t));
         if (WORK == NULL) {
             plasma_error("malloc() failed");

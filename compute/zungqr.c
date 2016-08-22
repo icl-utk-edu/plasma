@@ -190,7 +190,7 @@ int PLASMA_zungqr(int m, int n, int k,
  *
  * @ingroup PLASMA_Complex64_t_Tile_Async
  *
- *  Non-blocking equivalent of PLASMA_zungqr_Tile().
+ *  Non-blocking tile version of PLASMA_zungqr().
  *  May return before the computation is finished.
  *  Allows for pipelining of operations at runtime.
  *
@@ -230,10 +230,10 @@ int PLASMA_zungqr(int m, int n, int k,
  * @sa PLASMA_zgeqrf_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zungqr_Tile_Async(PLASMA_desc *descA, 
-                              PLASMA_desc *descT, 
+void PLASMA_zungqr_Tile_Async(PLASMA_desc *descA,
+                              PLASMA_desc *descT,
                               PLASMA_desc *descQ,
-                              PLASMA_sequence *sequence, 
+                              PLASMA_sequence *sequence,
                               PLASMA_request *request)
 {
     // Get PLASMA context.
@@ -282,14 +282,14 @@ void PLASMA_zungqr_Tile_Async(PLASMA_desc *descA,
         return;
     }
 
-    // Quick return 
+    // Quick return
     //if (n <= 0)
     //    return;
-    
+
     // set ones to diagonal of Q
     plasma_pzlaset(PlasmaFull, 0., 1., *descQ, sequence, request);
 
-    // construct Q by applying block Householder reflectors
+    // construct Q
     plasma_pzungqr(*descA, *descQ, *descT, sequence, request);
 
     return;

@@ -77,7 +77,8 @@ void CORE_zpamm(int op, PLASMA_enum side, PLASMA_enum storev,
                 const PLASMA_Complex64_t *V, int ldv,
                       PLASMA_Complex64_t *W, int ldw);
 
-void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans, PLASMA_enum direct, PLASMA_enum storev,
+void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans, PLASMA_enum direct,
+                 PLASMA_enum storev,
                  int m1, int n1, int m2, int n2, int k, int l,
                        PLASMA_Complex64_t *A1, int lda1,
                        PLASMA_Complex64_t *A2, int lda2,

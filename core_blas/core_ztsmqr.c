@@ -108,7 +108,7 @@
  *         The leading dimension of the array T. ldt >= ib.
  *
  * @param WORK
- *         Auxiliary workspace array of length 
+ *         Auxiliary workspace array of length
  *         ldwork-by-n1 if side == PlasmaLeft
  *         ldwork-by-ib if side == PlasmaRight
  *
@@ -262,7 +262,7 @@ void CORE_OMP_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
     {
         // prepare memory for the auxiliary array
         PLASMA_Complex64_t *WORK =
-            (PLASMA_Complex64_t *) malloc((size_t)ib*nb * 
+            (PLASMA_Complex64_t *) malloc((size_t)ib*nb *
                                           sizeof(PLASMA_Complex64_t));
         if (WORK == NULL) {
             plasma_error("malloc() failed");
