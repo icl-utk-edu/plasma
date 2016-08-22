@@ -1,20 +1,11 @@
 /**
  *
- * @file core_ztsmqr.c
+ * @file
  *
- *  PLASMA core_blas kernel
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver and
- *  Univ. of Manchester.
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Hatem Ltaief
- * @author Mathieu Faverge
- * @author Jakub Kurzak
- * @author Azzam Haidar
- * @author Dulceneia Becker
- * @author Jakub Sistek
- * @date 2016-7-8
  * @precisions normal z -> c d s
  *
  **/
@@ -116,17 +107,25 @@
  * @param[in] ldt
  *         The leading dimension of the array T. ldt >= ib.
  *
+ * @param WORK
+ *         Auxiliary workspace array of length 
+ *         ldwork-by-n1 if side == PlasmaLeft
+ *         ldwork-by-ib if side == PlasmaRight
+ *
+ * @param[in] ldwork
+ *         The leading dimension of the array WORK.
+ *             ldwork >= max(1,ib) if side == PlasmaLeft
+ *             ldwork >= max(1,m1) if side == PlasmaRight
+ *
  ******************************************************************************/
 void CORE_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
                  int m1, int n1, int m2, int n2, int k, int ib,
                  PLASMA_Complex64_t *A1, int lda1,
                  PLASMA_Complex64_t *A2, int lda2,
                  const PLASMA_Complex64_t *V, int ldv,
-                 const PLASMA_Complex64_t *T, int ldt)
+                 const PLASMA_Complex64_t *T, int ldt,
+                 PLASMA_Complex64_t *WORK, int ldwork)
 {
-    // block size is assumed to be equal to n1
-    int nb = n1;
-
     int i, i1, i3;
     int nq, nw;
     int kb;
@@ -150,8 +149,6 @@ void CORE_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
         nq = n2;
         nw = m1;
     }
-
-    int ldwork = nw;
 
     // Plasma_ConjTrans will be converted to PlasmaTrans in
     // automatic datatype conversion, which is what we want here.
@@ -214,15 +211,6 @@ void CORE_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
         (n2 == 0) || (k == 0) || (ib == 0))
         return;
 
-    // prepare memory for the auxiliary array
-    PLASMA_Complex64_t *WORK =
-        (PLASMA_Complex64_t *) malloc((size_t)ib*nb * 
-                                      sizeof(PLASMA_Complex64_t));
-    if (WORK == NULL) {
-        plasma_error("malloc() failed");
-        return;
-    }
-
     if (((side == PlasmaLeft)  && (trans != PlasmaNoTrans))
         || ((side == PlasmaRight) && (trans == PlasmaNoTrans))) {
         i1 = 0;
@@ -256,9 +244,6 @@ void CORE_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
             &T[ldt*i], ldt,
             WORK, ldwork);
     }
-
-    // deallocate auxiliary array
-    free(WORK);
 }
 
 /******************************************************************************/
@@ -274,10 +259,27 @@ void CORE_OMP_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
                      depend(inout:A2[0:nb*nb]) \
                      depend(in:V[0:nb*nb]) \
                      depend(in:T[0:ib*nb])
-    CORE_ztsmqr(side, trans,
-                m1, n1, m2, n2, k, ib,
-                A1, lda1,
-                A2, lda2,
-                V, ldv,
-                T, ldt);
+    {
+        // prepare memory for the auxiliary array
+        PLASMA_Complex64_t *WORK =
+            (PLASMA_Complex64_t *) malloc((size_t)ib*nb * 
+                                          sizeof(PLASMA_Complex64_t));
+        if (WORK == NULL) {
+            plasma_error("malloc() failed");
+        }
+
+        int ldwork = side == PlasmaLeft ? ib : nb;
+
+        // call the kernel
+        CORE_ztsmqr(side, trans,
+                    m1, n1, m2, n2, k, ib,
+                    A1, lda1,
+                    A2, lda2,
+                    V, ldv,
+                    T, ldt,
+                    WORK, ldwork);
+
+        // deallocate the auxiliary array
+        free(WORK);
+    }
 }

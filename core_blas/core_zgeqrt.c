@@ -1,18 +1,11 @@
 /**
  *
- * @file core_zgeqrt.c
+ * @file
  *
- *  PLASMA core_blas kernel
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver and
- *  Univ. of Manchester.
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Hatem Ltaief
- * @author Mathieu Faverge
- * @author Jakub Kurzak
- * @author Jakub Sistek
- * @date 2016-7-8
  * @precisions normal z -> c d s
  *
  **/
@@ -81,10 +74,18 @@
  * @param[in] ldt
  *         The leading dimension of the array T. ldt >= ib.
  *
+ * @param TAU
+ *         Auxiliarry workspace array of length n.
+ *
+ * @param WORK
+ *         Auxiliary workspace array of length ib*n.
+ *
  ******************************************************************************/
 void CORE_zgeqrt(int m, int n, int ib,
                  PLASMA_Complex64_t *A, int lda,
-                 PLASMA_Complex64_t *T, int ldt)
+                 PLASMA_Complex64_t *T, int ldt,
+                 PLASMA_Complex64_t *TAU,
+                 PLASMA_Complex64_t *WORK)
 {
     // block size is assumed to be equal to n
     int nb = n;
@@ -99,37 +100,21 @@ void CORE_zgeqrt(int m, int n, int ib,
         return;
     }
     if ((ib < 0) || ( (ib == 0) && ((m > 0) && (n > 0)) )) {
-        plasma_error("Illegal value of IB");
+        plasma_error("Illegal value of ib");
         return;
     }
     if ((lda < imax(1,m)) && (m > 0)) {
-        plasma_error("Illegal value of LDA");
+        plasma_error("Illegal value of lda");
         return;
     }
     if ((ldt < imax(1,ib)) && (ib > 0)) {
-        plasma_error("Illegal value of LDT");
+        plasma_error("Illegal value of ldt");
         return;
     }
 
     // Quick return
     if ((m == 0) || (n == 0) || (ib == 0))
         return;
-
-    // prepare memory for auxiliary arrays
-    PLASMA_Complex64_t *TAU  =
-        (PLASMA_Complex64_t *) malloc((size_t)nb *
-                                      sizeof(PLASMA_Complex64_t));
-    if (TAU == NULL) {
-        plasma_error("malloc() failed");
-        return;
-    }
-    PLASMA_Complex64_t *WORK =
-        (PLASMA_Complex64_t *) malloc((size_t)ib*nb * 
-                                      sizeof(PLASMA_Complex64_t));
-    if (WORK == NULL) {
-        plasma_error("malloc() failed");
-        return;
-    }
 
     int k = imin(m, n);
     for (int i = 0; i < k; i += ib) {
@@ -163,10 +148,6 @@ void CORE_zgeqrt(int m, int n, int ib,
                 WORK, n-i-sb);
         }
     }
-
-    // deallocate auxiliary arrays
-    free(TAU);
-    free(WORK);
 }
 
 /******************************************************************************/
@@ -177,7 +158,30 @@ void CORE_OMP_zgeqrt(int m, int n, int ib, int nb,
     // assuming lda == m and nb == n
     #pragma omp task depend(inout:A[0:lda*nb]) \
                      depend(out:T[0:ldt*nb])
-    CORE_zgeqrt(m, n, ib,
-                A, lda,
-                T, ldt);
+    {
+        // prepare memory for auxiliary arrays
+        PLASMA_Complex64_t *TAU = 
+            (PLASMA_Complex64_t *) malloc((size_t)nb * 
+                                          sizeof(PLASMA_Complex64_t));
+        if (TAU == NULL) {
+            plasma_error("malloc() failed");
+        }
+        PLASMA_Complex64_t *WORK = 
+            (PLASMA_Complex64_t *) malloc((size_t)ib*nb * 
+                                          sizeof(PLASMA_Complex64_t));
+        if (WORK == NULL) {
+            plasma_error("malloc() failed");
+        }
+
+        // call the kernel
+        CORE_zgeqrt(m, n, ib,
+                    A, lda,
+                    T, ldt, 
+                    TAU,
+                    WORK);
+
+        // deallocate auxiliary arrays
+        free(TAU);
+        free(WORK);
+    }
 }

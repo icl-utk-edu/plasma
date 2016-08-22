@@ -2,12 +2,10 @@
  *
  * @file ztrsm.c
  *
- *  PLASMA computational routines
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Mawussi Zounon
  * @precisions normal z -> s d c
  *
  **/

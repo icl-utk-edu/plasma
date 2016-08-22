@@ -2,11 +2,10 @@
  *
  * @file core_ztrsm.c
  *
- *  PLASMA core_blas kernel.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver.
- * @version 3.0.0
- * @author Mawussi Zounon
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
+ *
  * @precisions normal z -> c d s
  *
  **/

@@ -2,15 +2,9 @@
  *
  * @file test.h
  *
- *  PLASMA testing harness.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of Manchester, Univ. of California Berkeley and
- *  Univ. of Colorado Denver.
- *
- * @version 3.0.0
- * @author Jakub Kurzak
- * @author Samuel D. Relton
- * @date 2016-05-16
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
  **/
 #ifndef TEST_H

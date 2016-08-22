@@ -1,16 +1,11 @@
 /**
  *
- * @file zgeqrs.c
+ * @file
  *
- *  PLASMA computational routines
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley, Univ. of Colorado Denver and
- *  Univ. of Manchester.
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Jakub Kurzak
- * @author Jakub Sistek
- * @date 2016-7-11
  * @precisions normal z -> s d c
  *
  **/

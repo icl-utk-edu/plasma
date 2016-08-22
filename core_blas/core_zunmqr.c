@@ -1,18 +1,11 @@
 /**
  *
- * @file core_zunmqr.c
+ * @file
  *
- *  PLASMA core_blas kernel
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver and
- *  Univ. of Manchester.
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Hatem Ltaief
- * @author Mathieu Faverge
- * @author Jakub Kurzak
- * @author Jakub Sistek
- * @date 2016-7-8
  * @precisions normal z -> c d s
  *
  **/
@@ -100,18 +93,24 @@
  * @param[in] ldc
  *         The leading dimension of the array C. ldc >= max(1,m).
  *
+ * @param WORK
+ *         Auxiliary workspace array of length 
+ *         ldwork-by-n  if side == PlasmaLeft
+ *         ldwork-by-ib if side == PlasmaRight
+ *
+ * @param[in] ldwork
+ *         The leading dimension of the array WORK.
+ *             ldwork >= max(1,ib) if side == PlasmaLeft
+ *             ldwork >= max(1,m)  if side == PlasmaRight
+ *
  ******************************************************************************/
 void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
                  int m, int n, int k, int ib,
                  const PLASMA_Complex64_t *A, int lda,
                  const PLASMA_Complex64_t *T, int ldt,
-                 PLASMA_Complex64_t *C, int ldc)
+                 PLASMA_Complex64_t *C, int ldc,
+                 PLASMA_Complex64_t *WORK, int ldwork)
 {
-    // block size is assumed to be equal to n
-    int nb = n;
-
-    int ldwork = nb;
-
     int i, kb;
     int i1, i3;
     int nq, nw;
@@ -175,15 +174,6 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
     if ((m == 0) || (n == 0) || (k == 0))
         return;
 
-    // prepare memory for the auxiliary array
-    PLASMA_Complex64_t *WORK =
-        (PLASMA_Complex64_t *) malloc((size_t)ib*nb * 
-                                      sizeof(PLASMA_Complex64_t));
-    if (WORK == NULL) {
-        plasma_error("malloc() failed");
-        return;
-    }
-
     if (((side == PlasmaLeft) && (trans != PlasmaNoTrans))
         || ((side == PlasmaRight) && (trans == PlasmaNoTrans))) {
         i1 = 0;
@@ -220,9 +210,6 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
             &C[ldc*jc+ic], ldc,
             WORK, ldwork);
     }
-
-    // deallocate auxiliary array
-    free(WORK);
 }
 
 /******************************************************************************/
@@ -236,9 +223,26 @@ void CORE_OMP_zunmqr(PLASMA_enum side, PLASMA_enum trans,
     #pragma omp task depend(in:A[0:nb*nb]) \
                      depend(in:T[0:ib*nb]) \
                      depend(inout:C[0:nb*nb])
-    CORE_zunmqr(side, trans,
-                m, n, k, ib,
-                A, lda,
-                T, ldt,
-                C, ldc);
+    {
+        // prepare memory for the auxiliary array
+        PLASMA_Complex64_t *WORK =
+            (PLASMA_Complex64_t *) malloc((size_t)ib*nb * 
+                                          sizeof(PLASMA_Complex64_t));
+        if (WORK == NULL) {
+            plasma_error("malloc() failed");
+        }
+
+        int ldwork = nb;
+
+        // call the kernel
+        CORE_zunmqr(side, trans,
+                    m, n, k, ib,
+                    A, lda,
+                    T, ldt,
+                    C, ldc,
+                    WORK, ldwork);
+
+        // deallocate the auxiliary array
+        free(WORK);
+    }
 }

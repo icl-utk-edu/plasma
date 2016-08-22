@@ -52,6 +52,11 @@ void plasma_pzhemm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_Complex64_t beta,  PLASMA_desc C,
                    PLASMA_sequence *sequence, PLASMA_request *request);
 
+void plasma_pzlaset(PLASMA_enum uplo,
+                    PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
+                    PLASMA_desc A,
+                    PLASMA_sequence *sequence, PLASMA_request *request);
+
 void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
                    PLASMA_Complex64_t alpha, PLASMA_desc A,
                    PLASMA_Complex64_t beta,  PLASMA_desc C,
@@ -83,6 +88,9 @@ void plasma_pztrsm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_Complex64_t alpha, PLASMA_desc A,
                    PLASMA_desc B,
                    PLASMA_sequence *sequence, PLASMA_request *request);
+
+void plasma_pzungqr(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
+                    PLASMA_sequence *sequence, PLASMA_request *request);
 
 void plasma_pzunmqr(PLASMA_enum side, PLASMA_enum trans,
                     PLASMA_desc A, PLASMA_desc B, PLASMA_desc T,

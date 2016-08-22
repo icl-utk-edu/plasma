@@ -1,16 +1,11 @@
 /**
  *
- * @file core_zpamm.c
+ * @file
  *
- *  PLASMA core_blas kernel
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver and
- *  Univ. of Manchester.
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Dulceneia Becker
- * @author Jakub Sistek
- * @date 2016-07-28
  * @precisions normal z -> c d s
  *
  **/
@@ -45,7 +40,7 @@ static inline void CORE_zpamm_w(PLASMA_enum side, PLASMA_enum trans, PLASMA_enum
  *
  * @ingroup CORE_PLASMA_Complex64_t
  *
- *  ZPAMM  performs one of the matrix-matrix operations
+ *  Performs one of the matrix-matrix operations
  *
  *                    LEFT                      RIGHT
  *     OP PlasmaW  :  W  = A1 + op(V) * A2  or  W  = A1 + A2 * op(V)

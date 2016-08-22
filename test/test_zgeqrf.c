@@ -1,15 +1,11 @@
 /**
  *
- * @file test_zgeqrf.c
+ * @file
  *
- *  PLASMA test routine.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley, Univ. of Colorado Denver and
- *  Univ. of Manchester.
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Jakub Sistek
- * @date 2016-7-9
  * @precisions normal z -> s d c
  *
  **/
@@ -120,9 +116,11 @@ void test_zgeqrf(param_value_t param[], char *info)
     // Initialize tile matrix descriptor for matrix T
     // using multiples of tile size.
     int nb = plasma->nb;
-    int ib = nb;
+    int ib = plasma->ib;
     int mt = (m%nb == 0) ? (m/nb) : (m/nb+1);
     int nt = (n%nb == 0) ? (n/nb) : (n/nb+1);
+    // nt should be doubled if tree-reduction QR is performed, 
+    // not implemented now
     PLASMA_desc descT = plasma_desc_init(PlasmaComplexDouble, ib, nb, ib*nb,
                                          mt*ib, nt*nb, 0, 0, mt*ib, nt*nb);
     // allocate memory for the matrix T
@@ -148,48 +146,64 @@ void test_zgeqrf(param_value_t param[], char *info)
 
         int minmn = imin(m, n);
 
-        // comment out until routine for building explicit Q is ready
+        // Allocate space for Q.
+        PLASMA_Complex64_t *Q = 
+            (PLASMA_Complex64_t *)malloc((size_t)m*n*
+                                         sizeof(PLASMA_Complex64_t));
+
+        // Build Q.
+        int ldq = m;
+        PLASMA_zungqr(m, n, n, A, lda, &descT, Q, ldq);
+
         // Build the idendity matrix
-      //  PLASMA_Complex64_t *Id = 
-      //      (PLASMA_Complex64_t *) malloc((size_t)minmn*minmn*
-      //                                    sizeof(PLASMA_Complex64_t));
-      //  memset((void*)Id, 0, minmn*minmn*sizeof(PLASMA_Complex64_t));
-      //  for (int i = 0; i < minmn; i++)
-      //      Id[i*minmn+i] = (PLASMA_Complex64_t)1.0;
+        PLASMA_Complex64_t *Id = 
+            (PLASMA_Complex64_t *) malloc((size_t)minmn*minmn*
+                                          sizeof(PLASMA_Complex64_t));
+        memset((void*)Id, 0, minmn*minmn*sizeof(PLASMA_Complex64_t));
+        for (int i = 0; i < minmn; i++)
+            Id[i*minmn+i] = (PLASMA_Complex64_t)1.0;
 
-      //  PLASMA_Complex64_t zone  =  1.0;
-      //  PLASMA_Complex64_t mzone = -1.0;
+        PLASMA_Complex64_t zone  =  1.0;
+        PLASMA_Complex64_t mzone = -1.0;
 
-      //  // Perform Id - Q^H * Q 
-      //  if (m >= n)
-      //      cblas_zherk(CblasColMajor, CblasUpper, CblasConjTrans, n, m, mzone, Q, ldq, zone, Id, n);
-      //  else
-      //      cblas_zherk(CblasColMajor, CblasUpper, CblasNoTrans,   m, n, mzone, Q, ldq, zone, Id, m);
+        // Perform Id - Q^H * Q 
+        if (m >= n)
+            cblas_zherk(CblasColMajor, CblasUpper, CblasConjTrans, n, m, 
+                        mzone, Q, ldq, zone, Id, n);
+        else
+            cblas_zherk(CblasColMajor, CblasUpper, CblasNoTrans,   m, n, 
+                        mzone, Q, ldq, zone, Id, m);
 
-      //  // |Id - Q^H * Q|_oo 
-      //  double norm_orth = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', minmn, minmn, Id, minmn);
+        // WORK array of size m is needed for computing L_oo norm
+        double *WORK = (double *) malloc((size_t)m*sizeof(double));;
 
-      //  // normalize the result
-      //  // |Id - Q^H * Q|_oo / (n * eps)
-      //  double norm_norm_ortho = norm_orth/(minmn*eps);
-      //  if (norm_norm_ortho > tol)
-      //      plasma_warning("error in orthogonality is above tolerance %lf",norm_norm_ortho);
+        // |Id - Q^H * Q|_oo 
+        double norm_orth = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', 
+                                               minmn, minmn, Id, minmn, WORK);
 
-      //  free(Id);
+        // normalize the result
+        // |Id - Q^H * Q|_oo / (n * eps)
+        double norm_norm_ortho = norm_orth/(minmn*eps);
+        if (norm_norm_ortho > tol)
+            printf("WARNING: error in orthogonality %lf is above "
+                   "the tolerance %lf \n", norm_norm_ortho, tol);
+
+        free(Q);
+        free(Id);
 
         // Check the accuracy of A - Q * R
         // LAPACK version does not construct Q, it uses only application of it
 
         // Extract the R.
         PLASMA_Complex64_t *R = 
-            (PLASMA_Complex64_t *)malloc((size_t)m*n*sizeof(PLASMA_Complex64_t));
+            (PLASMA_Complex64_t *)malloc((size_t)m*n*
+                                         sizeof(PLASMA_Complex64_t));
         memset((void*)R, 0., (size_t)m*n*sizeof(PLASMA_Complex64_t));
-        // WORK array of size M is needed for computing L_oo norm
-        double *WORK = (double *) malloc((size_t)m*sizeof(double));;
         LAPACKE_zlacpy_work(LAPACK_COL_MAJOR,'u', m, n, A, lda, R, m);
 
         // Compute Q * R.
-        PLASMA_zunmqr(PlasmaLeft, PlasmaNoTrans, m, n, minmn, A, lda, &descT, R, m);
+        PLASMA_zunmqr(PlasmaLeft, PlasmaNoTrans, m, n, minmn, A, lda, &descT, 
+                      R, m);
 
         // Compute the difference.
         // R = A - Q*R
@@ -198,14 +212,20 @@ void test_zgeqrf(param_value_t param[], char *info)
                 R[j*m+i] = Aref[j*lda+i] - R[j*m+i];
 
         // |A|_oo 
-        double normA = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', m, n, Aref, lda, WORK);
+        double normA = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', m, n, 
+                                           Aref, lda, WORK);
 
         // |A - Q*R|_oo 
-        double norm_AmQR = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', m, n, R, m, WORK);
+        double norm_AmQR = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', m, n, 
+                                               R, m, WORK);
 
         // normalize the result
         // |A-QR|_oo / (|A|_oo * n * eps)
-        double result = norm_AmQR / (normA * n * eps);
+        double norm_norm_AmQR = norm_AmQR / (normA * n * eps);
+
+        // print the worst of the two results
+        double result = 
+            (norm_norm_ortho > norm_norm_AmQR ? norm_norm_ortho : norm_norm_AmQR);
 
         param[PARAM_ERROR].d = result;
         param[PARAM_SUCCESS].i = result < tol;

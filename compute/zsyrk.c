@@ -2,14 +2,10 @@
  *
  * @file zsyrk.c
  *
- *  PLASMA computational routine.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley, Univ. of Colorado Denver and
- *  Univ. of Manchester.
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Pedro V. Lara
- * @date 2016-05-24
  * @precisions normal z -> s d c
  *
  **/

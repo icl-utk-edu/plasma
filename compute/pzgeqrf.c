@@ -1,23 +1,17 @@
 /**
  *
- * @file pzgeqrf.c
+ * @file 
  *
- *  PLASMA auxiliary routines
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley, Univ. of Colorado Denver and
- *  Univ. of Manchester.
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Jakub Kurzak
- * @author Hatem Ltaief
- * @author Mathieu Faverge
- * @author Jakub Sistek
- * @date 2016-7-6
  * @precisions normal z -> s d c
  *
  **/
 
 #include "plasma_async.h"
+#include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_types.h"
 #include "plasma_internal.h"
@@ -35,13 +29,18 @@ void plasma_pzgeqrf(PLASMA_desc A, PLASMA_desc T,
     int k, m, n;
     int ldak, ldam;
     int tempkm, tempkn, tempnn, tempmm;
-    int ib;
 
     if (sequence->status != PLASMA_SUCCESS)
         return;
 
-    // Jakub S.: How to set inner blocking?
-    ib = A.nb;
+    // Set inner blocking from the plasma context
+    plasma_context_t *plasma = plasma_context_self();
+    if (plasma == NULL) {
+        plasma_error("PLASMA not initialized");
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        return;
+    }
+    int ib = plasma->ib;
 
     for (k = 0; k < imin(A.mt, A.nt); k++) {
         tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;

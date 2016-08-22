@@ -1,16 +1,11 @@
 /**
  *
- * @file core_zparfb.c
+ * @file
  *
- *  PLASMA core_blas kernel
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver and
- *  Univ. of Manchester.
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Dulceneia Becker
- * @author Jakub Sistek
- * @date 2016-7-8
  * @precisions normal z -> c d s
  *
  **/

@@ -1,18 +1,11 @@
 /**
  *
- * @file core_ztsqrt.c
+ * @file
  *
- *  PLASMA core_blas kernel
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver and
- *  Univ. of Manchester.
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Hatem Ltaief
- * @author Mathieu Faverge
- * @author Jakub Kurzak
- * @author Jakub Sistek
- * @date 2016-7-8
  * @precisions normal z -> c d s
  *
  **/
@@ -81,15 +74,20 @@
  * @param[in] ldt
  *         The leading dimension of the array T. ldt >= ib.
  *
+ * @param TAU
+ *         Auxiliary workspace array of length n.
+ *
+ * @param WORK
+ *         Auxiliary workspace array of length ib*n.
+ *
  ******************************************************************************/
 void CORE_ztsqrt(int m, int n, int ib,
                  PLASMA_Complex64_t *A1, int lda1,
                  PLASMA_Complex64_t *A2, int lda2,
-                 PLASMA_Complex64_t *T, int ldt)
+                 PLASMA_Complex64_t *T, int ldt,
+                 PLASMA_Complex64_t *TAU,
+                 PLASMA_Complex64_t *WORK)
 {
-    // block size is assumed to be equal to n
-    int nb = n;
-
     // Check input arguments
     if (m < 0) {
         plasma_error("Illegal value of m");
@@ -111,21 +109,6 @@ void CORE_ztsqrt(int m, int n, int ib,
     // Quick return
     if ((m == 0) || (n == 0) || (ib == 0))
         return;
-
-    // prepare memory for auxiliary arrays
-    PLASMA_Complex64_t *TAU  =
-        (PLASMA_Complex64_t *) malloc((size_t)nb * sizeof(PLASMA_Complex64_t));
-    if (TAU == NULL) {
-        plasma_error("malloc() failed");
-        return;
-    }
-    PLASMA_Complex64_t *WORK =
-        (PLASMA_Complex64_t *) malloc((size_t)ib*nb * 
-                                      sizeof(PLASMA_Complex64_t));
-    if (WORK == NULL) {
-        plasma_error("malloc() failed");
-        return;
-    }
 
     // variable storing 1 and 0 constants
     static PLASMA_Complex64_t zone  = 1.0;
@@ -201,14 +184,10 @@ void CORE_ztsqrt(int m, int n, int ib,
                 &A1[lda1*(ii+sb)+ii], lda1,
                 &A2[lda2*(ii+sb)], lda2,
                 &A2[lda2*ii], lda2,
-                &T[ldt*ii], ldt);
-                //WORK, sb);
+                &T[ldt*ii], ldt,
+                WORK, sb);
         }
     }
-
-    // deallocate auxiliary arrays
-    free(TAU);
-    free(WORK);
 }
 
 /******************************************************************************/
@@ -221,8 +200,29 @@ void CORE_OMP_ztsqrt(int m, int n, int ib, int nb,
     #pragma omp task depend(inout:A1[0:nb*nb]) \
                      depend(inout:A2[0:nb*nb]) \
                      depend(out:T[0:ib*nb])
-    CORE_ztsqrt(m, n, ib,
-                A1, lda1,
-                A2, lda2,
-                T,  ldt);
+    {
+        // prepare memory for auxiliary arrays
+        PLASMA_Complex64_t *TAU  =
+            (PLASMA_Complex64_t *) malloc((size_t)nb * sizeof(PLASMA_Complex64_t));
+        if (TAU == NULL) {
+            plasma_error("malloc() failed");
+        }
+        PLASMA_Complex64_t *WORK =
+            (PLASMA_Complex64_t *) malloc((size_t)ib*nb * 
+                                          sizeof(PLASMA_Complex64_t));
+        if (WORK == NULL) {
+            plasma_error("malloc() failed");
+        }
+
+        CORE_ztsqrt(m, n, ib,
+                    A1, lda1,
+                    A2, lda2,
+                    T,  ldt,
+                    TAU,
+                    WORK);
+
+        // deallocate auxiliary arrays
+        free(TAU);
+        free(WORK);
+    }
 }

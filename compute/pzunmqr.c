@@ -1,24 +1,17 @@
 /**
  *
- * @file pzunmqr.c
+ * @file 
  *
- *  PLASMA auxiliary routines
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley, Univ. of Colorado Denver and
- *  Univ. of Manchester.
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Hatem Ltaief
- * @author Jakub Kurzak
- * @author Mathieu Faverge
- * @author Azzam Haidar
- * @author Jakub Sistek
- * @date 2016-7-11
  * @precisions normal z -> s d c
  *
  **/
 
 #include "plasma_async.h"
+#include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_types.h"
 #include "plasma_internal.h"
@@ -38,13 +31,19 @@ void plasma_pzunmqr(PLASMA_enum side, PLASMA_enum trans,
     int k, m, n;
     int ldak, ldbk, ldam, ldan, ldbm;
     int tempkm, tempnn, tempkmin, tempmm, tempkn;
-    int ib, minMT, minM;
+    int minMT, minM;
 
     if (sequence->status != PLASMA_SUCCESS)
         return;
 
-    // Jakub S.: How to set inner blocking?
-    ib = A.nb;
+    // Set inner blocking from the plasma context
+    plasma_context_t *plasma = plasma_context_self();
+    if (plasma == NULL) {
+        plasma_error("PLASMA not initialized");
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        return;
+    }
+    int ib = plasma->ib;
 
     if (A.m > A.n) {
       minM  = A.n;
