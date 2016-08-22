@@ -4,14 +4,22 @@
 _|  ____|_/  _\____/_|  _|_/  _\
 ~~~~
 
+* * *
+
 **Parallel Linear Algebra Software for Multicore Architectures**
 
 **University of Tennessee (US)**
 
 **University of Manchester (UK)**
 
-About PLASMA
-============
+* * *
+
+[TOC]
+
+* * *
+
+About
+=====
 
 PLASMA is a software package for solving problems in dense linear algebra
 using multicore processors and Xeon Phi coprocessors.
@@ -35,16 +43,16 @@ Documentation
 Doxygen-generated PLASMA documentation is available at:
 http://icl.bitbucket.org/plasma/doxygen/
 
-Get Assistance
-==============
+Getting Assistance
+==================
 
 To get assistance with PLASMA, join the *PLASMA User* Google group by going to
 https://groups.google.com/a/icl.utk.edu/forum/#!forum/plasma-user and clicking
 `Apply to join group`.
 Then email your questions and comments to `plasma-user@icl.utk.edu`.
 
-Cite PLASMA
-===========
+Citing
+======
 
 Feel free to use the following publications to reference PLASMA:
 
@@ -77,8 +85,8 @@ Feel free to use the following publications to reference PLASMA:
   *Parallel Computing*,
   [Volume 35, Issue 1, January 2009, Pages 38–53](http://dx.doi.org/10.1016/j.parco.2008.10.002).
 
-PLASMA Funding
-==============
+Funding
+=======
 
 Primary funding for PLASMA was provided by NSF grants:
 
@@ -98,8 +106,8 @@ Additional funding was provided by the following companies:
 * The MathWorks,
 * Fujitsu.
 
-PLASMA People
-=============
+People
+======
 
 The following people contributed to the development of PLASMA:
 
@@ -131,8 +139,8 @@ The following people contributed to the development of PLASMA:
 * Asim YarKhan
 * Mawussi Zounon
 
-PLASMA License
-==============
+License
+=======
 
 ```
   -- Innovative Computing Laboratory
