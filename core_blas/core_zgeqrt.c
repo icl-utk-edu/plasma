@@ -151,7 +151,7 @@ void CORE_OMP_zgeqrt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A, int lda,
                      PLASMA_Complex64_t *T, int ldt)
 {
-    // OpenMP depends on lda == m and nb == n.
+    // omp depends assume lda == m and nb == n.
     #pragma omp task depend(inout:A[0:lda*nb]) \
                      depend(out:T[0:ldt*nb])
     {

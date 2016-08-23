@@ -72,6 +72,7 @@ void CORE_OMP_zpotrf(PLASMA_enum uplo,
                      int n,
                      PLASMA_Complex64_t *A, int lda)
 {
+    // omp depends assume lda = n.
     #pragma omp task depend(inout:A[0:n*n])
     CORE_zpotrf(uplo,
                 n,

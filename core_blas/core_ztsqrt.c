@@ -191,7 +191,7 @@ void CORE_OMP_ztsqrt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A2, int lda2,
                      PLASMA_Complex64_t *T,  int ldt)
 {
-    // OpenMP depends on m == nb, n == nb.
+    // omp depends assume m == nb, n == nb.
     #pragma omp task depend(inout:A1[0:nb*nb]) \
                      depend(inout:A2[0:nb*nb]) \
                      depend(out:T[0:ib*nb])

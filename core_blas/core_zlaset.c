@@ -72,7 +72,7 @@ void CORE_OMP_zlaset(PLASMA_enum uplo, int m, int n,
                      PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
                      PLASMA_Complex64_t *A, int lda)
 {
-    // OpenMP depends on lda == m
+    // omp depends assume lda == m.
     #pragma omp task depend(out:A[0:m*n])
     CORE_zlaset(uplo, m, n,
                 alpha, beta,

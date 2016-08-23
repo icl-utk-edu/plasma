@@ -114,8 +114,8 @@ void CORE_OMP_zgemm(
                               const PLASMA_Complex64_t *B, int ldb,
     PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc)
 {
-    // OpenMP depends on lda == m or k, ldb == k or n, and ldc == m,
-    // depending on transpositions
+    // omp depends assume lda == m or k, ldb == k or n, ldc == m,
+    // depending on transA and transB.
     #pragma omp task depend(in:A[0:m*k]) \
                      depend(in:B[0:k*n]) \
                      depend(inout:C[0:m*n])

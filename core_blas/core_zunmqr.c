@@ -217,7 +217,7 @@ void CORE_OMP_zunmqr(PLASMA_enum side, PLASMA_enum trans,
                      const PLASMA_Complex64_t *T, int ldt,
                            PLASMA_Complex64_t *C, int ldc)
 {
-    // OpenMP depends on m == nb, n == nb.
+    // omp depends assume m == nb, n == nb.
     #pragma omp task depend(in:A[0:nb*nb]) \
                      depend(in:T[0:ib*nb]) \
                      depend(inout:C[0:nb*nb])
