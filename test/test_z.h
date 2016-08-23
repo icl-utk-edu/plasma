@@ -6,6 +6,8 @@
  *  University of Tennessee, US,
  *  University of Manchester, UK.
  *
+ * @precisions normal z -> s d c
+ *
  **/
 #ifndef TEST_Z_H
 #define TEST_Z_H
