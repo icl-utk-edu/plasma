@@ -197,7 +197,7 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
             PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
     } // pragma omp parallel block closed
 
-    // Check for errors in the async execution
+    // Check for errors in the async execution.
     if (sequence->status != PLASMA_SUCCESS)
         return sequence->status;
 

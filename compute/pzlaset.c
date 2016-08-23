@@ -87,7 +87,8 @@ void plasma_pzlaset(PLASMA_enum uplo,
             tempjn = j == A.nt-1 ? A.n-j*A.nb : A.nb;
             ldaj = BLKLDD(A, j);
             CORE_OMP_zlaset(PlasmaFull,
-                            tempjm, tempjn, alpha, beta, A(j, j), ldaj);
+                            tempjm, tempjn,
+                            alpha, beta, A(j, j), ldaj);
         }
     }
 }
