@@ -128,16 +128,15 @@ void CORE_ztsqrt(int m, int n, int ib,
                 // Apply H( II*IB+I ) to A( II*IB+I:M, II*IB+I+1:II*IB+IB )
                 // from the left.
                 alpha = -conj(TAU[ii+i]);
-                cblas_zcopy(sb-i-1,
-                            &A1[lda1*(ii+i+1)+(ii+i)], lda1,
-                            WORK, 1);
+                cblas_zcopy(sb-i-1, &A1[lda1*(ii+i+1)+(ii+i)], lda1, WORK, 1);
 #ifdef COMPLEX
                 LAPACKE_zlacgv_work(sb-i-1, WORK, 1);
 #endif
                 // Plasma_ConjTrans will be converted do PlasmaTrans in
                 // automatic datatype conversion, which is what we want here.
                 // PlasmaConjTrans is protected from this conversion.
-                cblas_zgemv(CblasColMajor, (CBLAS_TRANSPOSE)Plasma_ConjTrans,
+                cblas_zgemv(CblasColMajor,
+                            (CBLAS_TRANSPOSE)Plasma_ConjTrans,
                             m, sb-i-1,
                             CBLAS_SADDR(zone), &A2[lda2*(ii+i+1)], lda2,
                             &A2[lda2*(ii+i)], 1,
@@ -145,31 +144,32 @@ void CORE_ztsqrt(int m, int n, int ib,
 #ifdef COMPLEX
                 LAPACKE_zlacgv_work(sb-i-1, WORK, 1);
 #endif
-                cblas_zaxpy(sb-i-1, CBLAS_SADDR(alpha),
-                            WORK, 1,
+                cblas_zaxpy(sb-i-1, CBLAS_SADDR(alpha), WORK, 1,
                             &A1[lda1*(ii+i+1)+ii+i], lda1);
 #ifdef COMPLEX
                 LAPACKE_zlacgv_work(sb-i-1, WORK, 1);
 #endif
-                cblas_zgerc(CblasColMajor, m, sb-i-1, CBLAS_SADDR(alpha),
+                cblas_zgerc(CblasColMajor,
+                            m, sb-i-1, CBLAS_SADDR(alpha),
                             &A2[lda2*(ii+i)], 1,
                             WORK, 1,
                             &A2[lda2*(ii+i+1)], lda2);
             }
             // Calculate T.
             alpha = -TAU[ii+i];
-            cblas_zgemv(CblasColMajor, (CBLAS_TRANSPOSE)Plasma_ConjTrans,
+            cblas_zgemv(CblasColMajor,
+                        (CBLAS_TRANSPOSE)Plasma_ConjTrans,
                         m, i,
                         CBLAS_SADDR(alpha), &A2[lda2*ii], lda2,
                         &A2[lda2*(ii+i)], 1,
                         CBLAS_SADDR(zzero), &T[ldt*(ii+i)], 1);
 
             cblas_ztrmv(CblasColMajor,
-                (CBLAS_UPLO)PlasmaUpper, (CBLAS_TRANSPOSE)PlasmaNoTrans,
-                (CBLAS_DIAG)PlasmaNonUnit,
-                i,
-                &T[ldt*ii], ldt,
-                &T[ldt*(ii+i)], 1);
+                        (CBLAS_UPLO)PlasmaUpper, (CBLAS_TRANSPOSE)PlasmaNoTrans,
+                        (CBLAS_DIAG)PlasmaNonUnit,
+                        i,
+                        &T[ldt*ii], ldt,
+                        &T[ldt*(ii+i)], 1);
 
             T[ldt*(ii+i)+i] = TAU[ii+i];
         }
