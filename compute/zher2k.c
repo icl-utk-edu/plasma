@@ -327,8 +327,9 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
 void PLASMA_zher2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
                               PLASMA_Complex64_t alpha, PLASMA_desc *A,
                                                         PLASMA_desc *B,
-                                          double beta,  PLASMA_desc *C,
-                              PLASMA_sequence *sequence, PLASMA_request *request)
+                              double beta,              PLASMA_desc *C,
+                              PLASMA_sequence *sequence,
+                              PLASMA_request *request)
 {
     PLASMA_Complex64_t zzero = 0.0;
     // Get PLASMA context.

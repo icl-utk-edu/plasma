@@ -120,11 +120,11 @@
  ******************************************************************************/
 void CORE_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
                  int m1, int n1, int m2, int n2, int k, int ib,
-                 PLASMA_Complex64_t *A1, int lda1,
-                 PLASMA_Complex64_t *A2, int lda2,
-                 const PLASMA_Complex64_t *V, int ldv,
-                 const PLASMA_Complex64_t *T, int ldt,
-                 PLASMA_Complex64_t *WORK, int ldwork)
+                       PLASMA_Complex64_t *A1,   int lda1,
+                       PLASMA_Complex64_t *A2,   int lda2,
+                 const PLASMA_Complex64_t *V,    int ldv,
+                 const PLASMA_Complex64_t *T,    int ldt,
+                       PLASMA_Complex64_t *WORK, int ldwork)
 {
     int i, i1, i3;
     int nq, nw;
@@ -134,13 +134,13 @@ void CORE_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
     int mi = m1;
     int ni = n1;
 
-    // Check input arguments
+    // Check input arguments.
     if ((side != PlasmaLeft) && (side != PlasmaRight)) {
-        plasma_error("Illegal value of side");
+        plasma_error("illegal value of side");
         return;
     }
 
-    // nq is the order of Q
+    // nq is the order of Q.
     if (side == PlasmaLeft) {
         nq = m2;
         nw = ib;
@@ -154,59 +154,59 @@ void CORE_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
     // automatic datatype conversion, which is what we want here.
     // PlasmaConjTrans is protected from this conversion.
     if ((trans != PlasmaNoTrans) && (trans != Plasma_ConjTrans)) {
-        plasma_error("Illegal value of trans");
+        plasma_error("illegal value of trans");
         return;
     }
     if (m1 < 0) {
-        plasma_error("Illegal value of m1");
+        plasma_error("illegal value of m1");
         return;
     }
     if (n1 < 0) {
-        plasma_error("Illegal value of n1");
+        plasma_error("illegal value of n1");
         return;
     }
     if ((m2 < 0) ||
          ((m2 != m1) && (side == PlasmaRight))) {
-        plasma_error("Illegal value of m2");
+        plasma_error("illegal value of m2");
         return;
     }
     if ((n2 < 0) ||
          ((n2 != n1) && (side == PlasmaLeft))) {
-        plasma_error("Illegal value of n2");
+        plasma_error("illegal value of n2");
         return;
     }
     if ((k < 0) ||
         ((side == PlasmaLeft)  && (k > m1)) ||
         ((side == PlasmaRight) && (k > n1))) {
-        plasma_error("Illegal value of k");
+        plasma_error("illegal value of k");
         return;
     }
     if (ib < 0) {
-        plasma_error("Illegal value of ib");
+        plasma_error("illegal value of ib");
         return;
     }
     if (lda1 < imax(1,m1)) {
-        plasma_error("Illegal value of lda1");
+        plasma_error("illegal value of lda1");
         return;
     }
     if (lda2 < imax(1,m2)) {
-        plasma_error("Illegal value of lda2");
+        plasma_error("illegal value of lda2");
         return;
     }
     if (ldv < imax(1,nq)) {
-        plasma_error("Illegal value of ldv");
+        plasma_error("illegal value of ldv");
         return;
     }
     if (ldt < imax(1,ib)) {
-        plasma_error("Illegal value of ldt");
+        plasma_error("illegal value of ldt");
         return;
     }
     if (ldwork < imax(1,nw)) {
-        plasma_error("Illegal value of ldwork");
+        plasma_error("illegal value of ldwork");
         return;
     }
 
-    // Quick return
+    // quick return
     if ((m1 == 0) || (n1 == 0) || (m2 == 0) ||
         (n2 == 0) || (k == 0) || (ib == 0))
         return;
@@ -225,42 +225,41 @@ void CORE_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
         kb = imin(ib, k-i);
 
         if (side == PlasmaLeft) {
-            // H or H' is applied to C(i:m,1:n)
+            // H or H' is applied to C(i:m,1:n).
             mi = m1 - i;
             ic = i;
         }
         else {
-            // H or H' is applied to C(1:m,i:n)
+            // H or H' is applied to C(1:m,i:n).
             ni = n1 - i;
             jc = i;
         }
-        // Apply H or H' (NOTE: CORE_zparfb used to be CORE_ztsrfb)
-        CORE_zparfb(
-            side, trans, PlasmaForward, PlasmaColumnwise,
-            mi, ni, m2, n2, kb, 0,
-            &A1[lda1*jc+ic], lda1,
-            A2, lda2,
-            &V[ldv*i], ldv,
-            &T[ldt*i], ldt,
-            WORK, ldwork);
+        // Apply H or H' (NOTE: CORE_zparfb used to be CORE_ztsrfb).
+        CORE_zparfb(side, trans, PlasmaForward, PlasmaColumnwise,
+                    mi, ni, m2, n2, kb, 0,
+                    &A1[lda1*jc+ic], lda1,
+                    A2, lda2,
+                    &V[ldv*i], ldv,
+                    &T[ldt*i], ldt,
+                    WORK, ldwork);
     }
 }
 
 /******************************************************************************/
 void CORE_OMP_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
                      int m1, int n1, int m2, int n2, int k, int ib, int nb,
-                     PLASMA_Complex64_t *A1, int lda1,
-                     PLASMA_Complex64_t *A2, int lda2,
+                           PLASMA_Complex64_t *A1, int lda1,
+                           PLASMA_Complex64_t *A2, int lda2,
                      const PLASMA_Complex64_t *V, int ldv,
                      const PLASMA_Complex64_t *T, int ldt)
 {
-    // assuming m1 == nb, n1 == nb, m2 == nb, n2 == nb
+    // OpenMP depends on m1 == nb, n1 == nb, m2 == nb, n2 == nb.
     #pragma omp task depend(inout:A1[0:nb*nb]) \
                      depend(inout:A2[0:nb*nb]) \
                      depend(in:V[0:nb*nb]) \
                      depend(in:T[0:ib*nb])
     {
-        // prepare memory for the auxiliary array
+        // Allocate an auxiliary array.
         PLASMA_Complex64_t *WORK =
             (PLASMA_Complex64_t *) malloc((size_t)ib*nb *
                                           sizeof(PLASMA_Complex64_t));
@@ -270,7 +269,7 @@ void CORE_OMP_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
 
         int ldwork = side == PlasmaLeft ? ib : nb;
 
-        // call the kernel
+        // Call the kernel.
         CORE_ztsmqr(side, trans,
                     m1, n1, m2, n2, k, ib,
                     A1, lda1,
@@ -279,7 +278,7 @@ void CORE_OMP_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
                     T, ldt,
                     WORK, ldwork);
 
-        // deallocate the auxiliary array
+        // Free the auxiliary array.
         free(WORK);
     }
 }

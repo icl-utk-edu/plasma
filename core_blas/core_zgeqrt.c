@@ -87,32 +87,29 @@ void CORE_zgeqrt(int m, int n, int ib,
                  PLASMA_Complex64_t *TAU,
                  PLASMA_Complex64_t *WORK)
 {
-    // block size is assumed to be equal to n
-    int nb = n;
-
-    // Check input arguments
+    // Check input arguments.
     if (m < 0) {
-        plasma_error("Illegal value of m");
+        plasma_error("illegal value of m");
         return;
     }
     if (n < 0) {
-        plasma_error("Illegal value of n");
+        plasma_error("illegal value of n");
         return;
     }
     if ((ib < 0) || ( (ib == 0) && ((m > 0) && (n > 0)) )) {
-        plasma_error("Illegal value of ib");
+        plasma_error("illegal value of ib");
         return;
     }
     if ((lda < imax(1,m)) && (m > 0)) {
-        plasma_error("Illegal value of lda");
+        plasma_error("illegal value of lda");
         return;
     }
     if ((ldt < imax(1,ib)) && (ib > 0)) {
-        plasma_error("Illegal value of ldt");
+        plasma_error("illegal value of ldt");
         return;
     }
 
-    // Quick return
+    // quick return
     if ((m == 0) || (n == 0) || (ib == 0))
         return;
 
@@ -120,16 +117,17 @@ void CORE_zgeqrt(int m, int n, int ib,
     for (int i = 0; i < k; i += ib) {
         int sb = imin(ib, k-i);
 
-        LAPACKE_zgeqr2_work(LAPACK_COL_MAJOR, m-i, sb,
-                            &A[lda*i+i], lda, &TAU[i], WORK);
+        LAPACKE_zgeqr2_work(LAPACK_COL_MAJOR,
+                            m-i, sb,
+                            &A[lda*i+i], lda,
+                            &TAU[i], WORK);
 
-        LAPACKE_zlarft_work(
-            LAPACK_COL_MAJOR,
-            lapack_const(PlasmaForward),
-            lapack_const(PlasmaColumnwise),
-            m-i, sb,
-            &A[lda*i+i], lda, &TAU[i],
-            &T[ldt*i], ldt);
+        LAPACKE_zlarft_work(LAPACK_COL_MAJOR,
+                            lapack_const(PlasmaForward),
+                            lapack_const(PlasmaColumnwise),
+                            m-i, sb,
+                            &A[lda*i+i], lda,
+                            &TAU[i], &T[ldt*i], ldt);
 
         if (n > i+sb) {
             // Plasma_ConjTrans will be converted to PlasmaTrans in
@@ -137,10 +135,8 @@ void CORE_zgeqrt(int m, int n, int ib,
             // PlasmaConjTrans is protected from this conversion.
             LAPACKE_zlarfb_work(
                 LAPACK_COL_MAJOR,
-                lapack_const(PlasmaLeft),
-                lapack_const(Plasma_ConjTrans),
-                lapack_const(PlasmaForward),
-                lapack_const(PlasmaColumnwise),
+                lapack_const(PlasmaLeft), lapack_const(Plasma_ConjTrans),
+                lapack_const(PlasmaForward), lapack_const(PlasmaColumnwise),
                 m-i, n-i-sb, sb,
                 &A[lda*i+i],      lda,
                 &T[ldt*i],        ldt,
@@ -155,32 +151,32 @@ void CORE_OMP_zgeqrt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A, int lda,
                      PLASMA_Complex64_t *T, int ldt)
 {
-    // assuming lda == m and nb == n
+    // OpenMP depends on lda == m and nb == n.
     #pragma omp task depend(inout:A[0:lda*nb]) \
                      depend(out:T[0:ldt*nb])
     {
-        // prepare memory for auxiliary arrays
+        // Allocate auxiliary arrays.
         PLASMA_Complex64_t *TAU =
-            (PLASMA_Complex64_t *) malloc((size_t)nb *
-                                          sizeof(PLASMA_Complex64_t));
+            (PLASMA_Complex64_t *)malloc((size_t)nb *
+                                         sizeof(PLASMA_Complex64_t));
         if (TAU == NULL) {
             plasma_error("malloc() failed");
         }
         PLASMA_Complex64_t *WORK =
-            (PLASMA_Complex64_t *) malloc((size_t)ib*nb *
-                                          sizeof(PLASMA_Complex64_t));
+            (PLASMA_Complex64_t *)malloc((size_t)ib*nb *
+                                         sizeof(PLASMA_Complex64_t));
         if (WORK == NULL) {
             plasma_error("malloc() failed");
         }
 
-        // call the kernel
+        // Call the kernel.
         CORE_zgeqrt(m, n, ib,
                     A, lda,
                     T, ldt,
                     TAU,
                     WORK);
 
-        // deallocate auxiliary arrays
+        // Free the auxiliary arrays.
         free(TAU);
         free(WORK);
     }

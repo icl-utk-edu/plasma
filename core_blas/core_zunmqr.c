@@ -106,10 +106,10 @@
  ******************************************************************************/
 void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
                  int m, int n, int k, int ib,
-                 const PLASMA_Complex64_t *A, int lda,
-                 const PLASMA_Complex64_t *T, int ldt,
-                 PLASMA_Complex64_t *C, int ldc,
-                 PLASMA_Complex64_t *WORK, int ldwork)
+                 const PLASMA_Complex64_t *A,    int lda,
+                 const PLASMA_Complex64_t *T,    int ldt,
+                       PLASMA_Complex64_t *C,    int ldc,
+                       PLASMA_Complex64_t *WORK, int ldwork)
 {
     int i, kb;
     int i1, i3;
@@ -119,12 +119,12 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
     int ni = n;
     int mi = m;
 
-    // Check input arguments
+    // Check input arguments.
     if ((side != PlasmaLeft) && (side != PlasmaRight)) {
         plasma_error("Illegal value of side");
         return;
     }
-    // nq is the order of Q and nw is the minimum dimension of WORK
+    // nq is the order of Q and nw is the minimum dimension of WORK.
     if (side == PlasmaLeft) {
         nq = m;
         nw = n;
@@ -138,39 +138,39 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
     // automatic datatype conversion, which is what we want here.
     // PlasmaConjTrans is protected from this conversion.
     if ((trans != PlasmaNoTrans) && (trans != Plasma_ConjTrans)) {
-        plasma_error("Illegal value of trans");
+        plasma_error("illegal value of trans");
         return;
     }
     if (m < 0) {
-        plasma_error("Illegal value of m");
+        plasma_error("illegal value of m");
         return;
     }
     if (n < 0) {
-        plasma_error("Illegal value of n");
+        plasma_error("illegal value of n");
         return;
     }
     if ((k < 0) || (k > nq)) {
-        plasma_error("Illegal value of k");
+        plasma_error("illegal value of k");
         return;
     }
     if ((ib < 0) || ( (ib == 0) && ((m > 0) && (n > 0)) )) {
-        plasma_error("Illegal value of ib");
+        plasma_error("illegal value of ib");
         return;
     }
     if ((lda < imax(1,nq)) && (nq > 0)) {
-        plasma_error("Illegal value of lda");
+        plasma_error("illegal value of lda");
         return;
     }
     if ((ldc < imax(1,m)) && (m > 0)) {
-        plasma_error("Illegal value of ldc");
+        plasma_error("illegal value of ldc");
         return;
     }
     if ((ldwork < imax(1,nw)) && (nw > 0)) {
-        plasma_error("Illegal value of ldwork");
+        plasma_error("illegal value of ldwork");
         return;
     }
 
-    // Quick return
+    // quick return
     if ((m == 0) || (n == 0) || (k == 0))
         return;
 
@@ -188,27 +188,25 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
         kb = imin(ib, k-i);
 
         if (side == PlasmaLeft) {
-            // H or H' is applied to C(i:m,1:n)
+            // H or H' is applied to C(i:m,1:n).
             mi = m - i;
             ic = i;
         }
         else {
-            // H or H' is applied to C(1:m,i:n)
+            // H or H' is applied to C(1:m,i:n).
             ni = n - i;
             jc = i;
         }
-        // Apply H or H'
-        LAPACKE_zlarfb_work(
-            LAPACK_COL_MAJOR,
-            lapack_const(side),
-            lapack_const(trans),
-            lapack_const(PlasmaForward),
-            lapack_const(PlasmaColumnwise),
-            mi, ni, kb,
-            &A[lda*i+i], lda,
-            &T[ldt*i], ldt,
-            &C[ldc*jc+ic], ldc,
-            WORK, ldwork);
+        // Apply H or H'.
+        LAPACKE_zlarfb_work(LAPACK_COL_MAJOR,
+                            lapack_const(side), lapack_const(trans),
+                            lapack_const(PlasmaForward),
+                            lapack_const(PlasmaColumnwise),
+                            mi, ni, kb,
+                            &A[lda*i+i], lda,
+                            &T[ldt*i], ldt,
+                            &C[ldc*jc+ic], ldc,
+                            WORK, ldwork);
     }
 }
 
@@ -217,14 +215,14 @@ void CORE_OMP_zunmqr(PLASMA_enum side, PLASMA_enum trans,
                      int m, int n, int k, int ib, int nb,
                      const PLASMA_Complex64_t *A, int lda,
                      const PLASMA_Complex64_t *T, int ldt,
-                     PLASMA_Complex64_t *C,       int ldc)
+                           PLASMA_Complex64_t *C, int ldc)
 {
-    // assuming m == nb, n == nb
+    // OpenMP depends on m == nb, n == nb.
     #pragma omp task depend(in:A[0:nb*nb]) \
                      depend(in:T[0:ib*nb]) \
                      depend(inout:C[0:nb*nb])
     {
-        // prepare memory for the auxiliary array
+        // Allocate an auxiliary array.
         PLASMA_Complex64_t *WORK =
             (PLASMA_Complex64_t *) malloc((size_t)ib*nb *
                                           sizeof(PLASMA_Complex64_t));
@@ -234,7 +232,7 @@ void CORE_OMP_zunmqr(PLASMA_enum side, PLASMA_enum trans,
 
         int ldwork = nb;
 
-        // call the kernel
+        // Call the kernel.
         CORE_zunmqr(side, trans,
                     m, n, k, ib,
                     A, lda,
@@ -242,7 +240,7 @@ void CORE_OMP_zunmqr(PLASMA_enum side, PLASMA_enum trans,
                     C, ldc,
                     WORK, ldwork);
 
-        // deallocate the auxiliary array
+        // Free the auxiliary array.
         free(WORK);
     }
 }

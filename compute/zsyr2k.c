@@ -98,10 +98,9 @@
  ******************************************************************************/
 int PLASMA_zsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
                   int n, int k,
-                  PLASMA_Complex64_t alpha,
-                  PLASMA_Complex64_t *A, int lda,
-                  PLASMA_Complex64_t *B, int ldb,
-                  PLASMA_Complex64_t beta, PLASMA_Complex64_t *C, int ldc)
+                  PLASMA_Complex64_t alpha, PLASMA_Complex64_t *A, int lda,
+                                            PLASMA_Complex64_t *B, int ldb,
+                  PLASMA_Complex64_t beta,  PLASMA_Complex64_t *C, int ldc)
 {
     int Am, An;
     int Bm, Bn;
@@ -327,7 +326,8 @@ void PLASMA_zsyr2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
                               PLASMA_Complex64_t alpha, PLASMA_desc *A,
                                                         PLASMA_desc *B,
                               PLASMA_Complex64_t beta,  PLASMA_desc *C,
-                              PLASMA_sequence *sequence, PLASMA_request *request)
+                              PLASMA_sequence *sequence,
+                              PLASMA_request *request)
 {
     PLASMA_Complex64_t zzero = 0.0;
     // Get PLASMA context.

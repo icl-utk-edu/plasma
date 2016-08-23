@@ -72,7 +72,8 @@
  * @sa PLASMA_zpotrf
  *
  ******************************************************************************/
-int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
+int PLASMA_zpotrs(PLASMA_enum uplo,
+                  int n, int nrhs,
                   PLASMA_Complex64_t *A, int lda,
                   PLASMA_Complex64_t *B, int ldb)
 {
@@ -245,8 +246,11 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
  * @sa PLASMA_zpotrf_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zpotrs_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
-                              PLASMA_sequence *sequence, PLASMA_request *request)
+void PLASMA_zpotrs_Tile_Async(PLASMA_enum uplo,
+                              PLASMA_desc *A,
+                              PLASMA_desc *B,
+                              PLASMA_sequence *sequence,
+                              PLASMA_request *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

@@ -77,7 +77,8 @@ int PLASMA_zungqr(int m, int n, int k,
     int retval;
     int status;
 
-    PLASMA_desc descA, descQ;
+    PLASMA_desc descA;
+    PLASMA_desc descQ;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -118,7 +119,6 @@ int PLASMA_zungqr(int m, int n, int k,
     //}
     nb = plasma->nb;
 
-
     // Initialize tile matrix descriptors.
     descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
                              nb*nb, lda, n, 0, 0, m, k);
@@ -132,7 +132,6 @@ int PLASMA_zungqr(int m, int n, int k,
         plasma_error("plasma_desc_mat_alloc() failed");
         return retval;
     }
-
     retval = plasma_desc_mat_alloc(&descQ);
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");
@@ -147,7 +146,6 @@ int PLASMA_zungqr(int m, int n, int k,
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
-
     // Initialize request.
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
 
@@ -230,8 +228,7 @@ int PLASMA_zungqr(int m, int n, int k,
  * @sa PLASMA_zgeqrf_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zungqr_Tile_Async(PLASMA_desc *descA,
-                              PLASMA_desc *descT,
+void PLASMA_zungqr_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
                               PLASMA_desc *descQ,
                               PLASMA_sequence *sequence,
                               PLASMA_request *request)
@@ -282,12 +279,14 @@ void PLASMA_zungqr_Tile_Async(PLASMA_desc *descA,
         return;
     }
 
-    // Quick return
+    // quick return
     //if (n <= 0)
     //    return;
 
     // set ones to diagonal of Q
-    plasma_pzlaset(PlasmaFull, 0., 1., *descQ, sequence, request);
+    plasma_pzlaset(PlasmaFull,
+                   (PLASMA_Complex64_t)0.0, (PLASMA_Complex64_t)1.0, *descQ,
+                   sequence, request);
 
     // construct Q
     plasma_pzungqr(*descA, *descQ, *descT, sequence, request);

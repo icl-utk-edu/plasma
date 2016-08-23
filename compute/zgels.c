@@ -139,7 +139,8 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
         plasma_error("illegal value of ldb");
         return -9;
     }
-    // Quick return
+
+    // quick return
     if (imin(m, imin(n, nrhs)) == 0) {
         for (int i = 0; i < imax(m, n); i++)
             for (int j = 0; j < nrhs; j++)
@@ -153,7 +154,6 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
     //    plasma_error("plasma_tune() failed");
     //    return status;
     //}
-
     nb = plasma->nb;
 
     // Initialize tile matrix descriptors.
@@ -184,7 +184,6 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
-
     // Initialize request.
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
 
@@ -205,7 +204,8 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
 
         // Call the tile async function.
         if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_zgels_Tile_Async(PlasmaNoTrans, &descA, descT, &descB,
+            PLASMA_zgels_Tile_Async(PlasmaNoTrans,
+                                    &descA, descT, &descB,
                                     sequence, &request);
         }
 
@@ -215,6 +215,10 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
         if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
     } // pragma omp parallel block closed
+
+    // Check for errors in the async execution
+    if (sequence->status != PLASMA_SUCCESS)
+        return sequence->status;
 
     // Free matrices in tile layout.
     plasma_desc_mat_free(&descA);
@@ -281,8 +285,9 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
  * @sa PLASMA_sgels_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *descA,
-                             PLASMA_desc *descT, PLASMA_desc *descB,
+void PLASMA_zgels_Tile_Async(PLASMA_enum trans,
+                             PLASMA_desc *descA, PLASMA_desc *descT,
+                             PLASMA_desc *descB,
                              PLASMA_sequence *sequence,
                              PLASMA_request *request)
 {
@@ -294,7 +299,7 @@ void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *descA,
         return;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if (trans != PlasmaNoTrans) {
         plasma_error("only PlasmaNoTrans supported");
         plasma_request_fail(sequence, request, PLASMA_ERR_NOT_SUPPORTED);
@@ -337,13 +342,18 @@ void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *descA,
         return;
     }
 
-    // Quick return  - currently NOT equivalent to LAPACK's:
+    // quick return
+    // TODO:
+    // currently NOT equivalent to LAPACK's:
     // Jakub S.: Why was it commented out in version 2.8.0 ?
     //if (imin(m, imin(n, nrhs)) == 0) {
     //    for (int i = 0; i < imax(m, n); i++)
     //        for (int j = 0; j < nrhs; j++)
     //            B[j*ldb+i] = 0.0;
     //    return PLASMA_SUCCESS;
+    // Jakub K.: Cannot return PLASMA_SUCCESS.
+    //           In fact, cannot return anything - the function is void.
+    //           Can we implement LAPACK-compliant quick return?
     //}
 
     if (descA->m >= descA->n) {

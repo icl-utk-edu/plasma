@@ -69,7 +69,8 @@
  * @sa PLASMA_spotrf
  *
  ******************************************************************************/
-int PLASMA_zpotrf(PLASMA_enum uplo, int n,
+int PLASMA_zpotrf(PLASMA_enum uplo,
+                  int n,
                   PLASMA_Complex64_t *A, int lda)
 {
     int nb;
@@ -224,8 +225,10 @@ int PLASMA_zpotrf(PLASMA_enum uplo, int n,
  * @sa PLASMA_spotrf_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zpotrf_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A,
-                              PLASMA_sequence *sequence, PLASMA_request *request)
+void PLASMA_zpotrf_Tile_Async(PLASMA_enum uplo,
+                              PLASMA_desc *A,
+                              PLASMA_sequence *sequence,
+                              PLASMA_request *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

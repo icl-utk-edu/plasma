@@ -175,59 +175,59 @@ static inline void CORE_zpamm_w(PLASMA_enum side, PLASMA_enum trans,
 void CORE_zpamm(int op, PLASMA_enum side, PLASMA_enum storev,
                 int m, int n, int k, int l,
                 const PLASMA_Complex64_t *A1, int lda1,
-                PLASMA_Complex64_t *A2, int lda2,
-                const PLASMA_Complex64_t *V, int ldv,
-                PLASMA_Complex64_t *W, int ldw)
+                      PLASMA_Complex64_t *A2, int lda2,
+                const PLASMA_Complex64_t *V,  int ldv,
+                      PLASMA_Complex64_t *W,  int ldw)
 {
     int vi2, vi3, uplo, trans, info;
 
-    // Check input arguments
+    // Check input arguments.
     if ((op != PlasmaW) && (op != PlasmaA2)) {
-        plasma_error("Illegal value of op");
+        plasma_error("illegal value of op");
         return;
     }
     if ((side != PlasmaLeft) && (side != PlasmaRight)) {
-        plasma_error("Illegal value of side");
+        plasma_error("illegal value of side");
         return;
     }
     if ((storev != PlasmaColumnwise) && (storev != PlasmaRowwise)) {
-        plasma_error("Illegal value of storev");
+        plasma_error("illegal value of storev");
         return;
     }
     if (m < 0) {
-        plasma_error("Illegal value of m");
+        plasma_error("illegal value of m");
         return;
     }
     if (n < 0) {
-        plasma_error("Illegal value of n");
+        plasma_error("illegal value of n");
         return;
     }
     if (k < 0) {
-        plasma_error("Illegal value of k");
+        plasma_error("illegal value of k");
         return;
     }
     if (l < 0) {
-        plasma_error("Illegal value of l");
+        plasma_error("illegal value of l");
         return;
     }
     if (lda1 < 0) {
-        plasma_error("Illegal value of lda1");
+        plasma_error("illegal value of lda1");
         return;
     }
     if (lda2 < 0) {
-        plasma_error("Illegal value of lda2");
+        plasma_error("illegal value of lda2");
         return;
     }
     if (ldv < 0) {
-        plasma_error("Illegal value of ldv");
+        plasma_error("illegal value of ldv");
         return;
     }
     if (ldw < 0) {
-        plasma_error("Illegal value of ldw");
+        plasma_error("illegal value of ldw");
         return;
     }
 
-    // Quick return
+    // quick return
     if ((m == 0) || (n == 0) || (k == 0))
         return;
 
@@ -242,7 +242,7 @@ void CORE_zpamm(int op, PLASMA_enum side, PLASMA_enum storev,
     //                rowwise       T        N
     //        -------------------------------------
 
-    // Columnwise
+    // columnwise
     if (storev == PlasmaColumnwise) {
         uplo = CblasUpper;
         if (side == PlasmaLeft) {
@@ -256,7 +256,7 @@ void CORE_zpamm(int op, PLASMA_enum side, PLASMA_enum storev,
         vi3 = ldv * l;
     }
 
-    // Rowwise
+    // rowwise
     else {
         uplo = CblasLower;
         if (side == PlasmaLeft) {
@@ -287,11 +287,11 @@ static inline void CORE_zpamm_w(
         int m, int n, int k, int l,
         int vi2, int vi3,
         const PLASMA_Complex64_t *A1, int lda1,
-        PLASMA_Complex64_t *A2, int lda2,
-        const PLASMA_Complex64_t *V, int ldv,
-        PLASMA_Complex64_t *W, int ldw)
+              PLASMA_Complex64_t *A2, int lda2,
+        const PLASMA_Complex64_t *V,  int ldv,
+              PLASMA_Complex64_t *W,  int ldw)
 {
-   // W = A1 + op(V) * A2  or  W = A1 + A2 * op(V)
+    // W = A1 + op(V) * A2  or  W = A1 + A2 * op(V)
 
     int j;
     static PLASMA_Complex64_t zone  =  1.0;
@@ -300,55 +300,57 @@ static inline void CORE_zpamm_w(
     if (side == PlasmaLeft) {
         if (((trans == Plasma_ConjTrans) && (uplo == CblasUpper)) ||
             ((trans == PlasmaNoTrans) && (uplo == CblasLower))) {
+
             // W = A1 + V' * A2
 
             // W = A2_2
             LAPACKE_zlacpy_work(LAPACK_COL_MAJOR,
-                lapack_const(PlasmaFull),
-                l, n,
-                &A2[k-l], lda2, W, ldw);
+                                lapack_const(PlasmaFull),
+                                l, n,
+                                &A2[k-l], lda2,
+                                W, ldw);
 
             // W = V_2' * W + V_1' * A2_1 (ge+tr, top L rows of V')
             if (l > 0) {
                 // W = V_2' * W
-                cblas_ztrmm(
-                    CblasColMajor, CblasLeft, (CBLAS_UPLO)uplo,
-                    (CBLAS_TRANSPOSE)trans, CblasNonUnit, l, n,
-                    CBLAS_SADDR(zone), &V[vi2], ldv,
-                    W, ldw);
+                cblas_ztrmm(CblasColMajor,
+                            CblasLeft, (CBLAS_UPLO)uplo,
+                            (CBLAS_TRANSPOSE)trans, CblasNonUnit,
+                            l, n,
+                            CBLAS_SADDR(zone), &V[vi2], ldv,
+                            W, ldw);
 
                 // W = W + V_1' * A2_1
                 if (k > l) {
-                    cblas_zgemm(
-                        CblasColMajor, (CBLAS_TRANSPOSE)trans, CblasNoTrans,
-                        l, n, k-l,
-                        CBLAS_SADDR(zone), V, ldv,
-                        A2, lda2,
-                        CBLAS_SADDR(zone), W, ldw);
+                    cblas_zgemm(CblasColMajor,
+                                (CBLAS_TRANSPOSE)trans, CblasNoTrans,
+                                l, n, k-l,
+                                CBLAS_SADDR(zone), V, ldv,
+                                A2, lda2,
+                                CBLAS_SADDR(zone), W, ldw);
                 }
             }
 
             // W_2 = V_3' * A2: (ge, bottom M-L rows of V')
             if (m > l) {
-                cblas_zgemm(
-                    CblasColMajor, (CBLAS_TRANSPOSE)trans, CblasNoTrans,
-                    (m-l), n, k,
-                    CBLAS_SADDR(zone), &V[vi3], ldv,
-                    A2, lda2,
-                    CBLAS_SADDR(zzero), &W[l], ldw);
+                cblas_zgemm(CblasColMajor,
+                            (CBLAS_TRANSPOSE)trans, CblasNoTrans,
+                            (m-l), n, k,
+                            CBLAS_SADDR(zone), &V[vi3], ldv,
+                            A2, lda2,
+                            CBLAS_SADDR(zzero), &W[l], ldw);
             }
 
             // W = A1 + W
             for (j = 0; j < n; j++) {
-                cblas_zaxpy(
-                        m, CBLAS_SADDR(zone),
-                        &A1[lda1*j], 1,
-                        &W[ldw*j], 1);
+                cblas_zaxpy(m, CBLAS_SADDR(zone),
+                            &A1[lda1*j], 1,
+                            &W[ldw*j], 1);
             }
         }
         else {
             plasma_error(
-                "Left Upper/NoTrans & Lower/[Conj]Trans not implemented\n");
+                "Left Upper/NoTrans & Lower/[Conj]Trans not implemented");
             return;
         }
     }
@@ -356,7 +358,7 @@ static inline void CORE_zpamm_w(
         if (((trans == Plasma_ConjTrans) && (uplo == CblasUpper)) ||
             ((trans == PlasmaNoTrans) && (uplo == CblasLower))) {
             plasma_error(
-                "Right Upper/[Conj]Trans & Lower/NoTrans not implemented\n");
+                "Right Upper/[Conj]Trans & Lower/NoTrans not implemented");
             return;
         }
         else {
@@ -364,44 +366,45 @@ static inline void CORE_zpamm_w(
             if (l > 0) {
                 // W = A2_2
                 LAPACKE_zlacpy_work(LAPACK_COL_MAJOR,
-                    lapack_const(PlasmaFull),
-                    m, l,
-                    &A2[lda2*(k-l)], lda2, W, ldw);
+                                    lapack_const(PlasmaFull),
+                                    m, l,
+                                    &A2[lda2*(k-l)], lda2,
+                                    W, ldw);
 
                 // W = W * V_2 --> W = A2_2 * V_2
-                cblas_ztrmm(
-                    CblasColMajor, CblasRight, (CBLAS_UPLO)uplo,
-                    (CBLAS_TRANSPOSE)trans, CblasNonUnit, m, l,
-                    CBLAS_SADDR(zone), &V[vi2], ldv,
-                    W, ldw);
+                cblas_ztrmm(CblasColMajor,
+                            CblasRight, (CBLAS_UPLO)uplo,
+                            (CBLAS_TRANSPOSE)trans, CblasNonUnit,
+                            m, l,
+                            CBLAS_SADDR(zone), &V[vi2], ldv,
+                            W, ldw);
 
                 // W = W + A2_1 * V_1
                 if (k > l) {
-                    cblas_zgemm(
-                        CblasColMajor, CblasNoTrans, (CBLAS_TRANSPOSE)trans,
-                        m, l, k-l,
-                        CBLAS_SADDR(zone), A2, lda2,
-                        V, ldv,
-                        CBLAS_SADDR(zone), W, ldw);
+                    cblas_zgemm(CblasColMajor, 
+                                CblasNoTrans, (CBLAS_TRANSPOSE)trans,
+                                m, l, k-l,
+                                CBLAS_SADDR(zone), A2, lda2,
+                                V, ldv,
+                                CBLAS_SADDR(zone), W, ldw);
                 }
             }
 
             // W = W + A2 * V_3
             if (n > l) {
-                cblas_zgemm(
-                    CblasColMajor, CblasNoTrans, (CBLAS_TRANSPOSE)trans,
-                    m, n-l, k,
-                    CBLAS_SADDR(zone), A2, lda2,
-                    &V[vi3], ldv,
-                    CBLAS_SADDR(zzero), &W[ldw*l], ldw);
+                cblas_zgemm(CblasColMajor,
+                            CblasNoTrans, (CBLAS_TRANSPOSE)trans,
+                            m, n-l, k,
+                            CBLAS_SADDR(zone), A2, lda2,
+                            &V[vi3], ldv,
+                            CBLAS_SADDR(zzero), &W[ldw*l], ldw);
             }
 
             // W = A1 + W
             for (j = 0; j < n; j++) {
-                cblas_zaxpy(
-                        m, CBLAS_SADDR(zone),
-                        &A1[lda1*j], 1,
-                        &W[ldw*j], 1);
+                cblas_zaxpy(m, CBLAS_SADDR(zone),
+                            &A1[lda1*j], 1,
+                            &W[ldw*j], 1);
             }
         }
     }
@@ -412,9 +415,9 @@ static inline void CORE_zpamm_a2(
         PLASMA_enum side, PLASMA_enum trans, PLASMA_enum uplo,
         int m, int n, int k, int l,
         int vi2, int vi3,
-        PLASMA_Complex64_t *A2, int lda2,
-        const PLASMA_Complex64_t *V, int ldv,
-        PLASMA_Complex64_t *W, int ldw)
+              PLASMA_Complex64_t *A2, int lda2,
+        const PLASMA_Complex64_t *V,  int ldv,
+              PLASMA_Complex64_t *W,  int ldw)
 {
    // A2 = A2 + op(V) * W  or  A2 = A2 + W * op(V)
 
@@ -426,7 +429,7 @@ static inline void CORE_zpamm_a2(
         if (((trans == Plasma_ConjTrans) && (uplo == CblasUpper)) ||
             ((trans == PlasmaNoTrans) && (uplo == CblasLower))) {
             plasma_error(
-                "Left Upper/[Conj]Trans & Lower/NoTrans not implemented\n");
+                "Left Upper/[Conj]Trans & Lower/NoTrans not implemented");
             return;
         }
         else {  //trans
@@ -434,37 +437,37 @@ static inline void CORE_zpamm_a2(
 
             // A2_1 = A2_1 - V_1  * W_1
             if (m > l) {
-                cblas_zgemm(
-                    CblasColMajor, (CBLAS_TRANSPOSE)trans, CblasNoTrans,
-                    m-l, n, l,
-                    CBLAS_SADDR(mzone), V, ldv,
-                    W, ldw,
-                    CBLAS_SADDR(zone), A2, lda2);
+                cblas_zgemm(CblasColMajor,
+                            (CBLAS_TRANSPOSE)trans, CblasNoTrans,
+                            m-l, n, l,
+                            CBLAS_SADDR(mzone), V, ldv,
+                            W, ldw,
+                            CBLAS_SADDR(zone), A2, lda2);
             }
 
             // W_1 = V_2 * W_1
-            cblas_ztrmm(
-                CblasColMajor, CblasLeft, (CBLAS_UPLO)uplo,
-                (CBLAS_TRANSPOSE)trans, CblasNonUnit, l, n,
-                CBLAS_SADDR(zone), &V[vi2], ldv,
-                W, ldw);
+            cblas_ztrmm(CblasColMajor,
+                        CblasLeft, (CBLAS_UPLO)uplo,
+                        (CBLAS_TRANSPOSE)trans, CblasNonUnit,
+                        l, n,
+                        CBLAS_SADDR(zone), &V[vi2], ldv,
+                        W, ldw);
 
             // A2_2 = A2_2 - W_1
             for (j = 0; j < n; j++) {
-                cblas_zaxpy(
-                    l, CBLAS_SADDR(mzone),
-                    &W[ldw*j], 1,
-                    &A2[lda2*j+(m-l)], 1);
+                cblas_zaxpy(l, CBLAS_SADDR(mzone),
+                            &W[ldw*j], 1,
+                            &A2[lda2*j+(m-l)], 1);
             }
 
             // A2 = A2 - V_3  * W_2
             if (k > l) {
-                cblas_zgemm(
-                    CblasColMajor, (CBLAS_TRANSPOSE)trans, CblasNoTrans,
-                    m, n, (k-l),
-                    CBLAS_SADDR(mzone), &V[vi3], ldv,
-                    &W[l], ldw,
-                    CBLAS_SADDR(zone), A2, lda2);
+                cblas_zgemm(CblasColMajor,
+                            (CBLAS_TRANSPOSE)trans, CblasNoTrans,
+                            m, n, (k-l),
+                            CBLAS_SADDR(mzone), &V[vi3], ldv,
+                            &W[l], ldw,
+                            CBLAS_SADDR(zone), A2, lda2);
             }
         }
     }
@@ -475,43 +478,42 @@ static inline void CORE_zpamm_a2(
 
             // A2 = A2 - W_2 * V_3'
             if (k > l) {
-                cblas_zgemm(
-                    CblasColMajor, CblasNoTrans, (CBLAS_TRANSPOSE)trans,
-                    m, n, k-l,
-                    CBLAS_SADDR(mzone), &W[ldw*l], ldw,
-                    &V[vi3], ldv,
-                    CBLAS_SADDR(zone), A2, lda2);
+                cblas_zgemm(CblasColMajor,
+                            CblasNoTrans, (CBLAS_TRANSPOSE)trans,
+                            m, n, k-l,
+                            CBLAS_SADDR(mzone), &W[ldw*l], ldw,
+                            &V[vi3], ldv,
+                            CBLAS_SADDR(zone), A2, lda2);
             }
 
             // A2_1 = A2_1 - W_1 * V_1'
             if (n > l) {
-                cblas_zgemm(
-                    CblasColMajor, CblasNoTrans, (CBLAS_TRANSPOSE)trans,
-                    m, n-l, l,
-                    CBLAS_SADDR(mzone), W, ldw,
-                    V, ldv,
-                    CBLAS_SADDR(zone), A2, lda2);
+                cblas_zgemm(CblasColMajor,
+                            CblasNoTrans, (CBLAS_TRANSPOSE)trans,
+                            m, n-l, l,
+                            CBLAS_SADDR(mzone), W, ldw,
+                            V, ldv,
+                            CBLAS_SADDR(zone), A2, lda2);
             }
 
             // A2_2 =  A2_2 -  W_1 * V_2'
             if (l > 0) {
-                cblas_ztrmm(
-                    CblasColMajor, CblasRight, (CBLAS_UPLO)uplo,
-                    (CBLAS_TRANSPOSE)trans, CblasNonUnit, m, l,
-                    CBLAS_SADDR(mzone), &V[vi2], ldv,
-                    W, ldw);
+                cblas_ztrmm(CblasColMajor,
+                            CblasRight, (CBLAS_UPLO)uplo,
+                            (CBLAS_TRANSPOSE)trans, CblasNonUnit, m, l,
+                            CBLAS_SADDR(mzone), &V[vi2], ldv,
+                            W, ldw);
 
                 for (j = 0; j < l; j++) {
-                    cblas_zaxpy(
-                        m, CBLAS_SADDR(zone),
-                        &W[ldw*j], 1,
-                        &A2[lda2*(n-l+j)], 1);
+                    cblas_zaxpy(m, CBLAS_SADDR(zone),
+                                &W[ldw*j], 1,
+                                &A2[lda2*(n-l+j)], 1);
                 }
             }
         }
         else {
             plasma_error(
-                "Right Upper/NoTrans & Lower/[Conj]Trans not implemented\n");
+                "Right Upper/NoTrans & Lower/[Conj]Trans not implemented");
             return;
         }
     }

@@ -83,7 +83,7 @@ int PLASMA_zgeqrf(int m, int n,
         return PLASMA_ERR_NOT_INITIALIZED;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if (m < 0) {
         plasma_error("illegal value of m");
         return -1;
@@ -107,7 +107,6 @@ int PLASMA_zgeqrf(int m, int n,
     //    plasma_error("PLASMA_zgeqrf", "plasma_tune() failed");
     //    return status;
     //}
-
     nb = plasma->nb;
 
     // Initialize tile matrix descriptor.

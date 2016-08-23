@@ -101,9 +101,9 @@
  ******************************************************************************/
 int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
                  PLASMA_enum transA, PLASMA_enum diag,
-                 int m, int n, PLASMA_Complex64_t alpha,
-                 PLASMA_Complex64_t *A, int lda,
-                 PLASMA_Complex64_t *B, int ldb)
+                 int m, int n,
+                 PLASMA_Complex64_t alpha, PLASMA_Complex64_t *A, int lda,
+                                           PLASMA_Complex64_t *B, int ldb)
 {
     int An;
     int nb;

@@ -55,15 +55,16 @@
  * @param[in] lda
  *         The leading dimension of the array A.  lda >= max(1,m).
  *
- **/
-void CORE_zlaset(PLASMA_enum uplo, int m, int n,
+ ******************************************************************************/
+void CORE_zlaset(PLASMA_enum uplo,
+                 int m, int n,
                  PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
                  PLASMA_Complex64_t *A, int lda)
 {
-    LAPACKE_zlaset_work(
-        LAPACK_COL_MAJOR,
-        lapack_const(uplo),
-        m, n, alpha, beta, A, lda);
+    LAPACKE_zlaset_work(LAPACK_COL_MAJOR,
+                        lapack_const(uplo),
+                        m, n,
+                        alpha, beta, A, lda);
 }
 
 /******************************************************************************/
@@ -71,7 +72,7 @@ void CORE_OMP_zlaset(PLASMA_enum uplo, int m, int n,
                      PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
                      PLASMA_Complex64_t *A, int lda)
 {
-    // omp depends assume lda == m
+    // OpenMP depends on lda == m
     #pragma omp task depend(out:A[0:m*n])
     CORE_zlaset(uplo, m, n,
                 alpha, beta,

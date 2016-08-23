@@ -267,7 +267,9 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
  * @sa PLASMA_sposv_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
+void PLASMA_zposv_Tile_Async(PLASMA_enum uplo,
+                             PLASMA_desc *A,
+                             PLASMA_desc *B,
                              PLASMA_sequence *sequence, PLASMA_request *request)
 {
     // Get PLASMA context.

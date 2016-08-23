@@ -21,7 +21,7 @@
     #include <lapacke.h>
 #endif
 
-// this will be swapped during the automatic code generation
+// This will be swapped during the automatic code generation.
 #undef REAL
 #define COMPLEX
 
@@ -84,108 +84,103 @@
 void CORE_ztsqrt(int m, int n, int ib,
                  PLASMA_Complex64_t *A1, int lda1,
                  PLASMA_Complex64_t *A2, int lda2,
-                 PLASMA_Complex64_t *T, int ldt,
+                 PLASMA_Complex64_t *T,  int ldt,
                  PLASMA_Complex64_t *TAU,
                  PLASMA_Complex64_t *WORK)
 {
-    // Check input arguments
-    if (m < 0) {
-        plasma_error("Illegal value of m");
-        return;
-    }
-    if (n < 0) {
-        plasma_error("Illegal value of n");
-        return;
-    }
-    if (ib < 0) {
-        plasma_error("Illegal value of ib");
-        return;
-    }
-    if ((lda2 < imax(1,m)) && (m > 0)) {
-        plasma_error("Illegal value of lda2");
-        return;
-    }
+    int i, ii, sb;
+    PLASMA_Complex64_t alpha;
 
-    // Quick return
-    if ((m == 0) || (n == 0) || (ib == 0))
-        return;
-
-    // variable storing 1 and 0 constants
     static PLASMA_Complex64_t zone  = 1.0;
     static PLASMA_Complex64_t zzero = 0.0;
 
-    PLASMA_Complex64_t alpha;
-    int i, ii, sb;
+    // Check input arguments.
+    if (m < 0) {
+        plasma_error("illegal value of m");
+        return;
+    }
+    if (n < 0) {
+        plasma_error("illegal value of n");
+        return;
+    }
+    if (ib < 0) {
+        plasma_error("illegal value of ib");
+        return;
+    }
+    if ((lda2 < imax(1,m)) && (m > 0)) {
+        plasma_error("illegal value of lda2");
+        return;
+    }
+
+    // quick return
+    if ((m == 0) || (n == 0) || (ib == 0))
+        return;
 
     for (ii = 0; ii < n; ii += ib) {
         sb = imin(n-ii, ib);
         for (i = 0; i < sb; i++) {
             // Generate elementary reflector H( II*IB+I ) to annihilate
-            // A( II*IB+I:M, II*IB+I )
+            // A( II*IB+I:M, II*IB+I ).
             LAPACKE_zlarfg_work(m+1, &A1[lda1*(ii+i)+ii+i], &A2[lda2*(ii+i)], 1,
                                 &TAU[ii+i]);
 
             if (ii+i+1 < n) {
                 // Apply H( II*IB+I ) to A( II*IB+I:M, II*IB+I+1:II*IB+IB )
-                // from the left
+                // from the left.
                 alpha = -conj(TAU[ii+i]);
-                cblas_zcopy(
-                    sb-i-1,
-                    &A1[lda1*(ii+i+1)+(ii+i)], lda1,
-                    WORK, 1);
+                cblas_zcopy(sb-i-1,
+                            &A1[lda1*(ii+i+1)+(ii+i)], lda1,
+                            WORK, 1);
 #ifdef COMPLEX
                 LAPACKE_zlacgv_work(sb-i-1, WORK, 1);
 #endif
                 // Plasma_ConjTrans will be converted do PlasmaTrans in
                 // automatic datatype conversion, which is what we want here.
                 // PlasmaConjTrans is protected from this conversion.
-                cblas_zgemv(
-                    CblasColMajor, (CBLAS_TRANSPOSE)Plasma_ConjTrans,
-                    m, sb-i-1,
-                    CBLAS_SADDR(zone), &A2[lda2*(ii+i+1)], lda2,
-                    &A2[lda2*(ii+i)], 1,
-                    CBLAS_SADDR(zone), WORK, 1);
+                cblas_zgemv(CblasColMajor, (CBLAS_TRANSPOSE)Plasma_ConjTrans,
+                            m, sb-i-1,
+                            CBLAS_SADDR(zone), &A2[lda2*(ii+i+1)], lda2,
+                            &A2[lda2*(ii+i)], 1,
+                            CBLAS_SADDR(zone), WORK, 1);
 #ifdef COMPLEX
-                LAPACKE_zlacgv_work(sb-i-1, WORK, 1 );
+                LAPACKE_zlacgv_work(sb-i-1, WORK, 1);
 #endif
-                cblas_zaxpy(
-                    sb-i-1, CBLAS_SADDR(alpha),
-                    WORK, 1,
-                    &A1[lda1*(ii+i+1)+ii+i], lda1);
+                cblas_zaxpy(sb-i-1, CBLAS_SADDR(alpha),
+                            WORK, 1,
+                            &A1[lda1*(ii+i+1)+ii+i], lda1);
 #ifdef COMPLEX
-                LAPACKE_zlacgv_work(sb-i-1, WORK, 1 );
+                LAPACKE_zlacgv_work(sb-i-1, WORK, 1);
 #endif
-                cblas_zgerc(
-                    CblasColMajor, m, sb-i-1, CBLAS_SADDR(alpha),
-                    &A2[lda2*(ii+i)], 1,
-                    WORK, 1,
-                    &A2[lda2*(ii+i+1)], lda2);
+                cblas_zgerc(CblasColMajor, m, sb-i-1, CBLAS_SADDR(alpha),
+                            &A2[lda2*(ii+i)], 1,
+                            WORK, 1,
+                            &A2[lda2*(ii+i+1)], lda2);
             }
-            // Calculate T
+            // Calculate T.
             alpha = -TAU[ii+i];
-            cblas_zgemv(
-                CblasColMajor, (CBLAS_TRANSPOSE)Plasma_ConjTrans, m, i,
-                CBLAS_SADDR(alpha), &A2[lda2*ii], lda2,
-                &A2[lda2*(ii+i)], 1,
-                CBLAS_SADDR(zzero), &T[ldt*(ii+i)], 1);
+            cblas_zgemv(CblasColMajor, (CBLAS_TRANSPOSE)Plasma_ConjTrans,
+                        m, i,
+                        CBLAS_SADDR(alpha), &A2[lda2*ii], lda2,
+                        &A2[lda2*(ii+i)], 1,
+                        CBLAS_SADDR(zzero), &T[ldt*(ii+i)], 1);
 
-            cblas_ztrmv(
-                CblasColMajor, (CBLAS_UPLO)PlasmaUpper,
-                (CBLAS_TRANSPOSE)PlasmaNoTrans, (CBLAS_DIAG)PlasmaNonUnit, i,
+            cblas_ztrmv(CblasColMajor,
+                (CBLAS_UPLO)PlasmaUpper, (CBLAS_TRANSPOSE)PlasmaNoTrans,
+                (CBLAS_DIAG)PlasmaNonUnit,
+                i,
                 &T[ldt*ii], ldt,
                 &T[ldt*(ii+i)], 1);
 
             T[ldt*(ii+i)+i] = TAU[ii+i];
         }
         if (n > ii+sb) {
-            CORE_ztsmqr(
-                PlasmaLeft, Plasma_ConjTrans,
-                sb, n-(ii+sb), m, n-(ii+sb), ib, ib,
-                &A1[lda1*(ii+sb)+ii], lda1,
-                &A2[lda2*(ii+sb)], lda2,
-                &A2[lda2*ii], lda2,
-                &T[ldt*ii], ldt,
-                WORK, sb);
+            CORE_ztsmqr(PlasmaLeft, Plasma_ConjTrans,
+                        sb, n-(ii+sb), m, n-(ii+sb), ib, ib,
+                        &A1[lda1*(ii+sb)+ii], lda1,
+                        &A2[lda2*(ii+sb)], lda2,
+                        &A2[lda2*ii], lda2,
+                        &T[ldt*ii], ldt,
+                        WORK, sb);
         }
     }
 }
@@ -196,21 +191,21 @@ void CORE_OMP_ztsqrt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A2, int lda2,
                      PLASMA_Complex64_t *T,  int ldt)
 {
-    // assuming m == nb, n == nb
+    // OpenMP depends on m == nb, n == nb.
     #pragma omp task depend(inout:A1[0:nb*nb]) \
                      depend(inout:A2[0:nb*nb]) \
                      depend(out:T[0:ib*nb])
     {
-        // prepare memory for auxiliary arrays
+        // Allocate auxiliary arrays.
         PLASMA_Complex64_t *TAU  =
-            (PLASMA_Complex64_t *) malloc((size_t)nb *
-                                          sizeof(PLASMA_Complex64_t));
+            (PLASMA_Complex64_t *)malloc((size_t)nb *
+                                         sizeof(PLASMA_Complex64_t));
         if (TAU == NULL) {
             plasma_error("malloc() failed");
         }
         PLASMA_Complex64_t *WORK =
-            (PLASMA_Complex64_t *) malloc((size_t)ib*nb *
-                                          sizeof(PLASMA_Complex64_t));
+            (PLASMA_Complex64_t *)malloc((size_t)ib*nb *
+                                         sizeof(PLASMA_Complex64_t));
         if (WORK == NULL) {
             plasma_error("malloc() failed");
         }
@@ -222,7 +217,7 @@ void CORE_OMP_ztsqrt(int m, int n, int ib, int nb,
                     TAU,
                     WORK);
 
-        // deallocate auxiliary arrays
+        // Free the auxiliary arrays.
         free(TAU);
         free(WORK);
     }

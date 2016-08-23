@@ -85,7 +85,7 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
         return PLASMA_ERR_NOT_INITIALIZED;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if (m < 0) {
         plasma_error("illegal value of m");
         return -1;
@@ -106,7 +106,8 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
         plasma_error("illegal value of ldb");
         return -8;
     }
-    // Quick return
+
+    // quick return
     if (imin(m, imin(n, nrhs)) == 0) {
         return PLASMA_SUCCESS;
     }
@@ -117,7 +118,6 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
     //    plasma_error("plasma_tune() failed");
     //    return status;
     //}
-
     nb = plasma->nb;
 
     // Initialize tile matrix descriptors.
@@ -133,7 +133,6 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
         plasma_error("plasma_desc_mat_alloc() failed");
         return retval;
     }
-
     retval = plasma_desc_mat_alloc(&descB);
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");
@@ -148,7 +147,6 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
-
     // Initialize request.
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
 
