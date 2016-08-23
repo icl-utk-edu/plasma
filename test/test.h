@@ -26,12 +26,12 @@ typedef enum {
     PARAM_TRANS,  // transposition
     PARAM_TRANSA, // transposition of A
     PARAM_TRANSB, // transposition of B
-    PARAM_SIDE,   // Left of right side application
-    PARAM_UPLO,   // Upper or lower triangular
-    PARAM_DIAG,   // Non-unit or unit diagonal
+    PARAM_SIDE,   // left of right side application
+    PARAM_UPLO,   // upper or lower triangular
+    PARAM_DIAG,   // non-unit or unit diagonal
     PARAM_M,      // M dimension
     PARAM_N,      // N dimension
-    PARAM_NRHS,   // Number of RHS
+    PARAM_NRHS,   // number of RHS
     PARAM_K,      // K dimension
     PARAM_NB,     // tile size NBxNB
     PARAM_ALPHA,  // scalar alpha
