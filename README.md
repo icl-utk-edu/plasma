@@ -133,6 +133,7 @@ The following people contributed to the development of PLASMA:
 * Hatem Ltaief
 * Piotr Luszczek
 * Samuel Relton
+* Jakub Sistek
 * Stanimire Tomov
 * Pedro Valero Lara
 * Ichitaro Yamazaki
