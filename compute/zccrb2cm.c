@@ -62,7 +62,7 @@ void PLASMA_zccrb2cm_Async(PLASMA_desc *A, PLASMA_Complex64_t *Af77, int lda,
         return;
     }
 
-    // quick return with success
+    // quick return
     if (A->m == 0 || A->n == 0)
         return;
 

@@ -81,7 +81,8 @@ int PLASMA_zpotrs(PLASMA_enum uplo,
     int retval;
     int status;
 
-    PLASMA_desc descA, descB;
+    PLASMA_desc descA;
+    PLASMA_desc descB;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -90,7 +91,7 @@ int PLASMA_zpotrs(PLASMA_enum uplo,
         return PLASMA_ERR_NOT_INITIALIZED;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
@@ -123,9 +124,8 @@ int PLASMA_zpotrs(PLASMA_enum uplo,
     //     plasma_error("plasma_tune() failed");
     //     return status;
     // }
-
-    // Set NT & NHRS
     nb = plasma->nb;
+
     // Initialize tile matrix descriptors.
     descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
                              nb*nb, n, n, 0, 0, n, n);
@@ -307,10 +307,8 @@ void PLASMA_zpotrs_Tile_Async(PLASMA_enum uplo,
     }
 
     // quick return
-    /*
     if (min(n, nrhs) == 0)
         return;
-    */
 
     // Call the parallel functions.
     plasma_pztrsm(PlasmaLeft,

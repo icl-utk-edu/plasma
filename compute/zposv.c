@@ -309,12 +309,9 @@ void PLASMA_zposv_Tile_Async(PLASMA_enum uplo,
         return;
     }
 
-    // Quick return - currently NOT equivalent to LAPACK's
-    // LAPACK does not have such check for DPOSV
-    //
-    //  if (min(n, nrhs == 0)
-    //      return PLASMA_SUCCESS;
-    //
+    // quick return
+     if (min(n, nrhs == 0)
+         return PLASMA_SUCCESS;
 
     PLASMA_enum trans;
     PLASMA_Complex64_t zone = 1.0;
