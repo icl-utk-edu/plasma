@@ -208,10 +208,6 @@ int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
             PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
     } // pragma omp parallel block closed
 
-    // Check for errors in the async execution
-    if (sequence->status != PLASMA_SUCCESS)
-        return sequence->status;
-
     // Free matrices in tile layout.
     plasma_desc_mat_free(&descA);
     plasma_desc_mat_free(&descC);
