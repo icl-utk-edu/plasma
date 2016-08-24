@@ -36,10 +36,13 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
     PLASMA_Complex64_t zbeta;
     PLASMA_Complex64_t zone = 1.0;
 
-    if (sequence->status != PLASMA_SUCCESS)
-        return;
-
     int innerK = (transA == PlasmaNoTrans ? A.n : A.m);
+
+    // Check sequence status.
+    if (sequence->status != PLASMA_SUCCESS) {
+        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
+        return;
+    }
 
     for (m = 0; m < C.mt; m++) {
         tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;

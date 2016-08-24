@@ -333,12 +333,6 @@ void PLASMA_zgels_Tile_Async(PLASMA_enum trans,
         return;
     }
 
-    // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
-        return;
-    }
-
     // quick return
     // TODO:
     // currently NOT equivalent to LAPACK's:

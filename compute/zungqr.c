@@ -273,12 +273,6 @@ void PLASMA_zungqr_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
         return;
     }
 
-    // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
-        return;
-    }
-
     // quick return
     //if (n <= 0)
     //    return;

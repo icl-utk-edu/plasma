@@ -282,12 +282,6 @@ void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
         return;
     }
 
-    // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
-        return;
-    }
-
     // Quick return
     // Jakub S.: Why was it commented out in version 2.8.0 ?
     // I leave it like that till explained.

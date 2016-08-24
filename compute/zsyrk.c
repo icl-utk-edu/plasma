@@ -357,12 +357,6 @@ void PLASMA_zsyrk_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
         return;
     }
 
-    // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
-        return;
-    }
-
     // quick return
     if (C->m == 0 || ((alpha == 0.0 || An == 0) && beta == 1.0))
         return;

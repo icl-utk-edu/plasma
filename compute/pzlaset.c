@@ -31,8 +31,11 @@ void plasma_pzlaset(PLASMA_enum uplo,
     int tempim, tempjm, tempjn;
     int minmn = imin(A.mt, A.nt);
 
-    if (sequence->status != PLASMA_SUCCESS)
+    // Check sequence status.
+    if (sequence->status != PLASMA_SUCCESS) {
+        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
         return;
+    }
 
     if (uplo == PlasmaLower) {
         for (j = 0; j < minmn; j++) {

@@ -36,8 +36,11 @@ void plasma_pzsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
     PLASMA_Complex64_t zone   = (PLASMA_Complex64_t)1.0;
     PLASMA_Complex64_t zbeta;
 
-    if (sequence->status != PLASMA_SUCCESS)
+    // Check sequence status.
+    if (sequence->status != PLASMA_SUCCESS) {
+        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
         return;
+    }
 
     for (n = 0; n < C.nt; n++) {
         tempnn = n == C.nt-1 ? C.n-n*C.nb : C.nb;

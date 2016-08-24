@@ -302,17 +302,11 @@ void PLASMA_zposv_Tile_Async(PLASMA_enum uplo,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-
-    // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
-        return;
-    }
-
+/*
     // quick return
-     if (min(n, nrhs == 0)
-         return PLASMA_SUCCESS;
-
+    if (min(n, nrhs == 0)
+        return PLASMA_SUCCESS;
+*/
     PLASMA_enum trans;
     PLASMA_Complex64_t zone = 1.0;
 
