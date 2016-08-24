@@ -111,9 +111,8 @@ int PLASMA_zpotrf(PLASMA_enum uplo,
     //     plasma_error("plasma_tune() failed");
     //     return status;
     // }
-
-    // Set NT & KT
     nb = plasma->nb;
+
     // Initialize tile matrix descriptors.
     descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
                              nb*nb, n, n, 0, 0, n, n);
@@ -135,28 +134,20 @@ int PLASMA_zpotrf(PLASMA_enum uplo,
     // Initialize request.
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
 
+    // asynchronous block
     #pragma omp parallel
     #pragma omp master
     {
-        // The Async functions are submitted here.  If an error occurs
-        // (at submission time or at run time) the sequence->status
-        // will be marked with an error.  After an error, the next
-        // Async will not _insert_ more tasks into the runtime.  The
-        // sequence->status can be checked after each call to _Async
-        // or at the end of the parallel region.
-
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
 
         // Call the tile async function.
-        if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_zpotrf_Tile_Async(uplo, &descA, sequence, &request);
-        }
+        PLASMA_zpotrf_Tile_Async(uplo, &descA, sequence, &request);
 
         // Translate back to LAPACK layout.
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
-    } // pragma omp parallel block closed
+        PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
+    }
+    // implicit synchronization
 
     // Free matrix A in tile layout.
     plasma_desc_mat_free(&descA);

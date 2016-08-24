@@ -96,7 +96,7 @@ Primary funding for PLASMA was provided by NSF grants:
 Work on PLASMA was also partially funded by NSF grants:
 
 * [SI2-SSI: Collaborative Research: Sustained Innovation for Linear Algebra Software (SILAS)](http://www.nsf.gov/awardsearch/showAward?AWD_ID=1339822),
-* [SHF: Small: Empirical Autotuning of Parallel Computation for Scalable Hybrid Systems](http://nsf.gov/awardsearch/showAward?AWD_ID=1527706).
+* [SHF: Small: Empirical Autotuning of Parallel Computation for Scalable Hybrid Systems](http://nsf.gov/awardsearch/showAward?AWD_ID=1527706) (a.k.a. DARE).
 
 Additional funding was provided by the following companies:
 
