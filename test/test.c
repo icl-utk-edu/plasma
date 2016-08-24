@@ -431,10 +431,10 @@ int param_read(int argc, char **argv, param_t param[])
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_M]);
         else if (param_starts_with(argv[i], "--n="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_N]);
-        else if (param_starts_with(argv[i], "--nrhs="))
-            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NRHS]);
         else if (param_starts_with(argv[i], "--k="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_K]);
+        else if (param_starts_with(argv[i], "--nrhs="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NRHS]);
 
         else if (param_starts_with(argv[i], "--nb="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NB]);
@@ -513,10 +513,10 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_int(1000, &param[PARAM_M]);
     if (param[PARAM_N].num == 0)
         param_add_int(1000, &param[PARAM_N]);
-    if (param[PARAM_NRHS].num == 0)
-        param_add_int(1000, &param[PARAM_NRHS]);
     if (param[PARAM_K].num == 0)
         param_add_int(1000, &param[PARAM_K]);
+    if (param[PARAM_NRHS].num == 0)
+        param_add_int(1000, &param[PARAM_NRHS]);
 
     if (param[PARAM_NB].num == 0)
         param_add_int(256, &param[PARAM_NB]);
