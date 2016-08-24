@@ -43,6 +43,9 @@ int main(int argc, char **argv)
 
     const char *routine = argv[1];
 
+    // Ensure that ParamUsage has an entry for every param_label_t value.
+    assert(PARAM_SIZEOF == sizeof(ParamUsage)/(2*sizeof(char*)));
+
     param_t param[PARAM_SIZEOF];      // set of parameters
     param_value_t pval[PARAM_SIZEOF]; // snapshot of values
 

@@ -57,7 +57,10 @@ typedef enum {
 //==============================================================================
 // parameter descriptions
 //==============================================================================
-static const char *ParamUsage[][2] = {
+static const char * const ParamUsage[][2] = {
+    //------------------------------------------------------
+    // input parameters
+    //------------------------------------------------------
     {"--iter=", "number of iterations per set of parameters [default: 1]"},
     {"--outer=[y|n]", "outer product iteration [default: n]"},
     {"--test=[y|n]", "test the solution [default: y]"},
@@ -78,6 +81,15 @@ static const char *ParamUsage[][2] = {
     {"--pada=", "padding added to lda [default: 0]"},
     {"--padb=", "padding added to ldb [default: 0]"},
     {"--padc=", "padding added to ldc [default: 0]"},
+
+    //------------------------------------------------------
+    // output parameters
+    //------------------------------------------------------
+    // these are not used, except to assert sizeof(ParamUsage) == PARAM_SIZEOF
+    {"success", "success indicator"},
+    {"error", "numerical error"},
+    {"time", "time to solution"},
+    {"gflops", "GFLOPS rate"}
 };
 
 //==============================================================================
