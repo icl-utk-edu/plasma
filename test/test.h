@@ -45,6 +45,7 @@ typedef enum {
     //------------------------------------------------------
     PARAM_SUCCESS, // success indicator
     PARAM_ERROR,   // numerical error
+    PARAM_ORTHO,   // orthogonality error
     PARAM_TIME,    // time to solution
     PARAM_GFLOPS,  // GFLOPS rate
 
@@ -88,6 +89,7 @@ static const char * const ParamUsage[][2] = {
     // these are not used, except to assert sizeof(ParamUsage) == PARAM_SIZEOF
     {"success", "success indicator"},
     {"error", "numerical error"},
+    {"error", "orthogonality error"},
     {"time", "time to solution"},
     {"gflops", "GFLOPS rate"}
 };
