@@ -408,7 +408,7 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--side="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_SIDE]);
 
-        else if (param_starts_with(argv[1], "--trans="))
+        else if (param_starts_with(argv[i], "--trans="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANS]);
         else if (param_starts_with(argv[i], "--transa="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANSA]);
