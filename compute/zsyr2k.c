@@ -194,6 +194,7 @@ int PLASMA_zsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
     }
     retval = plasma_desc_mat_alloc(&descB);
     if (retval != PLASMA_SUCCESS) {
+        plasma_desc_mat_free(&descA);
         plasma_error("plasma_desc_mat_alloc() failed");
         return retval;
     }
@@ -201,6 +202,7 @@ int PLASMA_zsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");
         plasma_desc_mat_free(&descA);
+        plasma_desc_mat_free(&descB);
         return retval;
     }
 

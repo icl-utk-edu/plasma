@@ -169,7 +169,6 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
         plasma_error("plasma_desc_mat_alloc() failed");
         return retval;
     }
-
     retval = plasma_desc_mat_alloc(&descB);
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");

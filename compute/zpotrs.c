@@ -141,6 +141,7 @@ int PLASMA_zpotrs(PLASMA_enum uplo,
     }
     retval = plasma_desc_mat_alloc(&descB);
     if (retval != PLASMA_SUCCESS) {
+        plasma_desc_mat_free(&descA);
         plasma_error("plasma_desc_mat_alloc() failed");
         return retval;
     }
