@@ -61,7 +61,8 @@ void test_ztrsm(param_value_t param[], char *info)
             print_usage(PARAM_ALPHA);
             print_usage(PARAM_PADA);
             print_usage(PARAM_PADB);
-        } else {
+        }
+        else {
             // Return column labels.
             snprintf(info, InfoLen,
                      "%*s %*s %*s %*s %*s %*s %*s %*s %*s",
