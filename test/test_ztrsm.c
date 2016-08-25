@@ -30,6 +30,8 @@
 
 #define COMPLEX
 
+#define A(i_, j_)  (A + (i_) + (size_t)lda*(j_))
+
 /***************************************************************************//**
  *
  * @brief Tests ZTRSM.
@@ -37,9 +39,10 @@
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
  *
- * If param is NULL     and info is NULL,     print usage and return.
- * If param is NULL     and info is non-NULL, set info to column headings and return.
- * If param is non-NULL and info is non-NULL, set info to column values   and run test.
+ * If param is NULL and info is NULL,     print usage and return.
+ * If param is NULL and info is non-NULL, set info to column labels and return.
+ * If param is non-NULL and info is non-NULL, set info to column values
+ * and run test.
  ******************************************************************************/
 void test_ztrsm(param_value_t param[], char *info)
 {
@@ -58,7 +61,8 @@ void test_ztrsm(param_value_t param[], char *info)
             print_usage(PARAM_ALPHA);
             print_usage(PARAM_PADA);
             print_usage(PARAM_PADB);
-        } else {
+        }
+        else {
             // Return column labels.
             snprintf(info, InfoLen,
                      "%*s %*s %*s %*s %*s %*s %*s %*s %*s",
@@ -160,9 +164,11 @@ void test_ztrsm(param_value_t param[], char *info)
     int ipiv[lda];
     LAPACKE_zgetrf(CblasColMajor, Am, Am, A, lda, ipiv);
 
-    for (int j = 0; j < Am; j++)
-        for (int i = 0; i < j; i++)
-            A[i,j] = A[j,i];
+    for (int j = 0; j < Am; j++) {
+        for (int i = 0; i < j; i++) {
+            *A(i,j) = *A(j,i);
+        }
+    }
 
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*n, B);
     assert(retval == 0);

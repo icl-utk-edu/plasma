@@ -179,7 +179,7 @@ void CORE_zpamm(int op, PLASMA_enum side, PLASMA_enum storev,
                 const PLASMA_Complex64_t *V,  int ldv,
                       PLASMA_Complex64_t *W,  int ldw)
 {
-    int vi2, vi3, uplo, trans, info;
+    int vi2, vi3, uplo, trans;
 
     // Check input arguments.
     if ((op != PlasmaW) && (op != PlasmaA2)) {
