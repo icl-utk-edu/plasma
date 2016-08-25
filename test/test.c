@@ -6,8 +6,6 @@
  *  University of Tennessee, US,
  *  University of Manchester, UK.
  *
- * @date 2016-05-17
- *
  **/
 #include "test.h"
 
