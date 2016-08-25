@@ -61,11 +61,12 @@ void test_ztrsm(param_value_t param[], char *info)
             print_usage(PARAM_ALPHA);
             print_usage(PARAM_PADA);
             print_usage(PARAM_PADB);
+            print_usage(PARAM_NB);
         }
         else {
             // Return column labels.
             snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s %*s %*s %*s %*s %*s",
+                     "%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s",
                      InfoSpacing, "side",
                      InfoSpacing, "uplo",
                      InfoSpacing, "TransA",
@@ -74,13 +75,14 @@ void test_ztrsm(param_value_t param[], char *info)
                      InfoSpacing, "N",
                      InfoSpacing, "alpha",
                      InfoSpacing, "PadA",
-                     InfoSpacing, "PadB");
+                     InfoSpacing, "PadB",
+                     InfoSpacing, "NB");
         }
         return;
     }
     // Return column values.
     snprintf(info, InfoLen,
-             "%*c %*c %*c %*c %*d %*d %*.4f %*d %*d",
+             "%*c %*c %*c %*c %*d %*d %*.4f %*d %*d %*d",
              InfoSpacing, param[PARAM_SIDE].c,
              InfoSpacing, param[PARAM_UPLO].c,
              InfoSpacing, param[PARAM_TRANSA].c,
@@ -89,7 +91,8 @@ void test_ztrsm(param_value_t param[], char *info)
              InfoSpacing, param[PARAM_N].i,
              InfoSpacing, __real__(param[PARAM_ALPHA].z),
              InfoSpacing, param[PARAM_PADA].i,
-             InfoSpacing, param[PARAM_PADB].i);
+             InfoSpacing, param[PARAM_PADB].i,
+             InfoSpacing, param[PARAM_NB].i);
 
     //================================================================
     // Set parameters.
@@ -137,6 +140,11 @@ void test_ztrsm(param_value_t param[], char *info)
 
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
+
+    //================================================================
+    // Set tuning parameters.
+    //================================================================
+    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_NB].i);
 
     //================================================================
     // Allocate and initialize arrays.

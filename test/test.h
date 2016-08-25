@@ -34,6 +34,7 @@ typedef enum {
     PARAM_K,      // K dimension
     PARAM_NRHS,   // number of RHS
     PARAM_NB,     // tile size NBxNB
+    PARAM_IB,     // inner blocking size
     PARAM_ALPHA,  // scalar alpha
     PARAM_BETA,   // scalar beta
     PARAM_PADA,   // padding of A
@@ -76,6 +77,7 @@ static const char * const ParamUsage[][2] = {
     {"--k=", "K dimension (number of rows or columns) [default: 1000]"},
     {"--nrhs=", "NHRS dimension (number of columns) [default: 1000]"},
     {"--nb=", "NB size of tile (NB by NB) [default: 256]"},
+    {"--ib=", "IB inner blocking size [default: 64]"},
     {"--alpha=", "scalar alpha"},
     {"--beta=", "scalar beta"},
     {"--pada=", "padding added to lda [default: 0]"},
