@@ -21,6 +21,8 @@
     #include <lapacke.h>
 #endif
 
+#include <omp.h>
+
 /***************************************************************************//**
  *
  * @ingroup CORE_PLASMA_Complex64_t
@@ -75,7 +77,7 @@
  *         The leading dimension of the array T. ldt >= ib.
  *
  * @param TAU
- *         Auxiliarry workspace array of length n.
+ *         Auxiliary workspace array of length n.
  *
  * @param WORK
  *         Auxiliary workspace array of length ib*n.
@@ -85,7 +87,7 @@ void CORE_zgeqrt(int m, int n, int ib,
                  PLASMA_Complex64_t *A, int lda,
                  PLASMA_Complex64_t *T, int ldt,
                  PLASMA_Complex64_t *TAU,
-                 PLASMA_Complex64_t *WORK)
+                 PLASMA_Complex64_t *WORK, int lwork)
 {
     // Check input arguments.
     if (m < 0) {
@@ -96,7 +98,7 @@ void CORE_zgeqrt(int m, int n, int ib,
         plasma_error("illegal value of n");
         return;
     }
-    if ((ib < 0) || ( (ib == 0) && ((m > 0) && (n > 0)) )) {
+    if ((ib < 0) || ( (ib == 0) && (m > 0) && (n > 0) )) {
         plasma_error("illegal value of ib");
         return;
     }
@@ -106,6 +108,10 @@ void CORE_zgeqrt(int m, int n, int ib,
     }
     if ((ldt < imax(1,ib)) && (ib > 0)) {
         plasma_error("illegal value of ldt");
+        return;
+    }
+    if (lwork < ib*n) {
+        plasma_error("illegal value of lwork");
         return;
     }
 
@@ -149,35 +155,20 @@ void CORE_zgeqrt(int m, int n, int ib,
 /******************************************************************************/
 void CORE_OMP_zgeqrt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A, int lda,
-                     PLASMA_Complex64_t *T, int ldt)
+                     PLASMA_Complex64_t *T, int ldt,
+                     PLASMA_workspace *work)
 {
     // omp depends assume lda == m and nb == n.
     #pragma omp task depend(inout:A[0:lda*nb]) \
                      depend(out:T[0:ldt*nb])
     {
-        // Allocate auxiliary arrays.
-        PLASMA_Complex64_t *TAU =
-            (PLASMA_Complex64_t *)malloc((size_t)nb *
-                                         sizeof(PLASMA_Complex64_t));
-        if (TAU == NULL) {
-            plasma_error("malloc() failed");
-        }
-        PLASMA_Complex64_t *WORK =
-            (PLASMA_Complex64_t *)malloc((size_t)ib*nb *
-                                         sizeof(PLASMA_Complex64_t));
-        if (WORK == NULL) {
-            plasma_error("malloc() failed");
-        }
-
-        // Call the kernel.
+        int tid = omp_get_thread_num();
+        PLASMA_Complex64_t *tau = ((PLASMA_Complex64_t*)work->spaces[tid]);
+        PLASMA_Complex64_t *w   = ((PLASMA_Complex64_t*)work->spaces[tid]) + n;
         CORE_zgeqrt(m, n, ib,
                     A, lda,
                     T, ldt,
-                    TAU,
-                    WORK);
-
-        // Free the auxiliary arrays.
-        free(TAU);
-        free(WORK);
+                    tau,
+                    w, work->lwork - n);
     }
 }

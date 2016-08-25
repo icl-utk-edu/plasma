@@ -24,6 +24,7 @@
  * @see PLASMA_zgeqrf_Tile_Async
  **/
 void plasma_pzgeqrf(PLASMA_desc A, PLASMA_desc T,
+                    PLASMA_workspace *work,
                     PLASMA_sequence *sequence, PLASMA_request *request)
 {
     int k, m, n;
@@ -52,7 +53,7 @@ void plasma_pzgeqrf(PLASMA_desc A, PLASMA_desc T,
         CORE_OMP_zgeqrt(
             tempkm, tempkn, ib, T.nb,
             A(k, k), ldak,
-            T(k, k), T.mb);
+            T(k, k), T.mb, work);
 
         for (n = k+1; n < A.nt; n++) {
             tempnn = n == A.nt-1 ? A.n-n*A.nb : A.nb;

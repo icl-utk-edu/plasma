@@ -20,6 +20,7 @@
 #include "plasma_async.h"
 #include "plasma_descriptor.h"
 #include "plasma_context.h"
+#include "plasma_workspace.h"
 
 #include "plasma_s.h"
 #include "plasma_d.h"

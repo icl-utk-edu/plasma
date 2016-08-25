@@ -15,6 +15,7 @@
 #include "plasma_async.h"
 #include "plasma_descriptor.h"
 #include "plasma_types.h"
+#include "plasma_workspace.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,6 +29,7 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                    PLASMA_sequence *sequence, PLASMA_request *request);
 
 void plasma_pzgeqrf(PLASMA_desc A, PLASMA_desc T,
+                    PLASMA_workspace *work,
                     PLASMA_sequence *sequence, PLASMA_request *request);
 
 void plasma_pzhemm(PLASMA_enum side, PLASMA_enum uplo,

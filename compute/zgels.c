@@ -101,7 +101,7 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
                  PLASMA_desc *descT,
                  PLASMA_Complex64_t *B, int ldb)
 {
-    int nb;
+    int ib, nb;
     int retval;
     int status;
 
@@ -154,6 +154,7 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
     //    plasma_error("plasma_tune() failed");
     //    return status;
     //}
+    ib = plasma->ib;
     nb = plasma->nb;
 
     // Initialize tile matrix descriptors.
@@ -173,6 +174,15 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");
         plasma_desc_mat_free(&descA);
+        return retval;
+    }
+
+    // Allocate workspace.
+    PLASMA_workspace work;
+    size_t lwork = nb + ib*nb;  // geqrt: tau + work
+    retval = plasma_workspace_alloc(&work, lwork, PlasmaComplexDouble);
+    if (retval != PLASMA_SUCCESS) {
+        plasma_error("plasma_workspace_alloc() failed");
         return retval;
     }
 
@@ -198,6 +208,7 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
         PLASMA_zgels_Tile_Async(PlasmaNoTrans,
                                 &descA, descT,
                                 &descB,
+                                &work,
                                 sequence, &request);
 
         // Translate back to LAPACK layout.
@@ -205,6 +216,8 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
         PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
     }
     // implicit synchronization
+
+    plasma_workspace_free(&work);
 
     // Free matrices in tile layout.
     plasma_desc_mat_free(&descA);
@@ -274,6 +287,7 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
 void PLASMA_zgels_Tile_Async(PLASMA_enum trans,
                              PLASMA_desc *descA, PLASMA_desc *descT,
                              PLASMA_desc *descB,
+                             PLASMA_workspace *work,
                              PLASMA_sequence *sequence,
                              PLASMA_request *request)
 {
@@ -338,7 +352,7 @@ void PLASMA_zgels_Tile_Async(PLASMA_enum trans,
 
     if (descA->m >= descA->n) {
         // solution based on QR factorization
-        plasma_pzgeqrf(*descA, *descT, sequence, request);
+        plasma_pzgeqrf(*descA, *descT, work, sequence, request);
 
         // Plasma_ConjTrans will be converted to PlasmaTrans by the
         // automatic datatype conversion, which is what we want here.

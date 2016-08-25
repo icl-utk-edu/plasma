@@ -18,6 +18,7 @@
 #define ICL_CORE_BLAS_Z_H
 
 #include "plasma_types.h"
+#include "plasma_workspace.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,7 +35,7 @@ void CORE_zgeqrt(int m, int n, int ib,
                  PLASMA_Complex64_t *A, int lda,
                  PLASMA_Complex64_t *T, int ldt,
                  PLASMA_Complex64_t *TAU,
-                 PLASMA_Complex64_t *WORK);
+                 PLASMA_Complex64_t *WORK, int lwork);
 
 void CORE_zhemm(PLASMA_enum side, PLASMA_enum uplo,
                 int m, int n,
@@ -139,7 +140,8 @@ void CORE_OMP_zgemm(
 
 void CORE_OMP_zgeqrt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A, int lda,
-                     PLASMA_Complex64_t *T, int ldt);
+                     PLASMA_Complex64_t *T, int ldt,
+                     PLASMA_workspace *work);
 
 void CORE_OMP_zhemm(
     PLASMA_enum side, PLASMA_enum uplo,

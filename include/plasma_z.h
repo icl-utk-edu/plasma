@@ -112,6 +112,7 @@ void PLASMA_zcm2ccrb_Async(PLASMA_Complex64_t *Af77, int lda, PLASMA_desc *A,
 void PLASMA_zgels_Tile_Async(PLASMA_enum trans,
                              PLASMA_desc *descA, PLASMA_desc *descT,
                              PLASMA_desc *descB,
+                             PLASMA_workspace *work,
                              PLASMA_sequence *sequence,
                              PLASMA_request *request);
 
@@ -123,6 +124,7 @@ void PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
                              PLASMA_request *request);
 
 void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
+                              PLASMA_workspace *work,
                               PLASMA_sequence *sequence,
                               PLASMA_request *request);
 
