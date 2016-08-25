@@ -17,6 +17,7 @@
 #ifndef ICL_CORE_BLAS_Z_H
 #define ICL_CORE_BLAS_Z_H
 
+#include "plasma_async.h"
 #include "plasma_types.h"
 
 #ifdef __cplusplus
@@ -79,9 +80,9 @@ void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans, PLASMA_enum direct,
                  const PLASMA_Complex64_t *T,    int ldt,
                        PLASMA_Complex64_t *WORK, int ldwork);
 
-void CORE_zpotrf(PLASMA_enum uplo,
-                 int n,
-                 PLASMA_Complex64_t *A, int lda);
+int CORE_zpotrf(PLASMA_enum uplo,
+                int n,
+                PLASMA_Complex64_t *A, int lda);
 
 void CORE_zsymm(PLASMA_enum side, PLASMA_enum uplo,
                 int m, int n,
@@ -172,7 +173,9 @@ void CORE_OMP_zlaset(PLASMA_enum uplo,
 
 void CORE_OMP_zpotrf(PLASMA_enum uplo,
                      int n,
-                     PLASMA_Complex64_t *A, int lda);
+                     PLASMA_Complex64_t *A, int lda,
+                     PLASMA_sequence *sequence, PLASMA_request *request,
+                     int iinfo);
 
 void CORE_OMP_zsymm(
     PLASMA_enum side, PLASMA_enum uplo,

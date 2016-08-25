@@ -46,7 +46,8 @@ void plasma_pzpotrf(PLASMA_enum uplo, PLASMA_desc A,
             ldak = BLKLDD(A, k);
             CORE_OMP_zpotrf(
                 PlasmaLower, tempkm,
-                A(k, k), ldak);
+                A(k, k), ldak,
+                sequence, request, A.nb*k);
             for (m = k+1; m < A.mt; m++) {
                 tempmm = m == A.mt-1 ? A.m-m*A.mb : A.mb;
                 ldam = BLKLDD(A, m);
@@ -86,7 +87,8 @@ void plasma_pzpotrf(PLASMA_enum uplo, PLASMA_desc A,
             ldak = BLKLDD(A, k);
             CORE_OMP_zpotrf(
                 PlasmaUpper, tempkm,
-                A(k, k), ldak);
+                A(k, k), ldak,
+                sequence, request, A.nb*k);
             for (m = k+1; m < A.nt; m++) {
                 tempmm = m == A.nt-1 ? A.n-m*A.nb : A.nb;
                 CORE_OMP_ztrsm(
