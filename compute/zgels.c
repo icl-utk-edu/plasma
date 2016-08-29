@@ -22,7 +22,7 @@
  * @ingroup plasma_gels
  *
  *  Solves overdetermined or underdetermined linear systems
- *  involving an m-by-n matrix A using the QR or the LQ factorization of A.  It
+ *  involving an m-by-n matrix A using a QR or LQ factorization of A.  It
  *  is assumed that A has full rank.  The following options are provided:
  *
  *  # trans = PlasmaNoTrans and m >= n: find the least squares solution of an

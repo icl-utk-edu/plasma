@@ -21,7 +21,7 @@
  *
  * @ingroup plasma_geqrf
  *
- *  Computes the tile QR factorization of a real or complex m-by-n matrix A.
+ *  Computes a tile QR factorization of a real or complex m-by-n matrix A.
  *  The factorization has the form
  *    \f[ A = Q \times R \f],
  *  where Q is a matrix with orthonormal columns and R is an upper triangular
@@ -171,7 +171,7 @@ int PLASMA_zgeqrf(int m, int n,
  *
  * @ingroup plasma_geqrf
  *
- *  Computes the tile QR factorization of a matrix.
+ *  Computes a tile QR factorization of a matrix.
  *  Non-blocking tile version of PLASMA_zgeqrf().
  *  May return before the computation is finished.
  *  Operates on matrices stored by tiles.
