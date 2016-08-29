@@ -62,6 +62,4 @@ void PLASMA_zccrb2cm_Async(PLASMA_desc *A, PLASMA_Complex64_t *Af77, int lda,
 
     // Call the parallel function.
     plasma_pzooccrb2cm(*A, Af77, lda, sequence, request);
-
-    return;
 }

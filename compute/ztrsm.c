@@ -370,6 +370,4 @@ void PLASMA_ztrsm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
                   alpha, *A,
                          *B,
                   sequence, request);
-
-    return;
 }

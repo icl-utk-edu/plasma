@@ -254,6 +254,4 @@ void PLASMA_zpotrf_Tile_Async(PLASMA_enum uplo,
 
     // Call the parallel function.
     plasma_pzpotrf(uplo, *A, sequence, request);
-
-    return;
 }

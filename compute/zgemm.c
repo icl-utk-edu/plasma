@@ -407,6 +407,4 @@ void PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
                          *B,
                    beta, *C,
                   sequence, request);
-
-    return;
 }

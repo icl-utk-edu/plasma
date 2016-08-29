@@ -270,6 +270,4 @@ void PLASMA_zungqr_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
 
     // construct Q
     plasma_pzungqr(*descA, *descQ, *descT, sequence, request);
-
-    return;
 }

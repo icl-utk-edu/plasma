@@ -245,6 +245,4 @@ void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
 
     // Call the parallel function.
     plasma_pzgeqrf(*descA, *descT, sequence, request);
-
-    return;
 }

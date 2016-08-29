@@ -324,6 +324,4 @@ void PLASMA_zsyrk_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
                   alpha, *A,
                   beta, *C,
                   sequence, request);
-
-    return;
 }

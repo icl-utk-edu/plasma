@@ -372,6 +372,4 @@ void PLASMA_zgels_Tile_Async(PLASMA_enum trans,
     //                   A, B, T,
     //                   sequence, request);
     }
-
-    return;
 }

@@ -355,5 +355,4 @@ void PLASMA_zhemm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
                   *B,
                   beta,  *C,
                   sequence, request);
-    return;
 }

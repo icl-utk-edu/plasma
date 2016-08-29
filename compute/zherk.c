@@ -322,6 +322,4 @@ void PLASMA_zherk_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
                   alpha, *A,
                   beta, *C,
                   sequence, request);
-
-    return;
 }

@@ -301,6 +301,4 @@ void PLASMA_zpotrs_Tile_Async(PLASMA_enum uplo,
         *B,
         sequence,
         request);
-
-    return;
 }

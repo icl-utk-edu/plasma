@@ -287,6 +287,4 @@ void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
                   1.0, plasma_desc_submatrix(*descA, 0, 0, descA->n, descA->n),
                   plasma_desc_submatrix(*descB, 0, 0, descA->n, descB->n),
                   sequence, request);
-
-    return;
 }
