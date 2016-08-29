@@ -376,6 +376,7 @@ subs = {
     ('symmetric',            'symmetric',            'hermitian',            'hermitian'           ),
     ('symmetric',            'symmetric',            'Hermitian',            'Hermitian'           ),
     ('orthogonal',           'orthogonal',           'unitary',              'unitary'             ),
+    ('\^T',                  '\^T',                  '\^H',                  '\^H'                 ),
     ('%f',                   '%lf',                  '%f',                   '%lf'                 ),  # for scanf
 
     # ----- CBLAS

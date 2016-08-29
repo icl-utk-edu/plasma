@@ -133,6 +133,7 @@ try:
                 sub = sub.replace( r'\(',  r'(' )
                 sub = sub.replace( r'\)',  r')' )
                 sub = sub.replace( r'\.',  r'.' )
+                sub = sub.replace( r'\^',  r'^' )
                 subs_replace[key][i][j] = sub
             # end
         # end
