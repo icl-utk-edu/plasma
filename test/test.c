@@ -146,8 +146,9 @@ void print_usage(int label)
  * @brief Tests a routine for a set of parameter values.
  *        Performs testing and timing.
  *        If pval is NULL, prints column labels.
- *        Otherwise, prints column values.
+ *        Otherwise, runs routine and prints column values.
  *
+ * @param[in]    test - if true, tests routine, else only times routine
  * @param[in]    name - routine name
  * @param[inout] pval - array of parameter values
  *
