@@ -234,7 +234,16 @@ void time_routine(const char *name, param_value_t pval[])
  ******************************************************************************/
 void run_routine(const char *name, param_value_t pval[], char *info)
 {
-    if      (strcmp(name, "zgelqf") == 0)
+    if      (strcmp(name, "zgbtrf") == 0)
+            test_zgbtrf(pval, info);
+    else if (strcmp(name, "dgbtrf") == 0)
+            test_dgbtrf(pval, info);
+    else if (strcmp(name, "cgbtrf") == 0)
+            test_cgbtrf(pval, info);
+    else if (strcmp(name, "sgbtrf") == 0)
+            test_sgbtrf(pval, info);
+
+    else if (strcmp(name, "zgelqf") == 0)
         test_zgelqf(pval, info);
     else if (strcmp(name, "dgelqf") == 0)
         test_dgelqf(pval, info);
@@ -450,6 +459,10 @@ int param_read(int argc, char **argv, param_t param[])
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_N]);
         else if (param_starts_with(argv[i], "--k="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_K]);
+        else if (param_starts_with(argv[i], "--kl="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_KL]);
+        else if (param_starts_with(argv[i], "--ku="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_KU]);
         else if (param_starts_with(argv[i], "--nrhs="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NRHS]);
 
@@ -534,6 +547,10 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_int(1000, &param[PARAM_N]);
     if (param[PARAM_K].num == 0)
         param_add_int(1000, &param[PARAM_K]);
+    if (param[PARAM_KL].num == 0)
+        param_add_int(200, &param[PARAM_KL]);
+    if (param[PARAM_KU].num == 0)
+        param_add_int(200, &param[PARAM_KU]);
     if (param[PARAM_NRHS].num == 0)
         param_add_int(1000, &param[PARAM_NRHS]);
 

@@ -134,12 +134,14 @@ blas = [
     ('sscal',                'dscal',                'csscal',               'zdscal'              ),
     ('sscal',                'dscal',                'sscal',                'dscal'               ),
     ('sswap',                'dswap',                'cswap',                'zswap'               ),
+    ('sswptr',               'dswptr',               'cswptr',               'zswptr'              ),
     ('ssymm',                'dsymm',                'chemm',                'zhemm'               ),
     ('ssymm',                'dsymm',                'csymm',                'zsymm'               ),
     ('ssymv',                'dsymv',                'chemv',                'zhemv'               ),
     ('ssymv',                'dsymv',                'csymv',                'zsymv'               ),
     ('ssyr',                 'dsyr',                 'cher',                 'zher'                ),  # also does zher2, zher2k, zherk
     ('ssyr',                 'dsyr',                 'csyr',                 'zsyr'                ),  # also does zsyrk, zsyr2k
+    ('stbsm',                'dtbsm',                'ctbsm',                'ztbsm'               ),
     ('strmm',                'dtrmm',                'ctrmm',                'ztrmm'               ),
     ('strmv',                'dtrmv',                'ctrmv',                'ztrmv'               ),
     ('strsm',                'dtrsm',                'ctrsm',                'ztrsm'               ),
@@ -157,6 +159,8 @@ lapack = [
     ('sbdt01',               'dbdt01',               'cbdt01',               'zbdt01'              ),
     ('sgbbrd',               'dgbbrd',               'cgbbrd',               'zgbbrd'              ),
     ('sgebak',               'dgebak',               'cgebak',               'zgebak'              ),
+    ('sgbtrf',               'dgbtrf',               'cgbtrf',               'zgbtrf'              ),
+    ('sgbtrs',               'dgbtrs',               'cgbtrs',               'zgbtrs'              ),
     ('sgebal',               'dgebal',               'cgebal',               'zgebal'              ),
     ('sgebd2',               'dgebd2',               'cgebd2',               'zgebd2'              ),
     ('sgebrd',               'dgebrd',               'cgebrd',               'zgebrd'              ),

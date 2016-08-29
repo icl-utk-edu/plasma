@@ -57,6 +57,10 @@ typedef struct {
     int n;            ///< number of columns of the submatrix
     int mt;           ///< number of tile rows of the submatrix
     int nt;           ///< number of tile columns of the submatrix
+    int kl;           ///< number of rows below the diagonal 
+    int ku;           ///< number of rows above the diagonal
+    int klt;          ///< number of tile rows below the diagonal tile
+    int kut;          ///< number of tile rows above the diagonal tile, includes the space for potential fills, i.e., kl+ku
 } PLASMA_desc;
 
 /******************************************************************************/
@@ -114,9 +118,15 @@ int PLASMA_Desc_Destroy(PLASMA_desc **desc);
 PLASMA_desc plasma_desc_init(PLASMA_enum dtyp, int mb, int nb, int bsiz,
                              int lm, int ln, int i, int j, int m, int n);
 
+
+PLASMA_desc plasma_desc_band_init(PLASMA_enum dtyp, int mb, int nb, int bsiz,
+                                  int lm, int ln, int i, int j, int m, int n,
+                                  int kl, int ku);
+
 PLASMA_desc plasma_desc_submatrix(PLASMA_desc descA, int i, int j, int m, int n);
 
 int plasma_desc_check(PLASMA_desc *desc);
+int plasma_desc_band_check(PLASMA_desc *desc);
 int plasma_desc_mat_alloc(PLASMA_desc *desc);
 int plasma_desc_mat_free(PLASMA_desc *desc);
 

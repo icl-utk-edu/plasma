@@ -14,6 +14,7 @@
 
 #include "plasma_async.h"
 #include "plasma_types.h"
+#include "plasma_descriptor.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,11 +39,24 @@ void CORE_zgemm(PLASMA_enum transA, PLASMA_enum transB,
                                           const PLASMA_Complex64_t *B, int ldb,
                 PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc);
 
+void CORE_zgemm_fill(PLASMA_enum transA, PLASMA_enum transB,
+                     int m, int n, int k,
+                     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+                                               const PLASMA_Complex64_t *B, int ldb,
+                     PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc,
+                     int j, int *FILL);
+
 void CORE_zgeqrt(int m, int n, int ib,
                  PLASMA_Complex64_t *A, int lda,
                  PLASMA_Complex64_t *T, int ldt,
                  PLASMA_Complex64_t *TAU,
                  PLASMA_Complex64_t *WORK);
+
+void CORE_zgetrf_tile(PLASMA_desc A,
+                      int k, int m, int n,
+                      int *ipiv,
+                      int ku, int kn, int *prev_fill, int *fill,
+                      int iinfo);
 
 void CORE_zhemm(PLASMA_enum side, PLASMA_enum uplo,
                 int m, int n,
@@ -66,10 +80,29 @@ void CORE_zlacpy(PLASMA_enum uplo,
                  const PLASMA_Complex64_t *A, int lda,
                        PLASMA_Complex64_t *B, int ldb);
 
+void CORE_zlacpy_lapack2tile_band(int K, int J, int M, int N, int NB, int KL, int KU,
+                                  const PLASMA_Complex64_t *A, int lda,
+                                        PLASMA_Complex64_t *B, int ldb);
+
+void CORE_zlacpy_tile2lapack_band(int K, int J, int M, int N, int NB, int KL, int KU,
+                                  const PLASMA_Complex64_t *B, int ldb,
+                                        PLASMA_Complex64_t *A, int lda);
+
 void CORE_zlaset(PLASMA_enum uplo,
                  int m, int n,
                  PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
                  PLASMA_Complex64_t *A, int lda);
+
+int CORE_zlaswp_ontile(PLASMA_desc descA, int i_, int j_, int m, int n,
+                       int i1, int i2, const int *ipiv, int inc);
+
+int CORE_zlaswp_ontile_fill(PLASMA_desc descA, int i_, int j_, int n,
+                            int i1, int i2, const int *ipiv, int inc);
+
+int CORE_zswptr_ontile_fill(PLASMA_desc descA, int i_, int j_, int m, int n,
+                            int i1, int i2, const int *ipiv, int inc,
+                            const PLASMA_Complex64_t *Akk, int ldak,
+                            int j, int *fill);
 
 void CORE_zpamm(int op, PLASMA_enum side, PLASMA_enum storev,
                 int m, int n, int k, int l,
@@ -170,9 +203,25 @@ void CORE_OMP_zgemm(
                               const PLASMA_Complex64_t *B, int ldb,
     PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc);
 
-void CORE_OMP_zgeqrt(int m, int n, int ib, int nb,
-                     PLASMA_Complex64_t *A, int lda,
-                     PLASMA_Complex64_t *T, int ldt);
+void CORE_OMP_zgemm_fill(
+    PLASMA_enum transA, PLASMA_enum transB,
+    int m, int n, int k,
+    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+                              const PLASMA_Complex64_t *B, int ldb,
+    PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc,
+    int step, int i, int j, int *fill, int *fake);
+
+void CORE_OMP_zgeqrt(
+    int m, int n, int ib, int nb,
+    PLASMA_Complex64_t *A, int lda,
+    PLASMA_Complex64_t *T, int ldt);
+
+void CORE_OMP_zgetrf_tile(
+    PLASMA_desc A,
+    int k, int m, int n,
+    int *ipiv,
+    int ku, int kn, int *prev_fill, int *fill,
+    int iinfo, int *fake);
 
 void CORE_OMP_zhemm(
     PLASMA_enum side, PLASMA_enum uplo,
@@ -198,10 +247,28 @@ void CORE_OMP_zlacpy(PLASMA_enum uplo,
                      const PLASMA_Complex64_t *A, int lda,
                            PLASMA_Complex64_t *B, int ldb);
 
+void CORE_OMP_zlacpy_lapack2tile_band(int k, int j, int m, int n, int nb, int kl, int ku,
+                                      const PLASMA_Complex64_t *A, int lda,
+                                            PLASMA_Complex64_t *B, int ldb);
+
+void CORE_OMP_zlacpy_tile2lapack_band(int k, int j, int m, int n, int nb, int kl, int ku,
+                                      const PLASMA_Complex64_t *B, int ldb,
+                                            PLASMA_Complex64_t *A, int lda);
+
 void CORE_OMP_zlaset(PLASMA_enum uplo,
                      int m, int n,
                      PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
                      PLASMA_Complex64_t *A, int lda);
+
+void CORE_OMP_zlaswp_ontile(
+    PLASMA_desc descA, int i, int j, int m, int n,
+    int i1, int i2, const int *ipiv, int inc);
+
+void CORE_OMP_zswptr_ontile_fill(
+    PLASMA_desc descA, int i_, int j_, int m, int n,
+    int i1, int i2, const int *ipiv, int inc,
+    const PLASMA_Complex64_t *Akk, int ldak,
+    int j, int *fill, int *fake);
 
 void CORE_OMP_zpotrf(PLASMA_enum uplo,
                      int n,
