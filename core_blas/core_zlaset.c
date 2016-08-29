@@ -14,6 +14,9 @@
 #include "plasma_types.h"
 #include "plasma_internal.h"
 
+// for memset function
+#include <string.h>
+
 #ifdef PLASMA_WITH_MKL
     #include <mkl.h>
 #else
@@ -23,7 +26,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_laset
  *
  *  Sets the elements of the matrix A on the diagonal
  *  to beta and on the off-diagonals to alpha
@@ -56,15 +59,24 @@
  *         The leading dimension of the array A.  lda >= max(1,m).
  *
  ******************************************************************************/
-void CORE_zlaset(PLASMA_enum uplo,
-                 int m, int n,
+void CORE_zlaset(PLASMA_enum uplo, int m, int n,
                  PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
                  PLASMA_Complex64_t *A, int lda)
 {
-    LAPACKE_zlaset_work(LAPACK_COL_MAJOR,
-                        lapack_const(uplo),
-                        m, n,
-                        alpha, beta, A, lda);
+    if (alpha == beta &&
+        alpha == (PLASMA_Complex64_t) 0. &&
+        uplo == PlasmaFull &&
+        m == lda) {
+        // a shortcut to zero the entire tile
+        memset((void*) A, 0, m*n*sizeof(PLASMA_Complex64_t));
+    }
+    else {
+        // a proper call to LAPACK laset function
+        LAPACKE_zlaset_work(
+            LAPACK_COL_MAJOR,
+            lapack_const(uplo),
+            m, n, alpha, beta, A, lda);
+    }
 }
 
 /******************************************************************************/
@@ -72,7 +84,7 @@ void CORE_OMP_zlaset(PLASMA_enum uplo, int m, int n,
                      PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
                      PLASMA_Complex64_t *A, int lda)
 {
-    // omp depends assume lda == m.
+    // omp depends assume lda == m
     #pragma omp task depend(out:A[0:m*n])
     CORE_zlaset(uplo, m, n,
                 alpha, beta,

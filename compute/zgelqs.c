@@ -19,10 +19,10 @@
 
 /***************************************************************************//**
  *
- * @ingroup plasma_geqrs
+ * @ingroup plasma_gelqs
  *
- *  Computes a minimum-norm solution min || A*X - B || using the
- *  QR factorization A = Q*R computed by PLASMA_zgeqrf.
+ *  Computes a minimum-norm solution min | A*X - B | using the
+ *  LQ factorization A = L*Q computed by PLASMA_zgelqf.
  *
  *******************************************************************************
  *
@@ -30,27 +30,27 @@
  *          The number of rows of the matrix A. m >= 0.
  *
  * @param[in] n
- *          The number of columns of the matrix A. m >= n >= 0.
+ *          The number of columns of the matrix A. n >= m >= 0.
  *
  * @param[in] nrhs
  *          The number of columns of B. nrhs >= 0.
  *
  * @param[in] A
- *          Details of the QR factorization of the original matrix A as returned
- *          by PLASMA_zgeqrf.
+ *          Details of the LQ factorization of the original matrix A as returned
+ *          by PLASMA_zgelqf.
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda >= m.
  *
  * @param[in] descT
- *          Auxiliary factorization data, computed by PLASMA_zgeqrf.
+ *          Auxiliary factorization data, computed by PLASMA_zgelqf.
  *
  * @param[in,out] B
  *          On entry, the m-by-nrhs right hand side matrix B.
  *          On exit, the n-by-nrhs solution matrix X.
  *
  * @param[in] ldb
- *          The leading dimension of the array B. ldb >= max(1,n).
+ *          The leading dimension of the array B. ldb >= n.
  *
  *******************************************************************************
  *
@@ -59,15 +59,14 @@
  *
  *******************************************************************************
  *
- * @sa PLASMA_zgeqrs_Tile_Async
- * @sa PLASMA_cgeqrs
- * @sa PLASMA_dgeqrs
- * @sa PLASMA_sgeqrs
- * @sa PLASMA_zgeqrf
- * @sa PLASMA_zgels
+ * @sa PLASMA_zgelqs_Tile_Async
+ * @sa PLASMA_cgelqs
+ * @sa PLASMA_dgelqs
+ * @sa PLASMA_sgelqs
+ * @sa PLASMA_zgelqf
  *
  ******************************************************************************/
-int PLASMA_zgeqrs(int m, int n, int nrhs,
+int PLASMA_zgelqs(int m, int n, int nrhs,
                   PLASMA_Complex64_t *A, int lda,
                   PLASMA_desc *descT,
                   PLASMA_Complex64_t *B, int ldb)
@@ -90,7 +89,7 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
         plasma_error("illegal value of m");
         return -1;
     }
-    if (n < 0 || n > m) {
+    if (n < 0 || m > n) {
         plasma_error("illegal value of n");
         return -2;
     }
@@ -102,12 +101,11 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
         plasma_error("illegal value of lda");
         return -5;
     }
-    if (ldb < imax(1, imax(1, m))) {
+    if (ldb < imax(1, imax(1, n))) {
         plasma_error("illegal value of ldb");
         return -8;
     }
-
-    // quick return
+    // Quick return
     if (imin(m, imin(n, nrhs)) == 0) {
         return PLASMA_SUCCESS;
     }
@@ -118,6 +116,7 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
     //    plasma_error("plasma_tune() failed");
     //    return status;
     //}
+
     nb = plasma->nb;
 
     // Initialize tile matrix descriptors.
@@ -125,7 +124,7 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
                              nb*nb, lda, n, 0, 0, m, n);
 
     descB = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, ldb, nrhs, 0, 0, m, nrhs);
+                             nb*nb, ldb, nrhs, 0, 0, n, nrhs);
 
     // Allocate matrices in tile layout.
     retval = plasma_desc_mat_alloc(&descA);
@@ -169,7 +168,7 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
 
         // Call the tile async function.
         if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_zgeqrs_Tile_Async(&descA, descT, &descB, sequence, &request);
+            PLASMA_zgelqs_Tile_Async(&descA, descT, &descB, sequence, &request);
         }
 
         // Translate back to LAPACK layout.
@@ -193,10 +192,10 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
 
 /***************************************************************************//**
  *
- * @ingroup plasma_geqrs
+ * @ingroup plasma_gelqs
  *
- *  Computes a minimum-norm solution using the tile QR factorization.
- *  Non-blocking tile version of PLASMA_zgeqrs().
+ *  Computes a minimum-norm solution using previously computed LQ factorization.
+ *  Non-blocking tile version of PLASMA_zgelqs().
  *  May return before the computation is finished.
  *  Allows for pipelining of operations at runtime.
  *
@@ -208,7 +207,7 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
  *
  * @param[in] descT
  *          Descriptor of matrix T.
- *          Auxiliary factorization data, computed by PLASMA_zgeqrf.
+ *          Auxiliary factorization data, computed by PLASMA_zgelqf.
  *
  * @param[in,out] descB
  *          Descriptor of matrix B.
@@ -231,15 +230,15 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
  *
  *******************************************************************************
  *
- * @sa PLASMA_zgeqrs
- * @sa PLASMA_cgeqrs_Tile_Async
- * @sa PLASMA_dgeqrs_Tile_Async
- * @sa PLASMA_sgeqrs_Tile_Async
- * @sa PLASMA_zgeqrf_Tile_Async
- * @sa PLASMA_zgels_Tile_Async
+ * @sa PLASMA_zgelqs
+ * @sa PLASMA_cgelqs_Tile_Async
+ * @sa PLASMA_dgelqs_Tile_Async
+ * @sa PLASMA_sgelqs_Tile_Async
+ * @sa PLASMA_zgelqf_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
+void PLASMA_zgelqs_Tile_Async(PLASMA_desc *descA,
+                              PLASMA_desc *descT,
                               PLASMA_desc *descB,
                               PLASMA_sequence *sequence,
                               PLASMA_request *request)
@@ -268,6 +267,11 @@ void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
+    if (descA->nb != descA->mb || descB->nb != descB->mb) {
+        plasma_error("only square tiles supported");
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        return;
+    }
     if (sequence == NULL) {
         plasma_error("NULL sequence");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
@@ -290,19 +294,32 @@ void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
     //    return;
     //}
 
-    // Find Y = Q^H * B
+    //plasma_pztile_zero(
+    //    plasma_desc_submatrix(*descB, descA->m, 0,
+    //                          descA->n - descA->m, descB->n),
+    //    sequence, request);
+
+    // TODO: zero lower part of the right-hand side matrix
+//    plasma_pzlaset(PlasmaFull, 0., 0.,
+//                   plasma_desc_submatrix(*descB, descA->m, 0,
+//                                         descA->n - descA->m, descB->n),
+//                   sequence, request);
+
+    // Solve L * Y = B
+    PLASMA_Complex64_t zone  =  1.0;
+    plasma_pztrsm(
+        PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaNonUnit,
+        zone, plasma_desc_submatrix(*descA, 0, 0, descA->m, descA->m),
+        plasma_desc_submatrix(*descB, 0, 0, descA->m, descB->n),
+        sequence, request);
+
+    // Find X = Q^H * Y
     // Plasma_ConjTrans will be converted to PlasmaTrans by the
     // automatic datatype conversion, which is what we want here.
     // Note that PlasmaConjTrans is protected from this conversion.
-    plasma_pzunmqr(PlasmaLeft, Plasma_ConjTrans,
+    plasma_pzunmlq(PlasmaLeft, Plasma_ConjTrans,
                    *descA, *descB, *descT,
                    sequence, request);
 
-    // Solve R * X = Y
-    PLASMA_Complex64_t zone  =  1.0;
-    plasma_pztrsm(PlasmaLeft, PlasmaUpper,
-                  PlasmaNoTrans, PlasmaNonUnit,
-                  zone, plasma_desc_submatrix(*descA, 0, 0, descA->n, descA->n),
-                  plasma_desc_submatrix(*descB, 0, 0, descA->n, descB->n),
-                  sequence, request);
+    return;
 }

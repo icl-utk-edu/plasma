@@ -314,42 +314,12 @@ void PLASMA_zsyrk_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
         return;
     }
 
-    int Am, An, Amb;
-
-    if (trans == PlasmaNoTrans) {
-        Am  = A->m;
-        An  = A->n;
-        Amb = A->mb;
-    }
-    else {
-        Am  = A->n;
-        An  = A->m;
-        Amb = A->nb;
-    }
-
-    if (C->mb != C->nb) {
-        plasma_error("only square tiles supported");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-    if (Amb != C->mb) {
-        plasma_error("tile sizes have to match");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-    if (C->m != C->n) {
-        plasma_error("only square matrix C is supported");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-    if (Am != C->m) {
-        plasma_error("size of matrices have to match");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-
     // quick return
-    if (C->m == 0 || ((alpha == 0.0 || An == 0) && beta == 1.0))
+    int k = trans == PlasmaNoTrans ? A->n : A->m;
+    PLASMA_Complex64_t zzero = (PLASMA_Complex64_t)0.0;
+    PLASMA_Complex64_t zone  = (PLASMA_Complex64_t)1.0;
+
+    if (C->m == 0 || ((alpha == zzero || k == 0) && beta == zone))
         return;
 
     // Call the parallel function.
@@ -357,6 +327,4 @@ void PLASMA_zsyrk_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
                   alpha, *A,
                   beta, *C,
                   sequence, request);
-
-    return;
 }

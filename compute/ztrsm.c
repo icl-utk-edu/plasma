@@ -349,9 +349,13 @@ void PLASMA_ztrsm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-
-    if (A->nb != A->mb || B->nb != B->mb) {
-        plasma_error("only square tiles supported");
+    if (sequence == NULL) {
+        plasma_error("NULL sequence");
+        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        return;
+    }
+    if (request == NULL) {
+        plasma_error("NULL request");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
@@ -366,6 +370,4 @@ void PLASMA_ztrsm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
                   alpha, *A,
                          *B,
                   sequence, request);
-
-    return;
 }

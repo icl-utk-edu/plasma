@@ -350,37 +350,6 @@ void PLASMA_zsymm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
         return;
     }
 
-    if (A->mb != C->mb || A->nb != B->nb || B->nb != C->nb) {
-        plasma_error("tile size mismatch");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-    if (side == PlasmaLeft) {
-        if (A->m != B->m || A->n != B->m) {
-            plasma_error("matrix size mismatch");
-            plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-            return;
-        }
-    }
-    else {
-        if (A->m != B->n || A->n != B->n) {
-            plasma_error("matrix size mismatch");
-            plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-            return;
-        }
-    }
-    if (B->m != C->m || B->n != C->n) {
-        plasma_error("matrix size mismatch");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-    if (A->i%A->mb != C->i%C->mb ||
-        B->j%B->nb != C->j%C->nb || A->j%A->nb != B->i%B->mb) {
-        plasma_error("start indexes have to match");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-
     // quick return
     if (C->m == 0 || C->n == 0 || ((alpha == 0.0 || A->n == 0) && beta == 1.0))
         return;
@@ -391,5 +360,4 @@ void PLASMA_zsymm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
                   *B,
                   beta,  *C,
                   sequence, request);
-    return;
 }

@@ -57,24 +57,32 @@
  *          The leading dimension of the array A. lda >= max(1,n).
  *
  ******************************************************************************/
-void CORE_zpotrf(PLASMA_enum uplo,
+int CORE_zpotrf(PLASMA_enum uplo,
                  int n,
                  PLASMA_Complex64_t *A, int lda)
 {
-    LAPACKE_zpotrf(LAPACK_COL_MAJOR,
-                   lapack_const(uplo),
-                   n,
-                   A, lda);
+    return LAPACKE_zpotrf(LAPACK_COL_MAJOR,
+                          lapack_const(uplo),
+                           n,
+                           A, lda);
 }
 
 /******************************************************************************/
 void CORE_OMP_zpotrf(PLASMA_enum uplo,
                      int n,
-                     PLASMA_Complex64_t *A, int lda)
+                     PLASMA_Complex64_t *A, int lda,
+                     PLASMA_sequence *sequence, PLASMA_request *request,
+                     int iinfo)
 {
     // omp depends assume lda = n.
     #pragma omp task depend(inout:A[0:n*n])
-    CORE_zpotrf(uplo,
-                n,
-                A, lda);
+    {
+        if (sequence->status == PLASMA_SUCCESS) {
+            int info = CORE_zpotrf(uplo,
+                                   n,
+                                   A, lda);
+            if (info != 0)
+                plasma_request_fail(sequence, request, iinfo+info);
+        }
+    }
 }

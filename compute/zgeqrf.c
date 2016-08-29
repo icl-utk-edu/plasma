@@ -19,7 +19,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_geqrf
  *
  *  Computes the tile QR factorization of a real or complex m-by-n matrix A.
  *  The factorization has the form
@@ -97,7 +97,7 @@ int PLASMA_zgeqrf(int m, int n,
         return -4;
     }
 
-    // quick return
+    // Quick return
     if (imin(m, n) == 0)
         return PLASMA_SUCCESS;
 
@@ -169,7 +169,7 @@ int PLASMA_zgeqrf(int m, int n,
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_geqrf
  *
  *  Computes the tile QR factorization of a matrix.
  *  Non-blocking tile version of PLASMA_zgeqrf().
@@ -254,11 +254,6 @@ void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (descA->nb != descA->mb) {
-        plasma_error("only square tiles supported");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
 
     // quick return
     // Jakub S.: Why was it commented out in version 2.8.0 ?
@@ -268,6 +263,4 @@ void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
 
     // Call the parallel function.
     plasma_pzgeqrf(*descA, *descT, work, sequence, request);
-
-    return;
 }

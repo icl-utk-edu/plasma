@@ -19,7 +19,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_ungqr
  *
  *  Generates an m-by-n matrix Q with orthonormal columns, which
  *  is defined as the first n columns of a product of the elementary reflectors
@@ -177,7 +177,7 @@ int PLASMA_zungqr(int m, int n, int k,
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t_Tile_Async
+ * @ingroup plasma_ungqr
  *
  *  Non-blocking tile version of PLASMA_zungqr().
  *  May return before the computation is finished.
@@ -258,16 +258,11 @@ void PLASMA_zungqr_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (descA->nb != descA->mb || descQ->nb != descQ->mb) {
-        plasma_error("only square tiles supported");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-
+/*
     // quick return
-    //if (n <= 0)
-    //    return;
-
+    if (n <= 0)
+       return;
+*/
     // set ones to diagonal of Q
     plasma_pzlaset(PlasmaFull,
                    (PLASMA_Complex64_t)0.0, (PLASMA_Complex64_t)1.0, *descQ,
@@ -275,6 +270,4 @@ void PLASMA_zungqr_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
 
     // construct Q
     plasma_pzungqr(*descA, *descQ, *descT, sequence, request);
-
-    return;
 }

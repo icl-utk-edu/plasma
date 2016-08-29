@@ -35,7 +35,9 @@
     @brief    Solves \f$ Ax \approx b \f$ where \f$ A \f$ is rectangular
     @see group_orthogonal
     @{
-        @defgroup plasma_gels       gels: Least squares solves Ax = b using QR factorization (driver)
+        @defgroup plasma_gels       gels: Least squares solve of Ax = b using QR or LQ factorization (driver)
+        @defgroup plasma_gelqs      gelqs: Back solve using LQ factorization of A
+        @defgroup plasma_geqrs      geqrs: Back solve using QR factorization of A
     @}
 
     @defgroup group_posv            Symmetric/Hermitian positive definite: Cholesky
@@ -495,6 +497,16 @@
     @defgroup core_solvers          Linear system solvers
     @{
         @defgroup core_potrf        potrf: Cholesky factorization
+        @defgroup core_geqrt        geqrt: QR factorization of a tile
+        @defgroup core_tsqrt        tsqrt: QR factorization of a rectangular matrix of two tiles
+        @defgroup core_unmqr        unmqr: Apply Householder reflectors from QR to a tile
+        @defgroup core_tsmqr        tsmqr: Apply Householder reflectors from QR to a rectangular matrix of two tiles
+        @defgroup core_gelqt        gelqt: LQ factorization of a tile
+        @defgroup core_tslqt        tslqt: LQ factorization of a rectangular matrix of two tiles
+        @defgroup core_unmlq        unmlq: Apply Householder reflectors from LQ to a tile
+        @defgroup core_tsmlq        tsmlq: Apply Householder reflectors from LQ to a rectangular matrix of two tiles
+        @defgroup core_pamm         pamm: Updating a matrix using two tiles
+        @defgroup core_parfb        parfb: Apply Householder reflectors to a rectangular matrix of two tiles
     @}
 @}
 

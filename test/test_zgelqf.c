@@ -39,7 +39,7 @@
 
 /***************************************************************************//**
  *
- * @brief Tests ZGEQRF.
+ * @brief Tests ZGELQF.
  *
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
@@ -50,7 +50,7 @@
  * If param is non-NULL and info is non-NULL, set info to column values
  *                                            and run test.
  ******************************************************************************/
-void test_zgeqrf(param_value_t param[], char *info)
+void test_zgelqf(param_value_t param[], char *info)
 {
     //================================================================
     // Print usage info or return column labels or values.
@@ -61,22 +61,23 @@ void test_zgeqrf(param_value_t param[], char *info)
             print_usage(PARAM_M);
             print_usage(PARAM_N);
             print_usage(PARAM_PADA);
-            print_usage(PARAM_NB);
-            print_usage(PARAM_IB);
         }
         else {
             // Return column labels.
             snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s %*s %*s",
-                     InfoSpacing, "M",
-                     InfoSpacing, "N",
-                     InfoSpacing, "PadA",
-                     InfoSpacing, "NB",
-                     InfoSpacing, "IB",
-                     InfoSpacing, "Ortho.");
+                "%*s %*s %*s",
+                InfoSpacing, "M",
+                InfoSpacing, "N",
+                InfoSpacing, "PadA");
         }
         return;
     }
+    // Return column values.
+    snprintf(info, InfoLen,
+        "%*d %*d %*d",
+        InfoSpacing, param[PARAM_M].i,
+        InfoSpacing, param[PARAM_N].i,
+        InfoSpacing, param[PARAM_PADA].i);
 
     //================================================================
     // Set parameters.
@@ -87,13 +88,9 @@ void test_zgeqrf(param_value_t param[], char *info)
     int lda = imax(1, m + param[PARAM_PADA].i);
 
     int test = param[PARAM_TEST].c == 'y';
-    double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
-
-    //================================================================
-    // Set tuning parameters.
-    //================================================================
-    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_NB].i);
-    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_IB].i);
+    //double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
+    double tol = param[PARAM_TOL].d;
+    double eps = LAPACKE_dlamch('E');
 
     //================================================================
     // Allocate and initialize arrays.
@@ -124,7 +121,7 @@ void test_zgeqrf(param_value_t param[], char *info)
     int ib = plasma->ib;
     int mt = (m%nb == 0) ? (m/nb) : (m/nb+1);
     int nt = (n%nb == 0) ? (n/nb) : (n/nb+1);
-    // nt should be doubled if tree-reduction QR is performed,
+    // nt should be doubled if tree-reduction LQ is performed,
     // not implemented now
     PLASMA_desc descT = plasma_desc_init(PlasmaComplexDouble, ib, nb, ib*nb,
                                          mt*ib, nt*nb, 0, 0, mt*ib, nt*nb);
@@ -136,106 +133,110 @@ void test_zgeqrf(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zgeqrf(m, n, A, lda, &descT);
+    PLASMA_zgelqf(m, n, A, lda, &descT);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = flops_zgeqrf(m,n) / time / 1e9;
+    param[PARAM_GFLOPS].d = flops_zgelqf(m,n) / time / 1e9;
 
     //=================================================================
-    // Test results by checking orthogonality of Q and precision of Q*R
+    // Test results by checking orthogonality of Q and precision of L*Q
     //=================================================================
     if (test) {
         // Check the orthogonality of Q
-        PLASMA_Complex64_t zzero =  0.0;
-        PLASMA_Complex64_t zone  =  1.0;
-        PLASMA_Complex64_t mzone = -1.0;
+
         int minmn = imin(m, n);
 
         // Allocate space for Q.
         PLASMA_Complex64_t *Q =
-            (PLASMA_Complex64_t *)malloc((size_t)m*minmn*
+            (PLASMA_Complex64_t *)malloc((size_t)m*n*
                                          sizeof(PLASMA_Complex64_t));
 
         // Build Q.
         int ldq = m;
-        PLASMA_zungqr(m, minmn, minmn, A, lda, &descT, Q, ldq);
+        PLASMA_zunglq(m, n, minmn, A, lda, &descT, Q, ldq);
 
         // Build the idendity matrix
         PLASMA_Complex64_t *Id =
             (PLASMA_Complex64_t *) malloc((size_t)minmn*minmn*
                                           sizeof(PLASMA_Complex64_t));
-        LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'g', minmn, minmn,
-                            zzero, zone, Id, minmn);
+        memset((void*)Id, 0, minmn*minmn*sizeof(PLASMA_Complex64_t));
+        for (int i = 0; i < minmn; i++)
+            Id[i*minmn+i] = (PLASMA_Complex64_t)1.0;
 
-        // Perform Id - Q^H * Q
-        cblas_zherk(CblasColMajor, CblasUpper, CblasConjTrans, minmn, m,
-                    mzone, Q, ldq, zone, Id, minmn);
+        PLASMA_Complex64_t zone  =  1.0;
+        PLASMA_Complex64_t mzone = -1.0;
+
+        // Perform Id - Q^H * Q    for m >= n,
+        //      or Id - Q   * Q^H  for m < n
+        if (m >= n)
+            cblas_zherk(CblasColMajor, CblasUpper, CblasConjTrans, n, m,
+                        mzone, Q, ldq, zone, Id, n);
+        else
+            cblas_zherk(CblasColMajor, CblasUpper, CblasNoTrans,   m, n,
+                        mzone, Q, ldq, zone, Id, m);
 
         // WORK array of size m is needed for computing L_oo norm
         double *WORK = (double *) malloc((size_t)m*sizeof(double));
 
         // |Id - Q^H * Q|_oo
-        double ortho = LAPACKE_zlanhe_work(LAPACK_COL_MAJOR, 'I', 'u',
-                                           minmn, Id, minmn, WORK);
+        double norm_orth = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I',
+                                               minmn, minmn, Id, minmn, WORK);
 
         // normalize the result
-        // |Id - Q^H * Q|_oo / n
-        ortho /= minmn;
+        // |Id - Q^H * Q|_oo / (n * eps)
+        double norm_norm_ortho = norm_orth/(minmn*eps);
+        if (norm_norm_ortho > tol)
+            printf("WARNING: error in orthogonality %lf is above "
+                   "the tolerance %lf \n", norm_norm_ortho, tol);
 
         free(Q);
         free(Id);
 
-        // Check the accuracy of A - Q * R
+        // Check the accuracy of A - L * Q
         // LAPACK version does not construct Q, it uses only application of it
 
-        // Extract the R.
-        PLASMA_Complex64_t *R =
+        // Extract the L.
+        PLASMA_Complex64_t *L =
             (PLASMA_Complex64_t *)malloc((size_t)m*n*
                                          sizeof(PLASMA_Complex64_t));
-        LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'l', m, n,
-                            zzero, zzero, R, m);
-        LAPACKE_zlacpy_work(LAPACK_COL_MAJOR,'u', m, n, A, lda, R, m);
-/*
-        // Compute Q * R.
-        PLASMA_zunmqr(PlasmaLeft, PlasmaNoTrans, m, n, minmn, A, lda, &descT,
-                      R, m);
-*/
+        memset((void*)L, 0., (size_t)m*n*sizeof(PLASMA_Complex64_t));
+        LAPACKE_zlacpy_work(LAPACK_COL_MAJOR,'l', m, n, A, lda, L, m);
+
+        // Compute L * Q.
+        PLASMA_zunmlq(PlasmaRight, PlasmaNoTrans, m, n, minmn, A, lda, &descT,
+                      L, m);
+
         // Compute the difference.
-        // R = A - Q*R
+        // L = A - L*Q
         for (int j = 0; j < n; j++)
             for (int i = 0; i < m; i++)
-                R[j*m+i] = Aref[j*lda+i] - R[j*m+i];
+                L[j*m+i] = Aref[j*lda+i] - L[j*m+i];
 
         // |A|_oo
         double normA = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', m, n,
                                            Aref, lda, WORK);
 
-        // |A - Q*R|_oo
-        double error = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', m, n,
-                                               R, m, WORK);
+        // |A - L*Q|_oo
+        double norm_AmLQ = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', m, n,
+                                               L, m, WORK);
 
         // normalize the result
-        // |A-QR|_oo / (|A|_oo * n)
-        error /= (normA * n);
+        // |A-LQ|_oo / (|A|_oo * n * eps)
+        double norm_norm_AmLQ = norm_AmLQ / (normA * n * eps);
 
-        param[PARAM_ERROR].d = error;
-        param[PARAM_ORTHO].d = ortho;
-        param[PARAM_SUCCESS].i = (error < tol && ortho < tol);
+        // print the worst of the two results
+        double result =
+            (norm_norm_ortho > norm_norm_AmLQ ? norm_norm_ortho :
+                                                norm_norm_AmLQ);
+
+        param[PARAM_ERROR].d = result;
+        param[PARAM_SUCCESS].i = result < tol;
 
         free(WORK);
-        free(R);
+        free(L);
     }
-    // Return column values.
-    snprintf(info, InfoLen,
-             "%*d %*d %*d %*d %*d %*.2e",
-             InfoSpacing, param[PARAM_M].i,
-             InfoSpacing, param[PARAM_N].i,
-             InfoSpacing, param[PARAM_PADA].i,
-             InfoSpacing, param[PARAM_NB].i,
-             InfoSpacing, param[PARAM_IB].i,
-             InfoSpacing, param[PARAM_ORTHO].d);
 
     //================================================================
     // Free arrays.
