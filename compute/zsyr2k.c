@@ -317,6 +317,7 @@ void PLASMA_zsyr2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
                               PLASMA_request *request)
 {
     PLASMA_Complex64_t zzero = 0.0;
+
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -363,42 +364,9 @@ void PLASMA_zsyr2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
         return;
     }
 
-    int Am, An, Amb;
-
-    if (trans == PlasmaNoTrans) {
-        Am  = A->m;
-        An  = A->n;
-        Amb = A->mb;
-    }
-    else {
-        Am  = A->n;
-        An  = A->m;
-        Amb = A->nb;
-    }
-
-    if (C->mb != C->nb) {
-        plasma_error("only square tiles for C are supported");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-    if ((B->mb != A->mb) || (B->nb != A->nb) || (Amb != C->mb)) {
-        plasma_error("tile sizes mismatch");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-    if (C->m != C->n) {
-        plasma_error("only square matrix C is supported");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-    if ((B->m != A->m) || (B->n != A->n) || (Am != C->m)) {
-        plasma_error("matrix sizes mismatch");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-
     // quick return
-    if (C->m == 0 || ((alpha == zzero || An == 0) && beta == 1.0))
+    int k = trans == PlasmaNoTrans ? A->n : A->m;
+    if (C->m == 0 || ((alpha == zzero || k == 0) && beta == 1.0))
         return;
 
     // Call the parallel function.

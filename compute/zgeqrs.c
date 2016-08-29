@@ -253,11 +253,6 @@ void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (descA->nb != descA->mb || descB->nb != descB->mb) {
-        plasma_error("only square tiles supported");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
     if (sequence == NULL) {
         plasma_error("NULL sequence");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);

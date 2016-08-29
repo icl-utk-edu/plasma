@@ -258,16 +258,11 @@ void PLASMA_zungqr_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (descA->nb != descA->mb || descQ->nb != descQ->mb) {
-        plasma_error("only square tiles supported");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-
+/*
     // quick return
-    //if (n <= 0)
-    //    return;
-
+    if (n <= 0)
+       return;
+*/
     // set ones to diagonal of Q
     plasma_pzlaset(PlasmaFull,
                    (PLASMA_Complex64_t)0.0, (PLASMA_Complex64_t)1.0, *descQ,

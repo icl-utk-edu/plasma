@@ -316,11 +316,6 @@ void PLASMA_zgels_Tile_Async(PLASMA_enum trans,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (descA->nb != descA->mb || descB->nb != descB->mb) {
-        plasma_error("only square tiles supported");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
 
     // quick return
     // TODO:

@@ -396,61 +396,9 @@ void PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
         return;
     }
 
-    int Am, An, Ai, Aj, Amb, Anb;
-    int Bm, Bn, Bi, Bj, Bmb, Bnb;
-
-    if (transA == PlasmaNoTrans) {
-        Am  = A->m;
-        An  = A->n;
-        Amb = A->mb;
-        Anb = A->nb;
-        Ai  = A->i;
-        Aj  = A->j;
-    }
-    else {
-        Am  = A->n;
-        An  = A->m;
-        Amb = A->nb;
-        Anb = A->mb;
-        Ai  = A->j;
-        Aj  = A->i;
-    }
-    if (transB == PlasmaNoTrans) {
-        Bm  = B->m;
-        Bn  = B->n;
-        Bmb = B->mb;
-        Bnb = B->nb;
-        Bi  = B->i;
-        Bj  = B->j;
-    }
-    else {
-        Bm  = B->n;
-        Bn  = B->m;
-        Bmb = B->nb;
-        Bnb = B->mb;
-        Bi  = B->j;
-        Bj  = B->i;
-    }
-
-    if (Amb != C->mb || Anb != Bmb || Bnb != C->nb) {
-        plasma_error("tile size mismatch");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-    if (Am != C->m || An != Bm || Bn != C->n) {
-        plasma_error("matrix size mismatch");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-    if (Ai%Amb != C->i%C->mb ||
-        Bj%Bnb != C->j%C->nb || Aj%Anb != Bi%Bmb) {
-        plasma_error("start indexes have to match");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-
     // quick return
-    if (C->m == 0 || C->n == 0 || ((alpha == 0.0 || An == 0) && beta == 1.0))
+    int k = transA == PlasmaNoTrans ? A->n : A->m;
+    if (C->m == 0 || C->n == 0 || ((alpha == 0.0 || k == 0) && beta == 1.0))
         return;
 
     // Call the parallel function.

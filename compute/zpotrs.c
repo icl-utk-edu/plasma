@@ -276,21 +276,6 @@ void PLASMA_zpotrs_Tile_Async(PLASMA_enum uplo,
         return;
     }
 
-    if (A->mb != A->nb) {
-        plasma_error("only square tiles supported");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-    if (A->m != A->n) {
-        plasma_error("only square matrix A is supported");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-    if (B->mb != B->nb) {
-        plasma_error("only square tiles supported");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
 /*
     // quick return
     if (min(n, nrhs) == 0)
