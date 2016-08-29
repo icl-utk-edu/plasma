@@ -76,6 +76,15 @@ void test_zgeqrf(param_value_t param[], char *info)
         }
         return;
     }
+    // Return column values.
+    // ortho. column appended later.
+    snprintf(info, InfoLen,
+             "%*d %*d %*d %*d %*d",
+             InfoSpacing, param[PARAM_M].i,
+             InfoSpacing, param[PARAM_N].i,
+             InfoSpacing, param[PARAM_PADA].i,
+             InfoSpacing, param[PARAM_NB].i,
+             InfoSpacing, param[PARAM_IB].i);
 
     //================================================================
     // Set parameters.
@@ -153,15 +162,15 @@ void test_zgeqrf(param_value_t param[], char *info)
         int minmn = imin(m, n);
 
         // Allocate space for Q.
+        int ldq = m;
         PLASMA_Complex64_t *Q =
-            (PLASMA_Complex64_t *)malloc((size_t)m*minmn*
+            (PLASMA_Complex64_t *)malloc((size_t)ldq*minmn*
                                          sizeof(PLASMA_Complex64_t));
 
         // Build Q.
-        int ldq = m;
         PLASMA_zungqr(m, minmn, minmn, A, lda, &descT, Q, ldq);
 
-        // Build the idendity matrix
+        // Build the identity matrix
         PLASMA_Complex64_t *Id =
             (PLASMA_Complex64_t *) malloc((size_t)minmn*minmn*
                                           sizeof(PLASMA_Complex64_t));
@@ -195,7 +204,7 @@ void test_zgeqrf(param_value_t param[], char *info)
                                          sizeof(PLASMA_Complex64_t));
         LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'l', m, n,
                             zzero, zzero, R, m);
-        LAPACKE_zlacpy_work(LAPACK_COL_MAJOR,'u', m, n, A, lda, R, m);
+        LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'u', m, n, A, lda, R, m);
 /*
         // Compute Q * R.
         PLASMA_zunmqr(PlasmaLeft, PlasmaNoTrans, m, n, minmn, A, lda, &descT,
@@ -225,16 +234,20 @@ void test_zgeqrf(param_value_t param[], char *info)
 
         free(WORK);
         free(R);
+
+        // Return ortho. column value.
+        int len = strlen(info);
+        snprintf(&info[len], imax(0, InfoLen - len),
+                 " %*.2e",
+                 InfoSpacing, param[PARAM_ORTHO].d);
     }
-    // Return column values.
-    snprintf(info, InfoLen,
-             "%*d %*d %*d %*d %*d %*.2e",
-             InfoSpacing, param[PARAM_M].i,
-             InfoSpacing, param[PARAM_N].i,
-             InfoSpacing, param[PARAM_PADA].i,
-             InfoSpacing, param[PARAM_NB].i,
-             InfoSpacing, param[PARAM_IB].i,
-             InfoSpacing, param[PARAM_ORTHO].d);
+    else {
+        // No ortho. test.
+        int len = strlen(info);
+        snprintf(&info[len], imax(0, InfoLen - len),
+                 " %*s",
+                 InfoSpacing, "---");
+    }
 
     //================================================================
     // Free arrays.

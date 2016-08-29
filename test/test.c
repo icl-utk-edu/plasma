@@ -54,10 +54,7 @@ int main(int argc, char **argv)
     int err = 0;
 
     // Print labels.
-    if (test)
-        test_routine(routine, NULL);
-    else
-        time_routine(routine, NULL);
+    test_routine(test, routine, NULL);
 
     PLASMA_Init();
     if (outer) {
@@ -65,10 +62,7 @@ int main(int argc, char **argv)
         do {
             param_snap(param, pval);
             for (int i = 0; i < iter; i++) {
-                if (test)
-                    err += test_routine(routine, pval);
-                else
-                    time_routine(routine, pval);
+                err += test_routine(test, routine, pval);
             }
             if (iter > 1) {
                 printf("\n");
@@ -81,10 +75,7 @@ int main(int argc, char **argv)
         do {
             param_snap(param, pval);
             for (int i = 0; i < iter; i++) {
-                if (test)
-                    err += test_routine(routine, pval);
-                else
-                    time_routine(routine, pval);
+                err += test_routine(test, routine, pval);
             }
             if (iter > 1) {
                 printf("\n");
@@ -164,7 +155,7 @@ void print_usage(int label)
  * @retval 0 - success
  *
  ******************************************************************************/
-int test_routine(const char *name, param_value_t pval[])
+int test_routine(int test, const char *name, param_value_t pval[])
 {
     char info[InfoLen];
     run_routine(name, pval, info);
@@ -180,7 +171,7 @@ int test_routine(const char *name, param_value_t pval[])
         printf("\n");
         return 0;
     }
-    else {
+    else if (test) {
         printf("%*.4lf %*.4lf %s %*.2le %*s\n",
             InfoSpacing, pval[PARAM_TIME].d,
             InfoSpacing, pval[PARAM_GFLOPS].d,
@@ -189,37 +180,14 @@ int test_routine(const char *name, param_value_t pval[])
             InfoSpacing, pval[PARAM_SUCCESS].i ? "pass" : "FAILED");
         return (pval[PARAM_SUCCESS].i == 0);
     }
-}
-
-/***************************************************************************//**
- *
- * @brief Times a routine for a set of parameter values.
- *        Times the routine only, does not test it.
- *        If pval is NULL, prints column labels.
- *        Otherwise, prints column values.
- *
- * @param[in]    name - routine name
- * @param[inout] pval - array of parameter values
- *
- ******************************************************************************/
-void time_routine(const char *name, param_value_t pval[])
-{
-    char info[InfoLen];
-    run_routine(name, pval, info);
-
-    if (pval == NULL) {
-        printf("\n");
-        printf("%*s %*s %s\n",
-            InfoSpacing, "Seconds",
-            InfoSpacing, "GFLOPS",
-                         info);
-        printf("\n");
-    }
     else {
-        printf("%*.4lf %*.4lf %s\n",
+        printf("%*.4lf %*.4lf %s %*s %*s\n",
             InfoSpacing, pval[PARAM_TIME].d,
             InfoSpacing, pval[PARAM_GFLOPS].d,
-                         info);
+                         info,
+            InfoSpacing, "---",
+            InfoSpacing, "---");
+        return 0;
     }
 }
 
