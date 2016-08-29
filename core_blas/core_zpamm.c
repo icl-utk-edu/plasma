@@ -44,7 +44,7 @@ static inline void CORE_zpamm_w(PLASMA_enum side, PLASMA_enum trans,
  *
  *  Performs one of the matrix-matrix operations
  *
- *                    LEFT                      RIGHT
+ *                    PlasmaLeft                PlasmaRight
  *     OP PlasmaW  :  W  = A1 + op(V) * A2  or  W  = A1 + A2 * op(V)
  *     OP PlasmaA2 :  A2 = A2 - op(V) * W   or  A2 = A2 - W * op(V)
  *
@@ -69,12 +69,12 @@ static inline void CORE_zpamm_w(PLASMA_enum side, PLASMA_enum trans,
  *                   T     N x K
  *         ----------------------
  *
- *  LEFT (columnwise and rowwise):
+ *  PlasmaLeft (columnwise and rowwise):
  *
  *              |    K    |                 |         M         |
  *           _  __________   _              _______________        _
  *              |    |    |                 |             | \
- *     V:       |    |    |            V':  |_____________|___\    K
+ *     V:       |    |    |           V^H:  |_____________|___\    K
  *              |    |    | M-L             |                  |
  *           M  |    |    |                 |__________________|   _
  *              |____|    |  _
@@ -83,12 +83,12 @@ static inline void CORE_zpamm_w(PLASMA_enum side, PLASMA_enum trans,
  *           _      \|____|  _
  *
  *
- *  RIGHT (columnwise and rowwise):
+ *  PlasmaRight (columnwise and rowwise):
  *
  *          |         K         |                   |    N    |
  *          _______________        _             _  __________   _
  *          |             | \                       |    |    |
- *     V':  |_____________|___\    N        V:      |    |    |
+ *    V^H:  |_____________|___\    N        V:      |    |    |
  *          |                  |                    |    |    | K-L
  *          |__________________|   _             K  |    |    |
  *                                                  |____|    |  _

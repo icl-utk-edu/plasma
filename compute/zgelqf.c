@@ -21,35 +21,34 @@
  *
  * @ingroup PLASMA_Complex64_t
  *
- *  Computes the tile QR factorization of a real or complex m-by-n matrix A.
+ *  Computes tile LQ factorization of a complex m-by-n matrix A.
  *  The factorization has the form
- *    \f[ A = Q \times R \f],
- *  where Q is a matrix with orthonormal columns and R is an upper triangular
- *  with positive diagonal.
+ *    \f[ A = L \times Q \f],
+ *  where L is a lower trapezoidal with positive diagonal and Q is a matrix with
+ *  orthonormal rows.
  *
  *******************************************************************************
  *
  * @param[in] m
- *          The number of rows of the matrix A.
- *          m >= 0.
+ *          The number of rows of the matrix A. m >= 0.
  *
  * @param[in] n
- *          The number of columns of the matrix A.
- *          n >= 0.
+ *          The number of columns of the matrix A. n >= 0.
  *
  * @param[in,out] A
  *          On entry, the m-by-n matrix A.
- *          On exit, the elements on and above the diagonal of the array contain
- *          the min(m,n)-by-n upper trapezoidal matrix R (R is upper triangular
- *          if m >= n); the elements below the diagonal represent the unitary
- *          matrix Q as a product of elementary reflectors stored by tiles.
+ *          On exit, the elements on and below the diagonal of the array 
+ *          contain the m-by-min(m,n) lower trapezoidal matrix L (L is lower 
+ *          triangular if M <= N); the elements above the diagonal represent 
+ *          the unitary matrix Q as a product of elementary reflectors, stored
+ *          by tiles.
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,m).
  *
  * @param[out] descT
- *          On exit, auxiliary factorization data, required by PLASMA_zgeqrs to
- *          solve the system of equations.
+ *          On exit, auxiliary factorization data, required by PLASMA_zgelqs 
+ *          to solve the system of equations.
  *
  *******************************************************************************
  *
@@ -58,15 +57,14 @@
  *
  *******************************************************************************
  *
- * @sa PLASMA_zgeqrf_Tile_Async
- * @sa PLASMA_cgeqrf
- * @sa PLASMA_dgeqrf
- * @sa PLASMA_sgeqrf
- * @sa PLASMA_zgeqrs
- * @sa PLASMA_zgels
+ * @sa PLASMA_zgelqf_Tile_Async
+ * @sa PLASMA_cgelqf
+ * @sa PLASMA_dgelqf
+ * @sa PLASMA_sgelqf
+ * @sa PLASMA_zgelqs
  *
  ******************************************************************************/
-int PLASMA_zgeqrf(int m, int n,
+int PLASMA_zgelqf(int m, int n,
                   PLASMA_Complex64_t *A, int lda,
                   PLASMA_desc *descT)
 {
@@ -74,9 +72,6 @@ int PLASMA_zgeqrf(int m, int n,
     int retval;
     int status;
 
-    PLASMA_desc descA;
-
-    // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_fatal_error("PLASMA not initialized");
@@ -104,13 +99,14 @@ int PLASMA_zgeqrf(int m, int n,
     // Tune NB & IB depending on M, N & NRHS; Set NBNBSIZE
     //status = plasma_tune(PLASMA_FUNC_ZGELS, M, N, 0);
     //if (status != PLASMA_SUCCESS) {
-    //    plasma_error("PLASMA_zgeqrf", "plasma_tune() failed");
+    //    plasma_error("PLASMA_zgelqf", "plasma_tune() failed");
     //    return status;
     //}
 
     nb = plasma->nb;
 
     // Initialize tile matrix descriptor.
+    PLASMA_desc descA;
     descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
                              nb*nb, m, n, 0, 0, m, n);
 
@@ -147,7 +143,7 @@ int PLASMA_zgeqrf(int m, int n,
 
         // Call the tile async function.
         if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_zgeqrf_Tile_Async(&descA, descT, sequence, &request);
+            PLASMA_zgelqf_Tile_Async(&descA, descT, sequence, &request);
         }
 
         // Translate back to LAPACK layout.
@@ -166,14 +162,11 @@ int PLASMA_zgeqrf(int m, int n,
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup PLASMA_Complex64_t_Tile_Async
  *
- *  Computes the tile QR factorization of a matrix.
- *  Non-blocking tile version of PLASMA_zgeqrf().
+ *  Computes the tile LQ factorization of a matrix.
+ *  Non-blocking tile version of PLASMA_zgelqf().
  *  May return before the computation is finished.
- *  Operates on matrices stored by tiles.
- *  All matrices are passed through descriptors.
- *  All dimensions are taken from the descriptors.
  *  Allows for pipelining of operations at runtime.
  *
  *******************************************************************************
@@ -184,7 +177,7 @@ int PLASMA_zgeqrf(int m, int n,
  *
  * @param[out] descT
  *          Descriptor of matrix descT.
- *          On exit, auxiliary factorization data, required by PLASMA_zgeqrs to
+ *          On exit, auxiliary factorization data, required by PLASMA_zgelqs to
  *          solve the system of equations.
  *
  * @param[in] sequence
@@ -203,17 +196,15 @@ int PLASMA_zgeqrf(int m, int n,
  *
  *******************************************************************************
  *
- * @sa PLASMA_zgeqrf
- * @sa PLASMA_cgeqrf_Tile_Async
- * @sa PLASMA_dgeqrf_Tile_Async
- * @sa PLASMA_sgeqrf_Tile_Async
- * @sa PLASMA_zgeqrs_Tile_Async
- * @sa PLASMA_zgeqrs_Tile_Async
- * @sa PLASMA_zgels_Tile_Async
+ * @sa PLASMA_zgelqf
+ * @sa PLASMA_cgelqf_Tile_Async
+ * @sa PLASMA_dgelqf_Tile_Async
+ * @sa PLASMA_sgelqf_Tile_Async
+ * @sa PLASMA_zgelqs_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
-                              PLASMA_sequence *sequence,
+void PLASMA_zgelqf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
+                              PLASMA_sequence *sequence, 
                               PLASMA_request *request)
 {
     // Get PLASMA context.
@@ -257,14 +248,12 @@ void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
         return;
     }
 
-    // quick return
-    // Jakub S.: Why was it commented out in version 2.8.0 ?
-    // I leave it like that till explained.
+    // Quick return
     //if (imin(m, n) == 0)
     //    return PLASMA_SUCCESS;
-
+    
     // Call the parallel function.
-    plasma_pzgeqrf(*descA, *descT, sequence, request);
-
+    plasma_pzgelqf(*descA, *descT, sequence, request);
+    
     return;
 }

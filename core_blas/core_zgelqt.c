@@ -25,14 +25,14 @@
  *
  * @ingroup CORE_PLASMA_Complex64_t
  *
- *  Computes the QR factorization of an m-by-n tile A:
+ *  Computes the LQ factorization of an m-by-n tile A: 
  *  The factorization has the form
  *    \f[
- *        A = Q \times R
+ *        A = L \times Q
  *    \f]
  *  The tile Q is represented as a product of elementary reflectors
  *    \f[
- *        Q = H(1) H(2) ... H(k),
+ *        Q = H(k)' . . . H(2)' H(1)',
  *    \f]
  *  where \f$ k = min(m,n) \f$.
  *
@@ -41,7 +41,7 @@
  *        H(i) = I - \tau \times v \times v'
  *    \f]
  *  where \f$ tau \f$ is a scalar, and \f$ v \f$ is a vector with
- *  v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
+ *  v(1:i-1) = 0 and v(i) = 1; v(i+1:n)^H is stored on exit in A(i,i+1:n),
  *  and \f$ tau \f$ in TAU(i).
  *
  *******************************************************************************
@@ -57,9 +57,9 @@
  *
  * @param[in,out] A
  *         On entry, the m-by-n tile A.
- *         On exit, the elements on and above the diagonal of the array
- *         contain the min(m,n)-by-n upper trapezoidal tile R (R is
- *         upper triangular if m >= n); the elements below the diagonal,
+ *         On exit, the elements on and below the diagonal of the array
+ *         contain the m-by-min(m,n) lower trapezoidal tile L (L is
+ *         lower triangular if m <= n); the elements above the diagonal,
  *         with the array TAU, represent the unitary tile Q as a
  *         product of elementary reflectors (see Further Details).
  *
@@ -75,13 +75,13 @@
  *         The leading dimension of the array T. ldt >= ib.
  *
  * @param TAU
- *         Auxiliarry workspace array of length n.
+ *         Auxiliarry workspace array of length m.
  *
  * @param WORK
- *         Auxiliary workspace array of length ib*n.
+ *         Auxiliary workspace array of length ib*m.
  *
  ******************************************************************************/
-void CORE_zgeqrt(int m, int n, int ib,
+void CORE_zgelqt(int m, int n, int ib,
                  PLASMA_Complex64_t *A, int lda,
                  PLASMA_Complex64_t *T, int ldt,
                  PLASMA_Complex64_t *TAU,
@@ -117,38 +117,34 @@ void CORE_zgeqrt(int m, int n, int ib,
     for (int i = 0; i < k; i += ib) {
         int sb = imin(ib, k-i);
 
-        LAPACKE_zgeqr2_work(LAPACK_COL_MAJOR, m-i, sb,
+        LAPACKE_zgelq2_work(LAPACK_COL_MAJOR, sb, n-i,
                             &A[lda*i+i], lda, &TAU[i], WORK);
 
-        LAPACKE_zlarft_work(
-            LAPACK_COL_MAJOR,
+        LAPACKE_zlarft_work(LAPACK_COL_MAJOR,
             lapack_const(PlasmaForward),
-            lapack_const(PlasmaColumnwise),
-            m-i, sb,
+            lapack_const(PlasmaRowwise),
+            n-i, sb,
             &A[lda*i+i], lda, &TAU[i],
             &T[ldt*i], ldt);
 
-        if (n > i+sb) {
-            // Plasma_ConjTrans will be converted to PlasmaTrans in
-            // automatic datatype conversion, which is what we want here.
-            // PlasmaConjTrans is protected from this conversion.
+        if (m > i+sb) {
             LAPACKE_zlarfb_work(
                 LAPACK_COL_MAJOR,
-                lapack_const(PlasmaLeft),
-                lapack_const(Plasma_ConjTrans),
+                lapack_const(PlasmaRight),
+                lapack_const(PlasmaNoTrans),
                 lapack_const(PlasmaForward),
-                lapack_const(PlasmaColumnwise),
-                m-i, n-i-sb, sb,
+                lapack_const(PlasmaRowwise),
+                m-i-sb, n-i, sb,
                 &A[lda*i+i],      lda,
                 &T[ldt*i],        ldt,
-                &A[lda*(i+sb)+i], lda,
-                WORK, n-i-sb);
+                &A[lda*i+(i+sb)], lda,
+                WORK, m-i-sb);
         }
     }
 }
 
 /******************************************************************************/
-void CORE_OMP_zgeqrt(int m, int n, int ib, int nb,
+void CORE_OMP_zgelqt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A, int lda,
                      PLASMA_Complex64_t *T, int ldt)
 {
@@ -171,7 +167,7 @@ void CORE_OMP_zgeqrt(int m, int n, int ib, int nb,
         }
 
         // call the kernel
-        CORE_zgeqrt(m, n, ib,
+        CORE_zgelqt(m, n, ib,
                     A, lda,
                     T, ldt,
                     TAU,

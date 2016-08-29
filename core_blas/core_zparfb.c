@@ -51,9 +51,8 @@
  *         - PlasmaRight : apply Q or Q' from the Right.
  *
  * @param[in] trans
- *         - PlasmaNoTrans   : No transpose, apply Q;
- *         - PlasmaTrans     : Transpose, apply Q';
- *         - PlasmaConjTrans : ConjTranspose, apply Q^H.
+ *         - PlasmaNoTrans    : Apply Q;
+ *         - Plasma_ConjTrans : Apply Q^H.
  *
  * @param[in] direct
  *         Indicates how H is formed from a product of elementary

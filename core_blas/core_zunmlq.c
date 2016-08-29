@@ -25,7 +25,7 @@
  *
  * @ingroup CORE_PLASMA_Complex64_t
  *
- *  Overwrites the general m-by-n tile C with
+ *  Overwrites the general complex m-by-n tile C with
  *
  *                                 side = 'PlasmaLeft'   side = 'PlasmaRight'
  *    trans = 'PlasmaNoTrans':           Q * C                  C * Q
@@ -34,9 +34,9 @@
  *  where Q is a unitary matrix defined as the product of k
  *  elementary reflectors
  *    \f[
- *        Q = H(1) H(2) ... H(k)
+ *        Q = H(k) . . . H(2) H(1)
  *    \f]
- *  as returned by CORE_zgeqrt. Q is of order m if side = 'PlasmaLeft' 
+ *  as returned by CORE_zgelqt. Q is of order m if side = 'PlasmaLeft' 
  *  and of order n if side = 'PlasmaRight'.
  *
  *******************************************************************************
@@ -62,19 +62,17 @@
  *         if side = PlasmaRight, n >= k >= 0.
  *
  * @param[in] ib
- *         The inner-blocking size.  ib >= 0.
+ *         The inner-blocking size. ib >= 0.
  *
  * @param[in] A
- *         Dimension:  (lda,k)
- *         The i-th column must contain the vector which defines the
- *         elementary reflector H(i), for i = 1,2,...,k,
- *         as returned by CORE_zgeqrt in the first k columns of its
- *         array argument A.
+ *         Dimension:  (lda,m) if SIDE = PlasmaLeft,
+ *                     (lda,n) if SIDE = PlasmaRight,
+ *         The i-th row must contain the vector which defines the
+ *         elementary reflector H(i), for i = 1,2,...,k, as returned by
+ *         CORE_zgelqt in the first k rows of its array argument A.
  *
  * @param[in] lda
- *         The leading dimension of the array A.
- *         If side = PlasmaLeft,  lda >= max(1,m);
- *         if side = PlasmaRight, lda >= max(1,n).
+ *         The leading dimension of the array A.  lda >= max(1,k).
  *
  * @param[in] T
  *         The ib-by-k triangular factor T of the block reflector.
@@ -86,23 +84,23 @@
  *
  * @param[in,out] C
  *         On entry, the m-by-n tile C.
- *         On exit, C is overwritten by Q*C or Q^T*C or C*Q^T or C*Q.
+ *         On exit, C is overwritten by Q*C or Q^H*C or C*Q^H or C*Q.
  *
  * @param[in] ldc
  *         The leading dimension of the array C. ldc >= max(1,m).
  *
  * @param WORK
  *         Auxiliary workspace array of length
- *         ldwork-by-n  if side == PlasmaLeft
- *         ldwork-by-ib if side == PlasmaRight
+ *         ldwork-by-m   if side == PlasmaLeft
+ *         ldwork-by-ib  if side == PlasmaRight
  *
  * @param[in] ldwork
  *         The leading dimension of the array WORK.
  *             ldwork >= max(1,ib) if side == PlasmaLeft
- *             ldwork >= max(1,m)  if side == PlasmaRight
+ *             ldwork >= max(1,n)  if side == PlasmaRight
  *
  ******************************************************************************/
-void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
+void CORE_zunmlq(PLASMA_enum side, PLASMA_enum trans,
                  int m, int n, int k, int ib,
                  const PLASMA_Complex64_t *A, int lda,
                  const PLASMA_Complex64_t *T, int ldt,
@@ -155,7 +153,7 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
         plasma_error("Illegal value of ib");
         return;
     }
-    if ((lda < imax(1,nq)) && (nq > 0)) {
+    if ((lda < imax(1,k)) && (k > 0)) {
         plasma_error("Illegal value of lda");
         return;
     }
@@ -172,8 +170,8 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
     if ((m == 0) || (n == 0) || (k == 0))
         return;
 
-    if (((side == PlasmaLeft) && (trans != PlasmaNoTrans))
-        || ((side == PlasmaRight) && (trans == PlasmaNoTrans))) {
+    if (((side == PlasmaLeft) && (trans == PlasmaNoTrans))
+        || ((side == PlasmaRight) && (trans != PlasmaNoTrans))) {
         i1 = 0;
         i3 = ib;
     }
@@ -182,7 +180,14 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
         i3 = -ib;
     }
 
-    for (i = i1; (i > -1) && (i < k); i += i3) {
+    if( trans == PlasmaNoTrans) {
+        trans = Plasma_ConjTrans;
+    }
+    else {
+        trans = PlasmaNoTrans;
+    }
+
+    for(i = i1; (i >- 1) && (i < k); i+=i3 ) {
         kb = imin(ib, k-i);
 
         if (side == PlasmaLeft) {
@@ -196,12 +201,11 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
             jc = i;
         }
         // Apply H or H^H
-        LAPACKE_zlarfb_work(
-            LAPACK_COL_MAJOR,
+        LAPACKE_zlarfb_work(LAPACK_COL_MAJOR,
             lapack_const(side),
             lapack_const(trans),
             lapack_const(PlasmaForward),
-            lapack_const(PlasmaColumnwise),
+            lapack_const(PlasmaRowwise),
             mi, ni, kb,
             &A[lda*i+i], lda,
             &T[ldt*i], ldt,
@@ -211,13 +215,13 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
 }
 
 /******************************************************************************/
-void CORE_OMP_zunmqr(PLASMA_enum side, PLASMA_enum trans,
+void CORE_OMP_zunmlq(PLASMA_enum side, PLASMA_enum trans,
                      int m, int n, int k, int ib, int nb,
                      const PLASMA_Complex64_t *A, int lda,
                      const PLASMA_Complex64_t *T, int ldt,
                      PLASMA_Complex64_t *C,       int ldc)
 {
-    // assuming lda == m == n == nb, ldc == nb, ldt == ib
+    // assuming m == nb, n == nb
     #pragma omp task depend(in:A[0:nb*nb]) \
                      depend(in:T[0:ib*nb]) \
                      depend(inout:C[0:nb*nb])
@@ -233,7 +237,7 @@ void CORE_OMP_zunmqr(PLASMA_enum side, PLASMA_enum trans,
         int ldwork = nb;
 
         // call the kernel
-        CORE_zunmqr(side, trans,
+        CORE_zunmlq(side, trans,
                     m, n, k, ib,
                     A, lda,
                     T, ldt,

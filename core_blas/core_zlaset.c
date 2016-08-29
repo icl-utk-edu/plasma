@@ -14,6 +14,9 @@
 #include "plasma_types.h"
 #include "plasma_internal.h"
 
+// for memset function
+#include <string.h>
+
 #ifdef PLASMA_WITH_MKL
     #include <mkl.h>
 #else
@@ -60,10 +63,20 @@ void CORE_zlaset(PLASMA_enum uplo, int m, int n,
                  PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
                  PLASMA_Complex64_t *A, int lda)
 {
-    LAPACKE_zlaset_work(
-        LAPACK_COL_MAJOR,
-        lapack_const(uplo),
-        m, n, alpha, beta, A, lda);
+    if (alpha == beta && 
+        alpha == (PLASMA_Complex64_t) 0. && 
+        uplo == PlasmaFull && 
+        m == lda) {
+        // a shortcut to zero the entire tile
+        memset((void*) A, 0, m*n*sizeof(PLASMA_Complex64_t));
+    }
+    else {
+        // a proper call to LAPACK laset function
+        LAPACKE_zlaset_work(
+            LAPACK_COL_MAJOR,
+            lapack_const(uplo),
+            m, n, alpha, beta, A, lda);
+    }
 }
 
 /******************************************************************************/
