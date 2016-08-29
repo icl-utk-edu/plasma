@@ -258,9 +258,6 @@ void PLASMA_zposv_Tile_Async(PLASMA_enum uplo,
                              PLASMA_desc *B,
                              PLASMA_sequence *sequence, PLASMA_request *request)
 {
-    PLASMA_enum trans;
-    PLASMA_Complex64_t zone = 1.0;
-
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -303,7 +300,9 @@ void PLASMA_zposv_Tile_Async(PLASMA_enum uplo,
     // Call the parallel functions.
     plasma_pzpotrf(uplo, *A, sequence, request);
 
-    trans = uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans;
+    PLASMA_Complex64_t zone = 1.0;
+    PLASMA_enum trans = uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans;
+
     plasma_pztrsm(PlasmaLeft, uplo,
                   trans, PlasmaNonUnit,
                   zone,

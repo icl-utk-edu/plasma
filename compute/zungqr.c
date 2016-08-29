@@ -264,8 +264,11 @@ void PLASMA_zungqr_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
        return;
 */
     // set ones to diagonal of Q
+    PLASMA_Complex64_t zzero = (PLASMA_Complex64_t)0.0;
+    PLASMA_Complex64_t zone  = (PLASMA_Complex64_t)1.0;
+
     plasma_pzlaset(PlasmaFull,
-                   (PLASMA_Complex64_t)0.0, (PLASMA_Complex64_t)1.0, *descQ,
+                   zzero, zone, *descQ,
                    sequence, request);
 
     // construct Q

@@ -316,8 +316,6 @@ void PLASMA_zsyr2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
                               PLASMA_sequence *sequence,
                               PLASMA_request *request)
 {
-    PLASMA_Complex64_t zzero = 0.0;
-
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -366,7 +364,10 @@ void PLASMA_zsyr2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
 
     // quick return
     int k = trans == PlasmaNoTrans ? A->n : A->m;
-    if (C->m == 0 || ((alpha == zzero || k == 0) && beta == 1.0))
+    PLASMA_Complex64_t zzero = (PLASMA_Complex64_t)0.0;
+    PLASMA_Complex64_t zone  = (PLASMA_Complex64_t)1.0;
+
+    if (C->m == 0 || ((alpha == zzero || k == 0) && beta == zone))
         return;
 
     // Call the parallel function.

@@ -346,7 +346,11 @@ void PLASMA_zhemm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
     }
 
     // quick return
-    if (C->m == 0 || C->n == 0 || ((alpha == 0.0 || A->n == 0) && beta == 1.0))
+    PLASMA_Complex64_t zzero = (PLASMA_Complex64_t)0.0;
+    PLASMA_Complex64_t zone  = (PLASMA_Complex64_t)1.0;
+
+    if (C->m == 0 || C->n == 0 ||
+        ((alpha == zzero || A->n == 0) && beta == zone))
         return;
 
     // Call the parallel function.
