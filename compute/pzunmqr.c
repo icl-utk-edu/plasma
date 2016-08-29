@@ -57,7 +57,7 @@ void plasma_pzunmqr(PLASMA_enum side, PLASMA_enum trans,
       minMT = A.mt;
     }
 
-    // PlasmaLeft / Plasma[Conj]Trans
+    // PlasmaLeft / Plasma_ConjTrans
     if (side == PlasmaLeft ) {
         // Plasma_ConjTrans will be converted do PlasmaTrans in
         // automatic datatype conversion, which is what we  want here.
@@ -128,7 +128,7 @@ void plasma_pzunmqr(PLASMA_enum side, PLASMA_enum trans,
             }
         }
     }
-    // PlasmaRight / Plasma[Conj]Trans
+    // PlasmaRight / Plasma_ConjTrans
     else {
         // Plasma_ConjTrans will be converted do PlasmaTrans in
         // automatic datatype conversion, which is what we want here.

@@ -21,6 +21,9 @@ extern "C" {
 #endif
 
 /******************************************************************************/
+void plasma_pzgelqf(PLASMA_desc A, PLASMA_desc T,
+                    PLASMA_sequence *sequence, PLASMA_request *request);
+
 void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                    PLASMA_Complex64_t alpha, PLASMA_desc A,
                                              PLASMA_desc B,
@@ -82,7 +85,14 @@ void plasma_pztrsm(PLASMA_enum side, PLASMA_enum uplo,
                                              PLASMA_desc B,
                    PLASMA_sequence *sequence, PLASMA_request *request);
 
+void plasma_pzunglq(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
+                    PLASMA_sequence *sequence, PLASMA_request *request);
+
 void plasma_pzungqr(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
+                    PLASMA_sequence *sequence, PLASMA_request *request);
+
+void plasma_pzunmlq(PLASMA_enum side, PLASMA_enum trans,
+                    PLASMA_desc A, PLASMA_desc B, PLASMA_desc T,
                     PLASMA_sequence *sequence, PLASMA_request *request);
 
 void plasma_pzunmqr(PLASMA_enum side, PLASMA_enum trans,

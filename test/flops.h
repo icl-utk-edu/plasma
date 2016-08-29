@@ -693,55 +693,55 @@ static double  flops_sorglq(double m, double n, double k)
 
 
 static double  flops_zunmqr(PLASMA_enum side, double m, double n, double k)
-    { return 6.*fmuls_unmqr(m, n, k, side) + 2.*fadds_unmqr(m, n, k, side); }
+    { return 6.*fmuls_unmqr(side, m, n, k) + 2.*fadds_unmqr(side, m, n, k); }
 
 static double  flops_cunmqr(PLASMA_enum side, double m, double n, double k)
-    { return 6.*fmuls_unmqr(m, n, k, side) + 2.*fadds_unmqr(m, n, k, side); }
+    { return 6.*fmuls_unmqr(side, m, n, k) + 2.*fadds_unmqr(side, m, n, k); }
 
 static double  flops_dormqr(PLASMA_enum side, double m, double n, double k)
-    { return    fmuls_unmqr(m, n, k, side) +    fadds_unmqr(m, n, k, side); }
+    { return    fmuls_unmqr(side, m, n, k) +    fadds_unmqr(side, m, n, k); }
 
 static double  flops_sormqr(PLASMA_enum side, double m, double n, double k)
-    { return    fmuls_unmqr(m, n, k, side) +    fadds_unmqr(m, n, k, side); }
+    { return    fmuls_unmqr(side, m, n, k) +    fadds_unmqr(side, m, n, k); }
 
 
 static double  flops_zunmql(PLASMA_enum side, double m, double n, double k)
-    { return 6.*fmuls_unmql(m, n, k, side) + 2.*fadds_unmql(m, n, k, side); }
+    { return 6.*fmuls_unmql(side, m, n, k) + 2.*fadds_unmql(side, m, n, k); }
 
 static double  flops_cunmql(PLASMA_enum side, double m, double n, double k)
-    { return 6.*fmuls_unmql(m, n, k, side) + 2.*fadds_unmql(m, n, k, side); }
+    { return 6.*fmuls_unmql(side, m, n, k) + 2.*fadds_unmql(side, m, n, k); }
 
 static double  flops_dormql(PLASMA_enum side, double m, double n, double k)
-    { return    fmuls_unmql(m, n, k, side) +    fadds_unmql(m, n, k, side); }
+    { return    fmuls_unmql(side, m, n, k) +    fadds_unmql(side, m, n, k); }
 
 static double  flops_sormql(PLASMA_enum side, double m, double n, double k)
-    { return    fmuls_unmql(m, n, k, side) +    fadds_unmql(m, n, k, side); }
+    { return    fmuls_unmql(side, m, n, k) +    fadds_unmql(side, m, n, k); }
 
 
 static double  flops_zunmrq(PLASMA_enum side, double m, double n, double k)
-    { return 6.*fmuls_unmrq(m, n, k, side) + 2.*fadds_unmrq(m, n, k, side); }
+    { return 6.*fmuls_unmrq(side, m, n, k) + 2.*fadds_unmrq(side, m, n, k); }
 
 static double  flops_cunmrq(PLASMA_enum side, double m, double n, double k)
-    { return 6.*fmuls_unmrq(m, n, k, side) + 2.*fadds_unmrq(m, n, k, side); }
+    { return 6.*fmuls_unmrq(side, m, n, k) + 2.*fadds_unmrq(side, m, n, k); }
 
 static double  flops_dormrq(PLASMA_enum side, double m, double n, double k)
-    { return    fmuls_unmrq(m, n, k, side) +    fadds_unmrq(m, n, k, side); }
+    { return    fmuls_unmrq(side, m, n, k) +    fadds_unmrq(side, m, n, k); }
 
 static double  flops_sormrq(PLASMA_enum side, double m, double n, double k)
-    { return    fmuls_unmrq(m, n, k, side) +    fadds_unmrq(m, n, k, side); }
+    { return    fmuls_unmrq(side, m, n, k) +    fadds_unmrq(side, m, n, k); }
 
 
 static double  flops_zunmlq(PLASMA_enum side, double m, double n, double k)
-    { return 6.*fmuls_unmlq(m, n, k, side) + 2.*fadds_unmlq(m, n, k, side); }
+    { return 6.*fmuls_unmlq(side, m, n, k) + 2.*fadds_unmlq(side, m, n, k); }
 
 static double  flops_cunmlq(PLASMA_enum side, double m, double n, double k)
-    { return 6.*fmuls_unmlq(m, n, k, side) + 2.*fadds_unmlq(m, n, k, side); }
+    { return 6.*fmuls_unmlq(side, m, n, k) + 2.*fadds_unmlq(side, m, n, k); }
 
 static double  flops_dormlq(PLASMA_enum side, double m, double n, double k)
-    { return    fmuls_unmlq(m, n, k, side) +    fadds_unmlq(m, n, k, side); }
+    { return    fmuls_unmlq(side, m, n, k) +    fadds_unmlq(side, m, n, k); }
 
 static double  flops_sormlq(PLASMA_enum side, double m, double n, double k)
-    { return    fmuls_unmlq(m, n, k, side) +    fadds_unmlq(m, n, k, side); }
+    { return    fmuls_unmlq(side, m, n, k) +    fadds_unmlq(side, m, n, k); }
 
 
 static double  flops_zgeqrs(double m, double n, double nrhs)

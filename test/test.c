@@ -234,7 +234,25 @@ void time_routine(const char *name, param_value_t pval[])
  ******************************************************************************/
 void run_routine(const char *name, param_value_t pval[], char *info)
 {
-    if      (strcmp(name, "zgels") == 0)
+    if      (strcmp(name, "zgelqf") == 0)
+        test_zgelqf(pval, info);
+    else if (strcmp(name, "dgelqf") == 0)
+        test_dgelqf(pval, info);
+    else if (strcmp(name, "cgelqf") == 0)
+        test_cgelqf(pval, info);
+    else if (strcmp(name, "sgelqf") == 0)
+        test_sgelqf(pval, info);
+
+    else if (strcmp(name, "zgelqs") == 0)
+        test_zgelqs(pval, info);
+    else if (strcmp(name, "dgelqs") == 0)
+        test_dgelqs(pval, info);
+    else if (strcmp(name, "cgelqs") == 0)
+        test_cgelqs(pval, info);
+    else if (strcmp(name, "sgelqs") == 0)
+        test_sgelqs(pval, info);
+
+    else if (strcmp(name, "zgels") == 0)
         test_zgels(pval, info);
     else if (strcmp(name, "dgels") == 0)
         test_dgels(pval, info);
@@ -522,7 +540,7 @@ int param_read(int argc, char **argv, param_t param[])
     if (param[PARAM_NB].num == 0)
         param_add_int(256, &param[PARAM_NB]);
     if (param[PARAM_IB].num == 0)
-        param_add_int(256, &param[PARAM_IB]);
+        param_add_int(64, &param[PARAM_IB]);
 
     if (param[PARAM_PADA].num == 0)
         param_add_int(0, &param[PARAM_PADA]);

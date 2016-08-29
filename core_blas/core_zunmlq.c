@@ -23,9 +23,9 @@
 
 /***************************************************************************//**
  *
- * @ingroup core_unmqr
+ * @ingroup core_unmlq
  *
- *  Overwrites the general m-by-n tile C with
+ *  Overwrites the general complex m-by-n tile C with
  *
  *                                 side = 'PlasmaLeft'   side = 'PlasmaRight'
  *    trans = 'PlasmaNoTrans':           Q * C                  C * Q
@@ -34,9 +34,9 @@
  *  where Q is a unitary matrix defined as the product of k
  *  elementary reflectors
  *    \f[
- *        Q = H(1) H(2) ... H(k)
+ *        Q = H(k) . . . H(2) H(1)
  *    \f]
- *  as returned by CORE_zgeqrt. Q is of order m if side = 'PlasmaLeft'
+ *  as returned by CORE_zgelqt. Q is of order m if side = 'PlasmaLeft'
  *  and of order n if side = 'PlasmaRight'.
  *
  *******************************************************************************
@@ -62,19 +62,17 @@
  *         if side = PlasmaRight, n >= k >= 0.
  *
  * @param[in] ib
- *         The inner-blocking size.  ib >= 0.
+ *         The inner-blocking size. ib >= 0.
  *
  * @param[in] A
- *         Dimension:  (lda,k)
- *         The i-th column must contain the vector which defines the
- *         elementary reflector H(i), for i = 1,2,...,k,
- *         as returned by CORE_zgeqrt in the first k columns of its
- *         array argument A.
+ *         Dimension:  (lda,m) if SIDE = PlasmaLeft,
+ *                     (lda,n) if SIDE = PlasmaRight,
+ *         The i-th row must contain the vector which defines the
+ *         elementary reflector H(i), for i = 1,2,...,k, as returned by
+ *         CORE_zgelqt in the first k rows of its array argument A.
  *
  * @param[in] lda
- *         The leading dimension of the array A.
- *         If side = PlasmaLeft,  lda >= max(1,m);
- *         if side = PlasmaRight, lda >= max(1,n).
+ *         The leading dimension of the array A.  lda >= max(1,k).
  *
  * @param[in] T
  *         The ib-by-k triangular factor T of the block reflector.
@@ -86,28 +84,28 @@
  *
  * @param[in,out] C
  *         On entry, the m-by-n tile C.
- *         On exit, C is overwritten by Q*C or Q^T*C or C*Q^T or C*Q.
+ *         On exit, C is overwritten by Q*C or Q^H*C or C*Q^H or C*Q.
  *
  * @param[in] ldc
  *         The leading dimension of the array C. ldc >= max(1,m).
  *
  * @param WORK
  *         Auxiliary workspace array of length
- *         ldwork-by-n  if side == PlasmaLeft
- *         ldwork-by-ib if side == PlasmaRight
+ *         ldwork-by-m   if side == PlasmaLeft
+ *         ldwork-by-ib  if side == PlasmaRight
  *
  * @param[in] ldwork
  *         The leading dimension of the array WORK.
  *             ldwork >= max(1,ib) if side == PlasmaLeft
- *             ldwork >= max(1,m)  if side == PlasmaRight
+ *             ldwork >= max(1,n)  if side == PlasmaRight
  *
  ******************************************************************************/
-void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
+void CORE_zunmlq(PLASMA_enum side, PLASMA_enum trans,
                  int m, int n, int k, int ib,
-                 const PLASMA_Complex64_t *A, int lda,
-                 const PLASMA_Complex64_t *T, int ldt,
-                 PLASMA_Complex64_t *C, int ldc,
-                 PLASMA_Complex64_t *WORK, int ldwork)
+                 const PLASMA_Complex64_t *A,    int lda,
+                 const PLASMA_Complex64_t *T,    int ldt,
+                       PLASMA_Complex64_t *C,    int ldc,
+                       PLASMA_Complex64_t *WORK, int ldwork)
 {
     int i, kb;
     int i1, i3;
@@ -117,7 +115,7 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
     int ni = n;
     int mi = m;
 
-    // Check input arguments.
+    // Check input arguments
     if ((side != PlasmaLeft) && (side != PlasmaRight)) {
         plasma_error("Illegal value of side");
         return;
@@ -136,44 +134,44 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
     // automatic datatype conversion, which is what we want here.
     // PlasmaConjTrans is protected from this conversion.
     if ((trans != PlasmaNoTrans) && (trans != Plasma_ConjTrans)) {
-        plasma_error("illegal value of trans");
+        plasma_error("Illegal value of trans");
         return;
     }
     if (m < 0) {
-        plasma_error("illegal value of m");
+        plasma_error("Illegal value of m");
         return;
     }
     if (n < 0) {
-        plasma_error("illegal value of n");
+        plasma_error("Illegal value of n");
         return;
     }
     if ((k < 0) || (k > nq)) {
-        plasma_error("illegal value of k");
+        plasma_error("Illegal value of k");
         return;
     }
     if ((ib < 0) || ( (ib == 0) && ((m > 0) && (n > 0)) )) {
-        plasma_error("illegal value of ib");
+        plasma_error("Illegal value of ib");
         return;
     }
-    if ((lda < imax(1,nq)) && (nq > 0)) {
-        plasma_error("illegal value of lda");
+    if ((lda < imax(1,k)) && (k > 0)) {
+        plasma_error("Illegal value of lda");
         return;
     }
     if ((ldc < imax(1,m)) && (m > 0)) {
-        plasma_error("illegal value of ldc");
+        plasma_error("Illegal value of ldc");
         return;
     }
     if ((ldwork < imax(1,nw)) && (nw > 0)) {
-        plasma_error("illegal value of ldwork");
+        plasma_error("Illegal value of ldwork");
         return;
     }
 
-    // quick return
+    // Quick return
     if ((m == 0) || (n == 0) || (k == 0))
         return;
 
-    if (((side == PlasmaLeft) && (trans != PlasmaNoTrans))
-        || ((side == PlasmaRight) && (trans == PlasmaNoTrans))) {
+    if (((side == PlasmaLeft) && (trans == PlasmaNoTrans))
+        || ((side == PlasmaRight) && (trans != PlasmaNoTrans))) {
         i1 = 0;
         i3 = ib;
     }
@@ -182,7 +180,14 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
         i3 = -ib;
     }
 
-    for (i = i1; (i > -1) && (i < k); i += i3) {
+    if (trans == PlasmaNoTrans) {
+        trans = Plasma_ConjTrans;
+    }
+    else {
+        trans = PlasmaNoTrans;
+    }
+
+    for (i = i1; (i > -1) && (i < k); i += i3 ) {
         kb = imin(ib, k-i);
 
         if (side == PlasmaLeft) {
@@ -196,12 +201,11 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
             jc = i;
         }
         // Apply H or H^H
-        LAPACKE_zlarfb_work(
-            LAPACK_COL_MAJOR,
+        LAPACKE_zlarfb_work(LAPACK_COL_MAJOR,
             lapack_const(side),
             lapack_const(trans),
             lapack_const(PlasmaForward),
-            lapack_const(PlasmaColumnwise),
+            lapack_const(PlasmaRowwise),
             mi, ni, kb,
             &A[lda*i+i], lda,
             &T[ldt*i], ldt,
@@ -211,18 +215,18 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
 }
 
 /******************************************************************************/
-void CORE_OMP_zunmqr(PLASMA_enum side, PLASMA_enum trans,
+void CORE_OMP_zunmlq(PLASMA_enum side, PLASMA_enum trans,
                      int m, int n, int k, int ib, int nb,
                      const PLASMA_Complex64_t *A, int lda,
                      const PLASMA_Complex64_t *T, int ldt,
-                     PLASMA_Complex64_t *C,       int ldc)
+                           PLASMA_Complex64_t *C, int ldc)
 {
-    // assuming lda == m == n == nb, ldc == nb, ldt == ib
+    // assuming m == nb, n == nb
     #pragma omp task depend(in:A[0:nb*nb]) \
                      depend(in:T[0:ib*nb]) \
                      depend(inout:C[0:nb*nb])
     {
-        // Allocate an auxiliary array.
+        // prepare memory for the auxiliary array
         PLASMA_Complex64_t *WORK =
             (PLASMA_Complex64_t *) malloc((size_t)ib*nb *
                                           sizeof(PLASMA_Complex64_t));
@@ -232,15 +236,15 @@ void CORE_OMP_zunmqr(PLASMA_enum side, PLASMA_enum trans,
 
         int ldwork = nb;
 
-        // Call the kernel.
-        CORE_zunmqr(side, trans,
+        // call the kernel
+        CORE_zunmlq(side, trans,
                     m, n, k, ib,
                     A, lda,
                     T, ldt,
                     C, ldc,
                     WORK, ldwork);
 
-        // Free the auxiliary array.
+        // deallocate the auxiliary array
         free(WORK);
     }
 }

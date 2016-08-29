@@ -23,10 +23,10 @@
 
 /***************************************************************************//**
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_parfb
  *
  *  Applies an upper triangular block reflector H
- *  or its transpose H' to a rectangular matrix formed by
+ *  or its transpose H^H to a rectangular matrix formed by
  *  coupling two tiles A1 and A2. Matrix V is:
  *
  *          COLUMNWISE                    ROWWISE
@@ -47,13 +47,12 @@
  *******************************************************************************
  *
  * @param[in] side
- *         - PlasmaLeft  : apply Q or Q' from the Left;
- *         - PlasmaRight : apply Q or Q' from the Right.
+ *         - PlasmaLeft  : apply Q or Q^H from the Left;
+ *         - PlasmaRight : apply Q or Q^H from the Right.
  *
  * @param[in] trans
- *         - PlasmaNoTrans   : No transpose, apply Q;
- *         - PlasmaTrans     : Transpose, apply Q';
- *         - PlasmaConjTrans : ConjTranspose, apply Q^H.
+ *         - PlasmaNoTrans    : Apply Q;
+ *         - Plasma_ConjTrans : Apply Q^H.
  *
  * @param[in] direct
  *         Indicates how H is formed from a product of elementary
@@ -193,8 +192,8 @@ void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
             // Column or Rowwise / Forward / Left
             // ----------------------------------
             //
-            // Form  H * A  or  H' * A  where  A = ( A1 )
-            //                                     ( A2 )
+            // Form  H * A  or  H^H * A  where  A = ( A1 )
+            //                                      ( A2 )
 
             // W = A1 + op(V) * A2
             CORE_zpamm(PlasmaW, PlasmaLeft, storev,
@@ -232,7 +231,7 @@ void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
             // Column or Rowwise / Forward / Right
             // -----------------------------------
             //
-            // Form  H * A  or  H' * A  where A  = ( A1 A2 )
+            // Form  H * A  or  H^H * A  where A  = ( A1 A2 )
 
             // W = A1 + A2 * op(V)
             CORE_zpamm(PlasmaW, PlasmaRight, storev,
@@ -258,7 +257,7 @@ void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
             }
 
             // A2 = A2 - W * op(V)
-            // W also changes: W = W * V', A2 = A2 - W
+            // W also changes: W = W * V^H, A2 = A2 - W
             CORE_zpamm(PlasmaA2, PlasmaRight, storev,
                        m2, n2, k, l,
                        A1, lda1,

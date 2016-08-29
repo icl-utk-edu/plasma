@@ -19,7 +19,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_geqrf
  *
  *  Computes the tile QR factorization of a real or complex m-by-n matrix A.
  *  The factorization has the form
@@ -97,7 +97,7 @@ int PLASMA_zgeqrf(int m, int n,
         return -4;
     }
 
-    // quick return
+    // Quick return
     if (imin(m, n) == 0)
         return PLASMA_SUCCESS;
 
@@ -157,7 +157,7 @@ int PLASMA_zgeqrf(int m, int n,
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_geqrf
  *
  *  Computes the tile QR factorization of a matrix.
  *  Non-blocking tile version of PLASMA_zgeqrf().

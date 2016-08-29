@@ -39,18 +39,18 @@
 
 /***************************************************************************//**
  *
- * @brief Tests ZGELS.
+ * @brief Tests ZGELQS.
  *
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
  *
  * If param is NULL     and info is NULL,     print usage and return.
- * If param is NULL     and info is non-NULL, set info to column headings
- *                                            and return.
+ * If param is NULL     and info is non-NULL,
+ *                      set info to column headings and return.
  * If param is non-NULL and info is non-NULL, set info to column values
- *                                            and run test.
+ *                      and run test.
  ******************************************************************************/
-void test_zgels(param_value_t param[], char *info)
+void test_zgelqs(param_value_t param[], char *info)
 {
     //================================================================
     // Print usage info or return column labels or values.
@@ -63,33 +63,27 @@ void test_zgels(param_value_t param[], char *info)
             print_usage(PARAM_NRHS);
             print_usage(PARAM_PADA);
             print_usage(PARAM_PADB);
-            print_usage(PARAM_NB);
-            print_usage(PARAM_IB);
         }
         else {
             // Return column labels.
             snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s %*s %*s %*s",
-                     InfoSpacing, "M",
-                     InfoSpacing, "N",
-                     InfoSpacing, "NRHS",
-                     InfoSpacing, "PadA",
-                     InfoSpacing, "PadB",
-                     InfoSpacing, "NB",
-                     InfoSpacing, "IB");
+                "%*s %*s %*s %*s %*s",
+                InfoSpacing, "M",
+                InfoSpacing, "N",
+                InfoSpacing, "NRHS",
+                InfoSpacing, "PadA",
+                InfoSpacing, "PadB");
         }
         return;
     }
     // Return column values.
     snprintf(info, InfoLen,
-             "%*d %*d %*d %*d %*d %*d %*d",
-             InfoSpacing, param[PARAM_M].i,
-             InfoSpacing, param[PARAM_N].i,
-             InfoSpacing, param[PARAM_NRHS].i,
-             InfoSpacing, param[PARAM_PADA].i,
-             InfoSpacing, param[PARAM_PADB].i,
-             InfoSpacing, param[PARAM_NB].i,
-             InfoSpacing, param[PARAM_IB].i);
+        "%*d %*d %*d %*d %*d",
+        InfoSpacing, param[PARAM_M].i,
+        InfoSpacing, param[PARAM_N].i,
+        InfoSpacing, param[PARAM_NRHS].i,
+        InfoSpacing, param[PARAM_PADA].i,
+        InfoSpacing, param[PARAM_PADB].i);
 
     //================================================================
     // Set parameters.
@@ -104,12 +98,6 @@ void test_zgels(param_value_t param[], char *info)
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d;
     double eps = LAPACKE_dlamch('E');
-
-    //================================================================
-    // Set tuning parameters.
-    //================================================================
-    PLASMA_Set(PLASMA_TILE_SIZE,        param[PARAM_NB].i);
-    PLASMA_Set(PLASMA_INNER_BLOCK_SIZE, param[PARAM_IB].i);
 
     //================================================================
     // Allocate and initialize arrays.
@@ -172,28 +160,24 @@ void test_zgels(param_value_t param[], char *info)
     //================================================================
     // Run and time PLASMA.
     //================================================================
+    // prepare LQ factorization of A - only auxiliary for this test,
+    // time is not measured
+    PLASMA_zgelqf(m, n, A, lda, &descT);
+
+    // perform solution of the system by the prepared LQ factorization of A
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zgels(PlasmaNoTrans, m, n, nrhs,
-                 A, lda,
-                 &descT,
-                 B, ldb);
+    PLASMA_zgelqs(m, n, nrhs,
+                  A, lda,
+                  &descT,
+                  B, ldb);
+
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
     param[PARAM_TIME].d = time;
-
-    double flop;
-    if (m >= n) {
-        // cost of QR-based factorization and solve
-        flop = flops_zgeqrf(m,n) + flops_zgeqrs(m,n,nrhs);
-    }
-    else {
-        // cost of LQ-based factorization, triangular solve, and Q^H application
-        flop = flops_zgelqf(m,n) +
-               flops_ztrsm(PlasmaLeft,m,nrhs) +
-               flops_zunmlq(PlasmaLeft,n,nrhs,m);
-    }
-    param[PARAM_GFLOPS].d = flop / time / 1e9;
+    param[PARAM_GFLOPS].d =
+        (flops_ztrsm(PlasmaLeft,m,nrhs) + flops_zunmlq(PlasmaLeft,n,nrhs,m)) /
+        time / 1e9;
 
     //================================================================
     // Test results by solving a linear system.

@@ -19,7 +19,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_ungqr
  *
  *  Generates an m-by-n matrix Q with orthonormal columns, which
  *  is defined as the first n columns of a product of the elementary reflectors
@@ -177,7 +177,7 @@ int PLASMA_zungqr(int m, int n, int k,
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t_Tile_Async
+ * @ingroup plasma_ungqr
  *
  *  Non-blocking tile version of PLASMA_zungqr().
  *  May return before the computation is finished.

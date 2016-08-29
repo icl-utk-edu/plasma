@@ -167,6 +167,7 @@ lapack = [
     ('sgelq2',               'dgelq2',               'cgelq2',               'zgelq2'              ),
     ('sgelqf',               'dgelqf',               'cgelqf',               'zgelqf'              ),
     ('sgelqs',               'dgelqs',               'cgelqs',               'zgelqs'              ),
+    ('sgelqt',               'dgelqt',               'cgelqt',               'zgelqt'              ),
     ('sgels',                'dgels',                'cgels',                'zgels'               ),
     ('sgeqlf',               'dgeqlf',               'cgeqlf',               'zgeqlf'              ),
     ('sgeqp3',               'dgeqp3',               'cgeqp3',               'zgeqp3'              ),
@@ -290,7 +291,9 @@ lapack = [
     ('strsmpl',              'dtrsmpl',              'ctrsmpl',              'ztrsmpl'             ),
     ('strtri',               'dtrtri',               'ctrtri',               'ztrtri'              ),
     ('stsmqr',               'dtsmqr',               'ctsmqr',               'ztsmqr'              ),
+    ('stsmlq',               'dtsmlq',               'ctsmlq',               'ztsmlq'              ),
     ('stsqrt',               'dtsqrt',               'ctsqrt',               'ztsqrt'              ),
+    ('stslqt',               'dtslqt',               'ctslqt',               'ztslqt'              ),
     ('ststrf',               'dtstrf',               'ctstrf',               'ztstrf'              ),
 ]
 

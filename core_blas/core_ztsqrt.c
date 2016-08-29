@@ -27,7 +27,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_tsqrt
  *
  * Computes a QR factorization of a rectangular matrix
  * formed by coupling an n-by-n upper triangular tile A1
