@@ -25,16 +25,16 @@
  *
  * @ingroup CORE_PLASMA_Complex64_t
  *
- *  CORE_zlacpy copies all or part of a two-dimensional matrix A to another
- *  matrix B
+ *  CORE_zlacpy copies a sub-block A of a band matrix stored in LAPACK's band format
+ *  to a corresponding sub-block B of a band matrix in PLASMA's band format
  *
  *******************************************************************************
  *
- * @param[in] uplo
- *          Specifies the part of the matrix A to be copied to B.
- *            = PlasmaUpperLower: All the matrix A
- *            = PlasmaUpper: Upper triangular part
- *            = PlasmaLower: Lower triangular part
+ * @param[in] K
+ *          The row block index of the tile.
+ *
+ * @param[in] J
+ *          The column block index of the tile.
  *
  * @param[in] M
  *          The number of rows of the matrices A and B. M >= 0.
@@ -73,7 +73,7 @@ void CORE_zlacpy_lapack2tile_band(int K, int J, int M, int N, int NB, int KL, in
     for (j=j_start; j<j_end; j++) {
         int i_start = (J <= K ? 0 : imax(0, (J-K)*NB+j-KU-KL));
         int i_end = (J >= K ? M : imin(M, (J-K)*NB+j+KL+NB+1)); /* +NB because we use zgetrf on panel and pivot back within the panel.
-                                                             *  so the last tile in panel could fill.  */
+                                                                 *  so the last tile in panel could fill.  */
         for (i=0; i<i_start; i++) {
             B[i + j*ldb] = zzero;
         }
@@ -91,6 +91,7 @@ void CORE_zlacpy_lapack2tile_band(int K, int J, int M, int N, int NB, int KL, in
     }
 }
 
+/******************************************************************************/
 void CORE_OMP_zlacpy_lapack2tile_band(int k, int j, int m, int n, int nb, int kl, int ku,
                                       const PLASMA_Complex64_t *A, int lda,
                                             PLASMA_Complex64_t *B, int ldb) 
@@ -100,7 +101,39 @@ void CORE_OMP_zlacpy_lapack2tile_band(int k, int j, int m, int n, int nb, int kl
 }
 
 
-/******************************************************************************
+/*******************************************************************************
+ *
+ * @ingroup CORE_PLASMA_Complex64_t
+ *
+ *  CORE_zlacpy copies all or part of a two-dimensional matrix A to another
+ *  matrix B
+ *
+ *******************************************************************************
+ *
+ * @param[in] K
+ *          The row block index of the tile.
+ *
+ * @param[in] J
+ *          The column block index of the tile.
+ *
+ * @param[in] M
+ *          The number of rows of the matrices A and B. M >= 0.
+ *
+ * @param[in] N
+ *          The number of columns of the matrices A and B. N >= 0.
+ *
+ * @param[in] A
+ *          The M-by-N matrix to copy.
+ *
+ * @param[in] lda
+ *          The leading dimension of the array A. lda >= max(1,M).
+ *
+ * @param[out] B
+ *          The M-by-N copy of the matrix A.
+ *          On exit, B = A ONLY in the locations specified by uplo.
+ *
+ * @param[in] ldb
+ *          The leading dimension of the array B. ldb >= max(1,M).
  *
  ******************************************************************************/
 void CORE_zlacpy_tile2lapack_band(int K, int J, int M, int N, int NB, int KL, int KU,
@@ -122,6 +155,7 @@ void CORE_zlacpy_tile2lapack_band(int K, int J, int M, int N, int NB, int KL, in
     }
 }
 
+/******************************************************************************/
 void CORE_OMP_zlacpy_tile2lapack_band(int k, int j, int m, int n, int nb, int kl, int ku,
                                       const PLASMA_Complex64_t *B, int ldb,
                                             PLASMA_Complex64_t *A, int lda) 

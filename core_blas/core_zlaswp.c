@@ -21,18 +21,18 @@
     #include <lapacke.h>
 #endif
 
-#define A(m, n) ((PLASMA_Complex64_t*)plasma_getaddr(descA, (m), (n)))
+#define A(m, n) ((PLASMA_Complex64_t*)plasma_getaddr(A, (m), (n)))
 
 /***************************************************************************//**
  *
  * @ingroup CORE_PLASMA_Complex64_t
  *
- *  CORE_zlaswp_ontile apply the zlaswp function on a matrix stored in
- *  tile layout
+ *  CORE_zlaswp_ontile apply the zlaswp function on a block column of a matrix 
+ *  stored in tile layout
  *
  *******************************************************************************
  *
- *  @param[in,out] descA
+ *  @param[in,out] A
  *          The descriptor of the matrix A to permute.
  *
  *  @param[in] i1
@@ -59,7 +59,7 @@
  *
  *******************************************************************************
  */
-int CORE_zlaswp_ontile(PLASMA_desc descA, int i_, int j_, int m, int n,
+int CORE_zlaswp_ontile(PLASMA_desc A, int i_, int j_, int m, int n,
                        int i1, int i2, const int *ipiv, int inc)
 {
     int i, j, ip, it;
@@ -70,8 +70,8 @@ int CORE_zlaswp_ontile(PLASMA_desc descA, int i_, int j_, int m, int n,
     i1--;
 
     /* Check parameters */
-    /*if ( descA.nt > 1 ) {
-        //coreblas_error(1, "Illegal value of descA.nt");
+    /*if ( A.nt > 1 ) {
+        //coreblas_error(1, "Illegal value of A.nt");
         return -1;
     }*/
     if ( i1 < 0 ) {
@@ -82,23 +82,23 @@ int CORE_zlaswp_ontile(PLASMA_desc descA, int i_, int j_, int m, int n,
         //coreblas_error(3, "Illegal value of i2");
         return -3;
     }
-    if ( ! ( (i2 - i1 -1) < descA.mb ) ) {
+    if ( ! ( (i2 - i1 -1) < A.mb ) ) {
         //coreblas_error(2, "Illegal value of i1,i2. They have to be part of the same block.");
         return -3;
     }
 
     if (inc > 0) {
-        it = i1 / descA.mb;
+        it = i1 / A.mb;
         A1 = A(i_+it, j_);
-        lda1 = BLKLDD(descA, i_);
+        lda1 = BLKLDD(A, i_);
 
         for (j = i1; j < i2; ++j, ipiv+=inc) {
             ip = (*ipiv) - 1;
             if ( ip != j )
             {
-                it = ip / descA.mb;
-                i  = ip % descA.mb;
-                lda2 = BLKLDD(descA, i_+it);
+                it = ip / A.mb;
+                i  = ip % A.mb;
+                lda2 = BLKLDD(A, i_+it);
                 cblas_zswap(n, A1           + j, lda1,
                                A(i_+it, j_) + i, lda2 );
             }
@@ -106,9 +106,9 @@ int CORE_zlaswp_ontile(PLASMA_desc descA, int i_, int j_, int m, int n,
     }
     else
     {
-        it = (i2-1) / descA.mb;
+        it = (i2-1) / A.mb;
         A1 = A(i_+it, j_);
-        lda1 = BLKLDD(descA, i_+it);
+        lda1 = BLKLDD(A, i_+it);
 
         i1--;
         ipiv = &ipiv[(1-i2)*inc];
@@ -116,9 +116,9 @@ int CORE_zlaswp_ontile(PLASMA_desc descA, int i_, int j_, int m, int n,
             ip = (*ipiv) - 1;
             if ( ip != j )
             {
-                it = ip / descA.mb;
-                i  = ip % descA.mb;
-                lda2 = BLKLDD(descA, i_+it);
+                it = ip / A.mb;
+                i  = ip % A.mb;
+                lda2 = BLKLDD(A, i_+it);
                 cblas_zswap(n, A1           + j, lda1,
                                A(it+i_, j_) + i, lda2 );
             }
@@ -130,11 +130,12 @@ int CORE_zlaswp_ontile(PLASMA_desc descA, int i_, int j_, int m, int n,
 
 
 /******************************************************************************/
-void CORE_OMP_zlaswp_ontile(PLASMA_desc descA, int i, int j, int m, int n,
+void CORE_OMP_zlaswp_ontile(PLASMA_desc A, int i_, int j_, int m, int n,
                             int i1, int i2, const int *ipiv, int inc)
 {
-    PLASMA_Complex64_t *Aij = A(i,j);
-    #pragma omp task depend(inout:Aij[0:m*n]) \
+    int lda = A.lm - i_*A.mb;
+    PLASMA_Complex64_t *Aij = A(i_, j_);
+    #pragma omp task depend(inout:Aij[0:lda*n]) \
                      depend(in:ipiv[0])
-    CORE_zlaswp_ontile(descA, i, j, m, n, i1, i2, ipiv, inc);
+    CORE_zlaswp_ontile(A, i_, j_, m, n, i1, i2, ipiv, inc);
 }

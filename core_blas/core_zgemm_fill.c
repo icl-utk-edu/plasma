@@ -120,8 +120,8 @@ void CORE_OMP_zgemm_fill(
 {
     // omp depends assume lda == m or k, ldb == k or n, ldc == m,
     // depending on transA and transB.
-    #pragma omp task depend(in:A[0:m*k]) \
-                     depend(in:B[0:k*n]) \
+    #pragma omp task depend(in:A[0:m*k])    \
+                     depend(in:B[0:k*n])    \
                      depend(inout:C[0:m*n]) \
 	                 depend(in:fake[0])
     CORE_zgemm_fill(transA, transB,

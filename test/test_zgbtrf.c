@@ -109,6 +109,11 @@ void test_zgbtrf(param_value_t param[], char *info)
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
 
     //================================================================
+    // Set tuning parameters.
+    //================================================================
+    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_NB].i);
+
+    //================================================================
     // Allocate and initialize arrays.
     //================================================================
     /* band matrix A in full storage (also used for solution check) */
@@ -148,7 +153,7 @@ void test_zgbtrf(param_value_t param[], char *info)
     int *ipiv = NULL, *fill = NULL;
     ipiv = (int*)malloc((2*imin(m, n))*sizeof(int));
     assert(ipiv != NULL);
-	fill = &ipiv[imin(m,n)];
+    fill = &ipiv[imin(m,n)];
 
     //================================================================
     // Run and time PLASMA.

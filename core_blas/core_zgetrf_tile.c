@@ -23,8 +23,8 @@
 #endif
 
 #define KUT ((A.ku+A.kl+A.nb-1)/A.nb)
-#define   A(m,n) ((PLASMA_Complex64_t*)plasma_getaddr(A, KUT+((m)-(n)), (n)))
-#define lda(m,n)  BLKLDD((A), KUT+(m)-(n))
+#define   A(m,n) ((PLASMA_Complex64_t*)plasma_getaddr(A, KUT+((m)-(n)), k+(n)))
+#define lda(m,n)  BLKLDD((A), KUT+((m)-(n)))
 
 /***************************************************************************//**
  *
@@ -74,7 +74,7 @@ void CORE_zgetrf_tile(PLASMA_desc A,
     /* Copy tiles into workspace */
     for (ii=0; ii<(m+A.nb-1)/A.nb; ii++) {
         int nb = imin(A.nb, m-A.nb*ii);
-        LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'F', nb, n, A(k+ii, k), lda(k+ii, k), &WORK[ii*A.nb], m);
+        LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'F', nb, n, A(ii, 0), lda(ii, 0), &WORK[ii*A.nb], m);
     }
 
     /* Do LU in workspace */
@@ -84,7 +84,7 @@ void CORE_zgetrf_tile(PLASMA_desc A,
     /* Copy result back into tiles */
     for (ii=0; ii<(m+A.nb-1)/A.nb; ii++) {
         int nb = imin(A.nb, m-A.nb*ii);
-        LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'F', nb, n, &WORK[ii*A.nb], m, A(k+ii, k), lda(k+ii, k));
+        LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'F', nb, n, &WORK[ii*A.nb], m, A(ii, 0), lda(ii, 0));
     }
 
     /* Update fill */
@@ -117,8 +117,9 @@ void CORE_OMP_zgetrf_tile(PLASMA_desc A,
                           int iinfo, int *fake)
 {
     // omp depends assume lda = n.
-    PLASMA_Complex64_t *Akk = A(k,k);
-    #pragma omp task depend(inout:Akk[0:m*n]) depend(out:fake[0])
+    int lda = A.lm-k*A.mb;
+    PLASMA_Complex64_t *Akk = A(0, 0);
+    #pragma omp task depend(inout:Akk[0:lda*n]) depend(inout:fake[0])
     CORE_zgetrf_tile(A, k, m, n, ipiv,
                      ku, kn, prev_fill, fill,
                      iinfo);

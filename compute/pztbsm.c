@@ -32,13 +32,11 @@ void plasma_pztbsm(PLASMA_enum side, PLASMA_enum uplo, PLASMA_enum trans, PLASMA
                    PLASMA_sequence *sequence, PLASMA_request *request)
 {
     int k, m, n;
-    int ldak, ldam, ldan, ldbk, ldbm;
     int tempi;
-    int tempkm, tempkn, tempmm, tempnn;
+    int tempkm, tempmm, tempnn;
 
     PLASMA_Complex64_t zone       = (PLASMA_Complex64_t) 1.0;
     PLASMA_Complex64_t mzone      = (PLASMA_Complex64_t)-1.0;
-    PLASMA_Complex64_t minvalpha  = (PLASMA_Complex64_t)-1.0 / alpha;
     PLASMA_Complex64_t lalpha;
 
     if (sequence->status != PLASMA_SUCCESS)
