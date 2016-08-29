@@ -19,7 +19,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_gelqf
  *
  *  Computes tile LQ factorization of a complex m-by-n matrix A.
  *  The factorization has the form
@@ -37,9 +37,9 @@
  *
  * @param[in,out] A
  *          On entry, the m-by-n matrix A.
- *          On exit, the elements on and below the diagonal of the array 
- *          contain the m-by-min(m,n) lower trapezoidal matrix L (L is lower 
- *          triangular if M <= N); the elements above the diagonal represent 
+ *          On exit, the elements on and below the diagonal of the array
+ *          contain the m-by-min(m,n) lower trapezoidal matrix L (L is lower
+ *          triangular if M <= N); the elements above the diagonal represent
  *          the unitary matrix Q as a product of elementary reflectors, stored
  *          by tiles.
  *
@@ -47,7 +47,7 @@
  *          The leading dimension of the array A. lda >= max(1,m).
  *
  * @param[out] descT
- *          On exit, auxiliary factorization data, required by PLASMA_zgelqs 
+ *          On exit, auxiliary factorization data, required by PLASMA_zgelqs
  *          to solve the system of equations.
  *
  *******************************************************************************
@@ -162,7 +162,7 @@ int PLASMA_zgelqf(int m, int n,
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t_Tile_Async
+ * @ingroup plasma_gelqf
  *
  *  Computes the tile LQ factorization of a matrix.
  *  Non-blocking tile version of PLASMA_zgelqf().
@@ -204,7 +204,7 @@ int PLASMA_zgelqf(int m, int n,
  *
  ******************************************************************************/
 void PLASMA_zgelqf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
-                              PLASMA_sequence *sequence, 
+                              PLASMA_sequence *sequence,
                               PLASMA_request *request)
 {
     // Get PLASMA context.
@@ -251,9 +251,9 @@ void PLASMA_zgelqf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
     // Quick return
     //if (imin(m, n) == 0)
     //    return PLASMA_SUCCESS;
-    
+
     // Call the parallel function.
     plasma_pzgelqf(*descA, *descT, sequence, request);
-    
+
     return;
 }

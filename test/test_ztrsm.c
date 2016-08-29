@@ -30,6 +30,8 @@
 
 #define COMPLEX
 
+#define A(i_, j_)  (A + (i_) + (size_t)lda*(j_))
+
 /***************************************************************************//**
  *
  * @brief Tests ZTRSM.
@@ -37,9 +39,10 @@
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
  *
- * If param is NULL     and info is NULL,     print usage and return.
- * If param is NULL     and info is non-NULL, set info to column headings and return.
- * If param is non-NULL and info is non-NULL, set info to column values   and run test.
+ * If param is NULL and info is NULL,     print usage and return.
+ * If param is NULL and info is non-NULL, set info to column labels and return.
+ * If param is non-NULL and info is non-NULL, set info to column values
+ * and run test.
  ******************************************************************************/
 void test_ztrsm(param_value_t param[], char *info)
 {
@@ -58,10 +61,12 @@ void test_ztrsm(param_value_t param[], char *info)
             print_usage(PARAM_ALPHA);
             print_usage(PARAM_PADA);
             print_usage(PARAM_PADB);
-        } else {
+            print_usage(PARAM_NB);
+        }
+        else {
             // Return column labels.
             snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s %*s %*s %*s %*s %*s",
+                     "%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s",
                      InfoSpacing, "side",
                      InfoSpacing, "uplo",
                      InfoSpacing, "TransA",
@@ -70,13 +75,14 @@ void test_ztrsm(param_value_t param[], char *info)
                      InfoSpacing, "N",
                      InfoSpacing, "alpha",
                      InfoSpacing, "PadA",
-                     InfoSpacing, "PadB");
+                     InfoSpacing, "PadB",
+                     InfoSpacing, "NB");
         }
         return;
     }
     // Return column values.
     snprintf(info, InfoLen,
-             "%*c %*c %*c %*c %*d %*d %*.4f %*d %*d",
+             "%*c %*c %*c %*c %*d %*d %*.4f %*d %*d %*d",
              InfoSpacing, param[PARAM_SIDE].c,
              InfoSpacing, param[PARAM_UPLO].c,
              InfoSpacing, param[PARAM_TRANSA].c,
@@ -85,7 +91,8 @@ void test_ztrsm(param_value_t param[], char *info)
              InfoSpacing, param[PARAM_N].i,
              InfoSpacing, __real__(param[PARAM_ALPHA].z),
              InfoSpacing, param[PARAM_PADA].i,
-             InfoSpacing, param[PARAM_PADB].i);
+             InfoSpacing, param[PARAM_PADB].i,
+             InfoSpacing, param[PARAM_NB].i);
 
     //================================================================
     // Set parameters.
@@ -135,6 +142,11 @@ void test_ztrsm(param_value_t param[], char *info)
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
 
     //================================================================
+    // Set tuning parameters.
+    //================================================================
+    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_NB].i);
+
+    //================================================================
     // Allocate and initialize arrays.
     //================================================================
     PLASMA_Complex64_t *A =
@@ -160,9 +172,11 @@ void test_ztrsm(param_value_t param[], char *info)
     int ipiv[lda];
     LAPACKE_zgetrf(CblasColMajor, Am, Am, A, lda, ipiv);
 
-    for (int j = 0; j < Am; j++)
-        for (int i = 0; i < j; i++)
-            A[i,j] = A[j,i];
+    for (int j = 0; j < Am; j++) {
+        for (int i = 0; i < j; i++) {
+            *A(i,j) = *A(j,i);
+        }
+    }
 
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*n, B);
     assert(retval == 0);

@@ -172,34 +172,20 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
     #pragma omp parallel
     #pragma omp master
     {
-        // The Async functions are submitted here.  If an error occurs
-        // (at submission time or at run time) the sequence->status
-        // will be marked with an error.  After an error, the next
-        // Async will not _insert_ more tasks into the runtime.  The
-        // sequence->status can be checked after each call to _Async
-        // or at the end of the parallel region.
-
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
+        PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
 
         // Call the tile async function.
-        if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_zposv_Tile_Async(uplo,
-                                    &descA,
-                                    &descB,
-                                    sequence, &request);
-        }
+        PLASMA_zposv_Tile_Async(uplo,
+                                &descA,
+                                &descB,
+                                sequence, &request);
 
         // Translate back to LAPACK layout.
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
-    } // pragma omp parallel block closed
-
-    // Check for errors in the async execution
-    if (sequence->status != PLASMA_SUCCESS)
-        return sequence->status;
+        PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
+    }
+    // implicit synchronization
 
     // Free matrices in tile layout.
     plasma_desc_mat_free(&descA);
@@ -267,7 +253,9 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
  * @sa PLASMA_sposv_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
+void PLASMA_zposv_Tile_Async(PLASMA_enum uplo,
+                             PLASMA_desc *A,
+                             PLASMA_desc *B,
                              PLASMA_sequence *sequence, PLASMA_request *request)
 {
     // Get PLASMA context.
@@ -304,20 +292,11 @@ void PLASMA_zposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-
-    // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
-        return;
-    }
-
-    // Quick return - currently NOT equivalent to LAPACK's
-    // LAPACK does not have such check for DPOSV
-    //
-    //  if (min(n, nrhs == 0)
-    //      return PLASMA_SUCCESS;
-    //
-
+/*
+    // quick return
+    if (min(n, nrhs == 0)
+        return PLASMA_SUCCESS;
+*/
     PLASMA_enum trans;
     PLASMA_Complex64_t zone = 1.0;
 

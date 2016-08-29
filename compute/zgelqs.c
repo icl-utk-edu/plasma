@@ -19,7 +19,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_gelqs
  *
  *  Computes a minimum-norm solution min | A*X - B | using the
  *  LQ factorization A = L*Q computed by PLASMA_zgelqf.
@@ -172,7 +172,7 @@ int PLASMA_zgelqs(int m, int n, int nrhs,
         }
 
         // Translate back to LAPACK layout.
-        // It is not needed to translate the descriptor back 
+        // It is not needed to translate the descriptor back
         // for out-of-place storage.
         //if (sequence->status == PLASMA_SUCCESS)
         //    PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
@@ -192,7 +192,7 @@ int PLASMA_zgelqs(int m, int n, int nrhs,
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t_Tile_Async
+ * @ingroup plasma_gelqs
  *
  *  Computes a minimum-norm solution using previously computed LQ factorization.
  *  Non-blocking tile version of PLASMA_zgelqs().
@@ -293,19 +293,19 @@ void PLASMA_zgelqs_Tile_Async(PLASMA_desc *descA,
     //if (imin(m, imin(n, nrhs)) == 0) {
     //    return;
     //}
-    
+
     //plasma_pztile_zero(
-    //    plasma_desc_submatrix(*descB, descA->m, 0, 
+    //    plasma_desc_submatrix(*descB, descA->m, 0,
     //                          descA->n - descA->m, descB->n),
     //    sequence, request);
 
     // TODO: zero lower part of the right-hand side matrix
-//    plasma_pzlaset(PlasmaFull, 0., 0., 
-//                   plasma_desc_submatrix(*descB, descA->m, 0, 
+//    plasma_pzlaset(PlasmaFull, 0., 0.,
+//                   plasma_desc_submatrix(*descB, descA->m, 0,
 //                                         descA->n - descA->m, descB->n),
 //                   sequence, request);
 
-    // Solve L * Y = B 
+    // Solve L * Y = B
     PLASMA_Complex64_t zone  =  1.0;
     plasma_pztrsm(
         PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaNonUnit,

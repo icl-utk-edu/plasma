@@ -112,8 +112,8 @@ void CORE_OMP_ztrsm(
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                                     PLASMA_Complex64_t *B, int ldb)
 {
-    // omp depends assume lda == m or n, ldb == m
-    // depending on side
+    // omp depends assume lda == m or n, ldb == m,
+    // depending on side.
     #pragma omp task depend(in:A[0:m*m]) depend(inout:B[0:m*n])
     CORE_ztrsm(side, uplo,
                transA, diag,

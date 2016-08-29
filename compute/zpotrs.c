@@ -72,7 +72,8 @@
  * @sa PLASMA_zpotrf
  *
  ******************************************************************************/
-int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
+int PLASMA_zpotrs(PLASMA_enum uplo,
+                  int n, int nrhs,
                   PLASMA_Complex64_t *A, int lda,
                   PLASMA_Complex64_t *B, int ldb)
 {
@@ -80,7 +81,8 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
     int retval;
     int status;
 
-    PLASMA_desc descA, descB;
+    PLASMA_desc descA;
+    PLASMA_desc descB;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -89,7 +91,7 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
         return PLASMA_ERR_NOT_INITIALIZED;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
@@ -122,9 +124,8 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
     //     plasma_error("plasma_tune() failed");
     //     return status;
     // }
-
-    // Set NT & NHRS
     nb = plasma->nb;
+
     // Initialize tile matrix descriptors.
     descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
                              nb*nb, n, n, 0, 0, n, n);
@@ -140,6 +141,7 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
     }
     retval = plasma_desc_mat_alloc(&descB);
     if (retval != PLASMA_SUCCESS) {
+        plasma_desc_mat_free(&descA);
         plasma_error("plasma_desc_mat_alloc() failed");
         return retval;
     }
@@ -154,34 +156,21 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
     // Initialize request.
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
 
+    // asynchronous block
     #pragma omp parallel
     #pragma omp master
     {
-        // The Async functions are submitted here.  If an error occurs
-        // (at submission time or at run time) the sequence->status
-        // will be marked with an error.  After an error, the next
-        // Async will not _insert_ more tasks into the runtime.  The
-        // sequence->status can be checked after each call to _Async
-        // or at the end of the parallel region.
-
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
+        PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
 
         // Call the tile async function.
-        if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_zpotrs_Tile_Async(uplo, &descA, &descB, sequence, &request);
-        }
+        PLASMA_zpotrs_Tile_Async(uplo, &descA, &descB, sequence, &request);
 
         // Translate back to LAPACK layout.
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
-    } // pragma omp parallel block closed
-
-    // Check for errors in the async execution
-    if (sequence->status != PLASMA_SUCCESS)
-        return sequence->status;
+        PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
+    }
+    // implicit synchronization
 
     // Free matrix A in tile layout.
     plasma_desc_mat_free(&descA);
@@ -245,8 +234,11 @@ int PLASMA_zpotrs(PLASMA_enum uplo, int n, int nrhs,
  * @sa PLASMA_zpotrf_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zpotrs_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
-                              PLASMA_sequence *sequence, PLASMA_request *request)
+void PLASMA_zpotrs_Tile_Async(PLASMA_enum uplo,
+                              PLASMA_desc *A,
+                              PLASMA_desc *B,
+                              PLASMA_sequence *sequence,
+                              PLASMA_request *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -299,19 +291,11 @@ void PLASMA_zpotrs_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-
-    // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
-        return;
-    }
-
+/*
     // quick return
-    /*
     if (min(n, nrhs) == 0)
         return;
-    */
-
+*/
     // Call the parallel functions.
     plasma_pztrsm(PlasmaLeft,
         uplo,

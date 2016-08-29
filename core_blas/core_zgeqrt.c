@@ -23,7 +23,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_geqrt
  *
  *  Computes the QR factorization of an m-by-n tile A:
  *  The factorization has the form
@@ -38,7 +38,7 @@
  *
  *  Each \f$ H(i) \f$ has the form
  *    \f[
- *        H(i) = I - \tau \times v \times v'
+ *        H(i) = I - \tau \times v \times v^H
  *    \f]
  *  where \f$ tau \f$ is a scalar, and \f$ v \f$ is a vector with
  *  v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
@@ -87,7 +87,7 @@ void CORE_zgeqrt(int m, int n, int ib,
                  PLASMA_Complex64_t *TAU,
                  PLASMA_Complex64_t *WORK)
 {
-    // Check input arguments
+    // Check input arguments.
     if (m < 0) {
         plasma_error("Illegal value of m");
         return;

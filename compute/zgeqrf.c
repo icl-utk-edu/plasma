@@ -19,7 +19,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_geqrf
  *
  *  Computes the tile QR factorization of a real or complex m-by-n matrix A.
  *  The factorization has the form
@@ -83,7 +83,7 @@ int PLASMA_zgeqrf(int m, int n,
         return PLASMA_ERR_NOT_INITIALIZED;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if (m < 0) {
         plasma_error("illegal value of m");
         return -1;
@@ -107,7 +107,6 @@ int PLASMA_zgeqrf(int m, int n,
     //    plasma_error("PLASMA_zgeqrf", "plasma_tune() failed");
     //    return status;
     //}
-
     nb = plasma->nb;
 
     // Initialize tile matrix descriptor.
@@ -132,28 +131,20 @@ int PLASMA_zgeqrf(int m, int n,
     // Initialize request.
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
 
+    // asynchronous block
     #pragma omp parallel
     #pragma omp master
     {
-        // The Async functions are submitted here.  If an error occurs
-        // (at submission time or at run time) the sequence->status
-        // will be marked with an error.  After an error, the next
-        // Async will not _insert_ more tasks into the runtime.  The
-        // sequence->status can be checked after each call to _Async
-        // or at the end of the parallel region.
-
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
 
         // Call the tile async function.
-        if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_zgeqrf_Tile_Async(&descA, descT, sequence, &request);
-        }
+        PLASMA_zgeqrf_Tile_Async(&descA, descT, sequence, &request);
 
         // Translate back to LAPACK layout.
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
-    } // pragma omp parallel block closed
+        PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
+    }
+    // implicit synchronization
 
     // Free matrix A in tile layout.
     plasma_desc_mat_free(&descA);
@@ -166,7 +157,7 @@ int PLASMA_zgeqrf(int m, int n,
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_geqrf
  *
  *  Computes the tile QR factorization of a matrix.
  *  Non-blocking tile version of PLASMA_zgeqrf().
@@ -248,12 +239,6 @@ void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
     if (descA->nb != descA->mb) {
         plasma_error("only square tiles supported");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-
-    // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
         return;
     }
 

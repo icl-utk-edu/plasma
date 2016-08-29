@@ -45,8 +45,10 @@
  * @param[out] info  - string of column labels or column values; length InfoLen
  *
  * If param is NULL     and info is NULL,     print usage and return.
- * If param is NULL     and info is non-NULL, set info to column headings and return.
- * If param is non-NULL and info is non-NULL, set info to column values   and run test.
+ * If param is NULL     and info is non-NULL,
+ *                      set info to column headings and return.
+ * If param is non-NULL and info is non-NULL, set info to column values
+ *                      and run test.
  ******************************************************************************/
 void test_zgelqs(param_value_t param[], char *info)
 {
@@ -158,7 +160,7 @@ void test_zgelqs(param_value_t param[], char *info)
     //================================================================
     // Run and time PLASMA.
     //================================================================
-    // prepare LQ factorization of A - only auxiliary for this test, 
+    // prepare LQ factorization of A - only auxiliary for this test,
     // time is not measured
     PLASMA_zgelqf(m, n, A, lda, &descT);
 

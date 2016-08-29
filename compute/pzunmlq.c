@@ -48,7 +48,8 @@ void plasma_pzunmlq(PLASMA_enum side, PLASMA_enum trans,
     if (A.m > A.n) {
         minM  = A.n;
         minMT = A.nt;
-    } else {
+    }
+    else {
         minM  = A.m;
         minMT = A.mt;
     }
@@ -77,7 +78,8 @@ void plasma_pzunmlq(PLASMA_enum side, PLASMA_enum trans,
                         tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
                         CORE_OMP_ztsmlq(
                                 side, trans,
-                                B.mb, tempnn, tempmm, tempnn, tempkmin, ib, T.nb,
+                                B.mb, tempnn, tempmm, tempnn, tempkmin,
+                                ib, T.nb,
                                 B(k, n), ldbk,
                                 B(m, n), ldbm,
                                 A(k, m), ldak,
@@ -100,7 +102,8 @@ void plasma_pzunmlq(PLASMA_enum side, PLASMA_enum trans,
                         tempnn   = n == B.nt-1 ? B.n-n*B.nb : B.nb;
                         CORE_OMP_ztsmlq(
                                 side, trans,
-                                B.mb, tempnn, tempmm, tempnn, tempkmin, ib, T.nb,
+                                B.mb, tempnn, tempmm, tempnn, tempkmin,
+                                ib, T.nb,
                                 B(k, n), ldbk,
                                 B(m, n), ldbm,
                                 A(k, m), ldak,
@@ -133,7 +136,8 @@ void plasma_pzunmlq(PLASMA_enum side, PLASMA_enum trans,
                         ldbm = BLKLDD(B, m);
                         CORE_OMP_ztsmlq(
                                 side, trans,
-                                tempmm, B.nb, tempmm, tempnn, tempkmin, ib, T.nb,
+                                tempmm, B.nb, tempmm, tempnn, tempkmin,
+                                ib, T.nb,
                                 B(m, k), ldbm,
                                 B(m, n), ldbm,
                                 A(k, n), ldak,
@@ -175,7 +179,8 @@ void plasma_pzunmlq(PLASMA_enum side, PLASMA_enum trans,
                         ldbm = BLKLDD(B, m);
                         CORE_OMP_ztsmlq(
                                 side, trans,
-                                tempmm, B.nb, tempmm, tempnn, tempkmin, ib, T.nb,
+                                tempmm, B.nb, tempmm, tempnn, tempkmin,
+                                ib, T.nb,
                                 B(m, k), ldbm,
                                 B(m, n), ldbm,
                                 A(k, n), ldak,

@@ -67,14 +67,14 @@ int PLASMA_Set(PLASMA_enum param, int value)
     switch (param) {
     case PLASMA_TILE_SIZE:
         if (value <= 0) {
-            plasma_error("Negative tile size");
+            plasma_error("invalid tile size");
             return PLASMA_ERR_ILLEGAL_VALUE;
         }
         plasma->nb = value;
         break;
     case PLASMA_INNER_BLOCK_SIZE:
         if (value <= 0) {
-            plasma_error("Negative inner block size");
+            plasma_error("invalid inner block size");
             return PLASMA_ERR_ILLEGAL_VALUE;
         }
         plasma->ib = value;

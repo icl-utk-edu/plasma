@@ -19,7 +19,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_unglq
  *
  *  Generates an m-by-n matrix Q with orthonormal rows, which is
  *  defined as the first m rows of a product of the elementary reflectors
@@ -189,7 +189,7 @@ int PLASMA_zunglq(int m, int n, int k,
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t_Tile_Async
+ * @ingroup plasma_unglq
  *
  *  Non-blocking tile version of PLASMA_zunglq().
  *  May return before the computation is finished.
@@ -234,7 +234,7 @@ int PLASMA_zunglq(int m, int n, int k,
 void PLASMA_zunglq_Tile_Async(PLASMA_desc *descA,
                               PLASMA_desc *descT,
                               PLASMA_desc *descQ,
-                              PLASMA_sequence *sequence, 
+                              PLASMA_sequence *sequence,
                               PLASMA_request *request)
 {
     // Get PLASMA context.

@@ -23,10 +23,10 @@
 
 /***************************************************************************//**
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_parfb
  *
  *  Applies an upper triangular block reflector H
- *  or its transpose H' to a rectangular matrix formed by
+ *  or its transpose H^H to a rectangular matrix formed by
  *  coupling two tiles A1 and A2. Matrix V is:
  *
  *          COLUMNWISE                    ROWWISE
@@ -47,8 +47,8 @@
  *******************************************************************************
  *
  * @param[in] side
- *         - PlasmaLeft  : apply Q or Q' from the Left;
- *         - PlasmaRight : apply Q or Q' from the Right.
+ *         - PlasmaLeft  : apply Q or Q^H from the Left;
+ *         - PlasmaRight : apply Q or Q^H from the Right.
  *
  * @param[in] trans
  *         - PlasmaNoTrans    : Apply Q;
@@ -129,61 +129,61 @@
 void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
                  PLASMA_enum direct, PLASMA_enum storev,
                  int m1, int n1, int m2, int n2, int k, int l,
-                 PLASMA_Complex64_t *A1, int lda1,
-                 PLASMA_Complex64_t *A2, int lda2,
+                       PLASMA_Complex64_t *A1, int lda1,
+                       PLASMA_Complex64_t *A2, int lda2,
                  const PLASMA_Complex64_t *V,  int ldv,
                  const PLASMA_Complex64_t *T,  int ldt,
-                 PLASMA_Complex64_t *WORK, int ldwork)
+                       PLASMA_Complex64_t *WORK, int ldwork)
 {
     static PLASMA_Complex64_t zone  =  1.0;
     static PLASMA_Complex64_t mzone = -1.0;
 
     int j;
 
-    // Check input arguments
+    // Check input arguments.
     if ((side != PlasmaLeft) && (side != PlasmaRight)) {
-        plasma_error("Illegal value of side");
+        plasma_error("illegal value of side");
         return;
     }
     // Plasma_ConjTrans will be converted to PlasmaTrans in
     // automatic datatype conversion, which is what we want here.
     // PlasmaConjTrans is protected from this conversion.
     if ((trans != PlasmaNoTrans) && (trans != Plasma_ConjTrans)) {
-        plasma_error("Illegal value of trans");
+        plasma_error("illegal value of trans");
         return;
     }
     if ((direct != PlasmaForward) && (direct != PlasmaBackward)) {
-        plasma_error("Illegal value of direct");
+        plasma_error("illegal value of direct");
         return;
     }
     if ((storev != PlasmaColumnwise) && (storev != PlasmaRowwise)) {
-        plasma_error("Illegal value of storev");
+        plasma_error("illegal value of storev");
         return;
     }
     if (m1 < 0) {
-        plasma_error("Illegal value of m1");
+        plasma_error("illegal value of m1");
         return;
     }
     if (n1 < 0) {
-        plasma_error("Illegal value of n1");
+        plasma_error("illegal value of n1");
         return;
     }
     if ((m2 < 0) ||
         ( (side == PlasmaRight) && (m1 != m2) ) ) {
-        plasma_error("Illegal value of m2");
+        plasma_error("illegal value of m2");
         return;
     }
     if ((n2 < 0) ||
         ( (side == PlasmaLeft) && (n1 != n2) ) ) {
-        plasma_error("Illegal value of n2");
+        plasma_error("illegal value of n2");
         return;
     }
     if (k < 0) {
-        plasma_error("Illegal value of k");
+        plasma_error("illegal value of k");
         return;
     }
 
-    // Quick return
+    // quick return
     if ((m1 == 0) || (n1 == 0) || (m2 == 0) || (n2 == 0) || (k == 0))
         return;
 
@@ -192,8 +192,8 @@ void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
             // Column or Rowwise / Forward / Left
             // ----------------------------------
             //
-            // Form  H * A  or  H' * A  where  A = ( A1 )
-            //                                     ( A2 )
+            // Form  H * A  or  H^H * A  where  A = ( A1 )
+            //                                      ( A2 )
 
             // W = A1 + op(V) * A2
             CORE_zpamm(PlasmaW, PlasmaLeft, storev,
@@ -204,9 +204,12 @@ void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
                        WORK, ldwork);
 
             // W = op(T) * W
-            cblas_ztrmm(CblasColMajor, CblasLeft, CblasUpper,
-                        (CBLAS_TRANSPOSE)trans, CblasNonUnit, k, n2,
-                        CBLAS_SADDR(zone), T, ldt, WORK, ldwork);
+            cblas_ztrmm(CblasColMajor,
+                        CblasLeft, CblasUpper,
+                        (CBLAS_TRANSPOSE)trans, CblasNonUnit,
+                        k, n2,
+                        CBLAS_SADDR(zone), T, ldt,
+                        WORK, ldwork);
 
             // A1 = A1 - W
             for (j = 0; j < n1; j++) {
@@ -228,7 +231,7 @@ void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
             // Column or Rowwise / Forward / Right
             // -----------------------------------
             //
-            // Form  H * A  or  H' * A  where A  = ( A1 A2 )
+            // Form  H * A  or  H^H * A  where A  = ( A1 A2 )
 
             // W = A1 + A2 * op(V)
             CORE_zpamm(PlasmaW, PlasmaRight, storev,
@@ -239,9 +242,12 @@ void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
                        WORK, ldwork);
 
             // W = W * op(T)
-            cblas_ztrmm(CblasColMajor, CblasRight, CblasUpper,
-                        (CBLAS_TRANSPOSE)trans, CblasNonUnit, m2, k,
-                        CBLAS_SADDR(zone), T, ldt, WORK, ldwork);
+            cblas_ztrmm(CblasColMajor,
+                        CblasRight, CblasUpper,
+                        (CBLAS_TRANSPOSE)trans, CblasNonUnit,
+                        m2, k,
+                        CBLAS_SADDR(zone), T, ldt,
+                        WORK, ldwork);
 
             // A1 = A1 - W
             for (j = 0; j < k; j++) {
@@ -251,7 +257,7 @@ void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
             }
 
             // A2 = A2 - W * op(V)
-            // W also changes: W = W * V', A2 = A2 - W
+            // W also changes: W = W * V^H, A2 = A2 - W
             CORE_zpamm(PlasmaA2, PlasmaRight, storev,
                        m2, n2, k, l,
                        A1, lda1,
@@ -264,6 +270,4 @@ void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
         plasma_error("Not implemented (Backward / Left or Right)");
         return;
     }
-
-    return;
 }

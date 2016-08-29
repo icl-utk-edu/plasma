@@ -26,14 +26,15 @@ typedef enum {
     PARAM_TRANS,  // transposition
     PARAM_TRANSA, // transposition of A
     PARAM_TRANSB, // transposition of B
-    PARAM_SIDE,   // Left of right side application
-    PARAM_UPLO,   // Upper or lower triangular
-    PARAM_DIAG,   // Non-unit or unit diagonal
+    PARAM_SIDE,   // left of right side application
+    PARAM_UPLO,   // upper or lower triangular
+    PARAM_DIAG,   // non-unit or unit diagonal
     PARAM_M,      // M dimension
     PARAM_N,      // N dimension
-    PARAM_NRHS,   // Number of RHS
     PARAM_K,      // K dimension
+    PARAM_NRHS,   // number of RHS
     PARAM_NB,     // tile size NBxNB
+    PARAM_IB,     // inner blocking size
     PARAM_ALPHA,  // scalar alpha
     PARAM_BETA,   // scalar beta
     PARAM_PADA,   // padding of A
@@ -57,7 +58,10 @@ typedef enum {
 //==============================================================================
 // parameter descriptions
 //==============================================================================
-static const char *ParamUsage[][2] = {
+static const char * const ParamUsage[][2] = {
+    //------------------------------------------------------
+    // input parameters
+    //------------------------------------------------------
     {"--iter=", "number of iterations per set of parameters [default: 1]"},
     {"--outer=[y|n]", "outer product iteration [default: n]"},
     {"--test=[y|n]", "test the solution [default: y]"},
@@ -70,14 +74,24 @@ static const char *ParamUsage[][2] = {
     {"--diag=[n|u]", "not unit triangular or unit matrix [default: n]"},
     {"--m=", "M dimension (number of rows) [default: 1000]"},
     {"--n=", "N dimension (number of columns) [default: 1000]"},
-    {"--nrhs=", "NHRS dimension (number of columns) [default: 1000]"},
     {"--k=", "K dimension (number of rows or columns) [default: 1000]"},
+    {"--nrhs=", "NHRS dimension (number of columns) [default: 1000]"},
     {"--nb=", "NB size of tile (NB by NB) [default: 256]"},
+    {"--ib=", "IB inner blocking size [default: 64]"},
     {"--alpha=", "scalar alpha"},
     {"--beta=", "scalar beta"},
     {"--pada=", "padding added to lda [default: 0]"},
     {"--padb=", "padding added to ldb [default: 0]"},
     {"--padc=", "padding added to ldc [default: 0]"},
+
+    //------------------------------------------------------
+    // output parameters
+    //------------------------------------------------------
+    // these are not used, except to assert sizeof(ParamUsage) == PARAM_SIZEOF
+    {"success", "success indicator"},
+    {"error", "numerical error"},
+    {"time", "time to solution"},
+    {"gflops", "GFLOPS rate"}
 };
 
 //==============================================================================

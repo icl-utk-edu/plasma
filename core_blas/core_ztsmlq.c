@@ -23,7 +23,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_tsmlq
  *
  *  Overwrites the general complex m1-by-n1 tile A1 and
  *  m2-by-n2 tile A2 with
@@ -116,11 +116,11 @@
  ******************************************************************************/
 void CORE_ztsmlq(PLASMA_enum side, PLASMA_enum trans,
                  int m1, int n1, int m2, int n2, int k, int ib,
-                 PLASMA_Complex64_t *A1, int lda1,
-                 PLASMA_Complex64_t *A2, int lda2,
+                       PLASMA_Complex64_t *A1, int lda1,
+                       PLASMA_Complex64_t *A2, int lda2,
                  const PLASMA_Complex64_t *V, int ldv,
                  const PLASMA_Complex64_t *T, int ldt,
-                 PLASMA_Complex64_t *WORK, int ldwork)
+                       PLASMA_Complex64_t *WORK, int ldwork)
 {
     int i, i1, i3;
     int nw;
@@ -201,7 +201,9 @@ void CORE_ztsmlq(PLASMA_enum side, PLASMA_enum trans,
     }
 
     // Quick return
-    if ((m1 == 0) || (n1 == 0) || (m2 == 0) || (n2 == 0) || (k == 0) || (ib == 0))
+    if ((m1 == 0) || (n1 == 0) ||
+        (m2 == 0) || (n2 == 0) ||
+        (k == 0)  || (ib == 0))
         return;
 
     if (((side == PlasmaLeft) && (trans == PlasmaNoTrans))
@@ -249,10 +251,10 @@ void CORE_ztsmlq(PLASMA_enum side, PLASMA_enum trans,
 /******************************************************************************/
 void CORE_OMP_ztsmlq(PLASMA_enum side, PLASMA_enum trans,
                      int m1, int n1, int m2, int n2, int k, int ib, int nb,
-                     PLASMA_Complex64_t *A1, int lda1,
-                     PLASMA_Complex64_t *A2, int lda2,
-                     const PLASMA_Complex64_t *V, int ldv,
-                     const PLASMA_Complex64_t *T, int ldt)
+                           PLASMA_Complex64_t *A1, int lda1,
+                           PLASMA_Complex64_t *A2, int lda2,
+                     const PLASMA_Complex64_t *V,  int ldv,
+                     const PLASMA_Complex64_t *T,  int ldt)
 {
     // assuming m1 == nb, n1 == nb, m2 == nb, n2 == nb
     #pragma omp task depend(inout:A1[0:nb*nb]) \

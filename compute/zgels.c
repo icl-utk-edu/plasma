@@ -19,7 +19,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_gels
  *
  *  Solves overdetermined or underdetermined linear systems
  *  involving an m-by-n matrix A using the QR or the LQ factorization of A.  It
@@ -228,7 +228,7 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t_Tile_Async
+ * @ingroup plasma_gels
  *
  *  Solves overdetermined or underdetermined linear
  *  system of equations using the tile QR or the tile LQ factorization.
@@ -368,14 +368,14 @@ void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *descA,
         plasma_pzgelqf(*descA, *descT, sequence, request);
 
         // TODO: zero lower part of the right-hand side matrix
-        // zero the trailing block of the right-hand side matrix 
+        // zero the trailing block of the right-hand side matrix
         // (B has less rows than X)
-        //plasma_pzlaset(PlasmaFull, 0., 0., 
-        //               plasma_desc_submatrix(*descB, descA->m, 0, 
+        //plasma_pzlaset(PlasmaFull, 0., 0.,
+        //               plasma_desc_submatrix(*descB, descA->m, 0,
         //                                     descA->n - descA->m, descB->n),
         //               sequence, request);
 
-        // Solve L * Y = B 
+        // Solve L * Y = B
         PLASMA_Complex64_t zone  =  1.0;
         plasma_pztrsm(
             PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaNonUnit,

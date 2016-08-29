@@ -28,12 +28,14 @@ void plasma_pzlaset(PLASMA_enum uplo,
 {
     int i, j;
     int ldai, ldaj;
-    int tempim;
-    int tempjm, tempjn;
+    int tempim, tempjm, tempjn;
     int minmn = imin(A.mt, A.nt);
 
-    if (sequence->status != PLASMA_SUCCESS)
+    // Check sequence status.
+    if (sequence->status != PLASMA_SUCCESS) {
+        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
         return;
+    }
 
     if (uplo == PlasmaLower) {
         for (j = 0; j < minmn; j++) {
@@ -46,8 +48,9 @@ void plasma_pzlaset(PLASMA_enum uplo,
             for (i = j+1; i < A.mt; i++) {
                 tempim = i == A.mt-1 ? A.m-i*A.mb : A.mb;
                 ldai = BLKLDD(A, i);
-                CORE_OMP_zlaset(PlasmaFull, tempim, tempjn, alpha, alpha,
-                                A(i, j), ldai);
+                CORE_OMP_zlaset(PlasmaFull,
+                                tempim, tempjn,
+                                alpha, alpha, A(i, j), ldai);
             }
         }
     }
@@ -57,16 +60,18 @@ void plasma_pzlaset(PLASMA_enum uplo,
             for (i = 0; i < imin(j, A.mt); i++) {
                 tempim = i == A.mt-1 ? A.m-i*A.mb : A.mb;
                 ldai = BLKLDD(A, i);
-                CORE_OMP_zlaset(PlasmaFull, tempim, tempjn, alpha, alpha,
-                                A(i, j), ldai);
+                CORE_OMP_zlaset(PlasmaFull,
+                                tempim, tempjn,
+                                alpha, alpha, A(i, j), ldai);
             }
         }
         for (j = 0; j < minmn; j++) {
             tempjm = j == A.mt-1 ? A.m-j*A.mb : A.mb;
             tempjn = j == A.nt-1 ? A.n-j*A.nb : A.nb;
             ldaj = BLKLDD(A, j);
-            CORE_OMP_zlaset(PlasmaUpper, tempjm, tempjn, alpha, beta,
-                            A(j, j), ldaj);
+            CORE_OMP_zlaset(PlasmaUpper,
+                            tempjm, tempjn,
+                            alpha, beta, A(j, j), ldaj);
         }
     }
     else { // PlasmaFull, i.e. diagonal matrix
@@ -75,16 +80,18 @@ void plasma_pzlaset(PLASMA_enum uplo,
             ldai = BLKLDD(A, i);
             for (j = 0; j < A.nt; j++) {
                 tempjn = j == A.nt-1 ? A.n-j*A.nb : A.nb;
-                CORE_OMP_zlaset(PlasmaFull, tempim, tempjn, alpha, alpha,
-                                A(i, j), ldai);
+                CORE_OMP_zlaset(PlasmaFull,
+                                tempim, tempjn,
+                                alpha, alpha, A(i, j), ldai);
             }
         }
         for (j = 0; j < minmn; j++) {
             tempjm = j == A.mt-1 ? A.m-j*A.mb : A.mb;
             tempjn = j == A.nt-1 ? A.n-j*A.nb : A.nb;
             ldaj = BLKLDD(A, j);
-            CORE_OMP_zlaset(PlasmaFull, tempjm, tempjn, alpha, beta,
-                            A(j, j), ldaj);
+            CORE_OMP_zlaset(PlasmaFull,
+                            tempjm, tempjn,
+                            alpha, beta, A(j, j), ldaj);
         }
     }
 }

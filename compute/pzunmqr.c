@@ -33,8 +33,11 @@ void plasma_pzunmqr(PLASMA_enum side, PLASMA_enum trans,
     int tempkm, tempnn, tempkmin, tempmm, tempkn;
     int minMT, minM;
 
-    if (sequence->status != PLASMA_SUCCESS)
+    // Check sequence status.
+    if (sequence->status != PLASMA_SUCCESS) {
+        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
         return;
+    }
 
     // Set inner blocking from the plasma context
     plasma_context_t *plasma = plasma_context_self();

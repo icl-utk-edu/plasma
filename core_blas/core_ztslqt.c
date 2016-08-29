@@ -27,9 +27,9 @@
 
 /***************************************************************************//**
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_tslqt
  *
- *  Computes a LQ factorization of a rectangular matrix
+ *  Computes an LQ factorization of a rectangular matrix
  *  formed by coupling side-by-side a complex m-by-m
  *  lower triangular tile A1 and a complex m-by-n tile A2:
  *
@@ -129,12 +129,14 @@ void CORE_ztslqt(int m, int n, int ib,
     for (ii = 0; ii < m; ii += ib) {
         sb = imin(m-ii, ib);
         for (i = 0; i < sb; i++) {
-            // Generate elementary reflector H(ii*ib+i) to annihilate A(ii*ib+i,ii*ib+i:n).
+            // Generate elementary reflector H(ii*ib+i) to annihilate
+            // A(ii*ib+i,ii*ib+i:n).
 #ifdef COMPLEX
             LAPACKE_zlacgv_work(n, &A2[ii+i], lda2);
             LAPACKE_zlacgv_work(1, &A1[lda1*(ii+i)+ii+i], lda1);
 #endif
-            LAPACKE_zlarfg_work(n+1, &A1[lda1*(ii+i)+ii+i], &A2[ii+i], lda2, &TAU[ii+i]);
+            LAPACKE_zlarfg_work(n+1, &A1[lda1*(ii+i)+ii+i], &A2[ii+i], lda2,
+                                &TAU[ii+i]);
 
             alpha = -(TAU[ii+i]);
             if (ii+i+1 < m) {

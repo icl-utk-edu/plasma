@@ -60,37 +60,40 @@ void test_zgemm(param_value_t param[], char *info)
             print_usage(PARAM_PADA);
             print_usage(PARAM_PADB);
             print_usage(PARAM_PADC);
+            print_usage(PARAM_NB);
         }
         else {
             // Return column labels.
             snprintf(info, InfoLen,
-                "%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s",
-                InfoSpacing, "TransA",
-                InfoSpacing, "TransB",
-                InfoSpacing, "M",
-                InfoSpacing, "N",
-                InfoSpacing, "K",
-                InfoSpacing, "alpha",
-                InfoSpacing, "beta",
-                InfoSpacing, "PadA",
-                InfoSpacing, "PadB",
-                InfoSpacing, "PadC");
+                     "%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s",
+                     InfoSpacing, "TransA",
+                     InfoSpacing, "TransB",
+                     InfoSpacing, "M",
+                     InfoSpacing, "N",
+                     InfoSpacing, "K",
+                     InfoSpacing, "alpha",
+                     InfoSpacing, "beta",
+                     InfoSpacing, "PadA",
+                     InfoSpacing, "PadB",
+                     InfoSpacing, "PadC",
+                     InfoSpacing, "NB");
         }
         return;
     }
     // Return column values.
     snprintf(info, InfoLen,
-        "%*c %*c %*d %*d %*d %*.4f %*.4f %*d %*d %*d",
-        InfoSpacing, param[PARAM_TRANSA].c,
-        InfoSpacing, param[PARAM_TRANSB].c,
-        InfoSpacing, param[PARAM_M].i,
-        InfoSpacing, param[PARAM_N].i,
-        InfoSpacing, param[PARAM_K].i,
-        InfoSpacing, __real__(param[PARAM_ALPHA].z),
-        InfoSpacing, __real__(param[PARAM_BETA].z),
-        InfoSpacing, param[PARAM_PADA].i,
-        InfoSpacing, param[PARAM_PADB].i,
-        InfoSpacing, param[PARAM_PADC].i);
+             "%*c %*c %*d %*d %*d %*.4f %*.4f %*d %*d %*d %*d",
+             InfoSpacing, param[PARAM_TRANSA].c,
+             InfoSpacing, param[PARAM_TRANSB].c,
+             InfoSpacing, param[PARAM_M].i,
+             InfoSpacing, param[PARAM_N].i,
+             InfoSpacing, param[PARAM_K].i,
+             InfoSpacing, __real__(param[PARAM_ALPHA].z),
+             InfoSpacing, __real__(param[PARAM_BETA].z),
+             InfoSpacing, param[PARAM_PADA].i,
+             InfoSpacing, param[PARAM_PADB].i,
+             InfoSpacing, param[PARAM_PADC].i,
+             InfoSpacing, param[PARAM_NB].i);
 
     //================================================================
     // Set parameters.
@@ -145,6 +148,11 @@ void test_zgemm(param_value_t param[], char *info)
 
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
+
+    //================================================================
+    // Set tuning parameters.
+    //================================================================
+    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_NB].i);
 
     //================================================================
     // Allocate and initialize arrays.

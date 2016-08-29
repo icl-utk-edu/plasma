@@ -23,22 +23,22 @@
 
 /***************************************************************************//**
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_gelqt
  *
- *  Computes the LQ factorization of an m-by-n tile A: 
+ *  Computes the LQ factorization of an m-by-n tile A:
  *  The factorization has the form
  *    \f[
  *        A = L \times Q
  *    \f]
  *  The tile Q is represented as a product of elementary reflectors
  *    \f[
- *        Q = H(k)' . . . H(2)' H(1)',
+ *        Q = H(k)^H . . . H(2)^H H(1)^H,
  *    \f]
  *  where \f$ k = min(m,n) \f$.
  *
  *  Each \f$ H(i) \f$ has the form
  *    \f[
- *        H(i) = I - \tau \times v \times v'
+ *        H(i) = I - \tau \times v \times v^H
  *    \f]
  *  where \f$ tau \f$ is a scalar, and \f$ v \f$ is a vector with
  *  v(1:i-1) = 0 and v(i) = 1; v(i+1:n)^H is stored on exit in A(i,i+1:n),

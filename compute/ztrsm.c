@@ -101,9 +101,9 @@
  ******************************************************************************/
 int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
                  PLASMA_enum transA, PLASMA_enum diag,
-                 int m, int n, PLASMA_Complex64_t alpha,
-                 PLASMA_Complex64_t *A, int lda,
-                 PLASMA_Complex64_t *B, int ldb)
+                 int m, int n,
+                 PLASMA_Complex64_t alpha, PLASMA_Complex64_t *A, int lda,
+                                           PLASMA_Complex64_t *B, int ldb)
 {
     int An;
     int nb;
@@ -207,38 +207,25 @@ int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
     // Initialize request.
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
 
+    // asynchronous block
     #pragma omp parallel
     #pragma omp master
     {
-        // The Async functions are submitted here.  If an error occurs
-        // (at submission time or at run time) the sequence->status
-        // will be marked with an error.  After an error, the next
-        // Async will not _insert_ more tasks into the runtime.  The
-        // sequence->status can be checked after each call to _Async
-        // or at the end of the parallel region.
-
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
+        PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
 
         // Call the tile async function.
-        if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_ztrsm_Tile_Async(side, uplo,
-                                    transA, diag,
-                                    alpha, &descA,
-                                           &descB,
-                                    sequence, &request);
-        }
+        PLASMA_ztrsm_Tile_Async(side, uplo,
+                                transA, diag,
+                                alpha, &descA,
+                                       &descB,
+                                sequence, &request);
 
         // Translate back to LAPACK layout.
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
-    } // pragma omp parallel block closed
-
-    // Check for errors in the async execution
-    if (sequence->status != PLASMA_SUCCESS)
-        return sequence->status;
+        PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
+    }
+    // implicit synchronization
 
     // Free matrices in tile layout.
     plasma_desc_mat_free(&descA);

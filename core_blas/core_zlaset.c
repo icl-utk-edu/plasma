@@ -26,7 +26,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_laset
  *
  *  Sets the elements of the matrix A on the diagonal
  *  to beta and on the off-diagonals to alpha
@@ -58,14 +58,14 @@
  * @param[in] lda
  *         The leading dimension of the array A.  lda >= max(1,m).
  *
- **/
+ ******************************************************************************/
 void CORE_zlaset(PLASMA_enum uplo, int m, int n,
                  PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
                  PLASMA_Complex64_t *A, int lda)
 {
-    if (alpha == beta && 
-        alpha == (PLASMA_Complex64_t) 0. && 
-        uplo == PlasmaFull && 
+    if (alpha == beta &&
+        alpha == (PLASMA_Complex64_t) 0. &&
+        uplo == PlasmaFull &&
         m == lda) {
         // a shortcut to zero the entire tile
         memset((void*) A, 0, m*n*sizeof(PLASMA_Complex64_t));

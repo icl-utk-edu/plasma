@@ -23,7 +23,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_unmlq
  *
  *  Overwrites the general complex m-by-n tile C with
  *
@@ -36,7 +36,7 @@
  *    \f[
  *        Q = H(k) . . . H(2) H(1)
  *    \f]
- *  as returned by CORE_zgelqt. Q is of order m if side = 'PlasmaLeft' 
+ *  as returned by CORE_zgelqt. Q is of order m if side = 'PlasmaLeft'
  *  and of order n if side = 'PlasmaRight'.
  *
  *******************************************************************************
@@ -102,10 +102,10 @@
  ******************************************************************************/
 void CORE_zunmlq(PLASMA_enum side, PLASMA_enum trans,
                  int m, int n, int k, int ib,
-                 const PLASMA_Complex64_t *A, int lda,
-                 const PLASMA_Complex64_t *T, int ldt,
-                 PLASMA_Complex64_t *C, int ldc,
-                 PLASMA_Complex64_t *WORK, int ldwork)
+                 const PLASMA_Complex64_t *A,    int lda,
+                 const PLASMA_Complex64_t *T,    int ldt,
+                       PLASMA_Complex64_t *C,    int ldc,
+                       PLASMA_Complex64_t *WORK, int ldwork)
 {
     int i, kb;
     int i1, i3;
@@ -180,14 +180,14 @@ void CORE_zunmlq(PLASMA_enum side, PLASMA_enum trans,
         i3 = -ib;
     }
 
-    if( trans == PlasmaNoTrans) {
+    if (trans == PlasmaNoTrans) {
         trans = Plasma_ConjTrans;
     }
     else {
         trans = PlasmaNoTrans;
     }
 
-    for(i = i1; (i >- 1) && (i < k); i+=i3 ) {
+    for (i = i1; (i > -1) && (i < k); i += i3 ) {
         kb = imin(ib, k-i);
 
         if (side == PlasmaLeft) {
@@ -219,7 +219,7 @@ void CORE_OMP_zunmlq(PLASMA_enum side, PLASMA_enum trans,
                      int m, int n, int k, int ib, int nb,
                      const PLASMA_Complex64_t *A, int lda,
                      const PLASMA_Complex64_t *T, int ldt,
-                     PLASMA_Complex64_t *C,       int ldc)
+                           PLASMA_Complex64_t *C, int ldc)
 {
     // assuming m == nb, n == nb
     #pragma omp task depend(in:A[0:nb*nb]) \

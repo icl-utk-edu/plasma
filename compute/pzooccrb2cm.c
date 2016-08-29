@@ -27,8 +27,11 @@ void plasma_pzooccrb2cm(PLASMA_desc A, PLASMA_Complex64_t *Af77, int lda,
     int x2, y2;
     int n, m, ldt;
 
-    if (sequence->status != PLASMA_SUCCESS)
+    // Check sequence status.
+    if (sequence->status != PLASMA_SUCCESS) {
+        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
         return;
+    }
 
     for (m = 0; m < A.mt; m++) {
         ldt = BLKLDD(A, m);

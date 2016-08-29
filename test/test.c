@@ -6,8 +6,6 @@
  *  University of Tennessee, US,
  *  University of Manchester, UK.
  *
- * @date 2016-05-17
- *
  **/
 #include "test.h"
 
@@ -43,6 +41,9 @@ int main(int argc, char **argv)
 
     const char *routine = argv[1];
 
+    // Ensure that ParamUsage has an entry for every param_label_t value.
+    assert(PARAM_SIZEOF == sizeof(ParamUsage)/(2*sizeof(char*)));
+
     param_t param[PARAM_SIZEOF];      // set of parameters
     param_value_t pval[PARAM_SIZEOF]; // snapshot of values
 
@@ -59,7 +60,6 @@ int main(int argc, char **argv)
         time_routine(routine, NULL);
 
     PLASMA_Init();
-    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_NB].val[0].i);
     if (outer) {
         // outer product iteration
         do {
@@ -130,7 +130,6 @@ void print_routine_usage(const char *name)
     print_usage(PARAM_OUTER);
     print_usage(PARAM_TEST);
     print_usage(PARAM_TOL);
-    print_usage(PARAM_NB);
 
     printf("\n");
     run_routine(name, NULL, NULL);
@@ -279,7 +278,7 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_cgeqrf(pval, info);
     else if (strcmp(name, "sgeqrf") == 0)
         test_sgeqrf(pval, info);
-
+/*
     else if (strcmp(name, "zgeqrs") == 0)
         test_zgeqrs(pval, info);
     else if (strcmp(name, "dgeqrs") == 0)
@@ -288,11 +287,57 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_cgeqrs(pval, info);
     else if (strcmp(name, "sgeqrs") == 0)
         test_sgeqrs(pval, info);
+*/
+    else if (strcmp(name, "zhemm") == 0)
+        test_zherk(pval, info);
+    else if (strcmp(name, "chemm") == 0)
+        test_cherk(pval, info);
+
+    else if (strcmp(name, "zher2k") == 0)
+        test_zher2k(pval, info);
+    else if (strcmp(name, "cher2k") == 0)
+        test_cher2k(pval, info);
 
     else if (strcmp(name, "zherk") == 0)
         test_zherk(pval, info);
     else if (strcmp(name, "cherk") == 0)
         test_cherk(pval, info);
+
+    else if (strcmp(name, "zposv") == 0)
+        test_zpotrf(pval, info);
+    else if (strcmp(name, "dposv") == 0)
+        test_dpotrf(pval, info);
+    else if (strcmp(name, "cposv") == 0)
+        test_cpotrf(pval, info);
+    else if (strcmp(name, "sposv") == 0)
+        test_spotrf(pval, info);
+
+    else if (strcmp(name, "zpotrf") == 0)
+        test_zpotrf(pval, info);
+    else if (strcmp(name, "dpotrf") == 0)
+        test_dpotrf(pval, info);
+    else if (strcmp(name, "cpotrf") == 0)
+        test_cpotrf(pval, info);
+    else if (strcmp(name, "spotrf") == 0)
+        test_spotrf(pval, info);
+
+    else if (strcmp(name, "zpotrs") == 0)
+        test_zpotrf(pval, info);
+    else if (strcmp(name, "dpotrs") == 0)
+        test_dpotrf(pval, info);
+    else if (strcmp(name, "cpotrs") == 0)
+        test_cpotrf(pval, info);
+    else if (strcmp(name, "spotrs") == 0)
+        test_spotrf(pval, info);
+
+    else if (strcmp(name, "zsymm") == 0)
+        test_zsyrk(pval, info);
+    else if (strcmp(name, "dsymm") == 0)
+        test_dsyrk(pval, info);
+    else if (strcmp(name, "csymm") == 0)
+        test_csyrk(pval, info);
+    else if (strcmp(name, "ssymm") == 0)
+        test_ssyrk(pval, info);
 
     else if (strcmp(name, "zsyrk") == 0)
         test_zsyrk(pval, info);
@@ -303,11 +348,6 @@ void run_routine(const char *name, param_value_t pval[], char *info)
     else if (strcmp(name, "ssyrk") == 0)
         test_ssyrk(pval, info);
 
-    else if (strcmp(name, "zher2k") == 0)
-        test_zher2k(pval, info);
-    else if (strcmp(name, "cher2k") == 0)
-        test_cher2k(pval, info);
-
     else if (strcmp(name, "zsyr2k") == 0)
         test_zsyr2k(pval, info);
     else if (strcmp(name, "dsyr2k") == 0)
@@ -316,15 +356,6 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_csyr2k(pval, info);
     else if (strcmp(name, "ssyr2k") == 0)
         test_ssyr2k(pval, info);
-
-    else if (strcmp(name, "zpotrf") == 0)
-        test_zpotrf(pval, info);
-    else if (strcmp(name, "dpotrf") == 0)
-        test_dpotrf(pval, info);
-    else if (strcmp(name, "cpotrf") == 0)
-        test_cpotrf(pval, info);
-    else if (strcmp(name, "spotrf") == 0)
-        test_spotrf(pval, info);
 
     else if (strcmp(name, "ztrsm") == 0)
         test_ztrsm(pval, info);
@@ -394,7 +425,7 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--side="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_SIDE]);
 
-        else if (param_starts_with(argv[1], "--trans="))
+        else if (param_starts_with(argv[i], "--trans="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANS]);
         else if (param_starts_with(argv[i], "--transa="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANSA]);
@@ -417,13 +448,15 @@ int param_read(int argc, char **argv, param_t param[])
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_M]);
         else if (param_starts_with(argv[i], "--n="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_N]);
-        else if (param_starts_with(argv[i], "--nrhs="))
-            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NRHS]);
         else if (param_starts_with(argv[i], "--k="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_K]);
+        else if (param_starts_with(argv[i], "--nrhs="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NRHS]);
 
         else if (param_starts_with(argv[i], "--nb="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NB]);
+        else if (param_starts_with(argv[i], "--ib="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_IB]);
 
         else if (param_starts_with(argv[i], "--pada="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_PADA]);
@@ -442,9 +475,11 @@ int param_read(int argc, char **argv, param_t param[])
         // Scan complex parameters.
         //--------------------------------------------------
         else if (param_starts_with(argv[i], "--alpha="))
-            err = param_scan_complex(strchr(argv[i], '=')+1, &param[PARAM_ALPHA]);
+            err = param_scan_complex(strchr(argv[i], '=')+1,
+                                     &param[PARAM_ALPHA]);
         else if (param_starts_with(argv[i], "--beta="))
-            err = param_scan_complex(strchr(argv[i], '=')+1, &param[PARAM_BETA]);
+            err = param_scan_complex(strchr(argv[i], '=')+1,
+                                     &param[PARAM_BETA]);
 
         //--------------------------------------------------
         // Handle help and errors.
@@ -497,13 +532,15 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_int(1000, &param[PARAM_M]);
     if (param[PARAM_N].num == 0)
         param_add_int(1000, &param[PARAM_N]);
-    if (param[PARAM_NRHS].num == 0)
-        param_add_int(1000, &param[PARAM_NRHS]);
     if (param[PARAM_K].num == 0)
         param_add_int(1000, &param[PARAM_K]);
+    if (param[PARAM_NRHS].num == 0)
+        param_add_int(1000, &param[PARAM_NRHS]);
 
     if (param[PARAM_NB].num == 0)
         param_add_int(256, &param[PARAM_NB]);
+    if (param[PARAM_IB].num == 0)
+        param_add_int(64, &param[PARAM_IB]);
 
     if (param[PARAM_PADA].num == 0)
         param_add_int(0, &param[PARAM_PADA]);

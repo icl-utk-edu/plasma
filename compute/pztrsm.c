@@ -37,8 +37,11 @@ void plasma_pztrsm(PLASMA_enum side, PLASMA_enum uplo,
     PLASMA_Complex64_t minvalpha  = (PLASMA_Complex64_t)-1.0 / alpha;
     PLASMA_Complex64_t lalpha;
 
-    if (sequence->status != PLASMA_SUCCESS)
+    // Check sequence status.
+    if (sequence->status != PLASMA_SUCCESS) {
+        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
         return;
+    }
 
     if (side == PlasmaLeft) {
         if (uplo == PlasmaUpper) {

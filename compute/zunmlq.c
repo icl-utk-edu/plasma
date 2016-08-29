@@ -19,7 +19,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_unmlq
  *
  *  Overwrites the general complex m-by-n matrix C with
  *
@@ -119,7 +119,7 @@ int PLASMA_zunmlq(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
         plasma_error("illegal value of side");
         return -1;
     }
-    if ((trans != Plasma_ConjTrans) && (trans != PlasmaNoTrans)){
+    if ((trans != Plasma_ConjTrans) && (trans != PlasmaNoTrans)) {
         plasma_error("illegal value of trans");
         return -2;
     }
@@ -229,7 +229,7 @@ int PLASMA_zunmlq(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t_Tile_Async
+ * @ingroup plasma_unmlq
  *
  *  Non-blocking tile version of PLASMA_zunmlq().
  *  May return before the computation is finished.
@@ -285,9 +285,9 @@ int PLASMA_zunmlq(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
  *
  ******************************************************************************/
 void PLASMA_zunmlq_Tile_Async(PLASMA_enum side, PLASMA_enum trans,
-                              PLASMA_desc *descA, PLASMA_desc *descT, 
+                              PLASMA_desc *descA, PLASMA_desc *descT,
                               PLASMA_desc *descC,
-                              PLASMA_sequence *sequence, 
+                              PLASMA_sequence *sequence,
                               PLASMA_request *request)
 {
     // Get PLASMA context.
@@ -304,7 +304,7 @@ void PLASMA_zunmlq_Tile_Async(PLASMA_enum side, PLASMA_enum trans,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if ((trans != Plasma_ConjTrans) && (trans != PlasmaNoTrans)){
+    if ((trans != Plasma_ConjTrans) && (trans != PlasmaNoTrans)) {
         plasma_error(
             "strange trans - neither Plasma_ConjTrans nor PlasmaTrans");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);

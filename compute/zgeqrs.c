@@ -19,7 +19,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_geqrs
  *
  *  Computes a minimum-norm solution min || A*X - B || using the
  *  QR factorization A = Q*R computed by PLASMA_zgeqrf.
@@ -106,7 +106,8 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
         plasma_error("illegal value of ldb");
         return -8;
     }
-    // Quick return
+
+    // quick return
     if (imin(m, imin(n, nrhs)) == 0) {
         return PLASMA_SUCCESS;
     }
@@ -117,7 +118,6 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
     //    plasma_error("plasma_tune() failed");
     //    return status;
     //}
-
     nb = plasma->nb;
 
     // Initialize tile matrix descriptors.
@@ -173,7 +173,7 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
         }
 
         // Translate back to LAPACK layout.
-        // It is not needed to translate the descriptor back 
+        // It is not needed to translate the descriptor back
         // for out-of-place storage.
         //if (sequence->status == PLASMA_SUCCESS)
         //    PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
@@ -193,7 +193,7 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t_Tile_Async
+ * @ingroup plasma_geqrs
  *
  *  Computes a minimum-norm solution using the tile QR factorization.
  *  Non-blocking tile version of PLASMA_zgeqrs().
