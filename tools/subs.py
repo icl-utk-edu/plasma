@@ -10,8 +10,6 @@
 #
 # but if switched would translate 'double precision' -> 'float precision',
 # which is wrong.
-#
-# @author Mark Gates
 
 
 # ===========================================================================

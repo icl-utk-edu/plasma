@@ -9,9 +9,6 @@
 #
 # See the ICL style guide
 # https://bitbucket.org/icl/guides/wiki/icl_style_guide
-#
-# @author Mark Gates
-# @date 2016-07-20
 
 hg st -a -c -m | perl -pe 's/^[MAC] //' > files.txt
 
@@ -142,12 +139,8 @@ echo "===== Use tools/doxygen_groups.sh to see what groups are defined vs. in us
 grep -P '@ingroup' $src | grep -v -P '@ingroup (plasma|core)_[^z]\w+'
 echo
 
-echo "===== @version 3.0.0"
-grep -P '@version' $files | grep -v -P '@version 3.0.0'
-echo
-
-echo "===== @date yyyy-mm-dd"
-grep -P '@date' $files | grep -v -P '@date \d\d\d\d-\d\d-\d\d'
+echo "===== @version, @date, @author deprecated"
+grep -P '@version|@date|@author' $files
 echo
 
 echo "===== **** rule lines are exactly 80 characters"

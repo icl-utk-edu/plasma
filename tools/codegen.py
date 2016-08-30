@@ -6,8 +6,6 @@
 # ===========================================================================
 #
 # Tested with python 2.7.9 and 3.4.3.
-#
-# @author Mark Gates
 
 from __future__ import print_function
 

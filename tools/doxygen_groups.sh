@@ -10,8 +10,6 @@
 #     ./tools/doxygen_groups.sh
 #
 # On MacOS, uses opendiff; otherwise uses diff.
-#
-# @author Mark Gates
 
 egrep -h '@ingroup' */*.{h,c} | \
 	perl -pe 's/^ *\*//;  s@^ *///@@;  s/^ +//;  s/\@ingroup/\@group/;' | \

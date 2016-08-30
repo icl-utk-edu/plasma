@@ -23,9 +23,9 @@
  *
  *  Overwrites the general complex m-by-n matrix C with
  *
- *                               side = 'PlasmaLeft'     side = 'PlasmaRight'
- *  trans = 'PlasmaNoTrans':          Q * C                 C * Q
- *  trans = 'Plasma_ConjTrans':     Q^H * C                 C * Q^H
+ *                                 side = PlasmaLeft     side = PlasmaRight
+ *  trans = PlasmaNoTrans             Q * C                 C * Q
+ *  trans = Plasma_ConjTrans        Q^H * C                 C * Q^H
  *
  *  where Q is an orthogonal (or unitary) matrix defined as the product of k
  *  elementary reflectors
@@ -111,9 +111,10 @@ int PLASMA_zunmqr(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
     }
 
     int am;
-    if ( side == PlasmaLeft ) {
+    if (side == PlasmaLeft) {
         am = m;
-    } else {
+    }
+    else {
         am = n;
     }
 
@@ -122,7 +123,7 @@ int PLASMA_zunmqr(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
         plasma_error("illegal value of side");
         return -1;
     }
-    if ((trans != Plasma_ConjTrans) && (trans != PlasmaNoTrans)){
+    if ((trans != Plasma_ConjTrans) && (trans != PlasmaNoTrans)) {
         plasma_error("illegal value of trans");
         return -2;
     }
@@ -156,7 +157,7 @@ int PLASMA_zunmqr(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
     //    plasma_error("PLASMA_zunmqr", "plasma_tune() failed");
     //    return status;
     //}
-    
+
     nb = plasma->nb;
 
     // Initialize tile matrix descriptors.
@@ -286,9 +287,9 @@ int PLASMA_zunmqr(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
  *
  ******************************************************************************/
 void PLASMA_zunmqr_Tile_Async(PLASMA_enum side, PLASMA_enum trans,
-                              PLASMA_desc *descA, PLASMA_desc *descT, 
+                              PLASMA_desc *descA, PLASMA_desc *descT,
                               PLASMA_desc *descC,
-                              PLASMA_sequence *sequence, 
+                              PLASMA_sequence *sequence,
                               PLASMA_request *request)
 {
     // Get PLASMA context.
@@ -305,7 +306,7 @@ void PLASMA_zunmqr_Tile_Async(PLASMA_enum side, PLASMA_enum trans,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if ((trans != Plasma_ConjTrans) && (trans != PlasmaNoTrans)){
+    if ((trans != Plasma_ConjTrans) && (trans != PlasmaNoTrans)) {
         plasma_error(
             "strange trans - neither Plasma_ConjTrans nor PlasmaTrans");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
@@ -355,6 +356,6 @@ void PLASMA_zunmqr_Tile_Async(PLASMA_enum side, PLASMA_enum trans,
     plasma_pzunmqr(side, trans,
                    *descA, *descC, *descT,
                    sequence, request);
-    
+
     return;
 }

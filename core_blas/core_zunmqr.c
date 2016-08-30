@@ -27,17 +27,17 @@
  *
  *  Overwrites the general m-by-n tile C with
  *
- *                                 side = 'PlasmaLeft'   side = 'PlasmaRight'
- *    trans = 'PlasmaNoTrans':           Q * C                  C * Q
- *    trans = 'Plasma_ConjTrans':      Q^H * C                  C * Q^H
+ *                                    side = PlasmaLeft      side = PlasmaRight
+ *    trans = PlasmaNoTrans              Q * C                  C * Q
+ *    trans = Plasma_ConjTrans         Q^H * C                  C * Q^H
  *
  *  where Q is a unitary matrix defined as the product of k
  *  elementary reflectors
  *    \f[
  *        Q = H(1) H(2) ... H(k)
  *    \f]
- *  as returned by CORE_zgeqrt. Q is of order m if side = 'PlasmaLeft'
- *  and of order n if side = 'PlasmaRight'.
+ *  as returned by CORE_zgeqrt. Q is of order m if side = PlasmaLeft
+ *  and of order n if side = PlasmaRight.
  *
  *******************************************************************************
  *

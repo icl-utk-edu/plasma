@@ -28,11 +28,11 @@
  *  Overwrites the general complex m1-by-n1 tile A1 and
  *  m2-by-n2 tile A2 with
  *
- *                                side = 'PlasmaLeft'      side = 'PlasmaRight'
- *    trans = 'PlasmaNoTrans':         Q * | A1 |           | A1 A2 | * Q
+ *                                side = PlasmaLeft        side = PlasmaRight
+ *    trans = PlasmaNoTrans            Q * | A1 |           | A1 A2 | * Q
  *                                         | A2 |
  *
- *    trans = 'Plasma_ConjTrans':    Q^H * | A1 |           | A1 A2 | * Q^H
+ *    trans = Plasma_ConjTrans       Q^H * | A1 |           | A1 A2 | * Q^H
  *                                         | A2 |
  *
  *  where Q is a complex unitary matrix defined as the product of k

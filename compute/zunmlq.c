@@ -23,9 +23,9 @@
  *
  *  Overwrites the general complex m-by-n matrix C with
  *
- *                               side = 'PlasmaLeft'     side = 'PlasmaRight'
- *  trans = 'PlasmaNoTrans':          Q * C                 C * Q
- *  trans = 'Plasma_ConjTrans':     Q^H * C                 C * Q^H
+ *                                 side = PlasmaLeft     side = PlasmaRight
+ *  trans = PlasmaNoTrans             Q * C                 C * Q
+ *  trans = Plasma_ConjTrans        Q^H * C                 C * Q^H
  *
  *  where Q is an orthogonal (or unitary) matrix defined as the product of k
  *  elementary reflectors

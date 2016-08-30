@@ -13,7 +13,8 @@
 #include <omp.h>
 
 /******************************************************************************/
-int plasma_workspace_alloc(PLASMA_workspace *work, size_t lwork, PLASMA_enum dtyp)
+int plasma_workspace_alloc(PLASMA_workspace *work, size_t lwork,
+                           PLASMA_enum dtyp)
 {
     // Allocate array of pointers.
     #pragma omp parallel
