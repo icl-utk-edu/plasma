@@ -86,8 +86,8 @@ void test_zsyr2k(param_value_t param[], char *info)
              InfoSpacing, param[PARAM_TRANS].c,
              InfoSpacing, param[PARAM_N].i,
              InfoSpacing, param[PARAM_K].i,
-             InfoSpacing, __real__(param[PARAM_ALPHA].z),
-             InfoSpacing, __real__(param[PARAM_BETA].z),
+             InfoSpacing, creal(param[PARAM_ALPHA].z),
+             InfoSpacing, creal(param[PARAM_BETA].z),
              InfoSpacing, param[PARAM_PADA].i,
              InfoSpacing, param[PARAM_PADB].i,
              InfoSpacing, param[PARAM_PADC].i,
@@ -184,8 +184,8 @@ void test_zsyr2k(param_value_t param[], char *info)
     PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
     PLASMA_Complex64_t beta  = param[PARAM_BETA].z;
 #else
-    PLASMA_Complex64_t alpha = __real__(param[PARAM_ALPHA].z);
-    PLASMA_Complex64_t beta  = __real__(param[PARAM_BETA].z);
+    double alpha = creal(param[PARAM_ALPHA].z);
+    double beta  = creal(param[PARAM_BETA].z);
 #endif
 
     //================================================================

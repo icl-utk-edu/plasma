@@ -84,8 +84,8 @@ void test_zsyrk(param_value_t param[], char *info)
              InfoSpacing, param[PARAM_TRANS].c,
              InfoSpacing, param[PARAM_N].i,
              InfoSpacing, param[PARAM_K].i,
-             InfoSpacing, __real__(param[PARAM_ALPHA].z),
-             InfoSpacing, __real__(param[PARAM_BETA].z),
+             InfoSpacing, creal(param[PARAM_ALPHA].z),
+             InfoSpacing, creal(param[PARAM_BETA].z),
              InfoSpacing, param[PARAM_PADA].i,
              InfoSpacing, param[PARAM_PADC].i,
              InfoSpacing, param[PARAM_NB].i);
@@ -164,14 +164,13 @@ void test_zsyrk(param_value_t param[], char *info)
         memcpy(Cref, C, (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
     }
 
-
-    #ifdef COMPLEX
+#ifdef COMPLEX
     PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
     PLASMA_Complex64_t beta  = param[PARAM_BETA].z;
-    #else
-    PLASMA_Complex64_t alpha = __real__(param[PARAM_ALPHA].z);
-    PLASMA_Complex64_t beta  = __real__(param[PARAM_BETA].z);
-    #endif
+#else
+    double alpha = creal(param[PARAM_ALPHA].z);
+    double beta  = creal(param[PARAM_BETA].z);
+#endif
 
     //================================================================
     // Run and time PLASMA.
