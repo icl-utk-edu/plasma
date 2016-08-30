@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #ifdef PLASMA_WITH_MKL
     #include <mkl_cblas.h>
@@ -134,7 +135,7 @@ void test_zsymm(param_value_t param[], char *info)
     int ldc = imax(1, Cm + param[PARAM_PADC].i);
 
     int test = param[PARAM_TEST].c == 'y';
-    double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
+    double eps = LAPACKE_dlamch('E');
 
     //================================================================
     // Set tuning parameters.
@@ -188,12 +189,14 @@ void test_zsymm(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
+
     PLASMA_zsymm(
         (CBLAS_SIDE)side, (CBLAS_UPLO) uplo,
         m, n,
         alpha, A, lda,
                B, ldb,
         beta,  C, ldc);
+
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
@@ -204,6 +207,7 @@ void test_zsymm(param_value_t param[], char *info)
     // Test results by comparing to a reference implementation.
     //================================================================
     if (test) {
+        // see comments in test_zgemm.c
         cblas_zsymm(
             CblasColMajor,
             (CBLAS_SIDE) side, (CBLAS_UPLO) uplo,
@@ -215,19 +219,28 @@ void test_zsymm(param_value_t param[], char *info)
         PLASMA_Complex64_t zmone = -1.0;
         cblas_zaxpy((size_t)ldc*Cn, CBLAS_SADDR(zmone), Cref, 1, C, 1);
 
+        char uplo_ = param[PARAM_UPLO].c;
         double work[1];
+        double Anorm = LAPACKE_zlansy_work(
+                           LAPACK_COL_MAJOR, 'F', uplo_, An, A, lda, work);
+        double Bnorm = LAPACKE_zlange_work(
+                           LAPACK_COL_MAJOR, 'F', Bm, Bn, B,    ldb, work);
         double Cnorm = LAPACKE_zlange_work(
-            LAPACK_COL_MAJOR, 'F', Cm, Cn, Cref, ldc, work);
+                           LAPACK_COL_MAJOR, 'F', Cm, Cn, Cref, ldc, work);
         double error = LAPACKE_zlange_work(
-            LAPACK_COL_MAJOR, 'F', Cm, Cn, C,    ldc, work);
-        if (Cnorm != 0)
-            error /= Cnorm;
+                           LAPACK_COL_MAJOR, 'F', Cm, Cn, C,    ldc, work);
+        double normalize = sqrt((double)An+2) * cabs(alpha) * Anorm * Bnorm
+                         + 2 * cabs(beta) * Cnorm;
+        if (normalize != 0)
+            error /= normalize;
 
         param[PARAM_ERROR].d = error;
-        param[PARAM_SUCCESS].i = error < tol;
+        param[PARAM_SUCCESS].i = error < 3*eps;
     }
 
-    // Free arrays
+    //================================================================
+    // Free arrays.
+    //================================================================
     free(A);
     free(B);
     free(C);

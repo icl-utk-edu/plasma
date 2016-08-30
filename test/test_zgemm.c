@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #ifdef PLASMA_WITH_MKL
     #include <mkl_cblas.h>
@@ -147,7 +148,7 @@ void test_zgemm(param_value_t param[], char *info)
     int ldc = imax(1, Cm + param[PARAM_PADC].i);
 
     int test = param[PARAM_TEST].c == 'y';
-    double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
+    double eps = LAPACKE_dlamch('E');
 
     //================================================================
     // Set tuning parameters.
@@ -219,6 +220,13 @@ void test_zgemm(param_value_t param[], char *info)
     // Test results by comparing to a reference implementation.
     //================================================================
     if (test) {
+        // |R - R_ref|_p < gamma_{k+2} * |alpha| * |A|_p * |B|_p +
+        //                 gamma_2 * |beta| * |C|_p
+        // holds component-wise or with |.|_p as 1, inf, or Frobenius norm.
+        // gamma_k = k*eps / (1 - k*eps), but we use
+        // gamma_k = sqrt(k)*eps as a statistical average case.
+        // Using 3*eps covers complex arithmetic.
+        // See Higham, Accuracy and Stability of Numerical Algorithms, ch 2-3.
         cblas_zgemm(
             CblasColMajor,
             (CBLAS_TRANSPOSE)transa, (CBLAS_TRANSPOSE)transb,
@@ -231,15 +239,21 @@ void test_zgemm(param_value_t param[], char *info)
         cblas_zaxpy((size_t)ldc*Cn, CBLAS_SADDR(zmone), Cref, 1, C, 1);
 
         double work[1];
+        double Anorm = LAPACKE_zlange_work(
+                           LAPACK_COL_MAJOR, 'F', Am, An, A,    lda, work);
+        double Bnorm = LAPACKE_zlange_work(
+                           LAPACK_COL_MAJOR, 'F', Bm, Bn, B,    ldb, work);
         double Cnorm = LAPACKE_zlange_work(
                            LAPACK_COL_MAJOR, 'F', Cm, Cn, Cref, ldc, work);
         double error = LAPACKE_zlange_work(
                            LAPACK_COL_MAJOR, 'F', Cm, Cn, C,    ldc, work);
-        if (Cnorm != 0)
-            error /= Cnorm;
+        double normalize = sqrt((double)k+2) * cabs(alpha) * Anorm * Bnorm
+                         + 2 * cabs(beta) * Cnorm;
+        if (normalize != 0)
+            error /= normalize;
 
         param[PARAM_ERROR].d = error;
-        param[PARAM_SUCCESS].i = error < tol;
+        param[PARAM_SUCCESS].i = error < 3*eps;
     }
 
     //================================================================

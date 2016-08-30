@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #ifdef PLASMA_WITH_MKL
     #include <mkl_cblas.h>
@@ -128,7 +129,7 @@ void test_zherk(param_value_t param[], char *info)
     int ldc = imax(1, Cm + param[PARAM_PADC].i);
 
     int test = param[PARAM_TEST].c == 'y';
-    double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
+    double eps = LAPACKE_dlamch('E');
 
     //================================================================
     // Set tuning parameters.
@@ -187,6 +188,7 @@ void test_zherk(param_value_t param[], char *info)
     // Test results by comparing to a reference implementation.
     //================================================================
     if (test) {
+        // see comments in test_zgemm.c
         cblas_zherk(
             CblasColMajor,
             (CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)trans,
@@ -197,16 +199,21 @@ void test_zherk(param_value_t param[], char *info)
         PLASMA_Complex64_t zmone = -1.0;
         cblas_zaxpy((size_t)ldc*Cn, CBLAS_SADDR(zmone), Cref, 1, C, 1);
 
+        char uplo_ = param[PARAM_UPLO].c;
         double work[1];
-        double Cnorm = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', Cm, Cn, Cref, ldc, work);
-        double error = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', Cm, Cn, C,    ldc, work);
-        if (Cnorm != 0)
-            error /= Cnorm;
+        double Anorm = LAPACKE_zlange_work(
+                           LAPACK_COL_MAJOR, 'F', Am, An, A, lda, work);
+        double Cnorm = LAPACKE_zlanhe_work(
+                           LAPACK_COL_MAJOR, 'F', uplo_, Cn, Cref, ldc, work);
+        double error = LAPACKE_zlanhe_work(
+                           LAPACK_COL_MAJOR, 'F', uplo_, Cn, C,    ldc, work);
+        double normalize = sqrt((double)k+2) * cabs(alpha) * Anorm * Anorm
+                         + 2 * cabs(beta) * Cnorm;
+        if (normalize != 0)
+            error /= normalize;
 
         param[PARAM_ERROR].d = error;
-        param[PARAM_SUCCESS].i = error < tol;
+        param[PARAM_SUCCESS].i = error < 3*eps;
     }
 
     //================================================================
