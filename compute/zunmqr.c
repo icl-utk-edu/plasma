@@ -44,8 +44,8 @@
  *
  * @param[in] trans
  *          Intended usage:
- *          - PlasmaNoTrans:    apply Q;
- *          - Plasma_ConjTrans: apply Q^H.
+ *          - PlasmaNoTrans:    No transpose, apply Q;
+ *          - Plasma_ConjTrans: Transpose, apply Q^H.
  *
  * @param[in] m
  *          The number of rows of the matrix C. m >= 0.

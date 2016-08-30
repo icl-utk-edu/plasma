@@ -104,10 +104,10 @@
  ******************************************************************************/
 void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
                  int m, int n, int k, int ib,
-                 const PLASMA_Complex64_t *A, int lda,
-                 const PLASMA_Complex64_t *T, int ldt,
-                 PLASMA_Complex64_t *C, int ldc,
-                 PLASMA_Complex64_t *WORK, int ldwork)
+                 const PLASMA_Complex64_t *A,    int lda,
+                 const PLASMA_Complex64_t *T,    int ldt,
+                       PLASMA_Complex64_t *C,    int ldc,
+                       PLASMA_Complex64_t *WORK, int ldwork)
 {
     int i, kb;
     int i1, i3;
@@ -117,7 +117,7 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
     int ni = n;
     int mi = m;
 
-    // Check input arguments.
+    // Check input arguments
     if ((side != PlasmaLeft) && (side != PlasmaRight)) {
         plasma_error("Illegal value of side");
         return;
@@ -215,14 +215,14 @@ void CORE_OMP_zunmqr(PLASMA_enum side, PLASMA_enum trans,
                      int m, int n, int k, int ib, int nb,
                      const PLASMA_Complex64_t *A, int lda,
                      const PLASMA_Complex64_t *T, int ldt,
-                     PLASMA_Complex64_t *C,       int ldc)
+                           PLASMA_Complex64_t *C, int ldc)
 {
     // assuming lda == m == n == nb, ldc == nb, ldt == ib
     #pragma omp task depend(in:A[0:nb*nb]) \
                      depend(in:T[0:ib*nb]) \
                      depend(inout:C[0:nb*nb])
     {
-        // Allocate an auxiliary array.
+        // prepare memory for the auxiliary array
         PLASMA_Complex64_t *WORK =
             (PLASMA_Complex64_t *) malloc((size_t)ib*nb *
                                           sizeof(PLASMA_Complex64_t));
@@ -232,7 +232,7 @@ void CORE_OMP_zunmqr(PLASMA_enum side, PLASMA_enum trans,
 
         int ldwork = nb;
 
-        // Call the kernel.
+        // call the kernel
         CORE_zunmqr(side, trans,
                     m, n, k, ib,
                     A, lda,
@@ -240,7 +240,7 @@ void CORE_OMP_zunmqr(PLASMA_enum side, PLASMA_enum trans,
                     C, ldc,
                     WORK, ldwork);
 
-        // Free the auxiliary array.
+        // deallocate the auxiliary array
         free(WORK);
     }
 }

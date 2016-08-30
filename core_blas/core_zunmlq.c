@@ -134,35 +134,35 @@ void CORE_zunmlq(PLASMA_enum side, PLASMA_enum trans,
     // automatic datatype conversion, which is what we want here.
     // PlasmaConjTrans is protected from this conversion.
     if ((trans != PlasmaNoTrans) && (trans != Plasma_ConjTrans)) {
-        plasma_error("Illegal value of trans");
+        plasma_error("illegal value of trans");
         return;
     }
     if (m < 0) {
-        plasma_error("Illegal value of m");
+        plasma_error("illegal value of m");
         return;
     }
     if (n < 0) {
-        plasma_error("Illegal value of n");
+        plasma_error("illegal value of n");
         return;
     }
     if ((k < 0) || (k > nq)) {
-        plasma_error("Illegal value of k");
+        plasma_error("illegal value of k");
         return;
     }
     if ((ib < 0) || ( (ib == 0) && ((m > 0) && (n > 0)) )) {
-        plasma_error("Illegal value of ib");
+        plasma_error("illegal value of ib");
         return;
     }
     if ((lda < imax(1,k)) && (k > 0)) {
-        plasma_error("Illegal value of lda");
+        plasma_error("illegal value of lda");
         return;
     }
     if ((ldc < imax(1,m)) && (m > 0)) {
-        plasma_error("Illegal value of ldc");
+        plasma_error("illegal value of ldc");
         return;
     }
     if ((ldwork < imax(1,nw)) && (nw > 0)) {
-        plasma_error("Illegal value of ldwork");
+        plasma_error("illegal value of ldwork");
         return;
     }
 
@@ -221,7 +221,7 @@ void CORE_OMP_zunmlq(PLASMA_enum side, PLASMA_enum trans,
                      const PLASMA_Complex64_t *T, int ldt,
                            PLASMA_Complex64_t *C, int ldc)
 {
-    // assuming m == nb, n == nb
+    // assuming lda == m == n == nb, ldc == nb, ldt == ib
     #pragma omp task depend(in:A[0:nb*nb]) \
                      depend(in:T[0:ib*nb]) \
                      depend(inout:C[0:nb*nb])
