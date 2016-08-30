@@ -122,10 +122,9 @@ void test_zpotrf(param_value_t param[], char *info)
     // It sets Aji = conj( Aij ) for j < i, that is, copy lower
     // triangle to upper triangle.
     //================================================================
-    int i, j;
-    for (i=0; i < n; ++i) {
-        A(i,i) = (creal(A(i,i)) + n) + 0. * I;
-        for (j=0; j < i; ++j) {
+    for (int i = 0; i < n; ++i) {
+        A(i,i) = creal(A(i,i)) + n;
+        for (int j = 0; j < i; ++j) {
             A(j,i) = conj(A(i,j));
         }
     }
