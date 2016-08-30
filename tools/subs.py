@@ -390,6 +390,7 @@ subs = {
     (r'',                   r'',                    r'\bconjf\b',           r'\bconj\b'            ),
     (r'\bfabsf\b',          r'\bfabs\b',            r'\bfabsf\b',           r'\bfabs\b'            ),
     (r'\bfabsf\b',          r'\bfabs\b',            r'\bcabsf\b',           r'\bcabs\b'            ),
+    (r'\bsqrtf\b',          r'\bsqrt\b',            r'\bsqrtf\b',           r'\bsqrt\b'            ),
 
     # ----- Constants
     # Do not convert ConjTrans to Trans, since in most cases ConjTrans
