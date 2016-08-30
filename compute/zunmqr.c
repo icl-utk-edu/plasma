@@ -32,8 +32,8 @@
  *
  *        Q = H(1) H(2) . . . H(k)
  *
- *  as returned by PLASMA_zgeqrf. Q is of order M if SIDE = PlasmaLeft
- *  and of order N if SIDE = PlasmaRight.
+ *  as returned by PLASMA_zgeqrf. Q is of order m if side = PlasmaLeft
+ *  and of order n if side = PlasmaRight.
  *
  *******************************************************************************
  *
@@ -44,8 +44,8 @@
  *
  * @param[in] trans
  *          Intended usage:
- *          - PlasmaNoTrans:    no transpose, apply Q;
- *          - Plasma_ConjTrans: (conjugate) transpose, apply Q^H.
+ *          - PlasmaNoTrans:    apply Q;
+ *          - Plasma_ConjTrans: apply Q^H.
  *
  * @param[in] m
  *          The number of rows of the matrix C. m >= 0.
