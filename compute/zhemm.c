@@ -2,14 +2,10 @@
  *
  * @file zhemm.c
  *
- *  PLASMA computational routine.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of Manchester, Univ. of California Berkeley and
- *  Univ. of Colorado Denver
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Samuel D. Relton
- * @date 2016-05-17
  * @precisions normal z -> c
  *
  **/
@@ -31,33 +27,33 @@
  *  or
  *     \f[ C = \alpha \times B \times A + \beta \times C \f]
  *
- *  where alpha and beta are scalars, A is an hermitian matrix and B and
- *  C are m by n matrices.
+ *  where alpha and beta are scalars, A is a Hermitian matrix and B and
+ *  C are m-by-n matrices.
  *
  *******************************************************************************
  *
  * @param[in] side
- *          Specifies whether the hemmetric matrix A appears on the
+ *          Specifies whether the Hermitian matrix A appears on the
  *          left or right in the operation as follows:
  *          - PlasmaLeft:  \f[ C = \alpha \times A \times B + \beta \times C \f]
  *          - PlasmaRight: \f[ C = \alpha \times B \times A + \beta \times C \f]
  *
  * @param[in] uplo
  *          Specifies whether the upper or lower triangular part of
- *          the hermitian matrix A is to be referenced as follows:
+ *          the Hermitian matrix A is to be referenced as follows:
  *          - PlasmaLower:     Only the lower triangular part of the
- *                             hermitian matrix A is to be referenced.
+ *                             Hermitian matrix A is to be referenced.
  *          - PlasmaUpper:     Only the upper triangular part of the
- *                             hermitian matrix A is to be referenced.
+ *                             Hermitian matrix A is to be referenced.
  *
  * @param[in] m
- *          Specifies the number of rows of the matrix C. m >= 0.
+ *          The number of rows of the matrix C. m >= 0.
  *
  * @param[in] n
- *          Specifies the number of columns of the matrix C. n >= 0.
+ *          The number of columns of the matrix C. n >= 0.
  *
  * @param[in] alpha
- *          Specifies the scalar alpha.
+ *          The scalar alpha.
  *
  * @param[in] A
  *          A is a lda-by-ka matrix, where ka is m when side = PlasmaLeft,
@@ -67,14 +63,14 @@
  *          The leading dimension of the array A. lda >= max(1,ka).
  *
  * @param[in] B
- *          B is a ldb-by-n matrix, where the leading m-by-n part of
+ *          B is an ldb-by-n matrix, where the leading m-by-n part of
  *          the array B must contain the matrix B.
  *
  * @param[in] ldb
  *          The leading dimension of the array B. ldb >= max(1,m).
  *
  * @param[in] beta
- *          Specifies the scalar beta.
+ *          The scalar beta.
  *
  * @param[in,out] C
  *          C is a ldc-by-n matrix.
@@ -118,7 +114,7 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
     }
 
     // Check input arguments.
-    if ( (side != PlasmaLeft) && (side != PlasmaRight) ){
+    if ((side != PlasmaLeft) && (side != PlasmaRight)) {
         plasma_error("illegal value of side");
         return -1;
     }
@@ -212,40 +208,26 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
     // Initialize request.
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
 
-#pragma omp parallel
-#pragma omp master
+    // asynchronous block
+    #pragma omp parallel
+    #pragma omp master
     {
-        // the Async functions are submitted here.  If an error occurs
-        //   (at submission time or at run time) the sequence->status
-        //   will be marked with an error.  After an error, the next
-        //   Async will not _insert_ more tasks into the runtime.  The
-        //   sequence->status can be checked after each call to _Async
-        //   or at the end of the parallel region.
-
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zcm2ccrb_Async(C, ldc, &descC, sequence, &request);
+        PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
+        PLASMA_zcm2ccrb_Async(C, ldc, &descC, sequence, &request);
 
         // Call the tile async function.
-        if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_zhemm_Tile_Async(side, uplo,
-                                    alpha, &descA,
-                                    &descB,
-                                    beta, &descC,
-                                    sequence, &request);
-        }
+        PLASMA_zhemm_Tile_Async(side, uplo,
+                                alpha, &descA,
+                                       &descB,
+                                beta,  &descC,
+                                sequence, &request);
 
         // Translate back to LAPACK layout.
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
-    } // pragma omp parallel block closed
-
-    // Check for errors in the async execution
-    if (sequence->status != PLASMA_SUCCESS)
-        return sequence->status;
+        PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
+    }
+    // implicit synchronization
 
     // Free matrices in tile layout.
     plasma_desc_mat_free(&descA);
@@ -261,12 +243,41 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
 /***************************************************************************//**
  * @ingroup plasma_hemm
  *
- *  Performs hermitian matrix multiplication.
- *  Non-blocking equivalent of PLASMA_zhemm_Tile().
+ *  Performs Hermitian matrix multiplication.
+ *  Non-blocking tile version of PLASMA_zhemm().
  *  May return before the computation is finished.
  *  Allows for pipelining of operations at runtime.
  *
  *******************************************************************************
+ *
+ * @param[in] side
+ *          Specifies whether the Hermitian matrix A appears on the
+ *          left or right in the operation as follows:
+ *          - PlasmaLeft:  \f[ C = \alpha \times A \times B + \beta \times C \f]
+ *          - PlasmaRight: \f[ C = \alpha \times B \times A + \beta \times C \f]
+ *
+ * @param[in] uplo
+ *          Specifies whether the upper or lower triangular part of
+ *          the Hermitian matrix A is to be referenced as follows:
+ *          - PlasmaLower:     Only the lower triangular part of the
+ *                             Hermitian matrix A is to be referenced.
+ *          - PlasmaUpper:     Only the upper triangular part of the
+ *                             Hermitian matrix A is to be referenced.
+ *
+ * @param[in] alpha
+ *          The scalar alpha.
+ *
+ * @param[in] A
+ *          Descriptor of matrix A.
+ *
+ * @param[in] B
+ *          Descriptor of matrix B.
+ *
+ * @param[in] beta
+ *          The scalar beta.
+ *
+ * @param[in,out] C
+ *          Descriptor of matrix C.
  *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to
@@ -278,7 +289,6 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
  *******************************************************************************
  *
  * @sa PLASMA_zhemm
- * @sa PLASMA_zhemm_Tile
  * @sa PLASMA_chemm_Tile_Async
  *
  ******************************************************************************/
@@ -298,7 +308,7 @@ void PLASMA_zhemm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
 
     // Check input arguments.
     if ((side != PlasmaLeft) &&
-        (side != PlasmaRight)){
+        (side != PlasmaRight)) {
         plasma_error("illegal value of side");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -335,45 +345,12 @@ void PLASMA_zhemm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
         return;
     }
 
-    if (A->mb != C->mb || A->nb != B->nb || B->nb != C->nb) {
-        plasma_error("tile size mismatch");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-    if (side == PlasmaLeft) {
-        if (A->m != B->m || A->n != B->m) {
-            plasma_error("matrix size mismatch");
-            plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-            return;
-        }
-    }
-    else {
-        if (A->m != B->n || A->n != B->n) {
-            plasma_error("matrix size mismatch");
-            plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-            return;
-        }
-    }
-    if (B->m != C->m || B->n != C->n) {
-        plasma_error("matrix size mismatch");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-    if (A->i%A->mb != C->i%C->mb ||
-        B->j%B->nb != C->j%C->nb || A->j%A->nb != B->i%B->mb) {
-        plasma_error("start indexes have to match");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-
-    // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
-        return;
-    }
-
     // quick return
-    if (C->m == 0 || C->n == 0 || ((alpha == 0.0 || A->n == 0) && beta == 1.0))
+    PLASMA_Complex64_t zzero = (PLASMA_Complex64_t)0.0;
+    PLASMA_Complex64_t zone  = (PLASMA_Complex64_t)1.0;
+
+    if (C->m == 0 || C->n == 0 ||
+        ((alpha == zzero || A->n == 0) && beta == zone))
         return;
 
     // Call the parallel function.
@@ -382,5 +359,4 @@ void PLASMA_zhemm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
                   *B,
                   beta,  *C,
                   sequence, request);
-    return;
 }

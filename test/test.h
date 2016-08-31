@@ -2,16 +2,9 @@
  *
  * @file test.h
  *
- *  PLASMA testing harness.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of Manchester, Univ. of California Berkeley and
- *  Univ. of Colorado Denver.
- *
- * @version 3.0.0
- * @author  Jakub Kurzak
- * @author  Samuel D. Relton
- * @author  Maksims Abalenkovs
- * @date    2016-06-21
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
  **/
 #ifndef TEST_H
@@ -33,25 +26,27 @@ typedef enum {
     PARAM_TRANS,  // transposition
     PARAM_TRANSA, // transposition of A
     PARAM_TRANSB, // transposition of B
-    PARAM_SIDE,   // Left of right side application
-    PARAM_UPLO,   // Upper or lower triangular
-    PARAM_DIAG,   // Unit triangularity
+    PARAM_SIDE,   // left of right side application
+    PARAM_UPLO,   // upper or lower triangular
+    PARAM_DIAG,   // non-unit or unit diagonal
     PARAM_M,      // M dimension
     PARAM_N,      // N dimension
     PARAM_K,      // K dimension
-    PARAM_NRHS,   // Number of right hand sides
-    PARAM_NB,     // Tile size NBxNB
-    PARAM_ALPHA,  // Scalar alpha
-    PARAM_BETA,   // Scalar beta
-    PARAM_PADA,   // Padding of A
-    PARAM_PADB,   // Padding of B
-    PARAM_PADC,   // Padding of C
+    PARAM_NRHS,   // number of RHS
+    PARAM_NB,     // tile size NBxNB
+    PARAM_IB,     // inner blocking size
+    PARAM_ALPHA,  // scalar alpha
+    PARAM_BETA,   // scalar beta
+    PARAM_PADA,   // padding of A
+    PARAM_PADB,   // padding of B
+    PARAM_PADC,   // padding of C
 
     //------------------------------------------------------
     // output parameters
     //------------------------------------------------------
     PARAM_SUCCESS, // success indicator
     PARAM_ERROR,   // numerical error
+    PARAM_ORTHO,   // orthogonality error
     PARAM_TIME,    // time to solution
     PARAM_GFLOPS,  // GFLOPS rate
 
@@ -64,11 +59,15 @@ typedef enum {
 //==============================================================================
 // parameter descriptions
 //==============================================================================
-static const char *ParamUsage[][2] = {
+static const char * const ParamUsage[][2] = {
+    //------------------------------------------------------
+    // input parameters
+    //------------------------------------------------------
     {"--iter=", "number of iterations per set of parameters [default: 1]"},
     {"--outer=[y|n]", "outer product iteration [default: n]"},
     {"--test=[y|n]", "test the solution [default: y]"},
     {"--tol=", "tolerance [default: 50]"},
+    {"--trans=[n|t|c]", "transposition [default: n]"},
     {"--transa=[n|t|c]", "transposition of A [default: n]"},
     {"--transb=[n|t|c]", "transposition of B [default: n]"},
     {"--side=[l|r]", "left of right side application [default: l]"},
@@ -77,13 +76,24 @@ static const char *ParamUsage[][2] = {
     {"--m=", "M dimension (number of rows) [default: 1000]"},
     {"--n=", "N dimension (number of columns) [default: 1000]"},
     {"--k=", "K dimension (number of rows or columns) [default: 1000]"},
-    {"--nrhs=", "Number of right hand sides (number of columns of matrix B) [default: 1000]"},
+    {"--nrhs=", "NHRS dimension (number of columns) [default: 1000]"},
     {"--nb=", "NB size of tile (NB by NB) [default: 256]"},
+    {"--ib=", "IB inner blocking size [default: 64]"},
     {"--alpha=", "scalar alpha"},
     {"--beta=", "scalar beta"},
     {"--pada=", "padding added to lda [default: 0]"},
     {"--padb=", "padding added to ldb [default: 0]"},
-    {"--padc=", "padding added to ldc [default: 0]"}
+    {"--padc=", "padding added to ldc [default: 0]"},
+
+    //------------------------------------------------------
+    // output parameters
+    //------------------------------------------------------
+    // these are not used, except to assert sizeof(ParamUsage) == PARAM_SIZEOF
+    {"success", "success indicator"},
+    {"error", "numerical error"},
+    {"ortho", "orthogonality error"},
+    {"time", "time to solution"},
+    {"gflops", "GFLOPS rate"}
 };
 
 //==============================================================================
@@ -125,8 +135,7 @@ static const int InfoSpacing = 11;
 void print_main_usage();
 void print_routine_usage(const char *name);
 void print_usage(int label);
-int  test_routine(const char *name, param_value_t param[]);
-void time_routine(const char *name, param_value_t pval[]);
+int  test_routine(int test, const char *name, param_value_t param[]);
 void run_routine(const char *name, param_value_t pval[], char *info);
 void param_init(param_t param[]);
 int  param_read(int argc, char **argv, param_t param[]);

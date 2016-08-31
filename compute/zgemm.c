@@ -2,13 +2,10 @@
  *
  * @file zgemm.c
  *
- *  PLASMA computational routine.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver.
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Jakub Kurzak
- * @date 2016-01-01
  * @precisions normal z -> s d c
  *
  **/
@@ -29,12 +26,12 @@
  *          \f[ C = \alpha [op( A )\times op( B )] + \beta C, \f]
  *
  *  where op( X ) is one of:
- *          - op( X ) = X   or
- *          - op( X ) = X^T or
- *          - op( X ) = X^H
+ *    \f[ op( X ) = X,   \f]
+ *    \f[ op( X ) = X^T, \f]
+ *    \f[ op( X ) = X^H, \f]
  *
  *  alpha and beta are scalars, and A, B and C are matrices, with op( A )
- *  an m by k matrix, op( B ) a k by n matrix and C an m by n matrix.
+ *  an m-by-k matrix, op( B ) a k-by-n matrix and C an m-by-n matrix.
  *
  *******************************************************************************
  *
@@ -248,22 +245,14 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
     // Initialize request.
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
 
+    // asynchronous block
     #pragma omp parallel
     #pragma omp master
     {
-        // the Async functions are submitted here.  If an error occurs
-        // (at submission time or at run time) the sequence->status
-        // will be marked with an error.  After an error, the next
-        // Async will not _insert_ more tasks into the runtime.  The
-        // sequence->status can be checked after each call to _Async
-        // or at the end of the parallel region.
-
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zcm2ccrb_Async(C, ldc, &descC, sequence, &request);
+        PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
+        PLASMA_zcm2ccrb_Async(C, ldc, &descC, sequence, &request);
 
         // Call the tile async function.
         if (sequence->status == PLASMA_SUCCESS) {
@@ -275,13 +264,9 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
         }
 
         // Translate back to LAPACK layout.
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
-    } // pragma omp parallel block closed
-
-    // Check for errors in the async execution
-    if (sequence->status != PLASMA_SUCCESS)
-        return sequence->status;
+        PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
+    }
+    // implicit synchronization
 
     // Free matrices in tile layout.
     plasma_desc_mat_free(&descA);
@@ -411,67 +396,11 @@ void PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
         return;
     }
 
-    int Am, An, Ai, Aj, Amb, Anb;
-    int Bm, Bn, Bi, Bj, Bmb, Bnb;
-
-    if (transA == PlasmaNoTrans) {
-        Am  = A->m;
-        An  = A->n;
-        Amb = A->mb;
-        Anb = A->nb;
-        Ai  = A->i;
-        Aj  = A->j;
-    }
-    else {
-        Am  = A->n;
-        An  = A->m;
-        Amb = A->nb;
-        Anb = A->mb;
-        Ai  = A->j;
-        Aj  = A->i;
-    }
-    if (transB == PlasmaNoTrans) {
-        Bm  = B->m;
-        Bn  = B->n;
-        Bmb = B->mb;
-        Bnb = B->nb;
-        Bi  = B->i;
-        Bj  = B->j;
-    }
-    else {
-        Bm  = B->n;
-        Bn  = B->m;
-        Bmb = B->nb;
-        Bnb = B->mb;
-        Bi  = B->j;
-        Bj  = B->i;
-    }
-
-    if (Amb != C->mb || Anb != Bmb || Bnb != C->nb) {
-        plasma_error("tile size mismatch");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-    if (Am != C->m || An != Bm || Bn != C->n) {
-        plasma_error("matrix size mismatch");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-    if (Ai%Amb != C->i%C->mb ||
-        Bj%Bnb != C->j%C->nb || Aj%Anb != Bi%Bmb) {
-        plasma_error("start indexes have to match");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-
-    // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
-        return;
-    }
-
     // quick return
-    if (C->m == 0 || C->n == 0 || ((alpha == 0.0 || An == 0) && beta == 1.0))
+    int k = transA == PlasmaNoTrans ? A->n : A->m;
+    PLASMA_Complex64_t zzero = (PLASMA_Complex64_t)0.0;
+
+    if (C->m == 0 || C->n == 0 || ((alpha == zzero || k == 0) && beta == 1.0))
         return;
 
     // Call the parallel function.
@@ -480,6 +409,4 @@ void PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
                          *B,
                    beta, *C,
                   sequence, request);
-
-    return;
 }

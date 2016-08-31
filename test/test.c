@@ -2,17 +2,9 @@
  *
  * @file test.c
  *
- *  PLASMA testing harness.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of Manchester, Univ. of California Berkeley and
- *  Univ. of Colorado Denver.
- *
- * @version 3.0.0
- * @author  Jakub Kurzak
- * @author  Samuel D. Relton
- * @author  Mawussi Zounon
- * @author  Maksims Abalenkovs
- * @date    2016-06-22
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
  **/
 #include "test.h"
@@ -47,7 +39,10 @@ int main(int argc, char **argv)
         return EXIT_SUCCESS;
     }
 
-    const char* routine = argv[1];
+    const char *routine = argv[1];
+
+    // Ensure that ParamUsage has an entry for every param_label_t value.
+    assert(PARAM_SIZEOF == sizeof(ParamUsage)/(2*sizeof(char*)));
 
     param_t param[PARAM_SIZEOF];      // set of parameters
     param_value_t pval[PARAM_SIZEOF]; // snapshot of values
@@ -59,22 +54,15 @@ int main(int argc, char **argv)
     int err = 0;
 
     // Print labels.
-    if (test)
-        test_routine(routine, NULL);
-    else
-        time_routine(routine, NULL);
+    test_routine(test, routine, NULL);
 
     PLASMA_Init();
-    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_NB].val[0].i);
     if (outer) {
         // outer product iteration
         do {
             param_snap(param, pval);
             for (int i = 0; i < iter; i++) {
-                if (test)
-                    err += test_routine(routine, pval);
-                else
-                    time_routine(routine, pval);
+                err += test_routine(test, routine, pval);
             }
             if (iter > 1) {
                 printf("\n");
@@ -87,10 +75,7 @@ int main(int argc, char **argv)
         do {
             param_snap(param, pval);
             for (int i = 0; i < iter; i++) {
-                if (test)
-                    err += test_routine(routine, pval);
-                else
-                    time_routine(routine, pval);
+                err += test_routine(test, routine, pval);
             }
             if (iter > 1) {
                 printf("\n");
@@ -136,7 +121,6 @@ void print_routine_usage(const char *name)
     print_usage(PARAM_OUTER);
     print_usage(PARAM_TEST);
     print_usage(PARAM_TOL);
-    print_usage(PARAM_NB);
 
     printf("\n");
     run_routine(name, NULL, NULL);
@@ -162,8 +146,9 @@ void print_usage(int label)
  * @brief Tests a routine for a set of parameter values.
  *        Performs testing and timing.
  *        If pval is NULL, prints column labels.
- *        Otherwise, prints column values.
+ *        Otherwise, runs routine and prints column values.
  *
+ * @param[in]    test - if true, tests routine, else only times routine
  * @param[in]    name - routine name
  * @param[inout] pval - array of parameter values
  *
@@ -171,7 +156,7 @@ void print_usage(int label)
  * @retval 0 - success
  *
  ******************************************************************************/
-int test_routine(const char *name, param_value_t pval[])
+int test_routine(int test, const char *name, param_value_t pval[])
 {
     char info[InfoLen];
     run_routine(name, pval, info);
@@ -187,7 +172,7 @@ int test_routine(const char *name, param_value_t pval[])
         printf("\n");
         return 0;
     }
-    else {
+    else if (test) {
         printf("%*.4lf %*.4lf %s %*.2le %*s\n",
             InfoSpacing, pval[PARAM_TIME].d,
             InfoSpacing, pval[PARAM_GFLOPS].d,
@@ -196,37 +181,14 @@ int test_routine(const char *name, param_value_t pval[])
             InfoSpacing, pval[PARAM_SUCCESS].i ? "pass" : "FAILED");
         return (pval[PARAM_SUCCESS].i == 0);
     }
-}
-
-/***************************************************************************//**
- *
- * @brief Times a routine for a set of parameter values.
- *        Times the routine only, does not test it.
- *        If pval is NULL, prints column labels.
- *        Otherwise, prints column values.
- *
- * @param[in]    name - routine name
- * @param[inout] pval - array of parameter values
- *
- ******************************************************************************/
-void time_routine(const char *name, param_value_t pval[])
-{
-    char info[InfoLen];
-    run_routine(name, pval, info);
-
-    if (pval == NULL) {
-        printf("\n");
-        printf("%*s %*s %s\n",
-            InfoSpacing, "Seconds",
-            InfoSpacing, "GFLOPS",
-                         info);
-        printf("\n");
-    }
     else {
-        printf("%*.4lf %*.4lf %s\n",
+        printf("%*.4lf %*.4lf %s %*s %*s\n",
             InfoSpacing, pval[PARAM_TIME].d,
             InfoSpacing, pval[PARAM_GFLOPS].d,
-                         info);
+                         info,
+            InfoSpacing, "---",
+            InfoSpacing, "---");
+        return 0;
     }
 }
 
@@ -241,7 +203,34 @@ void time_routine(const char *name, param_value_t pval[])
  ******************************************************************************/
 void run_routine(const char *name, param_value_t pval[], char *info)
 {
-    if      (strcmp(name, "zgemm") == 0)
+    if      (strcmp(name, "zgelqf") == 0)
+        test_zgelqf(pval, info);
+    else if (strcmp(name, "dgelqf") == 0)
+        test_dgelqf(pval, info);
+    else if (strcmp(name, "cgelqf") == 0)
+        test_cgelqf(pval, info);
+    else if (strcmp(name, "sgelqf") == 0)
+        test_sgelqf(pval, info);
+
+    else if (strcmp(name, "zgelqs") == 0)
+        test_zgelqs(pval, info);
+    else if (strcmp(name, "dgelqs") == 0)
+        test_dgelqs(pval, info);
+    else if (strcmp(name, "cgelqs") == 0)
+        test_cgelqs(pval, info);
+    else if (strcmp(name, "sgelqs") == 0)
+        test_sgelqs(pval, info);
+
+    else if (strcmp(name, "zgels") == 0)
+        test_zgels(pval, info);
+    else if (strcmp(name, "dgels") == 0)
+        test_dgels(pval, info);
+    else if (strcmp(name, "cgels") == 0)
+        test_cgels(pval, info);
+    else if (strcmp(name, "sgels") == 0)
+        test_sgels(pval, info);
+
+    else if (strcmp(name, "zgemm") == 0)
         test_zgemm(pval, info);
     else if (strcmp(name, "dgemm") == 0)
         test_dgemm(pval, info);
@@ -250,10 +239,28 @@ void run_routine(const char *name, param_value_t pval[], char *info)
     else if (strcmp(name, "sgemm") == 0)
         test_sgemm(pval, info);
 
+    else if (strcmp(name, "zgeqrf") == 0)
+        test_zgeqrf(pval, info);
+    else if (strcmp(name, "dgeqrf") == 0)
+        test_dgeqrf(pval, info);
+    else if (strcmp(name, "cgeqrf") == 0)
+        test_cgeqrf(pval, info);
+    else if (strcmp(name, "sgeqrf") == 0)
+        test_sgeqrf(pval, info);
+/*
+    else if (strcmp(name, "zgeqrs") == 0)
+        test_zgeqrs(pval, info);
+    else if (strcmp(name, "dgeqrs") == 0)
+        test_dgeqrs(pval, info);
+    else if (strcmp(name, "cgeqrs") == 0)
+        test_cgeqrs(pval, info);
+    else if (strcmp(name, "sgeqrs") == 0)
+        test_sgeqrs(pval, info);
+*/
     else if (strcmp(name, "zhemm") == 0)
-        test_zher2k(pval, info);
+        test_zherk(pval, info);
     else if (strcmp(name, "chemm") == 0)
-        test_cher2k(pval, info);
+        test_cherk(pval, info);
 
     else if (strcmp(name, "zher2k") == 0)
         test_zher2k(pval, info);
@@ -265,6 +272,15 @@ void run_routine(const char *name, param_value_t pval[], char *info)
     else if (strcmp(name, "cherk") == 0)
         test_cherk(pval, info);
 
+    else if (strcmp(name, "zposv") == 0)
+        test_zpotrf(pval, info);
+    else if (strcmp(name, "dposv") == 0)
+        test_dpotrf(pval, info);
+    else if (strcmp(name, "cposv") == 0)
+        test_cpotrf(pval, info);
+    else if (strcmp(name, "sposv") == 0)
+        test_spotrf(pval, info);
+
     else if (strcmp(name, "zpotrf") == 0)
         test_zpotrf(pval, info);
     else if (strcmp(name, "dpotrf") == 0)
@@ -274,23 +290,23 @@ void run_routine(const char *name, param_value_t pval[], char *info)
     else if (strcmp(name, "spotrf") == 0)
         test_spotrf(pval, info);
 
-    else if (strcmp(name, "zsymm") == 0)
-        test_zsyr2k(pval, info);
-    else if (strcmp(name, "dsymm") == 0)
-        test_dsyr2k(pval, info);
-    else if (strcmp(name, "csymm") == 0)
-        test_csyr2k(pval, info);
-    else if (strcmp(name, "ssymm") == 0)
-        test_ssyr2k(pval, info);
+    else if (strcmp(name, "zpotrs") == 0)
+        test_zpotrf(pval, info);
+    else if (strcmp(name, "dpotrs") == 0)
+        test_dpotrf(pval, info);
+    else if (strcmp(name, "cpotrs") == 0)
+        test_cpotrf(pval, info);
+    else if (strcmp(name, "spotrs") == 0)
+        test_spotrf(pval, info);
 
-    else if (strcmp(name, "zsyr2k") == 0)
-        test_zsyr2k(pval, info);
-    else if (strcmp(name, "dsyr2k") == 0)
-        test_dsyr2k(pval, info);
-    else if (strcmp(name, "csyr2k") == 0)
-        test_csyr2k(pval, info);
-    else if (strcmp(name, "ssyr2k") == 0)
-        test_ssyr2k(pval, info);
+    else if (strcmp(name, "zsymm") == 0)
+        test_zsyrk(pval, info);
+    else if (strcmp(name, "dsymm") == 0)
+        test_dsyrk(pval, info);
+    else if (strcmp(name, "csymm") == 0)
+        test_csyrk(pval, info);
+    else if (strcmp(name, "ssymm") == 0)
+        test_ssyrk(pval, info);
 
     else if (strcmp(name, "zsyrk") == 0)
         test_zsyrk(pval, info);
@@ -300,6 +316,15 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_csyrk(pval, info);
     else if (strcmp(name, "ssyrk") == 0)
         test_ssyrk(pval, info);
+
+    else if (strcmp(name, "zsyr2k") == 0)
+        test_zsyr2k(pval, info);
+    else if (strcmp(name, "dsyr2k") == 0)
+        test_dsyr2k(pval, info);
+    else if (strcmp(name, "csyr2k") == 0)
+        test_csyr2k(pval, info);
+    else if (strcmp(name, "ssyr2k") == 0)
+        test_ssyr2k(pval, info);
 
     else if (strcmp(name, "ztrsm") == 0)
         test_ztrsm(pval, info);
@@ -361,13 +386,12 @@ int param_read(int argc, char **argv, param_t param[])
 {
     int err = 0;
     int iter = 1;
-    const char* routine = argv[1];
+    const char *routine = argv[1];
 
     //================================================================
     // Initialize parameters from the command line.
     //================================================================
     for (int i = 2; i < argc && argv[i]; i++) {
-
         //--------------------------------------------------
         // Scan character parameters.
         //--------------------------------------------------
@@ -379,7 +403,7 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--side="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_SIDE]);
 
-        else if (param_starts_with(argv[1], "--trans="))
+        else if (param_starts_with(argv[i], "--trans="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANS]);
         else if (param_starts_with(argv[i], "--transa="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANSA]);
@@ -389,8 +413,9 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--uplo="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_UPLO]);
 
-	else if (param_starts_with(argv[i], "--diag="))
-	  err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_DIAG]);
+        else if (param_starts_with(argv[i], "--diag="))
+            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_DIAG]);
+
         //--------------------------------------------------
         // Scan integer parameters.
         //--------------------------------------------------
@@ -408,6 +433,8 @@ int param_read(int argc, char **argv, param_t param[])
 
         else if (param_starts_with(argv[i], "--nb="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NB]);
+        else if (param_starts_with(argv[i], "--ib="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_IB]);
 
         else if (param_starts_with(argv[i], "--pada="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_PADA]);
@@ -426,9 +453,11 @@ int param_read(int argc, char **argv, param_t param[])
         // Scan complex parameters.
         //--------------------------------------------------
         else if (param_starts_with(argv[i], "--alpha="))
-            err = param_scan_complex(strchr(argv[i], '=')+1, &param[PARAM_ALPHA]);
+            err = param_scan_complex(strchr(argv[i], '=')+1,
+                                     &param[PARAM_ALPHA]);
         else if (param_starts_with(argv[i], "--beta="))
-            err = param_scan_complex(strchr(argv[i], '=')+1, &param[PARAM_BETA]);
+            err = param_scan_complex(strchr(argv[i], '=')+1,
+                                     &param[PARAM_BETA]);
 
         //--------------------------------------------------
         // Handle help and errors.
@@ -483,12 +512,13 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_int(1000, &param[PARAM_N]);
     if (param[PARAM_K].num == 0)
         param_add_int(1000, &param[PARAM_K]);
-
     if (param[PARAM_NRHS].num == 0)
         param_add_int(1000, &param[PARAM_NRHS]);
 
     if (param[PARAM_NB].num == 0)
         param_add_int(256, &param[PARAM_NB]);
+    if (param[PARAM_IB].num == 0)
+        param_add_int(64, &param[PARAM_IB]);
 
     if (param[PARAM_PADA].num == 0)
         param_add_int(0, &param[PARAM_PADA]);

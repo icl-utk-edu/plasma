@@ -2,14 +2,10 @@
  *
  * @file pzher2k.c
  *
- *  PLASMA computational routine.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley, Univ. of Colorado Denver and
- *  Univ. of Manchester.
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Mawussi Zounon
- * @author Maksims Abalenkovs
  * @precisions normal z -> c
  *
  **/
@@ -24,7 +20,7 @@
 #define B(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(B, m, n))
 #define C(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(C, m, n))
 /***************************************************************************//**
- * Parallel tile hermitian rank 2k update.
+ * Parallel tile Hermitian rank 2k update.
  * @see PLASMA_zher2k_Tile_Async
  ******************************************************************************/
 void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
@@ -41,8 +37,11 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
     PLASMA_Complex64_t zbeta;
     double dbeta;
 
-    if (sequence->status != PLASMA_SUCCESS)
+    // Check sequence status.
+    if (sequence->status != PLASMA_SUCCESS) {
+        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
         return;
+    }
 
     for (n = 0; n < C.nt; n++) {
         tempnn = n == C.nt-1 ? C.n-n*C.nb : C.nb;
@@ -60,7 +59,7 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
                     uplo, trans,
                     tempnn, tempkn,
                     alpha, A(n, k), ldan,
-                    B(n, k), ldbn,
+                           B(n, k), ldbn,
                     dbeta, C(n, n), ldcn);
             }
             //=======================================
@@ -79,15 +78,15 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
                             trans, PlasmaConjTrans,
                             tempmm, tempnn, tempkn,
                             alpha, A(m, k), ldam,
-                            B(n, k), ldbn,
+                                   B(n, k), ldbn,
                             zbeta, C(m, n), ldcm);
 
                         CORE_OMP_zgemm(
                             trans, PlasmaConjTrans,
                             tempmm, tempnn, tempkn,
                             conj(alpha), B(m, k), ldam,
-                            A(n, k), ldan,
-                            zone,  C(m, n), ldcm);
+                                         A(n, k), ldan,
+                                  zone,  C(m, n), ldcm);
                     }
                 }
             }
@@ -106,15 +105,15 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
                             trans, PlasmaConjTrans,
                             tempnn, tempmm, tempkn,
                             alpha, A(n, k), ldan,
-                            B(m, k), ldbm,
+                                   B(m, k), ldbm,
                             zbeta, C(n, m), ldcn);
 
                         CORE_OMP_zgemm(
                             trans, PlasmaConjTrans,
                             tempnn, tempmm, tempkn,
                             conj(alpha), B(n, k), ldan,
-                            A(m, k), ldam,
-                            zone, C(n, m), ldcn);
+                                         A(m, k), ldam,
+                                   zone, C(n, m), ldcn);
                     }
                 }
             }
@@ -132,7 +131,7 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
                     uplo, trans,
                     tempnn, tempkm,
                     alpha, A(k, n), ldak,
-                    B(k, n), ldbk,
+                           B(k, n), ldbk,
                     dbeta, C(n, n), ldcn);
             }
             //=======================================
@@ -151,15 +150,15 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
                             trans, PlasmaNoTrans,
                             tempmm, tempnn, tempkm,
                             alpha, A(k, m), ldak,
-                            B(k, n), ldbk,
+                                   B(k, n), ldbk,
                             zbeta, C(m, n), ldcm);
 
                         CORE_OMP_zgemm(
                             trans, PlasmaNoTrans,
                             tempmm, tempnn, tempkm,
-                            conj(alpha), B(k, m), ldbk,
-                                         A(k, n), ldak,
-                            zone,        C(m, n), ldcm);
+                            conj(alpha), B(k, m),
+                            ldbk, A(k, n), ldak,
+                            zone, C(m, n), ldcm);
                     }
                 }
             }
@@ -179,15 +178,15 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
                             trans, PlasmaNoTrans,
                             tempnn, tempmm, tempkm,
                             alpha, A(k, n), ldak,
-                            B(k, m), ldbk,
+                                   B(k, m), ldbk,
                             zbeta, C(n, m), ldcn);
 
                         CORE_OMP_zgemm(
                             trans, PlasmaNoTrans,
                             tempnn, tempmm, tempkm,
                             conj(alpha), B(k, n), ldbk,
-                            A(k, m), ldak,
-                            zone,  C(n, m), ldcn);
+                                         A(k, m), ldak,
+                                  zone,  C(n, m), ldcn);
                     }
                 }
             }

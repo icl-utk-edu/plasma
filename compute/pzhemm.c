@@ -2,13 +2,10 @@
  *
  * @File pzhemm.c
  *
- *  PLASMA computational routine.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Samuel D. Relton
- * @date 2016-05-17
  * @precisions normal z -> c
  *
  **/
@@ -24,7 +21,7 @@
 #define C(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(C, m, n))
 
 /***************************************************************************//**
- *  Parallel tile hemmetric matrix-matrix multiplication.
+ *  Parallel tile Hermitian matrix-matrix multiplication.
  *  @see PLASMA_zhemm_Tile_Async
  ******************************************************************************/
 void plasma_pzhemm(PLASMA_enum side, PLASMA_enum uplo,
@@ -34,27 +31,28 @@ void plasma_pzhemm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_sequence *sequence, PLASMA_request *request)
 {
     int k, m, n;
-    int next_m;
-    int next_n;
     int ldak, ldam, ldan, ldbk, ldbm, ldcm;
     int tempmm, tempnn, tempkn, tempkm;
 
     PLASMA_Complex64_t zbeta;
     PLASMA_Complex64_t zone = 1.0;
 
-    if (sequence->status != PLASMA_SUCCESS)
+    // Check sequence status.
+    if (sequence->status != PLASMA_SUCCESS) {
+        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
         return;
+    }
 
-    for(m = 0; m < C.mt; m++) {
+    for (m = 0; m < C.mt; m++) {
         tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
         ldcm = BLKLDD(C, m);
         for (n = 0; n < C.nt; n++) {
             tempnn = n == C.nt-1 ? C.n-n*C.nb : C.nb;
-            //=======================================
-            // SIDE: PlasmaLeft / UPLO: PlasmaLower
-            //=======================================
             if (side == PlasmaLeft) {
                 ldam = BLKLDD(A, m);
+                //=======================================
+                // SIDE: PlasmaLeft / UPLO: PlasmaLower
+                //=======================================
                 if (uplo == PlasmaLower) {
                     for (k = 0; k < C.mt; k++) {
                         tempkm = k == C.mt-1 ? C.m-k*C.mb : C.mb;
@@ -127,12 +125,12 @@ void plasma_pzhemm(PLASMA_enum side, PLASMA_enum uplo,
                     }
                 }
             }
-            //=======================================
-            // SIDE: PlasmaRight / UPLO: PlasmaLower
-            //=======================================
             else {
                 ldan = BLKLDD(A, n);
                 ldbm = BLKLDD(B, m);
+                //=======================================
+                // SIDE: PlasmaRight / UPLO: PlasmaLower
+                //=======================================
                 if (uplo == PlasmaLower) {
                     for (k = 0; k < C.nt; k++) {
                         tempkn = k == C.nt-1 ? C.n-k*C.nb : C.nb;

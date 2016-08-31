@@ -2,13 +2,10 @@
  *
  * @file core_zsyr2k.c
  *
- *  PLASMA core_blas kernel.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley, Univ. of Colorado Denver and
- *  Univ. of Manchester.
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Mawussi Zounon
  * @precisions normal z -> c d s
  *
  **/
@@ -25,24 +22,17 @@
 
 /***************************************************************************//**
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_syr2k
  *
- *  CORE_zsyr2k - Performs one of the symmetric rank-2k operations
+ *  Performs one of the symmetric rank 2k operations
  *
- *    \f[ C = \alpha [ op( A ) \times conjg( op( B )' )] +
- *      \alpha  [ op( B ) \times conjg( op( A )' )] + \beta C \f],
+ *    \f[ C = \alpha A \times B^T + \alpha B \times A^T + \beta C, \f]
  *    or
- *    \f[ C = \alpha [ conjg( op( A )' ) \times op( B ) ] +
- *     \alpha [ conjg( op( B )' ) \times op( A ) ] + \beta C \f],
+ *    \f[ C = \alpha A^T \times B + \alpha B^T \times A + \beta C, \f]
  *
- *  where op( X ) is one of
- *
- *    op( X ) = X  or op( X ) = conjg( X' )
- *
- *  where alpha  and beta  are complex scalars
- *  C is an n-by-n symmetric
- *  matrix and A and B are an n-by-k matrices the first case and k-by-n
- *  matrices in the second case.
+ *  where alpha and beta are scalars,
+ *  C is an n-by-n symmetric matrix, and A and B are n-by-k matrices
+ *  in the first case and k-by-n matrices in the second case.
  *
  *******************************************************************************
  *
@@ -51,49 +41,51 @@
  *          - PlasmaLower: Lower triangle of C is stored.
  *
  * @param[in] trans
- *          Specifies whether A is transposed or conjugate transposed:
- *          - PlasmaNoTrans: \f[ C = \alpha [ op( A ) \times conjg( op( B )')] +
- *            conjg( \alpha ) [ op( B ) \times conjg( op( A )' )] + \beta C \f]
- *          - PlasmaConjTrans: \f[ C = \alpha[conjg( op( A )') \times op( B )] +
- *            conjg( \alpha ) [ conjg( op( B )' ) \times op( A ) ] + \beta C \f]
+ *          - PlasmaNoTrans:
+ *            \f[ C = \alpha A \times B^T + \alpha B \times A^T + \beta C; \f]
+ *          - PlasmaTrans:
+ *            \f[ C = \alpha A^T \times B + \alpha B^T \times A + \beta C. \f]
  *
  * @param[in] n
- *          The order of the matrix C. n must be at least zero.
+ *          The order of the matrix C. n >= zero.
  *
  * @param[in] k
- *          k specifies the number of columns of the A and
- *          B matrices with trans = PlasmaNoTrans, or specifies
- *          the number of rows of the A and B matrices with trans = PlasmaTrans.
+ *          If trans = PlasmaNoTrans, number of columns of the A and B matrices;
+ *          if trans = PlasmaTrans, number of rows of the A and B matrices.
  *
  * @param[in] alpha
  *          The scalar alpha.
  *
  * @param[in] A
- *          A lda-by-ka matrix, where ka is k when trans = PlasmaNoTrans,
- *          and is n otherwise.
+ *          A lda-by-ka matrix.
+ *          If trans = PlasmaNoTrans, ka = k;
+ *          if trans = PlasmaTrans,   ka = n.
  *
  * @param[in] lda
- *          The leading dimension of the array A. lda must be at least
- *          max( 1, n ), otherwise lda must be at least max( 1, k ).
+ *          The leading dimension of the array A.
+ *          If trans = PlasmaNoTrans, lda >= max(1, n);
+ *          if trans = PlasmaTrans,   lda >= max(1, k).
  *
  * @param[in] B
- *          A ldb-by-kb matrix, where kb is k when trans = PlasmaNoTrans,
- *          and is n otherwise.
+ *          A ldb-by-kb matrix.
+ *          If trans = PlasmaNoTrans, kb = k;
+ *          if trans = PlasmaTrans,   kb = n.
  *
  * @param[in] ldb
- *          The leading dimension of the array B. ldb must be at least
- *          max( 1, n ), otherwise ldb must be at least max( 1, k ).
+ *          The leading dimension of the array B.
+ *          If trans = PlasmaNoTrans, ldb >= max(1, n);
+ *          if trans = PlasmaTrans,   ldb >= max(1, k).
  *
  * @param[in] beta
  *          The scalar beta.
  *
  * @param[in,out] C
- *          C is a ldc-by-n matrix.
- *          On exit, the array uplo part of the matrix is overwritten
+ *          A ldc-by-n matrix.
+ *          On exit, the uplo part of the matrix is overwritten
  *          by the uplo part of the updated matrix.
  *
  * @param[in] ldc
- *          The leading dimension of the array C. ldc >= max( 1, n ).
+ *          The leading dimension of the array C. ldc >= max(1, n).
  *
  ******************************************************************************/
 void CORE_zsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
@@ -106,7 +98,7 @@ void CORE_zsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
                  (CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)trans,
                  n, k,
                  CBLAS_SADDR(alpha), A, lda,
-	                                 B, ldb,
+                                     B, ldb,
                  CBLAS_SADDR(beta),  C, ldc);
 }
 
@@ -119,13 +111,13 @@ void CORE_OMP_zsyr2k(
     PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc)
 {
     // omp depends assume lda == n or k, ldb == n or k, and ldc == n,
-    // depending on transposes
+    // depending on trans.
     #pragma omp task depend(in:A[0:n*k]) \
                      depend(in:B[0:n*k]) \
                      depend(inout:C[0:n*n])
     CORE_zsyr2k(uplo, trans,
                 n, k,
-	            alpha, A, lda,
-	                   B, ldb,
+                alpha, A, lda,
+                       B, ldb,
                 beta,  C, ldc);
 }

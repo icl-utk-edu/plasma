@@ -2,14 +2,11 @@
  *
  * @file pzsyr2k.c
  *
- *  PLASMA computational routine.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley, Univ. of Colorado Denver and
- *  Univ. of Manchester.
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Mawussi Zounon
- * @precisions normal z -> s d  c
+ * @precisions normal z -> s d c
  *
  **/
 
@@ -23,7 +20,7 @@
 #define B(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(B, m, n))
 #define C(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(C, m, n))
 /***************************************************************************//**
- * Parallel tile symmetric rank-2k update.
+ * Parallel tile symmetric rank 2k update.
  * @see PLASMA_zsyr2k_Tile_Async
  ******************************************************************************/
 void plasma_pzsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
@@ -39,8 +36,11 @@ void plasma_pzsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
     PLASMA_Complex64_t zone   = (PLASMA_Complex64_t)1.0;
     PLASMA_Complex64_t zbeta;
 
-    if (sequence->status != PLASMA_SUCCESS)
+    // Check sequence status.
+    if (sequence->status != PLASMA_SUCCESS) {
+        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
         return;
+    }
 
     for (n = 0; n < C.nt; n++) {
         tempnn = n == C.nt-1 ? C.n-n*C.nb : C.nb;
@@ -118,7 +118,7 @@ void plasma_pzsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
             }
         }
         //=======================================
-        // Plasma[Conj]Trans
+        // PlasmaTrans
         //=======================================
         else {
             for (k = 0; k < A.mt; k++) {
@@ -127,14 +127,14 @@ void plasma_pzsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
                 ldbk = BLKLDD(B, k);
                 zbeta = k == 0 ? beta : zone;
                 CORE_OMP_zsyr2k(
-		    uplo, trans,
+                    uplo, trans,
                           tempnn, tempkm,
                     alpha, A(k, n), ldak,
                            B(k, n), ldbk,
                     zbeta, C(n, n), ldcn);
             }
             //=======================================
-            // Plasma[Conj]Trans / PlasmaLower
+            // PlasmaTrans / PlasmaLower
             //=======================================
             if (uplo == PlasmaLower) {
                 for (m = n+1; m < C.mt; m++) {
@@ -155,14 +155,14 @@ void plasma_pzsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
                         CORE_OMP_zgemm(
                             trans, PlasmaNoTrans,
                             tempmm, tempnn, tempkm,
-			    alpha, B(k, m), ldbk,
-			           A(k, n), ldak,
+                            alpha, B(k, m), ldbk,
+                                   A(k, n), ldak,
                             zone, C(m, n), ldcm);
                     }
                 }
             }
             //=======================================
-            // Plasma[Conj]Trans / PlasmaUpper
+            // PlasmaTrans / PlasmaUpper
             //=======================================
             else {
                 for (m = n+1; m < C.mt; m++) {

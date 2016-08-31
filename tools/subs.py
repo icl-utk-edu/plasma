@@ -10,8 +10,6 @@
 #
 # but if switched would translate 'double precision' -> 'float precision',
 # which is wrong.
-#
-# @author Mark Gates
 
 
 # ===========================================================================
@@ -167,6 +165,7 @@ lapack = [
     ('sgelq2',               'dgelq2',               'cgelq2',               'zgelq2'              ),
     ('sgelqf',               'dgelqf',               'cgelqf',               'zgelqf'              ),
     ('sgelqs',               'dgelqs',               'cgelqs',               'zgelqs'              ),
+    ('sgelqt',               'dgelqt',               'cgelqt',               'zgelqt'              ),
     ('sgels',                'dgels',                'cgels',                'zgels'               ),
     ('sgeqlf',               'dgeqlf',               'cgeqlf',               'zgeqlf'              ),
     ('sgeqp3',               'dgeqp3',               'cgeqp3',               'zgeqp3'              ),
@@ -244,6 +243,8 @@ lapack = [
     ('sormtr',               'dormtr',               'cunmtr',               'zunmtr'              ),
     ('sort01',               'dort01',               'cunt01',               'zunt01'              ),
     ('spack',                'dpack',                'cpack',                'zpack'               ),
+    ('spamm',                'dpamm',                'cpamm',                'zpamm'               ),
+    ('sparfb',               'dparfb',               'cparfb',               'zparfb'              ),
     ('splgsy',               'dplgsy',               'cplghe',               'zplghe'              ),
     ('splgsy',               'dplgsy',               'cplgsy',               'zplgsy'              ),
     ('splrnt',               'dplrnt',               'cplrnt',               'zplrnt'              ),
@@ -288,7 +289,9 @@ lapack = [
     ('strsmpl',              'dtrsmpl',              'ctrsmpl',              'ztrsmpl'             ),
     ('strtri',               'dtrtri',               'ctrtri',               'ztrtri'              ),
     ('stsmqr',               'dtsmqr',               'ctsmqr',               'ztsmqr'              ),
+    ('stsmlq',               'dtsmlq',               'ctsmlq',               'ztsmlq'              ),
     ('stsqrt',               'dtsqrt',               'ctsqrt',               'ztsqrt'              ),
+    ('stslqt',               'dtslqt',               'ctslqt',               'ztslqt'              ),
     ('ststrf',               'dtstrf',               'ctstrf',               'ztstrf'              ),
 ]
 
@@ -323,6 +326,7 @@ subs = {
     # ----- Constants
     # See note in "normal" section below about ConjTrans
     ('MagmaTrans',           'Magma_ConjTrans'     ),
+    ('PlasmaTrans',          'Plasma_ConjTrans'    ),
 
     # ----- BLAS & LAPACK
     ]
@@ -370,6 +374,7 @@ subs = {
     ('symmetric',            'symmetric',            'hermitian',            'hermitian'           ),
     ('symmetric',            'symmetric',            'Hermitian',            'Hermitian'           ),
     ('orthogonal',           'orthogonal',           'unitary',              'unitary'             ),
+    ('\^T',                  '\^T',                  '\^H',                  '\^H'                 ),
     ('%f',                   '%lf',                  '%f',                   '%lf'                 ),  # for scanf
 
     # ----- CBLAS
@@ -383,14 +388,17 @@ subs = {
     (r'',                   r'',                    r'\bconjf\b',           r'\bconj\b'            ),
     (r'\bfabsf\b',          r'\bfabs\b',            r'\bfabsf\b',           r'\bfabs\b'            ),
     (r'\bfabsf\b',          r'\bfabs\b',            r'\bcabsf\b',           r'\bcabs\b'            ),
+    (r'\bsqrtf\b',          r'\bsqrt\b',            r'\bsqrtf\b',           r'\bsqrt\b'            ),
 
     # ----- Constants
     # Do not convert ConjTrans to Trans, since in most cases ConjTrans
     # must be a valid option to real-precision functions.
     # E.g., dgemm( ConjTrans, ConjTrans, ... ) should be valid; if ConjTrans is
     # converted, then dgemm will have 2 Trans cases and no ConjTrans case.
-    # Only for zlarfb and zunm*, convert it using special Magma_ConjTrans alias.
+    # Only for zlarfb and zunm*, convert it using special Magma_ConjTrans and Plasma_ConjTrans 
+    # aliases.
     ('MagmaTrans',           'MagmaTrans',           'Magma_ConjTrans',      'Magma_ConjTrans'     ),
+    ('PlasmaTrans',          'PlasmaTrans',          'Plasma_ConjTrans',     'Plasma_ConjTrans'    ),
 
     # ----- BLAS & LAPACK
     ]

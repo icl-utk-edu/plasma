@@ -2,13 +2,9 @@
  *
  * @file core_blas.h
  *
- *  PLASMA header.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver.
- *
- * @version 3.0.0
- * @author Jakub Kurzak
- * @date 2016-01-01
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
  **/
 #ifndef ICL_CORE_BLAS_H
@@ -47,7 +43,37 @@ static const char *lapack_constants[] = {
 
     "", "", "", "", "", "", "", "",
     "Left",                                 ///< 141: PlasmaLeft
-    "Right"                                 ///< 142: PlasmaRight
+    "Right",                                ///< 142: PlasmaRight
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "",
+    "Forward",                             ///< 391: PlasmaForward
+    "Backward",                            ///< 392: PlasmaBackward
+    "", "", "", "", "", "", "", "",
+    "Columnwise",                          ///< 401: PlasmaColumnwise
+    "Rowwise"                              ///< 402: PlasmaRowwise
 };
 
 static inline char lapack_const(int plasma_const) {

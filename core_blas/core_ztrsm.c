@@ -2,11 +2,10 @@
  *
  * @file core_ztrsm.c
  *
- *  PLASMA core_blas kernel.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver.
- * @version 3.0.0
- * @author Mawussi Zounon
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
+ *
  * @precisions normal z -> c d s
  *
  **/
@@ -23,69 +22,72 @@
 
 /***************************************************************************//**
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_trsm
  *
- *  Performs one of the matrix equations
+ *  Solves one of the matrix equations
  *
  *    \f[ op( A )\times X  = \alpha B, \f] or
- *    \f[ op( X )\times A  = \alpha B, \f]
+ *    \f[ X \times op( A ) = \alpha B, \f]
  *
- *  where op( X ) is one of:
- *          - op( X ) = X   or
- *          - op( X ) = X^T or
- *          - op( X ) = X^H,
+ *  where op( A ) is one of:
+ *    \f[ op( A ) = A,   \f]
+ *    \f[ op( A ) = A^T, \f]
+ *    \f[ op( A ) = A^H, \f]
  *
- *  alpha is a scalar, A and  are B m by n  matrices.
- *  The matrix X is overwritten on B
+ *  alpha is a scalar, X and B are m-by-n matrices, and
+ *  A is a unit or non-unit, upper or lower triangular matrix.
+ *  The matrix X overwrites B.
  *
  *******************************************************************************
  *
  * @param[in] side
- *          - PlasmaLeft:  A*X = B
- *          - PlasmaRight: X*A = B
+ *          - PlasmaLeft:  op(A)*X = B,
+ *          - PlasmaRight: X*op(A) = B.
  *
  * @param[in] uplo
- *          Specifies whether A is upper triangular or lower triangular:
- *          - PlasmaUpper: Upper triangle of A is stored,
- *          - PlasmaLower: Lower triangle of A is stored.
+ *          - PlasmaUpper: A is upper triangular,
+ *          - PlasmaLower: A is lower triangular.
  *
  * @param[in] transA
- *          - PlasmaNoTrans:   A is transposed;
- *          - PlasmaTrans:     A is not transposed;
+ *          - PlasmaNoTrans:   A is not transposed,
+ *          - PlasmaTrans:     A is transposed,
  *          - PlasmaConjTrans: A is conjugate transposed.
  *
  * @param[in] diag
- *          - PlasmaNonUnit: A is non unit;
- *          - PlasmaUnit:    A us unit.
+ *          - PlasmaNonUnit: A has non-unit diagonal,
+ *          - PlasmaUnit:    A has unit diagonal.
  *
  * @param[in] m
- *          The order of the matrix A. M >= 0.
+ *          The number of rows of the matrix B. m >= 0.
  *
  * @param[in] n
- *          The number of columns of the matrix B. N >= 0.
+ *          The number of columns of the matrix B. n >= 0.
  *
  * @param[in] alpha
  *          The scalar alpha.
  *
  * @param[in] A
- *          The triangular matrix. If uplo = PlasmaUpper, the leading m-by-m
- *          upper triangular part of the array A contains the upper triangular
- *          matrix, and the strictly lower
- *          triangular part of A is not referenced. If uplo = PlasmaLower,
- *          the leading m-by-m  lower triangular part of the array A contains
- *          the lower triangular matrix, and the strictly upper triangular part
- *          of A is not referenced. If diag = PlasmaUnit, the diagonal elements
- *          of A are also not referenced and are assumed to be 1.
+ *          The k-by-k triangular matrix,
+ *          where k = m if side = PlasmaLeft,
+ *            and k = n if side = PlasmaRight.
+ *          If uplo = PlasmaUpper, the leading k-by-k upper triangular part
+ *          of the array A contains the upper triangular matrix, and the
+ *          strictly lower triangular part of A is not referenced.
+ *          If uplo = PlasmaLower, the leading k-by-k lower triangular part
+ *          of the array A contains the lower triangular matrix, and the
+ *          strictly upper triangular part of A is not referenced.
+ *          If diag = PlasmaUnit, the diagonal elements of A are also not
+ *          referenced and are assumed to be 1.
  *
  * @param[in] lda
- *          The leading dimension of the array A. lda >= max(1,m).
+ *          The leading dimension of the array A. lda >= max(1,k).
  *
  * @param[in,out] B
  *          On entry, the m-by-n right hand side matrix B.
  *          On exit, if return value = 0, the m-by-n solution matrix X.
  *
  * @param[in] ldb
- *          The leading dimension of the array B. LDB >= max(1,m).
+ *          The leading dimension of the array B. ldb >= max(1,m).
  *
  ******************************************************************************/
 void CORE_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
@@ -110,12 +112,12 @@ void CORE_OMP_ztrsm(
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                                     PLASMA_Complex64_t *B, int ldb)
 {
-    // omp depends assume lda == m or n, ldb == m
-    // depending on side
+    // omp depends assume lda == m or n, ldb == m,
+    // depending on side.
     #pragma omp task depend(in:A[0:m*m]) depend(inout:B[0:m*n])
     CORE_ztrsm(side, uplo,
                transA, diag,
-	           m, n,
+               m, n,
                alpha, A, lda,
-	                  B, ldb);
+                      B, ldb);
 }

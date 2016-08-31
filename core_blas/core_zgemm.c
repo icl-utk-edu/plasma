@@ -2,13 +2,10 @@
  *
  * @file core_zgemm.c
  *
- *  PLASMA core_blas kernel.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver.
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Jakub Kurzak
- * @date 2016-01-01
  * @precisions normal z -> c d s
  *
  **/
@@ -32,12 +29,12 @@
  *    \f[ C = \alpha [op( A )\times op( B )] + \beta C, \f]
  *
  *  where op( X ) is one of:
- *          - op( X ) = X   or
- *          - op( X ) = X^T or
- *          - op( X ) = X^H,
+ *    \f[ op( X ) = X,   \f]
+ *    \f[ op( X ) = X^T, \f]
+ *    \f[ op( X ) = X^H, \f]
  *
  *  alpha and beta are scalars, and A, B and C  are matrices, with op( A )
- *  an m by k matrix, op( B ) a k by n matrix and C an m by n matrix.
+ *  an m-by-k matrix, op( B ) a k-by-n matrix and C an m-by-n matrix.
  *
  *******************************************************************************
  *
@@ -71,14 +68,18 @@
  *          and is m otherwise.
  *
  * @param[in] lda
- *          The leading dimension of the array A. lda >= max(1,m).
+ *          The leading dimension of the array A.
+ *          When transA = PlasmaNoTrans, lda >= max(1,m),
+ *          otherwise, lda >= max(1,k).
  *
  * @param[in] B
  *          An ldb-by-kb matrix, where kb is n when transB = PlasmaNoTrans,
  *          and is k otherwise.
  *
  * @param[in] ldb
- *          The leading dimension of the array B. ldb >= max(1,n).
+ *          The leading dimension of the array B.
+ *          When transB = PlasmaNoTrans, ldb >= max(1,k),
+ *          otherwise, ldb >= max(1,n).
  *
  * @param[in] beta
  *          The scalar beta.
@@ -113,8 +114,8 @@ void CORE_OMP_zgemm(
                               const PLASMA_Complex64_t *B, int ldb,
     PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc)
 {
-    // omp depends assume lda == m or k, ldb == k or n, and ldc == m,
-    // depending on transposes
+    // omp depends assume lda == m or k, ldb == k or n, ldc == m,
+    // depending on transA and transB.
     #pragma omp task depend(in:A[0:m*k]) \
                      depend(in:B[0:k*n]) \
                      depend(inout:C[0:m*n])

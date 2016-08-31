@@ -2,14 +2,10 @@
  *
  * @file zherk.c
  *
- *  PLASMA computational routine.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley, Univ. of Colorado Denver and
- *  Univ. of Manchester.
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Pedro V. Lara
- * @date 2016-05-24
  * @precisions normal z -> c
  *
  **/
@@ -23,16 +19,16 @@
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_herk
  *
- *  Performs one of the hermitian rank k operations
+ *  Performs one of the Hermitian rank k operations
  *
- *    \f[ C = \alpha A \times A^H + \beta C \f],
+ *    \f[ C = \alpha A \times A^H + \beta C, \f]
  *    or
- *    \f[ C = \alpha A^H \times A + \beta C \f],
+ *    \f[ C = \alpha A^H \times A + \beta C, \f]
  *
- *  alpha and beta are real scalars, C is an n-by-n hermitian
- *  matrix and A is an n-by-k matrix in the first case and a k-by-n
+ *  where alpha and beta are real scalars, C is an n-by-n Hermitian
+ *  matrix, and A is an n-by-k matrix in the first case and a k-by-n
  *  matrix in the second case.
  *
  *******************************************************************************
@@ -42,34 +38,35 @@
  *          - PlasmaLower: Lower triangle of C is stored.
  *
  * @param[in] trans
- *          - PlasmaNoTrans:   A is not transposed;
- *          - PlasmaConjTrans: A is conjugate transposed.
+ *          - PlasmaNoTrans:   \f[ C = \alpha A \times A^H + \beta C; \f]
+ *          - PlasmaConjTrans: \f[ C = \alpha A^H \times A + \beta C. \f]
  *
  * @param[in] n
- *          The order of the matrix C. 
- *          n >= 0.
+ *          The order of the matrix C. n >= 0.
  *
  * @param[in] k
- *          The number of columns of the matrix op( A ).
+ *          If trans = PlasmaNoTrans, number of columns of the A matrix;
+ *          if trans = PlasmaConjTrans, number of rows of the A matrix.
  *
  * @param[in] alpha
  *          The scalar alpha.
  *
  * @param[in] A
- *          A is a lda-by-ka matrix, where ka is k when trans = PlasmaNoTrans,
- *          and is n otherwise.
+ *          A is a lda-by-ka matrix.
+ *          If trans = PlasmaNoTrans,   ka = k;
+ *          if trans = PlasmaConjTrans, ka = n.
  *
  * @param[in] lda
- *          The leading dimension of the array A. lda must be at least
- *          max(1, n) if trans == PlasmaNoTrans, otherwise lda must
- *          be at least max(1, k).
+ *          The leading dimension of the array A.
+ *          If trans = PlasmaNoTrans,   lda >= max(1, n);
+ *          if trans = PlasmaConjTrans, lda >= max(1, k).
  *
  * @param[in] beta
- *          beta specifies the scalar beta
+ *          The scalar beta.
  *
  * @param[in,out] C
  *          C is a ldc-by-n matrix.
- *          On exit, the array uplo part of the matrix is overwritten
+ *          On exit, the uplo part of the matrix is overwritten
  *          by the uplo part of the updated matrix.
  *
  * @param[in] ldc
@@ -85,7 +82,8 @@
  * @sa PLASMA_cherk
  *
  ******************************************************************************/
-int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
+int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans,
+                 int n, int k,
                  double alpha, PLASMA_Complex64_t *A, int lda,
                  double beta,  PLASMA_Complex64_t *C, int ldc)
 {
@@ -105,19 +103,19 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
     }
 
     // Check input arguments.
-    if ((uplo != PlasmaUpper) && 
+    if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
         return -1;
     }
-    if ((trans != PlasmaNoTrans) && 
+    if ((trans != PlasmaNoTrans) &&
         (trans != PlasmaConjTrans)) {
         plasma_error("illegal value of trans");
         return -2;
     }
     if (trans == PlasmaNoTrans) {
         Am = n; An = k;
-    } 
+    }
     else {
         Am = k; An = n;
     }
@@ -139,8 +137,7 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
     }
 
     // quick return
-    if (n == 0 ||
-        ((alpha == 0.0 || k == 0.0) && beta == 1.0))
+    if (n == 0 || ((alpha == 0.0 || k == 0) && beta == 1.0))
         return PLASMA_SUCCESS;
 
     // Tune
@@ -149,9 +146,8 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
     //     plasma_error("PLASMA_zherk", "plasma_tune() failed");
     //     return status;
     // }
-
-    /* Set NT & KT */
     nb = plasma->nb;
+
     // Initialize tile matrix descriptors.
     descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
                              nb*nb, Am, An, 0, 0, Am, An);
@@ -182,37 +178,24 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
     // Initialize request.
     PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
 
-#pragma omp parallel
-#pragma omp master
+    // asynchronous block
+    #pragma omp parallel
+    #pragma omp master
     {
-        // the Async functions are submitted here.  If an error occurs
-        // (at submission time or at run time) the sequence->status
-        // will be marked with an error.  After an error, the next
-        // Async will not _insert_ more tasks into the runtime.  The
-        // sequence->status can be checked after each call to _Async
-        // or at the end of the parallel region.
-
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
-        if (sequence->status == PLASMA_SUCCESS) 
-            PLASMA_zcm2ccrb_Async(C, ldc, &descC, sequence, &request);
+        PLASMA_zcm2ccrb_Async(C, ldc, &descC, sequence, &request);
 
         // Call the tile async function.
-        if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_zherk_Tile_Async(uplo, trans,
-                                    alpha, &descA,
-                                    beta, &descC,
-                                    sequence, &request);
-        }
+        PLASMA_zherk_Tile_Async(uplo, trans,
+                                alpha, &descA,
+                                beta,  &descC,
+                                sequence, &request);
 
         // Translate back to LAPACK layout.
-        if (sequence->status == PLASMA_SUCCESS) 
-            PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
-    } // pragma omp parallel block closed 
-
-    // Check for errors in the async execution
-    if (sequence->status != PLASMA_SUCCESS)
-        return sequence->status;
+        PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
+    }
+    // implicit synchronization
 
     // Free matrices in tile layout.
     plasma_desc_mat_free(&descA);
@@ -226,9 +209,9 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t_Tile_Async
+ * @ingroup plasma_herk
  *
- *  Performs rank-k update.
+ *  Performs rank k update.
  *  Non-blocking tile version of PLASMA_zherk().
  *  May return before the computation is finished.
  *  Operates on matrices stored by tiles.
@@ -243,8 +226,8 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
  *          - PlasmaLower: Lower triangle of C is stored.
  *
  * @param[in] trans
- *          - PlasmaNoTrans:   A is not transposed;
- *          - PlasmaConjTrans: A is conjugate transposed.
+ *          - PlasmaNoTrans:   \f[ C = \alpha A \times A^H + \beta C; \f]
+ *          - PlasmaConjTrans: \f[ C = \alpha A^H \times A + \beta C. \f]
  *
  * @param[in] alpha
  *          The scalar alpha.
@@ -260,13 +243,13 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
  *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to
- *          (for completion checks and exception handling purposes).  Check 
+ *          (for completion checks and exception handling purposes).  Check
  *          the sequence->status for errors.
  *
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
- * @retval void 
+ * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
  *          request->status should never be set to PLASMA_SUCCESS (the
@@ -329,51 +312,12 @@ void PLASMA_zherk_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
         return;
     }
 
-    int Am, An, Amb, Anb;
-
-    if (trans == PlasmaNoTrans) {
-        Am  = A->m;
-        An  = A->n;
-        Amb = A->mb;
-        Anb = A->nb;
-    }
-    else {
-        Am  = A->n;
-        An  = A->m;
-        Amb = A->nb;
-        Anb = A->mb;
-    }
-
-    if (C->mb != C->nb) {
-        plasma_error("only square tiles supported");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-    if (Amb != C->mb) {
-        plasma_error("tile sizes have to match");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-    if (C->m != C->n) {
-        plasma_error("only square matrix C is supported");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-    if (Am != C->m) {
-        plasma_error("size of matrices have to match");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-
-    // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
-        return;
-    }
-
     // quick return
-    if (C->m == 0 || 
-	((alpha == 0.0 || An == 0) && beta == 1.0))
+    int k = trans == PlasmaNoTrans ? A->n : A->m;
+    PLASMA_Complex64_t zzero = (PLASMA_Complex64_t)0.0;
+    PLASMA_Complex64_t zone  = (PLASMA_Complex64_t)1.0;
+
+    if (C->m == 0 || ((alpha == zzero || k == 0) && beta == zone))
         return;
 
     // Call the parallel function.
@@ -381,6 +325,4 @@ void PLASMA_zherk_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
                   alpha, *A,
                   beta, *C,
                   sequence, request);
-
-    return;
 }

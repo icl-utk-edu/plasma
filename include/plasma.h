@@ -2,13 +2,9 @@
  *
  * @file plasma.h
  *
- *  PLASMA header.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver.
- *
- * @version 3.0.0
- * @author Jakub Kurzak
- * @date 2016-01-01
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
  **/
 #ifndef ICL_PLASMA_H
@@ -24,6 +20,7 @@
 #include "plasma_async.h"
 #include "plasma_descriptor.h"
 #include "plasma_context.h"
+#include "plasma_workspace.h"
 
 #include "plasma_s.h"
 #include "plasma_d.h"

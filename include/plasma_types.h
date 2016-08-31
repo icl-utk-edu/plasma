@@ -2,14 +2,9 @@
  *
  * @file plasma_types.h
  *
- *  PLASMA header.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver.
- *
- * @version 3.0.0
- * @author  Jakub Kurzak
- * @author  Maksims Abalenkovs
- * @date    2016-07-18
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
  **/
 #ifndef ICL_PLASMA_TYPES_H
@@ -55,6 +50,7 @@ enum {
     PlasmaNoTrans    = 111,
     PlasmaTrans      = 112,
     PlasmaConjTrans  = 113,
+    Plasma_ConjTrans = PlasmaConjTrans,
 
     PlasmaUpper      = 121,
     PlasmaLower      = 122,
@@ -66,7 +62,14 @@ enum {
     PlasmaLeft       = 141,
     PlasmaRight      = 142,
 
-    PlasmaInfNorm    = 175
+    PlasmaForward    = 391,
+    PlasmaBackward   = 392,
+
+    PlasmaColumnwise = 401,
+    PlasmaRowwise    = 402,
+
+    PlasmaW          = 501,
+    PlasmaA2         = 502
 };
 
 enum {
@@ -91,6 +94,7 @@ enum {
 
 enum {
     PLASMA_TILE_SIZE,
+    PLASMA_INNER_BLOCK_SIZE,
     PLASMA_TRANSLATION_MODE
 };
 

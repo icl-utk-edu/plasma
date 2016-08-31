@@ -2,14 +2,10 @@
  *
  * @file pzgemm.c
  *
- *  PLASMA computational routine.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver.
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Jakub Kurzak
- * @author Mark Gates
- * @date 2016-01-01
  * @precisions normal z -> s d c
  *
  **/
@@ -40,10 +36,13 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
     PLASMA_Complex64_t zbeta;
     PLASMA_Complex64_t zone = 1.0;
 
-    if (sequence->status != PLASMA_SUCCESS)
-        return;
-
     int innerK = (transA == PlasmaNoTrans ? A.n : A.m);
+
+    // Check sequence status.
+    if (sequence->status != PLASMA_SUCCESS) {
+        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
+        return;
+    }
 
     for (m = 0; m < C.mt; m++) {
         tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;

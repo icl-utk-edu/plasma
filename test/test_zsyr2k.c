@@ -2,13 +2,10 @@
  *
  * @file test_zsyr2k.c
  *
- *  PLASMA test routine.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley, Univ. of Colorado Denver and
- *  Univ. of Manchester.
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author Mawussi Zounon
  * @precisions normal z -> c d s
  *
  **/
@@ -20,6 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #ifdef PLASMA_WITH_MKL
     #include <mkl_cblas.h>
@@ -40,10 +38,10 @@
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
  *
- * If param is NULL     and info is NULL,     print usage and return.
- * If param is NULL     and info is non-NULL, set info to column headings
- * and return. If param is non-NULL and info is non-NULL, set info to column
- * values   and run test.
+ * If param is NULL and info is NULL,     print usage and return.
+ * If param is NULL and info is non-NULL, set info to column labels and return.
+ * If param is non-NULL and info is non-NULL, set info to column values
+ * and run test.
  ******************************************************************************/
 void test_zsyr2k(param_value_t param[], char *info)
 {
@@ -62,10 +60,12 @@ void test_zsyr2k(param_value_t param[], char *info)
             print_usage(PARAM_PADA);
             print_usage(PARAM_PADB);
             print_usage(PARAM_PADC);
-        } else {
+            print_usage(PARAM_NB);
+        }
+        else {
             // Return column labels.
             snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s %*s %*s %*s %*s %*s",
+                     "%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s",
                      InfoSpacing, "Uplo",
                      InfoSpacing, "Trans",
                      InfoSpacing, "N",
@@ -74,22 +74,24 @@ void test_zsyr2k(param_value_t param[], char *info)
                      InfoSpacing, "beta",
                      InfoSpacing, "PadA",
                      InfoSpacing, "PadB",
-                     InfoSpacing, "PadC");
+                     InfoSpacing, "PadC",
+                     InfoSpacing, "NB");
         }
         return;
     }
     // Return column values.
     snprintf(info, InfoLen,
-             "%*c %*c %*d %*d %*.4f %*.4f %*d %*d %*d",
+             "%*c %*c %*d %*d %*.4f %*.4f %*d %*d %*d %*d",
              InfoSpacing, param[PARAM_UPLO].c,
              InfoSpacing, param[PARAM_TRANS].c,
              InfoSpacing, param[PARAM_N].i,
              InfoSpacing, param[PARAM_K].i,
-             InfoSpacing, __real__(param[PARAM_ALPHA].z),
-             InfoSpacing, __real__(param[PARAM_BETA].z),
+             InfoSpacing, creal(param[PARAM_ALPHA].z),
+             InfoSpacing, creal(param[PARAM_BETA].z),
              InfoSpacing, param[PARAM_PADA].i,
              InfoSpacing, param[PARAM_PADB].i,
-             InfoSpacing, param[PARAM_PADC].i);
+             InfoSpacing, param[PARAM_PADC].i,
+             InfoSpacing, param[PARAM_NB].i);
 
     //================================================================
     // Set parameters.
@@ -107,7 +109,7 @@ void test_zsyr2k(param_value_t param[], char *info)
     else if (param[PARAM_TRANS].c == 't')
         trans = PlasmaTrans;
     else
-        trans = PlasmaConjTrans;
+        trans = PlasmaConjTrans;  // invalid option
 
     int n = param[PARAM_N].i;
     int k = param[PARAM_K].i;
@@ -121,12 +123,12 @@ void test_zsyr2k(param_value_t param[], char *info)
         An = k;
         Bm = n;
         Bn = k;
-    } else {
+    }
+    else {
         Am = k;
         An = n;
         Bm = k;
         Bn = n;
-
     }
     Cm = n;
     Cn = n;
@@ -136,7 +138,12 @@ void test_zsyr2k(param_value_t param[], char *info)
     int ldc = imax(1, Cm + param[PARAM_PADC].i);
 
     int test = param[PARAM_TEST].c == 'y';
-    double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
+    double eps = LAPACKE_dlamch('E');
+
+    //================================================================
+    // Set tuning parameters.
+    //================================================================
+    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_NB].i);
 
     //================================================================
     // Allocate and initialize arrays.
@@ -177,8 +184,8 @@ void test_zsyr2k(param_value_t param[], char *info)
     PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
     PLASMA_Complex64_t beta  = param[PARAM_BETA].z;
 #else
-    PLASMA_Complex64_t alpha = __real__(param[PARAM_ALPHA].z);
-    PLASMA_Complex64_t beta  = __real__(param[PARAM_BETA].z);
+    double alpha = creal(param[PARAM_ALPHA].z);
+    double beta  = creal(param[PARAM_BETA].z);
 #endif
 
     //================================================================
@@ -203,6 +210,7 @@ void test_zsyr2k(param_value_t param[], char *info)
     // Test results by comparing to a reference implementation.
     //================================================================
     if (test) {
+        // see comments in test_zgemm.c
         cblas_zsyr2k(
             CblasColMajor,
             (CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)trans,
@@ -214,16 +222,23 @@ void test_zsyr2k(param_value_t param[], char *info)
         PLASMA_Complex64_t zmone = -1.0;
         cblas_zaxpy((size_t)ldc*Cn, CBLAS_SADDR(zmone), Cref, 1, C, 1);
 
+        char uplo_ = param[PARAM_UPLO].c;
         double work[1];
-        double Cnorm = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', Cm, Cn, Cref, ldc, work);
-        double error = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', Cm, Cn, C,    ldc, work);
-        if (Cnorm != 0)
-            error /= Cnorm;
+        double Anorm = LAPACKE_zlange_work(
+                           LAPACK_COL_MAJOR, 'F', Am, An, A, lda, work);
+        double Bnorm = LAPACKE_zlange_work(
+                           LAPACK_COL_MAJOR, 'F', Bm, Bn, B, ldb, work);
+        double Cnorm = LAPACKE_zlansy_work(
+                           LAPACK_COL_MAJOR, 'F', uplo_, Cn, Cref, ldc, work);
+        double error = LAPACKE_zlansy_work(
+                           LAPACK_COL_MAJOR, 'F', uplo_, Cn, C,    ldc, work);
+        double normalize = 2 * sqrt((double)k+2) * cabs(alpha) * Anorm * Bnorm
+                         + 2 * cabs(beta) * Cnorm;
+        if (normalize != 0)
+            error /= normalize;
 
         param[PARAM_ERROR].d = error;
-        param[PARAM_SUCCESS].i = error < tol;
+        param[PARAM_SUCCESS].i = error < 3*eps;
     }
 
     //================================================================

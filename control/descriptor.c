@@ -2,13 +2,9 @@
  *
  * @file descriptor.c
  *
- *  PLASMA control routines.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver.
- *
- * @version 3.0.0
- * @author Jakub Kurzak
- * @date 2016-01-01
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
  **/
 
@@ -92,8 +88,8 @@ PLASMA_desc plasma_desc_init(PLASMA_enum dtyp, int mb, int nb, int bsiz,
     // large matrix derived parameters
     desc.lm1 = (lm/mb);
     desc.ln1 = (ln/nb);
-    desc.lmt = (lm%mb==0) ? (lm/mb) : (lm/mb+1);
-    desc.lnt = (ln%nb==0) ? (ln/nb) : (ln/nb+1);
+    desc.lmt = (lm%mb == 0) ? (lm/mb) : (lm/mb+1);
+    desc.lnt = (ln%nb == 0) ? (ln/nb) : (ln/nb+1);
 
     // submatrix parameters
     desc.i = i;
