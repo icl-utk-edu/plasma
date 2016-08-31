@@ -106,9 +106,8 @@ int PLASMA_zgelqs(int m, int n, int nrhs,
         return -8;
     }
     // Quick return
-    if (imin(m, imin(n, nrhs)) == 0) {
+    if (m == 0 || n == 0 || nrhs == 0)
         return PLASMA_SUCCESS;
-    }
 
     // Tune NB & IB depending on M, N & NRHS; Set NBNBSIZE
     //status = plasma_tune(PLASMA_FUNC_ZGELS, M, N, NRHS);
@@ -290,9 +289,9 @@ void PLASMA_zgelqs_Tile_Async(PLASMA_desc *descA,
     }
 
     // Quick return
-    //if (imin(m, imin(n, nrhs)) == 0) {
-    //    return;
-    //}
+    // (       m == 0 ||        n == 0 ||     nrhs == 0)
+    if (descA->m == 0 || descA->n == 0 || descB->n == 0)
+        return;
 
     //plasma_pztile_zero(
     //    plasma_desc_submatrix(*descB, descA->m, 0,

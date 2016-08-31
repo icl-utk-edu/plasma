@@ -247,7 +247,7 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_cgeqrf(pval, info);
     else if (strcmp(name, "sgeqrf") == 0)
         test_sgeqrf(pval, info);
-/*
+
     else if (strcmp(name, "zgeqrs") == 0)
         test_zgeqrs(pval, info);
     else if (strcmp(name, "dgeqrs") == 0)
@@ -256,7 +256,7 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_cgeqrs(pval, info);
     else if (strcmp(name, "sgeqrs") == 0)
         test_sgeqrs(pval, info);
-*/
+
     else if (strcmp(name, "zhemm") == 0)
         test_zherk(pval, info);
     else if (strcmp(name, "chemm") == 0)

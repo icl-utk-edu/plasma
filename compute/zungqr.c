@@ -108,7 +108,8 @@ int PLASMA_zungqr(int m, int n, int k,
         plasma_error("illegal value of ldq");
         return -8;
     }
-    if (imin(m, imin(n, k)) == 0)
+    // Quick return
+    if (n <= 0)
         return PLASMA_SUCCESS;
 
     // Tune NB & IB depending on M & N; Set NB
@@ -258,11 +259,11 @@ void PLASMA_zungqr_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-/*
-    // quick return
-    if (n <= 0)
-       return;
-*/
+
+    // Quick return
+    if (descQ->n <= 0)
+        return;
+
     // set ones to diagonal of Q
     plasma_pzlaset(PlasmaFull,
                    (PLASMA_Complex64_t)0.0, (PLASMA_Complex64_t)1.0, *descQ,

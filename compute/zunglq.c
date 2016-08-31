@@ -107,9 +107,8 @@ int PLASMA_zunglq(int m, int n, int k,
         plasma_error("illegal value of ldq");
         return -8;
     }
-    // Quick return - currently NOT equivalent to LAPACK's:
-    // CALL DLASET( 'Full', MAX( M, N ), NRHS, ZERO, ZERO, B, LDQ )
-    if (imin(m, imin(n, k)) == 0)
+    // Quick return
+    if (m <= 0)
         return PLASMA_SUCCESS;
 
     // Tune NB & IB depending on M & N; Set NB
@@ -283,10 +282,9 @@ void PLASMA_zunglq_Tile_Async(PLASMA_desc *descA,
         return;
     }
 
-    // Quick return - currently NOT equivalent to LAPACK's:
-    // CALL DLASET( 'Full', MAX( M, N ), NRHS, ZERO, ZERO, Q, LDQ )
-    //if (imin(m, n) == 0)
-    //    return;
+    // Quick return
+    if (descQ->m <= 0)
+        return;
 
     // set ones to diagonal of Q
     plasma_pzlaset(PlasmaFull, 0., 1., *descQ, sequence, request);

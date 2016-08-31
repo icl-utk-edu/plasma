@@ -147,8 +147,8 @@ int PLASMA_zunmqr(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
         plasma_error("illegal value of ldc");
         return -10;
     }
-    // Quick return - currently NOT equivalent to LAPACK's:
-    if (imin(m, imin(n, k)) == 0)
+    // Quick return
+    if (m == 0 || n == 0 || k == 0)
         return PLASMA_SUCCESS;
 
     // Tune NB & IB depending on M, K & N; Set NB
@@ -348,9 +348,10 @@ void PLASMA_zunmqr_Tile_Async(PLASMA_enum side, PLASMA_enum trans,
         return;
     }
 
-    // quick return was commented in 2.8.0
-    //if (imin(m, imin(n, k)) == 0)
-    //    return PLASMA_SUCCESS;
+    // Quick return
+    // (m == 0 || n == 0 || k == 0)
+    if (descC->m == 0 || descC->n == 0 || imin(descA->m, descA->n) == 0)
+        return;
 
     plasma_pzunmqr(side, trans,
                    *descA, *descC, *descT,

@@ -101,8 +101,7 @@ void test_zgels(param_value_t param[], char *info)
     int ldb = imax(1, imax(m, n) + param[PARAM_PADB].i);
 
     int test = param[PARAM_TEST].c == 'y';
-    double tol = param[PARAM_TOL].d;
-    double eps = LAPACKE_dlamch('E');
+    double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
 
     //================================================================
     // Set tuning parameters.
@@ -229,7 +228,7 @@ void test_zgels(param_value_t param[], char *info)
                                            B, ldb, work);
 
         // normalize the result
-        double result = Rnorm / ( (Anorm*Xnorm+Bnorm)*n*eps);
+        double result = Rnorm / ((Anorm*Xnorm+Bnorm)*n);
 
         param[PARAM_ERROR].d = result;
         param[PARAM_SUCCESS].i = result < tol;

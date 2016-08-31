@@ -143,9 +143,8 @@ int PLASMA_zunmlq(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
         plasma_error("illegal value of ldc");
         return -10;
     }
-    // Quick return - currently NOT equivalent to LAPACK's:
-    // CALL DLASET( 'Full', MAX( M, N ), NRHS, ZERO, ZERO, C, LDC )
-    if (imin(m, imin(n, k)) == 0)
+    // Quick return
+    if (m == 0 || n == 0 || k == 0)
         return PLASMA_SUCCESS;
 
     // Tune NB & IB depending on M, K & N; Set NB
@@ -346,14 +345,12 @@ void PLASMA_zunmlq_Tile_Async(PLASMA_enum side, PLASMA_enum trans,
         return;
     }
 
-    // Quick return - currently NOT equivalent to LAPACK's:
-    // CALL DLASET( 'Full', MAX( M, N ), NRHS, ZERO, ZERO, C, LDC )
-    //if (min(M, min(N, K)) == 0)
-    //    return PLASMA_SUCCESS;
+    // Quick return
+    // (m == 0 || n == 0 || k == 0)
+    if (descC->m == 0 || descC->n == 0 || imin(descA->m, descA->n) == 0)
+        return;
 
     plasma_pzunmlq(side, trans,
                    *descA, *descC, *descT,
                    sequence, request);
-
-    return;
 }
