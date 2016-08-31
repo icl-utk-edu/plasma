@@ -151,10 +151,9 @@ int PLASMA_zunmlq(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
     // Tune NB & IB depending on M, K & N; Set NB
     //status = plasma_tune(PLASMA_FUNC_ZGELS, M, K, N);
     //if (status != PLASMA_SUCCESS) {
-    //    plasma_error("PLASMA_zunmlq", "plasma_tune() failed");
+    //    plasma_error("plasma_tune() failed");
     //    return status;
     //}
-
     nb = plasma->nb;
 
     // Initialize tile matrix descriptors.

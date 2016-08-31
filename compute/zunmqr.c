@@ -157,7 +157,6 @@ int PLASMA_zunmqr(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
     //    plasma_error("PLASMA_zunmqr", "plasma_tune() failed");
     //    return status;
     //}
-
     nb = plasma->nb;
 
     // Initialize tile matrix descriptors.
@@ -356,6 +355,4 @@ void PLASMA_zunmqr_Tile_Async(PLASMA_enum side, PLASMA_enum trans,
     plasma_pzunmqr(side, trans,
                    *descA, *descC, *descT,
                    sequence, request);
-
-    return;
 }
