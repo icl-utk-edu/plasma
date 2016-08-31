@@ -43,22 +43,15 @@
  *          The number of right hand sides, i.e., the number of
  *          columns of the matrix B. nrhs >= 0.
  *
- * @param[in,out] A
- *          The triangular factor U or L from the Cholesky
- *          factorization A = U^H*U or A = L*L^H, computed by
- *          PLASMA_zpotrf.
- *          Remark: If out-of-place layout translation is used, the
- *          matrix A can be considered as input, however if inplace
- *          layout translation is enabled, the content of A will be
- *          reordered for computation and restored before exiting the
- *          function.
+ * @param[in,out] AB
+ *          The LU factors computed by PLASMA_zgbtrf.
+ *
+ * @param[in] ldab
+ *          The leading dimension of the array AB.
  *
  * @param[in] ipiv
  *          The pivot indices; for 1 <= i <= min(m,n), row i of the
  *          matrix was interchanged with row ipiv(i).
- *
- * @param[in] lda
- *          The leading dimension of the array A. lda >= max(1,n).
  *
  * @param[in,out] B
  *          On entry, the n-by-nrhs right hand side matrix B.
@@ -78,11 +71,11 @@
  * @sa PLASMA_cgbtrs
  * @sa PLASMA_dgbtrs
  * @sa PLASMA_sgbtrs
- * @sa PLASMA_zpotrf
+ * @sa PLASMA_zgbtrf
  *
  ******************************************************************************/
 int PLASMA_zgbtrs(PLASMA_enum trans, int n, int kl, int ku, int nrhs,
-                  PLASMA_Complex64_t *A, int lda,
+                  PLASMA_Complex64_t *AB, int ldab,
                   const int *ipiv,
                   PLASMA_Complex64_t *B, int ldb)
 {
@@ -90,7 +83,7 @@ int PLASMA_zgbtrs(PLASMA_enum trans, int n, int kl, int ku, int nrhs,
     int retval;
     int status;
 
-    PLASMA_desc descA, descB;
+    PLASMA_desc descAB, descB;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -107,28 +100,28 @@ int PLASMA_zgbtrs(PLASMA_enum trans, int n, int kl, int ku, int nrhs,
         return -1;
     }
     if (n < 0) {
-        plasma_error("illegal value of N");
+        plasma_error("illegal value of n");
         return -2;
     }
     if (kl < 0) {
-        plasma_error("illegal value of KL");
+        plasma_error("illegal value of kl");
         return -3;
     }
     if (ku < 0) {
-        plasma_error("illegal value of KU");
+        plasma_error("illegal value of ku");
         return -4;
     }
     if (nrhs < 0) {
-        plasma_error("illegal value of NRHS");
+        plasma_error("illegal value of nrhs");
         return -5;
     }
-    if (lda < imax(1, 1+2*kl+ku))
+    if (ldab < imax(1, 1+2*kl+ku))
     {
-        plasma_error("illegal value of LDA");
+        plasma_error("illegal value of lda");
         return -7;
     }
     if (ldb < imax(1, n)) {
-        plasma_error("illegal value of LDB");
+        plasma_error("illegal value of ldb");
         return -10;
     }
 
@@ -146,18 +139,18 @@ int PLASMA_zgbtrs(PLASMA_enum trans, int n, int kl, int ku, int nrhs,
     // Set NT & NHRS
     nb = plasma->nb;
     // Initialize tile matrix descriptors.
-    int tku  = (ku+kl+nb-1)/nb; // number of tiles in upper band (not including diagonal)
-    int tkl  = (kl+nb-1)/nb;    // number of tiles in lower band (not including diagonal)
-    int ldab = (tku+tkl+1)*nb;  // since we use zgetrf on panel, we pivot back within panel.
-                               // this could fill the last tile of the panel,
-                               // and we need extra NB space on the bottom
-    descA = plasma_desc_band_init(PlasmaComplexDouble, nb, nb,
-                                  nb*nb, ldab, n, 0, 0, n, n, kl, ku);
+    int tku = (ku+kl+nb-1)/nb; // number of tiles in upper band (not including diagonal)
+    int tkl = (kl+nb-1)/nb;    // number of tiles in lower band (not including diagonal)
+    int ldab_desc = (tku+tkl+1)*nb;  // since we use zgetrf on panel, we pivot back within panel.
+                                     // this could fill the last tile of the panel,
+                                     // and we need extra NB space on the bottom
+    descAB = plasma_desc_band_init(PlasmaComplexDouble, nb, nb,
+                                  nb*nb, ldab_desc, n, 0, 0, n, n, kl, ku);
     descB = plasma_desc_init(PlasmaComplexDouble, nb, nb,
                              nb*nb, n, nrhs, 0, 0, n, nrhs);
 
     // Allocate matrices in tile layout.
-    retval = plasma_desc_mat_alloc(&descA);
+    retval = plasma_desc_mat_alloc(&descAB);
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");
         return retval;
@@ -188,30 +181,31 @@ int PLASMA_zgbtrs(PLASMA_enum trans, int n, int kl, int ku, int nrhs,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_band_Async(A, lda, &descA, sequence, &request);
+        PLASMA_zcm2ccrb_band_Async(AB, ldab, &descAB, sequence, &request);
         if (sequence->status == PLASMA_SUCCESS) {
             PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
         }
-    }
+    } // pragma omp parallel block closed
 
     #pragma omp parallel
     #pragma omp master
     {
         // Call the tile async function.
         if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_zgbtrs_Tile_Async(trans, &descA, ipiv, &descB, sequence, &request);
+            PLASMA_zgbtrs_Tile_Async(trans, &descAB, ipiv, &descB, sequence, &request);
         }
-    }
+    } // pragma omp parallel block closed
+
     #pragma omp parallel
     #pragma omp master
     {
         // Translate back to LAPACK layout.
         if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
-    } 
+    } // pragma omp parallel block closed 
 
     // Free matrix A in tile layout.
-    plasma_desc_mat_free(&descA);
+    plasma_desc_mat_free(&descAB);
     plasma_desc_mat_free(&descB);
 
     // Return status.
@@ -225,7 +219,7 @@ int PLASMA_zgbtrs(PLASMA_enum trans, int n, int kl, int ku, int nrhs,
  * @ingroup plasma_gbtrs
  *
  *  Solves a system of linear equations using previously
- *  computed Cholesky factorization.
+ *  computed LU factorization of a band matrix.
  *  Non-blocking tile version of PLASMA_zgbtrs().
  *  May return before the computation is finished.
  *  Operates on matrices stored by tiles.
@@ -235,13 +229,16 @@ int PLASMA_zgbtrs(PLASMA_enum trans, int n, int kl, int ku, int nrhs,
  *
  *******************************************************************************
  *
- * @param[in] uplo
- *          - PlasmaUpper: Upper triangle of A is stored;
- *          - PlasmaLower: Lower triangle of A is stored.
+ * @param[in] trans
+ *          - PlasmaNoTrans:   A is not transposed,
+ *          - PlasmaTrans:     A is transposed,
  *
- * @param[in] A
- *          The triangular factor U or L from the Cholesky factorization
- *          A = U^H*U or A = L*L^H, computed by PLASMA_zpotrf.
+ * @param[in] AB
+ *          The LU factors of a band matrix A (i.e., A = P*L*U), computed by
+ *          PLASMA_zgbtrf.
+ *
+ * @param[in] ipiv
+ *          The pivot indices; for 1 <= i <= min(m,n), row i of the
  *
  * @param[in,out] B
  *          On entry, the n-by-nrhs right hand side matrix B.
@@ -273,7 +270,7 @@ int PLASMA_zgbtrs(PLASMA_enum trans, int n, int kl, int ku, int nrhs,
  *
  ******************************************************************************/
 void PLASMA_zgbtrs_Tile_Async(PLASMA_enum trans,
-                              PLASMA_desc *A,
+                              PLASMA_desc *AB,
                               const int *ipiv,
                               PLASMA_desc *B,
                               PLASMA_sequence *sequence,
@@ -294,7 +291,7 @@ void PLASMA_zgbtrs_Tile_Async(PLASMA_enum trans,
         plasma_error("illegal value of trans");
         return;
     }
-    if (plasma_desc_band_check(A) != PLASMA_SUCCESS) {
+    if (plasma_desc_band_check(AB) != PLASMA_SUCCESS) {
         plasma_error("invalid A");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -315,12 +312,12 @@ void PLASMA_zgbtrs_Tile_Async(PLASMA_enum trans,
         return;
     }
 
-    if (A->mb != A->nb) {
+    if (AB->mb != AB->nb) {
         plasma_error("only square tiles supported");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (A->m != A->n) {
+    if (AB->m != AB->n) {
         plasma_error("only square matrix A is supported");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -352,7 +349,7 @@ void PLASMA_zgbtrs_Tile_Async(PLASMA_enum trans,
             PlasmaNoTrans,
             PlasmaUnit,
             1.0,
-            *A,
+            *AB,
             *B,
             ipiv,
             sequence,
@@ -364,7 +361,7 @@ void PLASMA_zgbtrs_Tile_Async(PLASMA_enum trans,
             PlasmaNoTrans,
             PlasmaNonUnit,
             1.0,
-            *A,
+            *AB,
             *B,
             ipiv,
             sequence,
@@ -376,7 +373,7 @@ void PLASMA_zgbtrs_Tile_Async(PLASMA_enum trans,
             PlasmaTrans,
             PlasmaNonUnit,
             1.0,
-            *A,
+            *AB,
             *B,
             ipiv,
             sequence,
@@ -387,7 +384,7 @@ void PLASMA_zgbtrs_Tile_Async(PLASMA_enum trans,
             PlasmaTrans,
             PlasmaUnit,
             1.0,
-            *A,
+            *AB,
             *B,
             ipiv,
             sequence,

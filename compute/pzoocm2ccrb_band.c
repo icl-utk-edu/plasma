@@ -17,7 +17,6 @@
 #include "core_blas_z.h"
 
 #define KUT ((A.ku+A.kl+A.nb-1)/A.nb) // number of tiles in upper band (not including diagonal)
-#define KLT ((A.kl+A.nb)/A.nb-1)      // number of tiles in lower band (not including diagonal)
 #define LDtile(m, n) BLKLDD(A, KUT+(m)-(n))
 #define tileA(m, n) ((PLASMA_Complex64_t*)plasma_getaddr(A, KUT+(m)-(n), (n)))
 #define bandA(m, n) (&(Af77[lda*(A.nb*(n)) + (A.ku+A.kl)+A.mb*((m)-(n))]))

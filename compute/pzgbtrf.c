@@ -27,7 +27,7 @@
 #define ipiv(k) (&(ipiv[A.mb*(k)]))
 
 /***************************************************************************//**
- *  Parallel tile LU factorization on band matrix.
+ *  Parallel tile LU factorization of a band matrix.
  * @see PLASMA_zgbtrf_Tile_Async
  ******************************************************************************/
 void plasma_pzgbtrf(PLASMA_desc A, int *ipiv, int *fill, int *fake,

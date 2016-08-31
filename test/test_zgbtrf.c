@@ -1,6 +1,6 @@
 /**
  *
- * @file test_zgemm.c
+ * @file test_zgbtrf.c
  *
  *  PLASMA is a software package provided by:
  *  University of Tennessee, US,

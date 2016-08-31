@@ -22,7 +22,7 @@
  *
  * @ingroup plasma_gbtrf
  *
- *  Performs the LU factorization of a m-by-n band matrix A with partial pivoting
+ *  Performs the LU factorization of an m-by-n band matrix A with partial pivoting
  *  with row interchanges. The factorization has the form
  *
  *    \f[ A = P \times L \times U, \f]
@@ -88,7 +88,7 @@ int PLASMA_zgbtrf(int m, int n, int kl, int ku,
     int retval;
     int status;
 
-    PLASMA_desc descA;
+    PLASMA_desc descAB;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -137,11 +137,11 @@ int PLASMA_zgbtrf(int m, int n, int kl, int ku,
     int lda = (tku+tkl+1)*nb;  // since we use zgetrf on panel, we pivot back within panel.
                                // this could fill the last tile of the panel,
                                // and we need extra NB space on the bottom
-    descA = plasma_desc_band_init(PlasmaComplexDouble, nb, nb,
-                                  nb*nb, lda, n, 0, 0, m, n, kl, ku);
+    descAB = plasma_desc_band_init(PlasmaComplexDouble, nb, nb,
+                                   nb*nb, lda, n, 0, 0, m, n, kl, ku);
 
     // Allocate matrices in tile layout.
-    retval = plasma_desc_mat_alloc(&descA);
+    retval = plasma_desc_mat_alloc(&descAB);
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");
         return retval;
@@ -171,32 +171,28 @@ int PLASMA_zgbtrf(int m, int n, int kl, int ku,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_band_Async(AB, ldab, &descA, sequence, &request);
-    }
-    int *fake = (int*)malloc(descA.nt * sizeof(int));
+        PLASMA_zcm2ccrb_band_Async(AB, ldab, &descAB, sequence, &request);
+    } // pragma omp parallel block closed
+    int *fake = (int*)malloc(descAB.nt * sizeof(int));
     #pragma omp parallel
     #pragma omp master
     {
         // Call the tile async function.
         if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_zgbtrf_Tile_Async(&descA, ipiv, fill, fake, sequence, &request);
+            PLASMA_zgbtrf_Tile_Async(&descAB, ipiv, fill, fake, sequence, &request);
         }
-    }
+    } // pragma omp parallel block closed
     free(fake);
     #pragma omp parallel
     #pragma omp master
     {
         // Translate back to LAPACK layout.
         if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zccrb2cm_band_Async(&descA, AB, ldab, sequence, &request);
+            PLASMA_zccrb2cm_band_Async(&descAB, AB, ldab, sequence, &request);
     } // pragma omp parallel block closed
 
-    // Check for errors in the async execution
-    //if (sequence->status != PLASMA_SUCCESS)
-    //    return sequence->status;
-
     // Free matrix A in tile layout.
-    plasma_desc_mat_free(&descA);
+    plasma_desc_mat_free(&descAB);
 
     // Return status.
     status = sequence->status;
@@ -208,8 +204,7 @@ int PLASMA_zgbtrf(int m, int n, int kl, int ku,
  *
  * @ingroup plasma_gbtrf
  *
- *  Performs the Cholesky factorization of a Hermitian positive definite
- *  matrix.
+ *  Performs the LU factorization of a band matrix.
  *  Non-blocking tile version of PLASMA_zgbtrf().
  *  May return before the computation is finished.
  *  Operates on matrices stored by tiles.
@@ -219,8 +214,8 @@ int PLASMA_zgbtrf(int m, int n, int kl, int ku,
  *
  *******************************************************************************
  *
- * @param[in] A
- *          Descriptor of matrix A.
+ * @param[in] AB
+ *          Descriptor of matrix AB.
  *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to
@@ -250,7 +245,7 @@ int PLASMA_zgbtrf(int m, int n, int kl, int ku,
  * @sa PLASMA_sgbtrf_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zgbtrf_Tile_Async(PLASMA_desc *A, int *ipiv, int *fill, int *fake,
+void PLASMA_zgbtrf_Tile_Async(PLASMA_desc *AB, int *ipiv, int *fill, int *fake,
                               PLASMA_sequence *sequence, 
                               PLASMA_request *request)
 {
@@ -263,7 +258,7 @@ void PLASMA_zgbtrf_Tile_Async(PLASMA_desc *A, int *ipiv, int *fill, int *fake,
     }
 
     // Check input arguments.
-    if (plasma_desc_band_check(A) != PLASMA_SUCCESS) {
+    if (plasma_desc_band_check(AB) != PLASMA_SUCCESS) {
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         plasma_error("invalid A");
         return;
@@ -279,7 +274,7 @@ void PLASMA_zgbtrf_Tile_Async(PLASMA_desc *A, int *ipiv, int *fill, int *fake,
         return;
     }
 
-    if (A->mb != A->nb) {
+    if (AB->mb != AB->nb) {
         plasma_error("only square tiles supported");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -292,11 +287,11 @@ void PLASMA_zgbtrf_Tile_Async(PLASMA_desc *A, int *ipiv, int *fill, int *fake,
     }
 
     // quick return
-    if (A->m == 0)
+    if (AB->m == 0)
         return;
 
     // Call the parallel function.
-    plasma_pzgbtrf(*A, ipiv, fill, fake, sequence, request);
+    plasma_pzgbtrf(*AB, ipiv, fill, fake, sequence, request);
 
     return;
 }

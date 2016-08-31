@@ -107,7 +107,7 @@ PLASMA_desc plasma_desc_init(PLASMA_enum dtyp, int mb, int nb, int bsiz,
 /******************************************************************************/
 PLASMA_desc plasma_desc_band_init(PLASMA_enum dtyp, int mb, int nb, int bsiz,
                                   int lm, int ln, int i, int j, int m, int n,
-                                    int kl, int ku)
+                                  int kl, int ku)
 {
     PLASMA_desc desc;
     // init params for a general matrix
