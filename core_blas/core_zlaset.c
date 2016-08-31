@@ -72,10 +72,8 @@ void CORE_zlaset(PLASMA_enum uplo, int m, int n,
     }
     else {
         // a proper call to LAPACK laset function
-        LAPACKE_zlaset_work(
-            LAPACK_COL_MAJOR,
-            lapack_const(uplo),
-            m, n, alpha, beta, A, lda);
+        LAPACKE_zlaset_work(LAPACK_COL_MAJOR, lapack_const(uplo),
+                            m, n, alpha, beta, A, lda);
     }
 }
 
