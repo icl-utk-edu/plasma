@@ -181,19 +181,12 @@ int PLASMA_zpbtrs(PLASMA_enum uplo, int n, int kd, int nrhs,
         if (sequence->status == PLASMA_SUCCESS) {
             PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
         }
-    }
 
-    #pragma omp parallel
-    #pragma omp master
-    {
         // Call the tile async function.
         if (sequence->status == PLASMA_SUCCESS) {
             PLASMA_zpbtrs_Tile_Async(uplo, &descAB, &descB, sequence, &request);
         }
-    }
-    #pragma omp parallel
-    #pragma omp master
-    {
+
         // Translate back to LAPACK layout.
         if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);

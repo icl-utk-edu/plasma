@@ -162,20 +162,12 @@ int PLASMA_zpbtrf(PLASMA_enum uplo,
     {
         // Translate to tile layout.
         PLASMA_zcm2ccrb_band_Async(uplo, AB, ldab, &descAB, sequence, &request);
-    }
-    int *fake = (int*)malloc(descAB.nt * sizeof(int));
-    #pragma omp parallel
-    #pragma omp master
-    {
+
         // Call the tile async function.
         if (sequence->status == PLASMA_SUCCESS) {
             PLASMA_zpbtrf_Tile_Async(uplo, &descAB, sequence, &request);
         }
-    }
-    free(fake);
-    #pragma omp parallel
-    #pragma omp master
-    {
+
         // Translate back to LAPACK layout.
         if (sequence->status == PLASMA_SUCCESS)
             PLASMA_zccrb2cm_band_Async(uplo, &descAB, AB, ldab, sequence, &request);
