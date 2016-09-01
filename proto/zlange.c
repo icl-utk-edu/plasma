@@ -95,8 +95,8 @@ double PLASMA_zlange(PLASMA_enum norm, int m, int n,
     }
 
     // Check input arguments
-    if ( (norm != PlasmaMaxNorm) && (norm != PlasmaOneNorm)
-        && (norm != PlasmaInfNorm) && (norm != PlasmaFrobeniusNorm) ) {
+    if ((norm != PlasmaMaxNorm) && (norm != PlasmaOneNorm) &&
+        (norm != PlasmaInfNorm) && (norm != PlasmaFrobeniusNorm)) {
         plasma_error("illegal value of norm");
         return -1;
     }
@@ -165,9 +165,9 @@ double PLASMA_zlange(PLASMA_enum norm, int m, int n,
 
         // Call tile async interface
         if (sequence->status == PLASMA_SUCCESS) {
-        
+
             PLASMA_zlange_Tile_Async(norm, &descA, &value, sequence, &request);
-        
+
         }
 
         // Revert matrix to LAPACK layout
@@ -267,8 +267,8 @@ void PLASMA_zlange_Tile_Async(PLASMA_enum norm, PLASMA_desc *A, double *value,
         return;
     }
 
-    if ( (norm != PlasmaMaxNorm) && (norm != PlasmaOneNorm)
-         && (norm != PlasmaInfNorm) && (norm != PlasmaFrobeniusNorm) ) {
+    if ((norm != PlasmaMaxNorm) && (norm != PlasmaOneNorm) &&
+        (norm != PlasmaInfNorm) && (norm != PlasmaFrobeniusNorm)) {
         plasma_error("illegal value of norm");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;

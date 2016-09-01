@@ -2,14 +2,10 @@
  *
  * @file pztrmm.c
  *
- *  PLASMA auxiliary routines
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author  Mathieu Faverge
- * @author  Maksims Abalenkovs
- * @date    2016-07-20
  * @precisions normal z -> s d c
  *
  **/
@@ -25,7 +21,7 @@
 
 /***************************************************************************//**
  *  Parallel tile triangular matrix-matrix multiplication.
- *  @see PLASMA_zgemm_Tile_Async
+ *  @see PLASMA_ztrmm_Tile_Async
  ******************************************************************************/
 void plasma_pztrmm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_enum trans, PLASMA_enum diag,
@@ -38,8 +34,11 @@ void plasma_pztrmm(PLASMA_enum side, PLASMA_enum uplo,
 
     PLASMA_Complex64_t zone = (PLASMA_Complex64_t)1.0;
 
-    if (sequence->status != PLASMA_SUCCESS)
+    // Check sequence status
+    if (sequence->status != PLASMA_SUCCESS) {
+        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
         return;
+    }
 
     if (side == PlasmaLeft) {
         if (uplo == PlasmaUpper) {

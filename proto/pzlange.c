@@ -29,7 +29,7 @@ void plasma_pzlange_quark(PLASMA_enum norm, PLASMA_desc A, double *work, double 
     plasma_context_t *plasma;
     Quark_Task_Flags task_flags = Quark_Task_Flags_Initializer;
 
-    double* lwork;
+    double *lwork;
     int X, X1, X2, Y, Y1, Y2;
     int ldam;
     int m, n, k;
@@ -50,12 +50,12 @@ void plasma_pzlange_quark(PLASMA_enum norm, PLASMA_desc A, double *work, double 
         szeW = A.mt*A.nt;
         lwork = (double*)plasma_shared_alloc(plasma, szeW, PlasmaRealDouble);
         memset(lwork, 0, szeW*sizeof(double));
-        for(m = 0; m < A.mt; m++) {
+        for (m = 0; m < A.mt; m++) {
             X1 = m == 0      ?  A.i       %A.mb   : 0;
             X2 = m == A.mt-1 ? (A.i+A.m-1)%A.mb+1 : A.mb;
             X = X2 - X1;
             ldam = BLKLDD(A, m);
-            for(n = 0; n < A.nt; n++) {
+            for (n = 0; n < A.nt; n++) {
                 Y1 = n == 0      ?  A.j       %A.nb   : 0;
                 Y2 = n == A.nt-1 ? (A.j+A.n-1)%A.nb+1 : A.nb;
                 Y = Y2 - Y1;
@@ -84,12 +84,12 @@ void plasma_pzlange_quark(PLASMA_enum norm, PLASMA_desc A, double *work, double 
     case PlasmaOneNorm:
         lwork = (double*)plasma_shared_alloc(plasma, A.n, PlasmaRealDouble);
         memset(lwork, 0, A.n*sizeof(double));
-        for(m = 0; m < A.mt; m++) {
+        for (m = 0; m < A.mt; m++) {
             X1 = m == 0      ?  A.i       %A.mb   : 0;
             X2 = m == A.mt-1 ? (A.i+A.m-1)%A.mb+1 : A.mb;
             X = X2 - X1;
             ldam = BLKLDD(A, m);
-            for(n = 0; n < A.nt; n++) {
+            for (n = 0; n < A.nt; n++) {
                 Y1 = n == 0      ?  A.j       %A.nb   : 0;
                 Y2 = n == A.nt-1 ? (A.j+A.n-1)%A.nb+1 : A.nb;
                 Y = Y2 - Y1;
@@ -117,12 +117,12 @@ void plasma_pzlange_quark(PLASMA_enum norm, PLASMA_desc A, double *work, double 
     case PlasmaInfNorm:
         lwork = (double*)plasma_shared_alloc(plasma, A.m, PlasmaRealDouble);
         memset(lwork, 0, A.m*sizeof(double));
-        for(m = 0; m < A.mt; m++) {
+        for (m = 0; m < A.mt; m++) {
             X1 = m == 0      ?  A.i       %A.mb   : 0;
             X2 = m == A.mt-1 ? (A.i+A.m-1)%A.mb+1 : A.mb;
             X = X2 - X1;
             ldam = BLKLDD(A, m);
-            for(n = 0; n < A.nt; n++) {
+            for (n = 0; n < A.nt; n++) {
                 Y1 = n == 0      ?  A.j       %A.nb   : 0;
                 Y2 = n == A.nt-1 ? (A.j+A.n-1)%A.nb+1 : A.nb;
                 Y = Y2 - Y1;
@@ -151,18 +151,18 @@ void plasma_pzlange_quark(PLASMA_enum norm, PLASMA_desc A, double *work, double 
         szeW = 2*(PLASMA_SIZE);
         lwork = (double*)plasma_shared_alloc(plasma, szeW, PlasmaRealDouble);
 
-        for(m = 0; m < PLASMA_SIZE; m++) {
+        for (m = 0; m < PLASMA_SIZE; m++) {
             lwork[2*m  ] = 0.;
             lwork[2*m+1] = 1.;
         }
 
         k = 0;
-        for(m = 0; m < A.mt; m++) {
+        for (m = 0; m < A.mt; m++) {
             X1 = m == 0      ?  A.i       %A.mb   : 0;
             X2 = m == A.mt-1 ? (A.i+A.m-1)%A.mb+1 : A.mb;
             X = X2 - X1;
             ldam = BLKLDD(A, m);
-            for(n = 0; n < A.nt; n++) {
+            for (n = 0; n < A.nt; n++) {
                 Y1 = n == 0      ?  A.j       %A.nb   : 0;
                 Y2 = n == A.nt-1 ? (A.j+A.n-1)%A.nb+1 : A.nb;
                 Y = Y2 - Y1;
