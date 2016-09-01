@@ -115,7 +115,7 @@ void CORE_zunmlq(PLASMA_enum side, PLASMA_enum trans,
     int ni = n;
     int mi = m;
 
-    // Check input arguments
+    // Check input arguments.
     if ((side != PlasmaLeft) && (side != PlasmaRight)) {
         plasma_error("Illegal value of side");
         return;
@@ -166,7 +166,7 @@ void CORE_zunmlq(PLASMA_enum side, PLASMA_enum trans,
         return;
     }
 
-    // Quick return
+    // quick return
     if ((m == 0) || (n == 0) || (k == 0))
         return;
 
@@ -202,15 +202,15 @@ void CORE_zunmlq(PLASMA_enum side, PLASMA_enum trans,
         }
         // Apply H or H^H
         LAPACKE_zlarfb_work(LAPACK_COL_MAJOR,
-            lapack_const(side),
-            lapack_const(trans),
-            lapack_const(PlasmaForward),
-            lapack_const(PlasmaRowwise),
-            mi, ni, kb,
-            &A[lda*i+i], lda,
-            &T[ldt*i], ldt,
-            &C[ldc*jc+ic], ldc,
-            WORK, ldwork);
+                            lapack_const(side),
+                            lapack_const(trans),
+                            lapack_const(PlasmaForward),
+                            lapack_const(PlasmaRowwise),
+                            mi, ni, kb,
+                            &A[lda*i+i], lda,
+                            &T[ldt*i], ldt,
+                            &C[ldc*jc+ic], ldc,
+                            WORK, ldwork);
     }
 }
 
@@ -221,12 +221,12 @@ void CORE_OMP_zunmlq(PLASMA_enum side, PLASMA_enum trans,
                      const PLASMA_Complex64_t *T, int ldt,
                            PLASMA_Complex64_t *C, int ldc)
 {
-    // assuming lda == m == n == nb, ldc == nb, ldt == ib
+    // OpenMP depends on lda == m == n == nb, ldc == nb, ldt == ib.
     #pragma omp task depend(in:A[0:nb*nb]) \
                      depend(in:T[0:ib*nb]) \
                      depend(inout:C[0:nb*nb])
     {
-        // prepare memory for the auxiliary array
+        // Allocate the auxiliary array.
         PLASMA_Complex64_t *WORK =
             (PLASMA_Complex64_t *) malloc((size_t)ib*nb *
                                           sizeof(PLASMA_Complex64_t));
@@ -236,7 +236,7 @@ void CORE_OMP_zunmlq(PLASMA_enum side, PLASMA_enum trans,
 
         int ldwork = nb;
 
-        // call the kernel
+        // Call the kernel.
         CORE_zunmlq(side, trans,
                     m, n, k, ib,
                     A, lda,
@@ -244,7 +244,7 @@ void CORE_OMP_zunmlq(PLASMA_enum side, PLASMA_enum trans,
                     C, ldc,
                     WORK, ldwork);
 
-        // deallocate the auxiliary array
+        // Free the auxiliary array.
         free(WORK);
     }
 }

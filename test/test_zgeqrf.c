@@ -205,11 +205,11 @@ void test_zgeqrf(param_value_t param[], char *info)
         LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'l', m, n,
                             zzero, zzero, R, m);
         LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'u', m, n, A, lda, R, m);
-/*
+
         // Compute Q * R.
         PLASMA_zunmqr(PlasmaLeft, PlasmaNoTrans, m, n, minmn, A, lda, &descT,
                       R, m);
-*/
+
         // Compute the difference.
         // R = A - Q*R
         for (int j = 0; j < n; j++)

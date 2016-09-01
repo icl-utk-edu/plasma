@@ -338,13 +338,13 @@ void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *descA,
         return;
     }
 
-    // Quick return  - currently NOT equivalent to LAPACK's.
-    //if (imin(m, imin(n, nrhs)) == 0) {
-    //    for (int i = 0; i < imax(m, n); i++)
-    //        for (int j = 0; j < nrhs; j++)
-    //            B[j*ldb+i] = 0.0;
-    //    return PLASMA_SUCCESS;
-    //}
+    // Quick return
+    // (imin(m, imin(n, nrhs)) == 0)
+    if (imin(descA->m, imin(descA->n, descB->n)) == 0) {
+        // zero matrix B
+        plasma_pzlaset(PlasmaFull, 0., 0., *descB, sequence, request);
+        return;
+    }
 
     if (descA->m >= descA->n) {
         // solution based on QR factorization of A

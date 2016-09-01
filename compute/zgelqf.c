@@ -91,7 +91,6 @@ int PLASMA_zgelqf(int m, int n,
         plasma_error("illegal value of lda");
         return -4;
     }
-
     // Quick return
     if (imin(m, n) == 0)
         return PLASMA_SUCCESS;
@@ -102,7 +101,6 @@ int PLASMA_zgelqf(int m, int n,
     //    plasma_error("PLASMA_zgelqf", "plasma_tune() failed");
     //    return status;
     //}
-
     nb = plasma->nb;
 
     // Initialize tile matrix descriptor.
@@ -249,8 +247,8 @@ void PLASMA_zgelqf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
     }
 
     // Quick return
-    //if (imin(m, n) == 0)
-    //    return PLASMA_SUCCESS;
+    if (imin(descA->m, descA->n) == 0)
+        return;
 
     // Call the parallel function.
     plasma_pzgelqf(*descA, *descT, sequence, request);

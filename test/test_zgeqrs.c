@@ -39,7 +39,7 @@
 
 /***************************************************************************//**
  *
- * @brief Tests ZGELQS.
+ * @brief Tests ZGEQRS.
  *
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
@@ -47,9 +47,8 @@
  * If param is NULL and info is NULL,     print usage and return.
  * If param is NULL and info is non-NULL, set info to column labels and return.
  * If param is non-NULL and info is non-NULL, set info to column values
- * and run test.
  ******************************************************************************/
-void test_zgelqs(param_value_t param[], char *info)
+void test_zgeqrs(param_value_t param[], char *info)
 {
     //================================================================
     // Print usage info or return column labels or values.
@@ -98,7 +97,7 @@ void test_zgelqs(param_value_t param[], char *info)
     int nrhs = param[PARAM_NRHS].i;
 
     int lda = imax(1, m + param[PARAM_PADA].i);
-    int ldb = imax(1, imax(m, n) + param[PARAM_PADB].i);
+    int ldb = imax(1, m + param[PARAM_PADB].i);
 
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
@@ -128,12 +127,6 @@ void test_zgelqs(param_value_t param[], char *info)
 
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*nrhs, B);
     assert(retval == 0);
-    // initialize bottom part of B to zero
-    for (int j = 0; j < nrhs; j++) {
-        for (int i = m; i < ldb; i++) {
-            B[ldb*j + i] = (PLASMA_Complex64_t) 0.;
-        }
-    }
 
     // store the original arrays if residual is to be evaluated
     PLASMA_Complex64_t *Aref = NULL;
@@ -170,24 +163,21 @@ void test_zgelqs(param_value_t param[], char *info)
     //================================================================
     // Run and time PLASMA.
     //================================================================
-    // prepare LQ factorization of A - only auxiliary for this test,
+    // prepare QR factorization of A - only auxiliary for this test,
     // time is not measured
-    PLASMA_zgelqf(m, n, A, lda, &descT);
+    PLASMA_zgeqrf(m, n, A, lda, &descT);
 
-    // perform solution of the system by the prepared LQ factorization of A
+    // perform solution of the system by the prepared QR factorization of A
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zgelqs(m, n, nrhs,
+    PLASMA_zgeqrs(m, n, nrhs,
                   A, lda,
                   &descT,
                   B, ldb);
-
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d =
-        (flops_ztrsm(PlasmaLeft,m,nrhs) + flops_zunmlq(PlasmaLeft,n,nrhs,m)) /
-        time / 1e9;
+    param[PARAM_GFLOPS].d = flops_zgeqrs(m,n,nrhs) / time / 1e9;
 
     //================================================================
     // Test results by solving a linear system.

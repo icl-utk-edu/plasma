@@ -96,7 +96,6 @@ int PLASMA_zgeqrf(int m, int n,
         plasma_error("illegal value of lda");
         return -4;
     }
-
     // Quick return
     if (imin(m, n) == 0)
         return PLASMA_SUCCESS;
@@ -255,11 +254,9 @@ void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
         return;
     }
 
-    // quick return
-    // Jakub S.: Why was it commented out in version 2.8.0 ?
-    // I leave it like that till explained.
-    //if (imin(m, n) == 0)
-    //    return PLASMA_SUCCESS;
+    // Quick return
+    if (imin(descA->m, descA->n) == 0)
+        return;
 
     // Call the parallel function.
     plasma_pzgeqrf(*descA, *descT, work, sequence, request);

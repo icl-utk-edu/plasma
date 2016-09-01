@@ -106,11 +106,9 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
         plasma_error("illegal value of ldb");
         return -8;
     }
-
-    // quick return
-    if (imin(m, imin(n, nrhs)) == 0) {
+    // Quick return
+    if (m == 0 || n == 0 || nrhs == 0)
         return PLASMA_SUCCESS;
-    }
 
     // Tune NB & IB depending on M, N & NRHS; Set NBNBSIZE
     //status = plasma_tune(PLASMA_FUNC_ZGELS, M, N, NRHS);
@@ -286,9 +284,9 @@ void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
     }
 
     // Quick return
-    //if (imin(m, imin(n, nrhs)) == 0) {
-    //    return;
-    //}
+    // (m == 0 || n == 0 || nrhs == 0)
+    if (descA->m == 0 || descA->n == 0 || descB->n == 0)
+        return;
 
     // Find Y = Q^H * B
     // Plasma_ConjTrans will be converted to PlasmaTrans by the
