@@ -59,8 +59,19 @@ void plasma_pzlaset(PLASMA_enum uplo,
 void plasma_pzooccrb2cm(PLASMA_desc A, PLASMA_Complex64_t *Af77, int lda,
                         PLASMA_sequence *sequence, PLASMA_request *request);
 
+void plasma_pzooccrb2cm_band(PLASMA_enum uplo,
+                             PLASMA_desc A, PLASMA_Complex64_t *Af77, int lda,
+                             PLASMA_sequence *sequence, PLASMA_request *request);
+
 void plasma_pzoocm2ccrb(PLASMA_Complex64_t *Af77, int lda, PLASMA_desc A,
                         PLASMA_sequence *sequence, PLASMA_request *request);
+
+void plasma_pzoocm2ccrb_band(PLASMA_enum uplo,
+                             PLASMA_Complex64_t *Af77, int lda, PLASMA_desc A,
+                             PLASMA_sequence *sequence, PLASMA_request *request);
+
+void plasma_pzpbtrf(PLASMA_enum uplo, PLASMA_desc A,
+                    PLASMA_sequence *sequence, PLASMA_request *request);
 
 void plasma_pzpotrf(PLASMA_enum uplo, PLASMA_desc A,
                     PLASMA_sequence *sequence, PLASMA_request *request);
@@ -79,6 +90,10 @@ void plasma_pzsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
 void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
                    PLASMA_Complex64_t alpha, PLASMA_desc A,
                    PLASMA_Complex64_t beta,  PLASMA_desc C,
+                   PLASMA_sequence *sequence, PLASMA_request *request);
+
+void plasma_pztbsm(PLASMA_enum side, PLASMA_enum uplo, PLASMA_enum trans, PLASMA_enum diag,
+                   PLASMA_Complex64_t alpha, PLASMA_desc A, PLASMA_desc B, const int *IPIV,
                    PLASMA_sequence *sequence, PLASMA_request *request);
 
 void plasma_pztrsm(PLASMA_enum side, PLASMA_enum uplo,

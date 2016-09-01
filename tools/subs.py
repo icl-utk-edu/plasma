@@ -138,6 +138,7 @@ blas = [
     ('ssymv',                'dsymv',                'csymv',                'zsymv'               ),
     ('ssyr',                 'dsyr',                 'cher',                 'zher'                ),  # also does zher2, zher2k, zherk
     ('ssyr',                 'dsyr',                 'csyr',                 'zsyr'                ),  # also does zsyrk, zsyr2k
+    ('stbsm',                'dtbsm',                'ctbsm',                'ztbsm'               ),
     ('strmm',                'dtrmm',                'ctrmm',                'ztrmm'               ),
     ('strmv',                'dtrmv',                'ctrmv',                'ztrmv'               ),
     ('strsm',                'dtrsm',                'ctrsm',                'ztrsm'               ),
@@ -154,6 +155,8 @@ lapack = [
     ('sbdsqr',               'dbdsqr',               'cbdsqr',               'zbdsqr'              ),
     ('sbdt01',               'dbdt01',               'cbdt01',               'zbdt01'              ),
     ('sgbbrd',               'dgbbrd',               'cgbbrd',               'zgbbrd'              ),
+    ('sgbtrf',               'dgbtrf',               'cgbtrf',               'zgbtrf'              ),
+    ('sgbtrs',               'dgbtrs',               'cgbtrs',               'zgbtrs'              ),
     ('sgebak',               'dgebak',               'cgebak',               'zgebak'              ),
     ('sgebal',               'dgebal',               'cgebal',               'zgebal'              ),
     ('sgebd2',               'dgebd2',               'cgebd2',               'zgebd2'              ),
@@ -184,6 +187,8 @@ lapack = [
     ('sgetrf',               'dgetrf',               'cgetrf',               'zgetrf'              ),
     ('sgetri',               'dgetri',               'cgetri',               'zgetri'              ),
     ('sgetrs',               'dgetrs',               'cgetrs',               'zgetrs'              ),
+    ('spbtrf',               'dpbtrf',               'cpbtrf',               'zpbtrf'              ),
+    ('spbtrs',               'dpbtrs',               'cpbtrs',               'zpbtrs'              ),
     ('shseqr',               'dhseqr',               'chseqr',               'zhseqr'              ),
     ('shst01',               'dhst01',               'chst01',               'zhst01'              ),
     ('slabad',               'dlabad',               'slabad',               'dlabad'              ),
