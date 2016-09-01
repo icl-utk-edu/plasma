@@ -226,7 +226,8 @@ void test_zgeqrs(param_value_t param[], char *info)
     plasma_desc_mat_free(&descT);
     free(A);
     free(B);
-    if (test)
+    if (test) {
         free(Aref);
         free(Bref);
+    }
 }
