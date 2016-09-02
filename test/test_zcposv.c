@@ -1,20 +1,16 @@
 /**
  *
- * @file test_zcposv.c
+ * @file
  *
- *  PLASMA testing routines
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of Manchester, Univ. of California Berkeley and
- *  Univ. of Colorado Denver
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author  Emmanuel Agullo
- * @author  Mathieu Faverge
- * @author  Maksims Abalenkovs
- * @date    2016-07-26
  * @precisions mixed zc -> ds
  *
  **/
+
+#include "core_blas.h"
 #include "test.h"
 #include "flops.h"
 
@@ -32,7 +28,14 @@
     #include <lapacke.h>
 #endif
 #include <omp.h>
-#include <plasma.h>
+
+#include "plasma_types.h"
+#include "plasma_async.h"
+#include "plasma_context.h"
+#include "plasma_descriptor.h"
+#include "plasma_z.h"
+
+#define COMPLEX
 
 /***************************************************************************//**
  *
@@ -41,13 +44,13 @@
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
  *
- * If param is NULL     and info is NULL,     print usage and return.
- * If param is NULL     and info is non-NULL, set info to column headings and return.
- * If param is non-NULL and info is non-NULL, set info to column values   and run test.
+ * If param is NULL and info is NULL, print usage and return.
+ * If param is NULL and info is non-NULL, set info to column labels and return.
+ * If param is non-NULL and info is non-NULL, set info to column values
+ * and run test.
  ******************************************************************************/
 void test_zcposv(param_value_t param[], char *info)
 {
-
     //================================================================
     // Print usage info or return column labels or values
     //================================================================
