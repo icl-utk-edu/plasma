@@ -32,6 +32,8 @@ typedef enum {
     PARAM_M,      // M dimension
     PARAM_N,      // N dimension
     PARAM_K,      // K dimension
+    PARAM_KL,     // Lower bandwidth
+    PARAM_KU,     // Upper bandwidth
     PARAM_NRHS,   // number of RHS
     PARAM_NB,     // tile size NBxNB
     PARAM_IB,     // inner blocking size
@@ -76,6 +78,8 @@ static const char * const ParamUsage[][2] = {
     {"--m=", "M dimension (number of rows) [default: 1000]"},
     {"--n=", "N dimension (number of columns) [default: 1000]"},
     {"--k=", "K dimension (number of rows or columns) [default: 1000]"},
+    {"--kl=", "Lower bandwidth [default: 200]"},
+    {"--ku=", "Upper bandwidth [default: 200]"},
     {"--nrhs=", "NHRS dimension (number of columns) [default: 1000]"},
     {"--nb=", "NB size of tile (NB by NB) [default: 256]"},
     {"--ib=", "IB inner blocking size [default: 64]"},
