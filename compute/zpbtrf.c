@@ -39,8 +39,8 @@
  *          The number of columns of the matrix A. n >= 0.
  *
  * @param[in] kd
- *          The number of subdiagonals within the band of A if uplo=upper
- *          The number of suuperdiagonals within the band of A. ku >= 0.
+ *          The number of subdiagonals within the band of A if uplo=upper,
+ *          or the number of suuperdiagonals if uplo=lower. ku >= 0.
  *
  * @param[in,out] AB
  *          On entry, the upper or lower triangle of the Hermitian band
@@ -122,11 +122,7 @@ int PLASMA_zpbtrf(PLASMA_enum uplo,
 
     nb = plasma->nb;
     // Initialize tile matrix descriptors.
-    int tku = (kd+kd+nb-1)/nb; // number of tiles in upper band (not including diagonal)
-    int tkl = (kd+nb-1)/nb;    // number of tiles in lower band (not including diagonal)
-    int lda = (tku+tkl+1)*nb;  // since we use zgetrf on panel, we pivot back within panel.
-                               // this could fill the last tile of the panel,
-                               // and we need extra NB space on the bottom
+    int lda = nb*(1+(kd+nb-1)/nb);
     descAB = plasma_desc_band_init(PlasmaComplexDouble, uplo, nb, nb,
                                    nb*nb, lda, n, 0, 0, n, n, kd, kd);
 

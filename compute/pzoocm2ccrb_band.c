@@ -36,7 +36,7 @@ void plasma_pzoocm2ccrb_band(PLASMA_enum uplo,
             m_start = (imax(0, n*A.nb-A.ku-A.kl)) / A.nb;
             m_end = (imin(A.m-1, (n+1)*A.nb+A.kl-1)) / A.nb;
         } else if (uplo == PlasmaUpper) {
-            m_start = (imax(0, n*A.nb-A.ku-A.kl)) / A.nb;
+            m_start = (imax(0, n*A.nb-A.ku)) / A.nb;
             m_end = (imin(A.m-1, (n+1)*A.nb-1)) / A.nb;
         } else {
             m_start = (imax(0, n*A.nb)) / A.nb;
