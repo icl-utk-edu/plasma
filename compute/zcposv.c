@@ -1,15 +1,11 @@
 /**
  *
- * @file zcposv.c
+ * @file
  *
- *  PLASMA computational routines
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of Manchester, Univ. of California Berkeley and Univ. of Colorado Denver
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 3.0.0
- * @author  Emmanuel Agullo
- * @author  Maksims Abalenkovs
- * @date    2016-07-26
  * @precisions mixed zc -> ds
  *
  **/
@@ -31,22 +27,23 @@
  *
  * @ingroup plasma_zcposv
  *
- *  PLASMA_zcposv - Computes the solution to a system of linear equations A * X = B,
- *  where A is an n-by-n symmetric positive definite (or Hermitian positive definite
- *  in the complex case) matrix and X and B are n-by-nrhs matrices.
- *  The Cholesky decomposition is used to factor A as
+ *  PLASMA_zcposv - Computes the solution to a system of linear equations
+ *  A * X = B, where A is an n-by-n symmetric positive definite (or Hermitian
+ *  positive definite in the complex case) matrix and X and B are n-by-nrhs
+ *  matrices. The Cholesky decomposition is used to factor A as
  *
- *    A = U**H * U, if uplo = PlasmaUpper, or
- *    A = L * L**H, if uplo = PlasmaLower,
+ *    A = U^H * U, if uplo = PlasmaUpper, or
+ *    A = L * L^H, if uplo = PlasmaLower,
  *
  *  where U is an upper triangular matrix and L is a lower triangular matrix.
- *  The factored form of A is then used to solve the system of equations A * X = B.
+ *  The factored form of A is then used to solve the system of equations
+ *  A * X = B.
  *
- *  PLASMA_zcposv first attempts to factorize the matrix in COMPLEX and use this
- *  factorization within an iterative refinement procedure to produce a
- *  solution with COMPLEX*16 normwise backward error quality (see below).
- *  If the approach fails the method switches to a COMPLEX*16
- *  factorization and solve.
+ *  PLASMA_zcposv first attempts to factorize the matrix in COMPLEX and use
+ *  this factorization within an iterative refinement procedure to produce a
+ *  solution with COMPLEX*16 normwise backward error quality (see below). If
+ *  the approach fails the method switches to a COMPLEX*16 factorization and
+ *  solve.
  *
  *  The iterative refinement is not going to be a winning strategy if
  *  the ratio COMPLEX performance over COMPLEX*16 performance is too
@@ -59,39 +56,43 @@
  *  for all the RHS we have: Rnorm < n*Xnorm*Anorm*eps*BWDmax
  *  where:
  *
- *  - iter is the number of the current iteration in the iterative refinement process
+ *  - iter is the number of the current iteration in the iterative refinement
+ *  process
  *  - Rnorm is the infinity-norm of the residual
  *  - Xnorm is the infinity-norm of the solution
  *  - Anorm is the infinity-operator-norm of the matrix A
  *  - eps is the machine epsilon returned by DLAMCH('Epsilon').
  *
- *  Actually, in its current state (PLASMA 2.1.0), the test is slightly relaxed.
+ *  Actually, in its current state (PLASMA 3.0.0), the test is slightly
+ *  relaxed.
  *
  *  The values itermax and BWDmax are fixed to 30 and 1.0D+00 respectively.
  *
  *******************************************************************************
  *
  * @param[in] uplo
- *          Specifies whether the matrix A is upper triangular or lower triangular:
+ *          Specifies whether the matrix A is upper triangular or lower
+ *          triangular:
  *          - PlasmaUpper: Upper triangle of A is stored;
  *          - PlasmaLower: Lower triangle of A is stored.
  *
  * @param[in] n
- *          The number of linear equations, i.e., the order of the matrix A. n >= 0.
+ *          The number of linear equations, i.e., the order of the matrix A.
+ *          n >= 0.
  *
  * @param[in] nrhs
- *          The number of right hand sides, i.e., the number of columns of the matrix B.
- *          nrhs >= 0.
+ *          The number of right hand sides, i.e., the number of columns of the
+ *          matrix B. nrhs >= 0.
  *
  * @param[in] A
- *          The n-by-n symmetric positive definite (or Hermitian) coefficient matrix A.
- *          If uplo = PlasmaUpper, the leading n-by-n upper triangular part of A
- *          contains the upper triangular part of the matrix A, and the strictly lower triangular
- *          part of A is not referenced.
- *          If uplo = 'L', the leading n-by-n lower triangular part of A contains the lower
- *          triangular part of the matrix A, and the strictly upper triangular part of A is not
- *          referenced.
- *          This matrix is not modified.
+ *          The n-by-n symmetric positive definite (or Hermitian) coefficient
+ *          matrix A. If uplo = PlasmaUpper, the leading n-by-n upper
+ *          triangular part of A contains the upper triangular part of the
+ *          matrix A, and the strictly lower triangular part of A is not
+ *          referenced. If uplo = 'L', the leading n-by-n lower triangular
+ *          part of A contains the lower triangular part of the matrix A, and
+ *          the strictly upper triangular part of A is not referenced. This
+ *          matrix is not modified.
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,n).
@@ -109,14 +110,16 @@
  *          The leading dimension of the array X. ldx >= max(1,n).
  *
  * @param[out] iter
- *          The number of the current iteration in the iterative refinement process
+ *          The number of the current iteration in the iterative refinement
+ *          process.
  *
  *******************************************************************************
  *
  * @retval PLASMA_SUCCESS successful exit
  * @retval <0 if -i, the i-th argument had an illegal value
- * @retval >0 if i, the leading minor of order i of A is not positive definite, so the
- *            factorization could not be completed, and the solution has not been computed.
+ * @retval >0 if i, the leading minor of order i of A is not positive definite,
+ *            so the factorization could not be completed, and the solution has
+ *            not been computed.
  *
  *******************************************************************************
  *
@@ -192,13 +195,13 @@ int PLASMA_zcposv(PLASMA_enum uplo, int n, int nrhs,
 
     // Initialise matrix descriptors
     descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, lda, n, 0, 0, n, n);
+                             nb*nb, lda, n, 0, 0, lda, n);
 
     descB = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, ldb, nrhs, 0, 0, n, nrhs);
+                             nb*nb, ldb, nrhs, 0, 0, ldb, nrhs);
 
     descX = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, ldx, nrhs, 0, 0, n, nrhs);
+                             nb*nb, ldx, nrhs, 0, 0, ldx, nrhs);
 
     // Allocate matrices in tile layout
     retval = plasma_desc_mat_alloc(&descA);
@@ -233,49 +236,26 @@ int PLASMA_zcposv(PLASMA_enum uplo, int n, int nrhs,
         return retval;
     }
 
-#pragma omp parallel
-#pragma omp master
+    // Asynchronous block
+    #pragma omp parallel
+    #pragma omp master
     {
-        /*
-         * the Async functions are submitted here.  If an error occurs
-         * (at submission time or at run time) the sequence->status
-         * will be marked with an error.  After an error, the next
-         * Async will not _insert_ more tasks into the runtime.  The
-         * sequence->status can be checked after each call to _Async
-         * or at the end of the parallel region.
-         */
-
         // Translate matrices to tile layout
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
-    
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
-    
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zcm2ccrb_Async(X, ldx, &descX, sequence, &request);
+        PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
+        PLASMA_zcm2ccrb_Async(X, ldx, &descX, sequence, &request);
 
         // Call the tile async interface
-        if (sequence->status == PLASMA_SUCCESS) {
-
-            PLASMA_zcposv_Tile_Async(uplo, &descA, &descB, &descX,
-                                     iter, sequence, &request);
-        }
+        PLASMA_zcposv_Tile_Async(uplo, &descA, &descB, &descX,
+                                 iter, sequence, &request);
     
         // Revert matrices to LAPACK layout
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
-        
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
-
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zccrb2cm_Async(&descX, X, ldx, sequence, &request);
+        PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
+        PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
+        PLASMA_zccrb2cm_Async(&descX, X, ldx, sequence, &request);
 
     } // pragma omp parallel block closed
-
-    // Check for errors in async execution
-    if (sequence->status != PLASMA_SUCCESS)
-        return sequence->status;
+    // implicit synchronization
 
     // Free matrices in tile layout
     plasma_desc_mat_free(&descA);
@@ -342,7 +322,7 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     PLASMA_desc descB;
     PLASMA_desc descX;
     plasma_context_t *plasma;
-    double *work;
+    PLASMA_workspace work;
     PLASMA_desc descR, descAs, descXs;
     PLASMA_enum transA;
 
@@ -378,34 +358,31 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
         return;
     }
 
-    // Check sequence status
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
-        return;
-    }
-
     // Check descriptors for correctness
     if (plasma_desc_check(A) != PLASMA_SUCCESS) {
-        plasma_error("invalid first descriptor");
+        plasma_error("invalid descriptor of matrix A");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
-    } else {
+    }
+    else {
         descA = *A;
     }
 
     if (plasma_desc_check(B) != PLASMA_SUCCESS) {
-        plasma_error("invalid second descriptor");
+        plasma_error("invalid descriptor of matrix B");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
-    } else {
+    }
+    else {
         descB = *B;
     }
 
     if (plasma_desc_check(X) != PLASMA_SUCCESS) {
-        plasma_error("invalid third descriptor");
+        plasma_error("invalid descriptor of matrix X");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
-    } else {
+    }
+    else {
         descX = *X;
     }
 
@@ -422,8 +399,8 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
         return;
     }
 
-    /* Quick return - currently NOT equivalent to LAPACK's
-     * LAPACK does not have such check for DPOSV */
+    // Quick return - currently NOT equivalent to LAPACK's
+    // LAPACK does not have such check for DPOSV
 
     if (A->m == 0 || A->n == 0 || B->m == 0 || B->n == 0 || X->m == 0 || X->n == 0)
         return;
@@ -432,24 +409,17 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     n  = descA.m;
     nb = descA.nb;
 
+    // @todo Use workspace once LAPACKE functions are removed
+    // Allocate workspace
     /*
-    work = (double *)plasma_shared_alloc(plasma, PLASMA_SIZE, PlasmaRealDouble);
+    size_t lwork = imax(1,n);
+    retval = plasma_workspace_alloc(&work, lwork, PlasmaComplexDouble);
 
-    if (work == NULL) {
-        plasma_error("plasma_shared_alloc() failed");
-        plasma_shared_free(plasma, work);
-        return PLASMA_ERR_OUT_OF_RESOURCES;
+    if (retval != PLASMA_SUCCESS) {
+        plasma_error("plasma_workspace_alloc() failed");
+        return retval;
     }
     */
-
-    work = (double *) malloc(sizeof(double) * imax(1,n));
-
-    if (work == NULL) {
-        plasma_error("malloc() failed");
-        plasma_request_fail(sequence, request, PLASMA_ERR_OUT_OF_RESOURCES);
-        free(work);
-        return;
-    }
 
     // Initialise additional matrix descriptors
     descR  = plasma_desc_init(PlasmaComplexDouble, nb, nb, nb*nb,
@@ -492,6 +462,7 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     // Compute constants
     // @todo Convert to OpenMP
     // plasma_pzlanhe(PlasmaInfNorm, uplo, descA, work, Anorm, sequence, request);
+    // @todo Verify if infinity norm of matrix A will remain the same for a matrix in tile layout
     Anorm = LAPACKE_zlanhe(mtrxLayout, mtrxNorm, uplo, n, descA.mat, descA.lm);
     eps = LAPACKE_dlamch_work('e');
 
@@ -501,6 +472,7 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     LAPACKE_zlag2c(mtrxLayout, descB.lm, descB.ln, descB.mat, descB.lm,
                    descXs.mat, descXs.lm);
 
+    // @todo Remove once above LAPACKE function is removed
     if (sequence->status != PLASMA_SUCCESS) {
         plasma_error("unable to convert matrix B from double to single precision");
         plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
@@ -513,6 +485,7 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     LAPACKE_zlag2c(mtrxLayout, descA.lm, descA.ln, descA.mat, descA.lm, 
                    descAs.mat, descAs.lm);
 
+    // @todo Remove once above LAPACKE function is removed
     if (sequence->status != PLASMA_SUCCESS) {
         plasma_error("unable to convert matrix A from double to single precision");
         plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
@@ -522,8 +495,8 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     // Compute Cholesky factorization of As
     plasma_pcpotrf(uplo, descAs, sequence, request);
 
-    /* Solve system As*Xs = Bs
-     * Forward substitution */
+    // Solve system As*Xs = Bs
+    // Forward substitution
     transA = (uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans);
 
     plasma_pctrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit,
@@ -541,8 +514,8 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     LAPACKE_clag2z(mtrxLayout, descXs.lm, descXs.ln, descXs.mat, descXs.lm,
                    descX.mat, descX.lm);
 
-    // Compute R = B-A*X
-    // @todo COnvert to OpenMP
+    // Compute residual R = B-A*X
+    // @todo Convert to OpenMP
     // plasma_pzlacpy(descB, descR);
     LAPACKE_zlacpy(mtrxLayout, uplo, descB.lm, descB.ln, descB.mat, descB.lm,
                    descR.mat, descR.lm);
@@ -550,11 +523,12 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     plasma_pzhemm(PlasmaLeft, uplo, negone, descA, descX, one, descR,
                   sequence, request);
 
-    /* Check, whether nrhs normwise backward error satisfies the
-       stopping criterion. If yes, return. Note that iter = 0 (already set) */
+    // Check, whether nrhs normwise backward error satisfies the
+    // stopping criterion. If yes, return. Note, that iter = 0 is already set
     // @todo Convert to OpenMP
     // plasma_pzlange(PlasmaInfNorm, descX, Xnorm, wrk);
     // plasma_pzlange(PlasmaInfNorm, descR, Rnorm, wrk);
+    // @todo Verify if infinity norm of matrices X, R will remain the same for matrices in tile layout
     Xnorm = LAPACKE_zlange(mtrxLayout, mtrxNorm, descX.lm, descX.ln,
                            descX.mat, descX.lm);
 
@@ -566,19 +540,17 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
 
     cte = Anorm * eps * ((double)n) * bwdmax;
 
-    /* The nrhs normwise backward errors satisfy the
-       stopping criterion. We are good to exit */
-
+    // The nrhs normwise backward error satisfies the stopping criterion => Exit
     if (Rnorm < Xnorm * cte) {
+        // @todo Enable once work array is in use
+        // plasma_workspace_free(work);
 
+        // Deallocate memory for additional matrices As, Xs, R
         plasma_desc_mat_free(&descAs);
         plasma_desc_mat_free(&descXs);
         plasma_desc_mat_free(&descR);
-        // plasma_shared_free(plasma, wrk);
-        free(work);
 
         return;
-
     }
 
     double *Xmtrx = (double *) malloc(sizeof(double)*descX.lm*descX.ln);
@@ -593,8 +565,8 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
         LAPACKE_zlag2c(mtrxLayout, descR.lm, descR.ln, descR.mat, descR.lm,
                        descXs.mat, descXs.lm);
 
-        /* Solve system As*Xs = Rs
-         * Forward substitution */
+        // Solve system As*Xs = Rs
+        // Forward substitution
         transA = (uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans);
 
         plasma_pctrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit,
@@ -606,12 +578,14 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
         plasma_pctrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit,
                      (PLASMA_Complex32_t) 1.0, descAs, descXs, sequence, request);
 
-        // Revert Xs to double precision, update current iteration
+        // Revert Xs to double precision, store result in R
+        // Update current iteration
         // @todo Convert to OpenMP
         // plasma_pclag2z(descXs, descR);
         LAPACKE_clag2z(mtrxLayout, descXs.lm, descXs.ln, descXs.mat, descXs.lm,
                        descR.mat, descR.lm);
 
+        // Update solution matrix X:=X+R
         // @todo Convert to OpenMP
         // plasma_pztradd(PlasmaFull, PlasmaNoTrans, (PLASMA_Complex64_t) one,
         //                descR, (PLASMA_Complex64_t) 1.0, descX, sequence, request);
@@ -624,7 +598,7 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
 
         descX.mat = Xmtrx;
 
-        // Compute R = B-A*X
+        // Compute residual R = B-A*X
         // @todo Convert to OpenMP
         // plasma_pzlacpy(descB, descR);
         LAPACKE_zlacpy(mtrxLayout, uplo, descB.lm, descB.ln, descB.mat, descB.lm,
@@ -633,55 +607,56 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
         plasma_pzhemm(PlasmaLeft, uplo, negone, descA, descX,
                       one, descR, sequence, request);
 
-        /* Check, whether nrhs normwise backward errors satisfy the
-           stopping criterion. If yes, set iter = iiter > 0 and return */
+        // Check, whether nrhs normwise backward error satisfies the
+        // stopping criterion. If yes, set iter = iiter > 0 and return
         // @todo Convert to OpenMP
         // plasma_pzlange(PlasmaInfNorm, descX, Xnorm, wrk);
         // plasma_pzlange(PlasmaInfNorm, descR, Rnorm, wrk);
+        // @todo Verify if infinity norm of matrices X, R will remain the same
+        // for matrices in tile layout
         Xnorm = LAPACKE_zlange(mtrxLayout, mtrxNorm, descX.lm, descX.ln,
                                descX.mat, descX.lm);
     
         Rnorm = LAPACKE_zlange(mtrxLayout, mtrxNorm, descR.lm, descR.ln,
                                descR.mat, descR.lm);
 
-        /* Wait for the end of Xnorm and Bnorm computations */
+        // Wait for the end of Xnorm and Rnorm computations
         // plasma_dynamic_sync();
 
-        /* nrhs normwise backward errors satisfy the
-           stopping criterion. We are good to exit. */
-
+        // The nrhs normwise backward error satisfies the stopping criterion =>
+        // Exit
         if (Rnorm < Xnorm * cte) {
-
             *iter = iiter;
 
+            // @todo Enable once work array is in use
+            // plasma_workspace_free(work);
+
+            // Deallocate memory for additional matrices As, Xs, R
             plasma_desc_mat_free(&descAs);
             plasma_desc_mat_free(&descXs);
             plasma_desc_mat_free(&descR);
-            // plasma_shared_free(plasma, wrk);
-            free(work);
 
             return;
-
         }
 
         Xnorm = 0.0; Rnorm = 0.0;
     }
 
-    /* We have performed iter = itermax iterations and never satisified
-       the stopping criterion, set up iter flag accordingly and
-       follow up on double precision routine. */
+    // Itermax iterations have been performed, the stopping criterion has not
+    // been satisfied => Update iter counter and execute standard double
+    // precision routine
     *iter = -itermax - 1;
 
+    // @todo Enable once work array is in use
+    // plasma_workspace_free(work);
+
+    // Deallocate memory for additional matrices As, Xs, R
     plasma_desc_mat_free(&descAs);
     plasma_desc_mat_free(&descXs);
     plasma_desc_mat_free(&descR);
 
-    // plasma_shared_free(plasma, wrk);
-    free(work);
-
-    /* Single-precision iterative refinement failed to converge to
-       satisfactory solution => resort to double precision */
-
+    // Solve linear system A*X=B in double precision
+    // Factorize matrix A using Cholesky decomposition
     plasma_pzpotrf(uplo, descA, sequence, request);
 
     // @todo Convert to OpenMP
@@ -691,11 +666,13 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
 
     transA = (uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans);
 
+    // Perform forward substitution L*d=b
     plasma_pztrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit, (PLASMA_Complex64_t) 1.0,
                   descA, descX, sequence, request);
 
     transA = (uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans);
 
+    // Perform backward substitution U*x=d
     plasma_pztrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit, (PLASMA_Complex64_t) 1.0,
                   descA, descX, sequence, request);
 
