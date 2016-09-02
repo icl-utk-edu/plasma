@@ -195,7 +195,9 @@ void test_ztrmm(param_value_t param[], char *info)
 
         PLASMA_Complex64_t zmone = -1.0;
 
-        cblas_zaxpy((size_t)m*n, CBLAS_SADDR(zmone), Bref, 1, B, 1);
+        k = ldb > m ? ldb : m;
+
+        cblas_zaxpy((size_t)k*n, CBLAS_SADDR(zmone), Bref, 1, B, 1);
 
         double work[1];
         double Bnorm = LAPACKE_zlange_work(
