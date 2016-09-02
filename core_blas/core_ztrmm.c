@@ -1,6 +1,6 @@
 /**
  *
- * @file core_ztrmm.c
+ * @file
  *
  *  PLASMA is a software package provided by:
  *  University of Tennessee, US,
@@ -129,38 +129,4 @@ void CORE_OMP_ztrmm(
                m, n,
                alpha, A, lda,
                       B, ldb);
-}
-
-/***************************************************************************/
-void CORE_ztrmm_p2(
-    PLASMA_enum side, PLASMA_enum uplo, PLASMA_enum transA, PLASMA_enum diag,
-    int m, int n,
-    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t  *A, int lda,
-                                    PLASMA_Complex64_t **B, int ldb)
-{
-    cblas_ztrmm(
-        CblasColMajor,
-        (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
-        (CBLAS_TRANSPOSE)transA, (CBLAS_DIAG)diag,
-        m, n,
-        CBLAS_SADDR(alpha), A, lda,
-        *B, ldb);
-}
-
-/***************************************************************************/
-void CORE_OMP_ztrmm_p2(
-    PLASMA_enum side, PLASMA_enum uplo, PLASMA_enum transA, PLASMA_enum diag,
-    int m, int n,
-    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t  *A, int lda,
-                                    PLASMA_Complex64_t **B, int ldb)
-{
-    // OpenMP depends assume lda == m or n, ldb == n or m
-    // depending on transpose parameter transA
-    #pragma omp task depend(in:A[0:m*n]) \
-                     depend(inout:B[0:n*m])
-    CORE_ztrmm_p2(side,   uplo,
-                  transA, diag,
-                  m, n,
-                  alpha, A, lda,
-                         B, ldb);
 }
