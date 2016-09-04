@@ -1,6 +1,6 @@
 /**
  *
- * @file test_zpotrs.c
+ * @file
  *
  *  PLASMA is a software package provided by:
  *  University of Tennessee, US,

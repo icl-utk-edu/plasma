@@ -1,6 +1,6 @@
 /**
  *
- * @file test_z.h
+ * @file
  *
  *  PLASMA is a software package provided by:
  *  University of Tennessee, US,
