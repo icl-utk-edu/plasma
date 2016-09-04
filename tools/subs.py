@@ -69,6 +69,11 @@ blas_mixed = [
     # for mixed precision
     # double/single,         double-complex/single-complex
     #'12345678901234567890', '12345678901234567890')
+
+    # ----- mixed "zc" routines
+    ('dsposv',               'zcposv'              ),
+
+    # ----- regular routines
     ('daxpy',                'zaxpy'               ),
     ('ddot',                 'zdotc'               ),
     ('dgemm',                'zgemm'               ),
@@ -307,9 +312,10 @@ subs = {
   # ------------------------------------------------------------
   # replacements applied to mixed precision files.
   'mixed': [
-    # ----- header
     # double/single,         double/single-complex
     #'12345678901234567890', '12345678901234567890')
+
+    # ----- header (identifies precision; not a substitution)
     ('ds',                   'zc'                  ),
 
     # ----- preprocessor
@@ -362,9 +368,10 @@ subs = {
   # ------------------------------------------------------------
   # replacements applied to most files.
   'normal': [
-    # ----- header
     # single                  double                  single-complex          double-complex
     #'12345678901234567890', '12345678901234567890', '12345678901234567890', '12345678901234567890')
+
+    # ----- header (identifies precision; not a substitution)
     ('s',                    'd',                    'c',                    'z'                   ),
 
     # ----- preprocessor
@@ -400,7 +407,7 @@ subs = {
     # must be a valid option to real-precision functions.
     # E.g., dgemm( ConjTrans, ConjTrans, ... ) should be valid; if ConjTrans is
     # converted, then dgemm will have 2 Trans cases and no ConjTrans case.
-    # Only for zlarfb and zunm*, convert it using special Magma_ConjTrans and Plasma_ConjTrans 
+    # Only for zlarfb and zunm*, convert it using special Magma_ConjTrans and Plasma_ConjTrans
     # aliases.
     ('MagmaTrans',           'MagmaTrans',           'Magma_ConjTrans',      'Magma_ConjTrans'     ),
     ('PlasmaTrans',          'PlasmaTrans',          'Plasma_ConjTrans',     'Plasma_ConjTrans'    ),
