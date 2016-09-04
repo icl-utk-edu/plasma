@@ -104,7 +104,8 @@ void test_zcposv(param_value_t param[], char *info)
     int ldx  = imax(1, n + param[PARAM_PADX].i);
     int ITER;
 
-    double eps = LAPACKE_dlamch_work('e');
+    int    test = param[PARAM_TEST].c == 'y';
+    double eps  = LAPACKE_dlamch_work('e');
 
     //================================================================
     // Allocate and initialize arrays
@@ -116,20 +117,24 @@ void test_zcposv(param_value_t param[], char *info)
     PLASMA_Complex64_t *B2   = (PLASMA_Complex64_t *)malloc(LDB*NRHS*sizeof(PLASMA_Complex64_t));
     */
 
-    PLASMA_Complex64_t *A0 =
-        (PLASMA_Complex64_t *)malloc((size_t)lda*n*sizeof(PLASMA_Complex64_t));
-    assert(A0 != NULL);
+    PLASMA_Complex64_t *Aref =
+        (PLASMA_Complex64_t *)malloc((size_t)lda*n*
+                                      sizeof(PLASMA_Complex64_t));
+    assert(Aref != NULL);
 
     PLASMA_Complex64_t *A =
-        (PLASMA_Complex64_t *)malloc((size_t)lda*n*sizeof(PLASMA_Complex64_t));
+        (PLASMA_Complex64_t *)malloc((size_t)lda*n*
+                                      sizeof(PLASMA_Complex64_t));
     assert(A != NULL);
 
     PLASMA_Complex64_t *B =
-        (PLASMA_Complex64_t *)malloc((size_t)ldb*nrhs*sizeof(PLASMA_Complex64_t));
+        (PLASMA_Complex64_t *)malloc((size_t)ldb*nrhs*
+                                      sizeof(PLASMA_Complex64_t));
     assert(B != NULL);
 
     PLASMA_Complex64_t *X =
-        (PLASMA_Complex64_t *)malloc((size_t)ldx*nrhs*sizeof(PLASMA_Complex64_t));
+        (PLASMA_Complex64_t *)malloc((size_t)ldx*nrhs*
+                                      sizeof(PLASMA_Complex64_t));
     assert(X != NULL);
 
     /* Initialize A and A2 for Symmetric Positive Matrix (Hessenberg in the complex case) */
@@ -144,26 +149,33 @@ void test_zcposv(param_value_t param[], char *info)
     PLASMA_zlacpy( PlasmaUpperLower, N, NRHS, B1, LDB, B2, LDB );
     */
 
-    /* Initialise A(lda x n) as Symmetric Positive Definite matrix
-     *(Hessenberg in case of complex precision)
-     * Generate random matrix A0 */
+    // Initialise A(lda x n) as Symmetric Positive Definite matrix
+    //(Hessenberg in case of complex precision)
+    // Generate random matrix Aref
     int seed[] = {0, 0, 0, 1};
-    lapack_int retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A0);
+    lapack_int retval;
+    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, Aref);
     assert(retval == 0);
 
-    // Make A symmetric: A = A0*A0'
-    double alpha = 1.0, beta = 1.0;
+    // Make A symmetric: A = Aref*Aref'
+    double alpha = 1.0, beta = 0.0;
 
     retval = cblas_zgemm(CblasColMajor, CblasNoTrans, CblasTrans, lda, n, n,
-                         alpha, A0, lda, A0, lda, beta, A, lda);
+                         alpha, Aref, lda, Aref, lda, beta, A, lda);
     assert(retval == 0);
-
-    // Release memory for auxiliary matrix A0
-    free(A0);
 
     // Ensure diagonal dominance: A = A + n*eye(n)
     for (int i = 0; i < lda; i++) {
         A[i*n+i] *= lda;
+    }
+
+    // Preserve a copy of the original SPD matrix A in Aref for test purposes
+    if (test) {
+        memcpy(Aref, A, (size_t)lda*n*sizeof(PLASMA_Complex64_t));
+    }
+    // Otherwise, deallocate memory
+    else {
+        free(Aref);
     }
 
     // Initialise random matrix B(ldb x nrhs)
@@ -186,93 +198,69 @@ void test_zcposv(param_value_t param[], char *info)
     plasma_time_t time = stop-start;
 
     param[PARAM_TIME].d   = time;
+    // @todo Develop correct formula for performance estimation of ZCPOSV
     // param[PARAM_GFLOPS].d = flops_zcposv(side, n, nrhs) / time / 1e9;
     param[PARAM_GFLOPS].d = 0.0;
 
-
-
-    /*-------------------------------------------------------------
-    *  TESTING ZCPOSV
-    */
-
-    printf("\n");
-    printf("------ TESTS FOR PLASMA ZCPOSV ROUTINE ------  \n");
-    printf("            Size of the Matrix %d by %d\n", N, N);
-    printf("\n");
-    printf(" The matrix A is randomly generated for each test.\n");
-    printf("============\n");
-    printf(" The relative machine precision (eps) is to be %e \n", eps);
-    printf(" Computational tests pass if scaled residuals are less than 60.\n");
-
-    /* PLASMA ZCPOSV */
-    uplo = PlasmaLower;
-    info = PLASMA_zcposv(uplo, N, NRHS, A2, LDA, B1, LDB, B2, LDB, &ITER);
-
-    if (info != PLASMA_SUCCESS ) {
-        printf("PLASMA_zcposv is not completed: info = %d\n", info);
-        info_solution = 1;
-    } else {
-        printf(" Solution obtained with %d iterations\n", ITER);
+    //================================================================
+    // TESTING ZCPOSV
+    //================================================================
+    if (test) {
+        double      Anorm, Bnorm, Xnorm, Rnorm, result;
+        PLASMA_enum mtrxLayout = LAPACK_COL_MAJOR;
+        char        mtrxNorm   = lapack_const(PlasmaInfNorm);
+    
+        PLASMA_Complex64_t alpha, beta;
+        alpha =  1.0;
+        beta  = -1.0;
+    
+        double *work = (double *)malloc(n*sizeof(double));
 
         /* Check the factorization and the solution */
-        info_solution = check_solution(N, NRHS, A1, LDA, B1, B2, LDB, eps);
-    }
+        // info_solution = check_solution(N, NRHS, A1, LDA, B1, B2, LDB, eps);
+
+        
+        // Calculate infinite norms of matrices A, B, X
+        Anorm = LAPACKE_zlange_work(mtrxLayout, mtrxNorm, n, n,    Aref,
+                                    lda, work);
+
+        Bnorm = LAPACKE_zlange_work(mtrxLayout, mtrxNorm, n, nrhs, B,
+                                    ldb, work);
+
+        Xnorm = LAPACKE_zlange_work(mtrxLayout, mtrxNorm, n, nrhs, X,
+                                    ldx, work);
     
-    if (info_solution == 0){
-        printf("***************************************************\n");
-        printf(" ---- TESTING ZCPOSV ..................... PASSED !\n");
-        printf("***************************************************\n");
-    }
-    else{
-        printf("***************************************************\n");
-        printf(" - TESTING ZCPOSV .. FAILED !\n");
-        printf("***************************************************\n");
-    }
+        // Calculate residual R = A*X-B, store result in B
+        cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, nrhs, n,
+                    CBLAS_SADDR(alpha), Aref, lda, X, ldx, CBLAS_SADDR(beta),
+                    B, ldb);
 
-    free(A1); free(A2); free(B1); free(B2);
+        // Calculate infinite norm of residual matrix R
+        Rnorm = LAPACKE_zlange_work(mtrxLayout, mtrxNorm, n, nrhs, B,
+                                    ldb, work);
     
-    return 0;
-}
+        // printf(" Solution obtained with %d iterations\n", ITER);
+        // printf(Anorm, Bnorm, Xnorm, Rnorm);
+    
+        // Calculate normalized result
+        result = Rnorm / ( (Anorm*Xnorm + Bnorm)*n*eps );
+    
+        param[PARAM_ERROR].d = result;
 
-/*------------------------------------------------------------------------
- *  Check the accuracy of the solution of the linear system
- */
+        if (isnan(Xnorm)  || isinf(Xnorm)  ||
+            isnan(result) || isinf(result) || (result > 60.0)) {
 
-static int check_solution(int N, int NRHS, PLASMA_Complex64_t *A1, int LDA, PLASMA_Complex64_t *B1, PLASMA_Complex64_t *B2, int LDB, double eps )
-{
-    int info_solution;
-    double Rnorm, Anorm, Xnorm, Bnorm, result;
-    PLASMA_Complex64_t alpha, beta;
-    double *work = (double *)malloc(N*sizeof(double));
+            param[PARAM_SUCCESS].i = 0;
+        }
+        else {
+            param[PARAM_SUCCESS].i = 1;
+        }
 
-    alpha = 1.0;
-    beta  = -1.0;
-
-    Xnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, lapack_const(PlasmaInfNorm), N, NRHS, B2, LDB, work);
-    Anorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, lapack_const(PlasmaInfNorm), N, N, A1, LDA, work);
-    Bnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, lapack_const(PlasmaInfNorm), N, NRHS, B1, LDB, work);
-
-    cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, N, NRHS, N, CBLAS_SADDR(alpha), A1, LDA, B2, LDB, CBLAS_SADDR(beta), B1, LDB);
-    Rnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, lapack_const(PlasmaInfNorm), N, NRHS, B1, LDB, work);
-
-    if (getenv("PLASMA_TESTING_VERBOSE"))
-      printf( "||A||_oo=%f\n||X||_oo=%f\n||B||_oo=%f\n||A X - B||_oo=%e\n", Anorm, Xnorm, Bnorm, Rnorm );
-
-    result = Rnorm / ( (Anorm*Xnorm+Bnorm)*N*eps ) ;
-    printf("============\n");
-    printf("Checking the Residual of the solution \n");
-    printf("-- ||Ax-B||_oo/((||A||_oo||x||_oo+||B||_oo).N.eps) = %e \n", result);
-
-    if (  isnan(Xnorm) || isinf(Xnorm) || isnan(result) || isinf(result) || (result > 60.0) ) {
-        printf("-- The solution is suspicious ! \n");
-        info_solution = 1;
-     }
-    else{
-        printf("-- The solution is CORRECT ! \n");
-        info_solution = 0;
+        free(Aref); free(work);
     }
 
-    free(work);
-
-    return info_solution;
+    //================================================================
+    // Free arrays
+    //================================================================
+    free(A); free(B); free(X);
 }
