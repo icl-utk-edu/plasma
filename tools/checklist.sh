@@ -143,6 +143,10 @@ echo "===== @version, @date, @author deprecated"
 grep -P '@version|@date|@author' $files
 echo
 
+echo "===== @file should NOT have filename"
+grep -P '@file.+' $files
+echo
+
 echo "===== **** rule lines are exactly 80 characters"
 grep -P '\*\*\*' $files | grep -v -P ':.{80}$'
 echo
