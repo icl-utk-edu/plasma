@@ -354,14 +354,18 @@ subs = {
 
     # ----- PLASMA / MAGMA functions, alphabetic order
 
+    # ----- header files
+    (r'_ds\.h\b',           r'_zc\.h\b'            ),
+    (r'_DS_H\b',            r'_ZC_H\b'             ),
+
     # ----- Prefixes
     # See note in "normal" section below
-    ('LAPACKE_d',            'LAPACKE_z'           ),
-    ('LAPACKE_s',            'LAPACKE_c',          ),
-    ('PLASMA_d',             'PLASMA_z'            ),
-    ('PLASMA_s',             'PLASMA_c'            ),
-    ('plasma_d',             'plasma_z'            ),
-    ('plasma_s',             'plasma_c'            ),
+    #('LAPACKE_d',            'LAPACKE_z'           ),
+    #('LAPACKE_s',            'LAPACKE_c',          ),
+    #('PLASMA_d',             'PLASMA_z'            ),
+    #('PLASMA_s',             'PLASMA_c'            ),
+    #('plasma_d',             'plasma_z'            ),
+    #('plasma_s',             'plasma_c'            ),
 
   ],  # end mixed
 
@@ -436,20 +440,24 @@ subs = {
     ('sccrb2cm',             'dccrb2cm',             'cccrb2cm',             'zccrb2cm'            ),
     ('scm2ccrb',             'dcm2ccrb',             'ccm2ccrb',             'zcm2ccrb'            ),
 
+    # ----- header files
+    (r'_s\.h\b',            r'_d\.h\b',             r'_c\.h\b',             r'_z\.h\b'             ),
+    (r'_S_H\b',             r'_D_H\b',              r'_C_H\b',              r'_Z_H\b'              ),
+
     # ----- Prefixes
     # Most routines have already been renamed by above BLAS/LAPACK rules.
     # Functions where real == complex name can be handled here;
     # if real != complex name, it must be handled above.
-    ('CORE_BLAS_S',          'CORE_BLAS_D',          'CORE_BLAS_C',          'CORE_BLAS_Z'         ),
-    ('core_blas_s',          'core_blas_d',          'core_blas_c',          'core_blas_z'         ),
-    ('internal_s',           'internal_d',           'internal_c',           'internal_z'          ),
-    ('INTERNAL_S_H',         'INTERNAL_D_H',         'INTERNAL_C_H',         'INTERNAL_Z_H'        ),
-    ('LAPACKE_s',            'LAPACKE_d',            'LAPACKE_c',            'LAPACKE_z'           ),
-    ('PLASMA_S',             'PLASMA_D',             'PLASMA_C',             'PLASMA_Z'            ),
-    ('PLASMA_s',             'PLASMA_d',             'PLASMA_c',             'PLASMA_z'            ),
-    ('plasma_s',             'plasma_d',             'plasma_c',             'plasma_z'            ),
-    ('TEST_S',               'TEST_D',               'TEST_C',               'TEST_Z'              ),
-    ('test_s',               'test_d',               'test_c',               'test_z'              ),
+    #('CORE_BLAS_S',          'CORE_BLAS_D',          'CORE_BLAS_C',          'CORE_BLAS_Z'         ),
+    #('core_blas_s',          'core_blas_d',          'core_blas_c',          'core_blas_z'         ),
+    #('internal_s',           'internal_d',           'internal_c',           'internal_z'          ),
+    #('INTERNAL_S_H',         'INTERNAL_D_H',         'INTERNAL_C_H',         'INTERNAL_Z_H'        ),
+    #('LAPACKE_s',            'LAPACKE_d',            'LAPACKE_c',            'LAPACKE_z'           ),
+    #('PLASMA_S',             'PLASMA_D',             'PLASMA_C',             'PLASMA_Z'            ),
+    #('PLASMA_s',             'PLASMA_d',             'PLASMA_c',             'PLASMA_z'            ),
+    #('plasma_s',             'plasma_d',             'plasma_c',             'plasma_z'            ),
+    #('TEST_S',               'TEST_D',               'TEST_C',               'TEST_Z'              ),
+    #('test_s',               'test_d',               'test_c',               'test_z'              ),
 
   ],  # end normal
 } # end subs
