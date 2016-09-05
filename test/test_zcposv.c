@@ -6,15 +6,18 @@
  *  University of Tennessee, US,
  *  University of Manchester, UK.
  *
- * @precisions mixed zc -> ds
+ *
  *
  **/
 
+// @precisions mixed zc -> ds
+ 
 #include "core_blas.h"
 #include "test.h"
 #include "flops.h"
 
 #include <assert.h>
+#include <math.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -158,11 +161,11 @@ void test_zcposv(param_value_t param[], char *info)
     assert(retval == 0);
 
     // Make A symmetric: A = Aref*Aref'
-    double alpha = 1.0, beta = 0.0;
+    PLASMA_Complex64_t alpha = 1.0, beta = 0.0;
 
-    retval = cblas_zgemm(CblasColMajor, CblasNoTrans, CblasTrans, lda, n, n,
-                         alpha, Aref, lda, Aref, lda, beta, A, lda);
-    assert(retval == 0);
+    cblas_zgemm(CblasColMajor, CblasNoTrans, CblasTrans, lda, n, n,
+                         CBLAS_SADDR(alpha), Aref, lda, Aref, lda,
+                         CBLAS_SADDR(beta),  A,    lda);
 
     // Ensure diagonal dominance: A = A + n*eye(n)
     for (int i = 0; i < lda; i++) {
@@ -179,7 +182,7 @@ void test_zcposv(param_value_t param[], char *info)
     }
 
     // Initialise random matrix B(ldb x nrhs)
-    lapack_int retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*nrhs, B);
+    retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*nrhs, B);
     assert(retval == 0);
 
     //================================================================
@@ -208,9 +211,8 @@ void test_zcposv(param_value_t param[], char *info)
     if (test) {
         double      Anorm, Bnorm, Xnorm, Rnorm, result;
         PLASMA_enum mtrxLayout = LAPACK_COL_MAJOR;
-        char        mtrxNorm   = lapack_const(PlasmaInfNorm);
+        char        mtrxNorm   = 'I';
     
-        PLASMA_Complex64_t alpha, beta;
         alpha =  1.0;
         beta  = -1.0;
     

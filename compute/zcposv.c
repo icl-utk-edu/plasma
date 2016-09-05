@@ -6,9 +6,11 @@
  *  University of Tennessee, US,
  *  University of Manchester, UK.
  *
- * @precisions mixed zc -> ds
+ *
  *
  **/
+
+// @precisions mixed zc -> ds
 
 #include "plasma_types.h"
 #include "plasma_async.h"
@@ -315,14 +317,16 @@ int PLASMA_zcposv(PLASMA_enum uplo, int n, int nrhs,
  ******************************************************************************/
 void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
                               PLASMA_desc *X, int *iter,
-                              PLASMA_sequence *sequence, PLASMA_request *request)
+                              PLASMA_sequence *sequence,
+                              PLASMA_request  *request)
 {
     int n, nb;
     PLASMA_desc descA;
     PLASMA_desc descB;
     PLASMA_desc descX;
     plasma_context_t *plasma;
-    PLASMA_workspace work;
+    // @todo Use workspace once LAPACKE functions are removed
+    // PLASMA_workspace work;
     PLASMA_desc descR, descAs, descXs;
     PLASMA_enum transA;
 

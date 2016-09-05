@@ -125,6 +125,10 @@ int PLASMA_zunmqr(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
                   PLASMA_desc *descT,
                   PLASMA_Complex64_t *C, int ldc);
 
+int PLASMA_zcposv(PLASMA_enum uplo, int n, int nrhs,
+                  PLASMA_Complex64_t *A, int lda,
+                  PLASMA_Complex64_t *B, int ldb,
+                  PLASMA_Complex64_t *X, int ldx, int *iter);
 
 /***************************************************************************//**
  *  Tile asynchronous interface.
@@ -261,6 +265,11 @@ void PLASMA_zunmqr_Tile_Async(PLASMA_enum side, PLASMA_enum trans,
                               PLASMA_desc *descC,
                               PLASMA_sequence *sequence,
                               PLASMA_request *request);
+
+void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
+                              PLASMA_desc *X, int *iter,
+                              PLASMA_sequence *sequence,
+                              PLASMA_request  *request);
 
 #ifdef __cplusplus
 }  // extern "C"

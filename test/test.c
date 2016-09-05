@@ -344,6 +344,11 @@ void run_routine(const char *name, param_value_t pval[], char *info)
     else if (strcmp(name, "strmm") == 0)
         test_strmm(pval, info);
 
+    else if (strcmp(name, "zcposv") == 0)
+        test_zcposv(pval, info);
+//    else if (strcmp(name, "dsposv") == 0)
+//        test_dsposv(pval, info);
+
     else {
         printf("unknown routine: %s\n", name);
         exit(EXIT_FAILURE);
