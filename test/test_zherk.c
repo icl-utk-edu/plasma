@@ -11,6 +11,7 @@
  **/
 #include "test.h"
 #include "flops.h"
+#include "core_lapack.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -19,13 +20,6 @@
 #include <string.h>
 #include <math.h>
 
-#ifdef PLASMA_WITH_MKL
-    #include <mkl_cblas.h>
-    #include <mkl_lapacke.h>
-#else
-    #include <cblas.h>
-    #include <lapacke.h>
-#endif
 #include <omp.h>
 #include <plasma.h>
 

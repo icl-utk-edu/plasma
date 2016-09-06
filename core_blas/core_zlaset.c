@@ -13,16 +13,10 @@
 #include "core_blas.h"
 #include "plasma_types.h"
 #include "plasma_internal.h"
+#include "core_lapack.h"
 
 // for memset function
 #include <string.h>
-
-#ifdef PLASMA_WITH_MKL
-    #include <mkl.h>
-#else
-    #include <cblas.h>
-    #include <lapacke.h>
-#endif
 
 /***************************************************************************//**
  *
