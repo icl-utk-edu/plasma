@@ -93,10 +93,10 @@ void test_ztrmm(param_value_t param[], char *info)
     //================================================================
     // Set parameters
     //================================================================
-    PLASMA_enum side;
-    PLASMA_enum uplo;
-    PLASMA_enum transA;
-    PLASMA_enum diag;
+    PLASMA_enum side = PLASMA_side_const(param[PARAM_SIDE].c);
+    PLASMA_enum uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
+    PLASMA_enum transa = PLASMA_trans_const(param[PARAM_TRANSA].c);
+    PLASMA_enum diag = PLASMA_diag_const(param[PARAM_DIAG].c);
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
@@ -104,33 +104,14 @@ void test_ztrmm(param_value_t param[], char *info)
     int k;
     int lda;
 
-    if (param[PARAM_SIDE].c == 'l') {
-        side = PlasmaLeft;
+    if (side == PlasmaLeft) {
         k    = m;
         lda  = imax(1, m + param[PARAM_PADA].i);
     }
     else {
-        side = PlasmaRight;
         k    = n;
         lda  = imax(1, n + param[PARAM_PADA].i);
     }
-
-    if (param[PARAM_UPLO].c == 'u')
-        uplo = PlasmaUpper;
-    else
-        uplo = PlasmaLower;
-
-    if (param[PARAM_TRANSA].c == 'n')
-        transA = PlasmaNoTrans;
-    else if (param[PARAM_TRANS].c == 't')
-        transA = PlasmaTrans;
-    else
-        transA = PlasmaConjTrans;
-
-    if (param[PARAM_DIAG].c == 'u')
-        diag = PlasmaUnit;
-    else
-        diag = PlasmaNonUnit;
 
     int    ldb  = imax(1, m + param[PARAM_PADB].i);
     int    test = param[PARAM_TEST].c == 'y';
@@ -175,9 +156,9 @@ void test_ztrmm(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    PLASMA_ztrmm((CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
-                 (CBLAS_TRANSPOSE)transA, (CBLAS_DIAG)diag,
-                  m, n, alpha, A, lda, B, ldb);
+    PLASMA_ztrmm(side, uplo,
+                 transa, diag,
+                 m, n, alpha, A, lda, B, ldb);
 
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
@@ -190,7 +171,7 @@ void test_ztrmm(param_value_t param[], char *info)
     //================================================================
     if (test) {
         cblas_ztrmm(CblasColMajor, (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
-                   (CBLAS_TRANSPOSE)transA, (CBLAS_DIAG)diag,
+                   (CBLAS_TRANSPOSE)transa, (CBLAS_DIAG)diag,
                     m, n, CBLAS_SADDR(alpha), A, lda, Bref, ldb);
 
         PLASMA_Complex64_t zmone = -1.0;
@@ -214,8 +195,8 @@ void test_ztrmm(param_value_t param[], char *info)
     //================================================================
     // Free arrays
     //================================================================
-    free(A); free(B);
-
+    free(A);
+    free(B);
     if (test)
         free(Bref);
 }

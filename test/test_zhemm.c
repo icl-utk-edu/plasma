@@ -96,18 +96,8 @@ void test_zhemm(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    PLASMA_enum side;
-    PLASMA_enum uplo;
-
-    if (param[PARAM_SIDE].c == 'l')
-        side = PlasmaLeft;
-    else
-        side = PlasmaRight;
-
-    if (param[PARAM_UPLO].c == 'l')
-        uplo = PlasmaLower;
-    else
-        uplo = PlasmaUpper;
+    PLASMA_enum side = PLASMA_side_const(param[PARAM_SIDE].c);
+    PLASMA_enum uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
@@ -191,7 +181,7 @@ void test_zhemm(param_value_t param[], char *info)
     plasma_time_t start = omp_get_wtime();
 
     PLASMA_zhemm(
-        (CBLAS_SIDE)side, (CBLAS_UPLO) uplo,
+        side, uplo,
         m, n,
         alpha, A, lda,
                B, ldb,

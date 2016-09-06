@@ -96,20 +96,8 @@ void test_zsyr2k(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    PLASMA_enum uplo;
-    PLASMA_enum trans;
-
-    if (param[PARAM_UPLO].c == 'l')
-        uplo = PlasmaLower;
-    else
-        uplo = PlasmaUpper;
-
-    if (param[PARAM_TRANS].c == 'n')
-        trans = PlasmaNoTrans;
-    else if (param[PARAM_TRANS].c == 't')
-        trans = PlasmaTrans;
-    else
-        trans = PlasmaConjTrans;  // invalid option
+    PLASMA_enum uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
+    PLASMA_enum trans = PLASMA_trans_const(param[PARAM_TRANS].c);
 
     int n = param[PARAM_N].i;
     int k = param[PARAM_K].i;
@@ -194,7 +182,7 @@ void test_zsyr2k(param_value_t param[], char *info)
     plasma_time_t start = omp_get_wtime();
 
     PLASMA_zsyr2k(
-        (CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)trans,
+        uplo, trans,
         n, k,
         alpha, A, lda,
         B, ldb,
