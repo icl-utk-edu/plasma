@@ -57,28 +57,30 @@ void CORE_zlaset(PLASMA_enum uplo, int m, int n,
                  PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
                  PLASMA_Complex64_t *A, int lda)
 {
-    if (alpha == beta &&
-        alpha == (PLASMA_Complex64_t) 0. &&
+    if (alpha == (PLASMA_Complex64_t)0.0 &&
+        beta == (PLASMA_Complex64_t)0.0 &&
         uplo == PlasmaFull &&
         m == lda) {
-        // a shortcut to zero the entire tile
-        memset((void*) A, 0, m*n*sizeof(PLASMA_Complex64_t));
+        // Use memset to zero continuous memory.
+        memset((void*)A, 0, (size_t)m*n*sizeof(PLASMA_Complex64_t));
     }
     else {
-        // a proper call to LAPACK laset function
+        // Use LAPACKE_zlaset_work to initialize the matrix.
         LAPACKE_zlaset_work(LAPACK_COL_MAJOR, lapack_const(uplo),
                             m, n, alpha, beta, A, lda);
     }
 }
 
 /******************************************************************************/
-void CORE_OMP_zlaset(PLASMA_enum uplo, int m, int n,
+void CORE_OMP_zlaset(PLASMA_enum uplo,
+                     int mb, int nb,
+                     int i, int j,
+                     int m, int n,
                      PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
-                     PLASMA_Complex64_t *A, int lda)
+                     PLASMA_Complex64_t *A)
 {
-    // omp depends assume lda == m
-    #pragma omp task depend(out:A[0:m*n])
+    #pragma omp task depend(out:A[0:mb*nb])
     CORE_zlaset(uplo, m, n,
                 alpha, beta,
-                A, lda);
+                A+i+j*mb, mb);
 }

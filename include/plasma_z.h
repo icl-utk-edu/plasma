@@ -69,6 +69,10 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans,
                  double alpha, PLASMA_Complex64_t *A, int lda,
                  double beta,  PLASMA_Complex64_t *C, int ldc);
 
+int PLASMA_zpbsv(PLASMA_enum uplo, int n, int kd, int nrhs,
+                 PLASMA_Complex64_t *AB, int ldab,
+                 PLASMA_Complex64_t *B, int ldb);
+
 int PLASMA_zpbtrs(PLASMA_enum uplo, int n, int kd, int nrhs,
                   PLASMA_Complex64_t *AB, int ldab,
                   PLASMA_Complex64_t *B, int ldb);
@@ -208,6 +212,12 @@ void PLASMA_zherk_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
                             double alpha, PLASMA_desc *A,
                             double beta,  PLASMA_desc *C,
                             PLASMA_sequence *sequence, PLASMA_request *request);
+
+void PLASMA_zpbsv_Tile_Async(PLASMA_enum uplo,
+                             PLASMA_desc *AB,
+                             PLASMA_desc *B,
+                             PLASMA_sequence *sequence, 
+                             PLASMA_request *request);
 
 void PLASMA_zpbtrf_Tile_Async(PLASMA_enum uplo,
                               PLASMA_desc *AB,
