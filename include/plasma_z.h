@@ -13,6 +13,10 @@
 #ifndef ICL_PLASMA_Z_H
 #define ICL_PLASMA_Z_H
 
+#include "plasma_async.h"
+#include "plasma_descriptor.h"
+#include "plasma_workspace.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
