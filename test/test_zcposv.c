@@ -6,12 +6,10 @@
  *  University of Tennessee, US,
  *  University of Manchester, UK.
  *
- *
+ * @precisions mixed zc -> ds
  *
  **/
 
-// @precisions mixed zc -> ds
- 
 #include "core_blas.h"
 #include "test.h"
 #include "flops.h"
@@ -37,6 +35,9 @@
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_z.h"
+
+// Use custom matrix library
+#include "ma-mtrx.h"
 
 #define COMPLEX
 
@@ -65,30 +66,27 @@ void test_zcposv(param_value_t param[], char *info)
             print_usage(PARAM_NRHS);
             print_usage(PARAM_PADA);
             print_usage(PARAM_PADB);
-            print_usage(PARAM_PADX);
         }
         else {
             // Return column labels
             snprintf(info, InfoLen,
-                "%*s %*s %*s %*s %*s %*s",
+                "%*s %*s %*s %*s %*s",
                 InfoSpacing, "UpLo",
                 InfoSpacing, "n",
                 InfoSpacing, "nrhs",
                 InfoSpacing, "PadA",
-                InfoSpacing, "PadB",
-                InfoSpacing, "PadX");
+                InfoSpacing, "PadB");
         }
         return;
     }
     // Return column values
     snprintf(info, InfoLen,
-        "%*c %*d %*d %*d %*d %*d",
+        "%*c %*d %*d %*d %*d",
         InfoSpacing, param[PARAM_UPLO].c,
         InfoSpacing, param[PARAM_N].i,
         InfoSpacing, param[PARAM_NRHS].i,
         InfoSpacing, param[PARAM_PADA].i,
-        InfoSpacing, param[PARAM_PADB].i,
-        InfoSpacing, param[PARAM_PADX].i);
+        InfoSpacing, param[PARAM_PADB].i);
 
     //================================================================
     // Set parameters
@@ -104,7 +102,7 @@ void test_zcposv(param_value_t param[], char *info)
     int nrhs = param[PARAM_NRHS].i;
     int lda  = imax(1, n + param[PARAM_PADA].i);
     int ldb  = imax(1, n + param[PARAM_PADB].i);
-    int ldx  = imax(1, n + param[PARAM_PADX].i);
+    int ldx  = ldb;
     int ITER;
 
     int    test = param[PARAM_TEST].c == 'y';
@@ -113,13 +111,6 @@ void test_zcposv(param_value_t param[], char *info)
     //================================================================
     // Allocate and initialize arrays
     //================================================================
-    /*
-    PLASMA_Complex64_t *A1   = (PLASMA_Complex64_t *)malloc(LDA*N   *sizeof(PLASMA_Complex64_t));
-    PLASMA_Complex64_t *A2   = (PLASMA_Complex64_t *)malloc(LDA*N   *sizeof(PLASMA_Complex64_t));
-    PLASMA_Complex64_t *B1   = (PLASMA_Complex64_t *)malloc(LDB*NRHS*sizeof(PLASMA_Complex64_t));
-    PLASMA_Complex64_t *B2   = (PLASMA_Complex64_t *)malloc(LDB*NRHS*sizeof(PLASMA_Complex64_t));
-    */
-
     PLASMA_Complex64_t *Aref =
         (PLASMA_Complex64_t *)malloc((size_t)lda*n*
                                       sizeof(PLASMA_Complex64_t));
@@ -171,6 +162,9 @@ void test_zcposv(param_value_t param[], char *info)
     for (int i = 0; i < lda; i++) {
         A[i*n+i] *= lda;
     }
+
+    // @test: Save matrix A into file
+    // save_mtrx(lda, n, real(A), "A.mtrx");
 
     // Preserve a copy of the original SPD matrix A in Aref for test purposes
     if (test) {

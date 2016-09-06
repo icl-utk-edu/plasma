@@ -40,7 +40,6 @@ typedef enum {
     PARAM_PADA,   // padding of A
     PARAM_PADB,   // padding of B
     PARAM_PADC,   // padding of C
-    PARAM_PADX,   // padding of X
 
     //------------------------------------------------------
     // output parameters

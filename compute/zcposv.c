@@ -6,11 +6,9 @@
  *  University of Tennessee, US,
  *  University of Manchester, UK.
  *
- *
+ * @precisions mixed zc -> ds
  *
  **/
-
-// @precisions mixed zc -> ds
 
 #include "plasma_types.h"
 #include "plasma_async.h"
