@@ -100,8 +100,8 @@ void test_zgelqf(param_value_t param[], char *info)
     //================================================================
     // Set tuning parameters.
     //================================================================
-    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_NB].i);
-    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_IB].i);
+    PLASMA_Set(PLASMA_TILE_SIZE,        param[PARAM_NB].i);
+    PLASMA_Set(PLASMA_INNER_BLOCK_SIZE, param[PARAM_IB].i);
 
     //================================================================
     // Allocate and initialize arrays.
