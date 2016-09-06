@@ -78,6 +78,10 @@ static const char *lapack_constants[] = {
     "Rowwise"                              ///< 402: PlasmaRowwise
 };
 
+/***************************************************************************//**
+ * @return LAPACK character constant corresponding to PLASMA constant
+ * @ingroup plasma_const
+ ******************************************************************************/
 static inline char lapack_const(int plasma_const) {
     return lapack_constants[plasma_const][0];
 }

@@ -9,10 +9,9 @@
  * @precisions normal z -> s d c
  *
  **/
-
-#include "core_blas.h"
 #include "test.h"
 #include "flops.h"
+#include "core_lapack.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -20,13 +19,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef PLASMA_WITH_MKL
-    #include <mkl_cblas.h>
-    #include <mkl_lapacke.h>
-#else
-    #include <cblas.h>
-    #include <lapacke.h>
-#endif
 #include <omp.h>
 
 #include "plasma_types.h"

@@ -10,13 +10,6 @@
 #ifndef ICL_PLASMA_H
 #define ICL_PLASMA_H
 
-#ifdef PLASMA_WITH_MKL
-    #include <mkl.h>
-#else
-    #include <cblas.h>
-    #include <lapacke.h>
-#endif
-
 #include "plasma_async.h"
 #include "plasma_descriptor.h"
 #include "plasma_context.h"
