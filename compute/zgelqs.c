@@ -293,16 +293,12 @@ void PLASMA_zgelqs_Tile_Async(PLASMA_desc *descA,
     if (descA->m == 0 || descA->n == 0 || descB->n == 0)
         return;
 
-    //plasma_pztile_zero(
-    //    plasma_desc_submatrix(*descB, descA->m, 0,
-    //                          descA->n - descA->m, descB->n),
-    //    sequence, request);
-
-    // TODO: zero lower part of the right-hand side matrix
-//    plasma_pzlaset(PlasmaFull, 0., 0.,
-//                   plasma_desc_submatrix(*descB, descA->m, 0,
-//                                         descA->n - descA->m, descB->n),
-//                   sequence, request);
+    // zero the trailing block of the right-hand side matrix
+    // (B has less rows than X)
+    plasma_pzlaset(PlasmaFull, 0., 0.,
+                   plasma_desc_submatrix(*descB, descA->m, 0,
+                                         descA->n - descA->m, descB->n),
+                   sequence, request);
 
     // Solve L * Y = B
     PLASMA_Complex64_t zone  =  1.0;

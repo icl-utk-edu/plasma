@@ -128,12 +128,6 @@ void test_zgels(param_value_t param[], char *info)
 
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*nrhs, B);
     assert(retval == 0);
-    // initialize bottom part of B to zero
-    for (int j = 0; j < nrhs; j++) {
-        for (int i = m; i < ldb; i++) {
-            B[ldb*j + i] = (PLASMA_Complex64_t) 0.;
-        }
-    }
 
     // store the original arrays if residual is to be evaluated
     PLASMA_Complex64_t *Aref = NULL;

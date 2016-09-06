@@ -368,13 +368,12 @@ void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *descA,
         // solution based on LQ factorization of A
         plasma_pzgelqf(*descA, *descT, sequence, request);
 
-        // TODO: zero lower part of the right-hand side matrix
         // zero the trailing block of the right-hand side matrix
         // (B has less rows than X)
-        //plasma_pzlaset(PlasmaFull, 0., 0.,
-        //               plasma_desc_submatrix(*descB, descA->m, 0,
-        //                                     descA->n - descA->m, descB->n),
-        //               sequence, request);
+        plasma_pzlaset(PlasmaFull, 0., 0.,
+                       plasma_desc_submatrix(*descB, descA->m, 0,
+                                             descA->n - descA->m, descB->n),
+                       sequence, request);
 
         // Solve L * Y = B
         PLASMA_Complex64_t zone  =  1.0;
