@@ -108,4 +108,3 @@ void plasma_pzpbtrf(PLASMA_enum uplo, PLASMA_desc A,
         }
     }
 }
-

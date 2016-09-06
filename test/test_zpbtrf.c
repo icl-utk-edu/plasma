@@ -108,7 +108,7 @@ void test_zpbtrf(param_value_t param[], char *info)
     //================================================================
     // Allocate and initialize arrays.
     //================================================================
-    /* band matrix A in full storage (also used for solution check) */
+    // band matrix A in full storage (also used for solution check)
     PLASMA_Complex64_t *A =
         (PLASMA_Complex64_t*)malloc((size_t)lda*n*sizeof(PLASMA_Complex64_t));
     assert(A != NULL);
@@ -117,7 +117,7 @@ void test_zpbtrf(param_value_t param[], char *info)
     lapack_int retval;
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
-    /* make it SPD */
+    // make it SPD
     int i,j;
     for (i = 0; i < n; ++i) {
         A(i,i) = (creal(A(i,i)) + n) + 0. * I;
@@ -125,7 +125,7 @@ void test_zpbtrf(param_value_t param[], char *info)
             A(j,i) = conj(A(i,j));
         }
     }
-    /* zero out elements outside the band */
+    // zero out elements outside the band
     PLASMA_Complex64_t zzero = 0.0;
     for (i = 0; i < n; i++) {
         for (j = i+kd+1; j < n; j++) A(i, j) = zzero;
@@ -134,18 +134,19 @@ void test_zpbtrf(param_value_t param[], char *info)
         for (i = j+kd+1; i < n; i++) A(i, j) = zzero;
     }
 
-    /* band matrix A in LAPACK storage */
+    // band matrix A in LAPACK storage
     int ldab = imax(1, kd+1+pada);
     PLASMA_Complex64_t *AB = NULL;
     AB = (PLASMA_Complex64_t*)malloc((size_t)ldab*n*sizeof(PLASMA_Complex64_t));
     assert(AB != NULL);
 
-    /* convert into LAPACK's symmetric band storage */
+    // convert into LAPACK's symmetric band storage
     for (j = 0; j < n; j++) {
         for (i = 0; i < ldab; i++) AB[i + j*ldab] = zzero;
         if (uplo == PlasmaUpper) {
             for (i = imax(0, j-kd); i <= j; i++) AB[i-j+kd + j*ldab] = A(i, j);
-        } else {
+        }
+        else {
             for (i = j; i <= imin(n-1, j+kd); i++) AB[i-j + j*ldab] = A(i, j);
         }
     }
@@ -174,32 +175,32 @@ void test_zpbtrf(param_value_t param[], char *info)
         int nrhs = param[PARAM_NRHS].i;
         int ldb = imax(1, n + param[PARAM_PADB].i);
 
-        /* set up right-hand-side B */
+        // set up right-hand-side B
         PLASMA_Complex64_t *B = NULL;
         B = (PLASMA_Complex64_t*)malloc((size_t)ldb*nrhs*sizeof(PLASMA_Complex64_t));
         assert(B != NULL);
 
         retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*nrhs, B);
         assert(retval == 0);
-    
-        /* copy B to X */
+
+        // copy B to X
         int ldx = ldb;
         PLASMA_Complex64_t *X = NULL;
         X = (PLASMA_Complex64_t*)malloc((size_t)ldx*nrhs*sizeof(PLASMA_Complex64_t));
         assert(X != NULL);
         LAPACKE_zlacpy_work(LAPACK_COL_MAJOR,'F', n, nrhs, B, ldb, X, ldx);
 
-        /* solve for X */
+        // solve for X
         iinfo = PLASMA_zpbtrs(uplo, n, kd, nrhs, AB, ldab, X, ldb);
         if (iinfo != 0) printf( " zpbtrs failed with info = %d\n",iinfo );
 
-        /* compute residual vector */
+        // compute residual vector
         cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, nrhs, n,
                     CBLAS_SADDR(zmone), A, lda,
                                         X, ldx,
                     CBLAS_SADDR(zone),  B, ldb);
 
-        /* compute various norms */
+        // compute various norms
         double *work = NULL;
         work = (double*)malloc((size_t)n*sizeof(double));
         assert(work != NULL);
@@ -212,7 +213,7 @@ void test_zpbtrf(param_value_t param[], char *info)
         param[PARAM_ERROR].d = residual;
         param[PARAM_SUCCESS].i = residual < tol;
 
-        /* free arrays */
+        // free arrays
         free(work);
         free(X);
         free(B);

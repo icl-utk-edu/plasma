@@ -67,12 +67,14 @@ void CORE_zlacpy_lapack2tile_band(PLASMA_enum uplo,
 
     int j_start, j_end;
     if (uplo == PlasmaFull) {
-        j_start = 0; /* pivot back and could fill in */
+        j_start = 0; // pivot back and could fill in
         j_end = (jt <= it ? n : imin(n, (it-jt)*nb+m+ku+kl+1));
-    } else if (uplo == PlasmaUpper) {
+    }
+    else if (uplo == PlasmaUpper) {
         j_start = 0;
         j_end = imin(n, (it-jt)*nb+m+ku+1);
-    } else {
+    }
+    else {
         j_start = imax(0, (it-jt)*nb-kl);
         j_end = n;
     }
@@ -86,13 +88,15 @@ void CORE_zlacpy_lapack2tile_band(PLASMA_enum uplo,
         int i_start, i_end;
         if (uplo == PlasmaFull) {
             i_start = (jt <= it ? 0 : imax(0, (jt-it)*nb+j-ku-kl));
-            i_end = (jt >= it ? m : imin(m, (jt-it)*nb+j+kl+nb+1)); 
-            /* +nb because we use zgetrf on panel and pivot back within the panel.
-             *  so the last tile in panel could fill.  */
-        } else if (uplo == PlasmaUpper) {
+            i_end = (jt >= it ? m : imin(m, (jt-it)*nb+j+kl+nb+1));
+            // +nb because we use zgetrf on panel and pivot back within the panel.
+            //  so the last tile in panel could fill.
+        }
+        else if (uplo == PlasmaUpper) {
             i_start = imax(0, (jt-it)*nb+j-ku);
             i_end = imin(m, (jt-it)*nb+j+1);
-        } else {
+        }
+        else {
             i_start = imax(0, (jt-it)*nb+j);
             i_end = imin(m, (jt-it)*nb+j+kl+1);
         }
@@ -171,12 +175,14 @@ void CORE_zlacpy_tile2lapack_band(PLASMA_enum uplo,
     int j_start, j_end;
 
     if (uplo == PlasmaFull) {
-        j_start = 0; /* pivot back and could fill in */
+        j_start = 0; // pivot back and could fill in
         j_end = (jt <= it ? n : imin(n, (it-jt)*nb+m+ku+kl+1));
-    } else if (uplo == PlasmaUpper) {
+    }
+    else if (uplo == PlasmaUpper) {
         j_start = 0;
         j_end = imin(n, (it-jt)*nb+m+ku+1);
-    } else {
+    }
+    else {
         j_start = imax(0, (it-jt)*nb-kl);
         j_end = n;
     }
@@ -186,13 +192,15 @@ void CORE_zlacpy_tile2lapack_band(PLASMA_enum uplo,
 
         if (uplo == PlasmaFull) {
             i_start = (jt <= it ? 0 : imax(0, (jt-it)*nb+j-ku-kl));
-            i_end = (jt >= it ? m : imin(m, (jt-it)*nb+j+kl+nb+1)); 
-            /* +nb because we use zgetrf on panel and pivot back within the panel.
-             *  so the last tile in panel could fill.  */
-        } else if (uplo == PlasmaUpper) {
+            i_end = (jt >= it ? m : imin(m, (jt-it)*nb+j+kl+nb+1));
+            // +nb because we use zgetrf on panel and pivot back within the panel.
+            //  so the last tile in panel could fill.
+        }
+        else if (uplo == PlasmaUpper) {
             i_start = imax(0, (jt-it)*nb+j-ku);
             i_end = imin(m, (jt-it)*nb+j+1);
-        } else {
+        }
+        else {
             i_start = imax(0, (jt-it)*nb+j);
             i_end = imin(m, (jt-it)*nb+j+kl+1);
         }
