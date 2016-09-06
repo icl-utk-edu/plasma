@@ -234,9 +234,11 @@ void CORE_OMP_zlacpy_tile2lapack_band(PLASMA_enum uplo,
                                             PLASMA_Complex64_t *A, int lda);
 
 void CORE_OMP_zlaset(PLASMA_enum uplo,
+                     int mb, int nb,
+                     int i, int j,
                      int m, int n,
                      PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
-                     PLASMA_Complex64_t *A, int lda);
+                     PLASMA_Complex64_t *A);
 
 //void CORE_OMP_zlaswp_ontile(PLASMA_desc A, int i_, int j_, int m, int n,
 //                            int i1, int i2, const int *ipiv, int inc);
