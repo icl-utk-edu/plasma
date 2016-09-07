@@ -80,9 +80,9 @@
  *         Size of the array WORK. Should be at least ib*n.
  *
  *******************************************************************************
- * 
+ *
  * @retval PLASMA_SUCCESS successful exit
- * @retval <0 if -i, the i-th argument had an illegal value
+ * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
 int CORE_zgeqrt(int m, int n, int ib,
@@ -113,7 +113,7 @@ int CORE_zgeqrt(int m, int n, int ib,
         return -7;
     }
     if (lwork < ib*n) {
-        coreblas_error("illegal value of lwork");
+        coreblas_error("Illegal value of lwork");
         return -10;
     }
 
@@ -170,15 +170,20 @@ void CORE_OMP_zgeqrt(int m, int n, int ib, int nb,
     {
         if (sequence->status == PLASMA_SUCCESS) {
             int tid = omp_get_thread_num();
+            // split spaces into TAU and WORK
             int ltau = n;
+            int lwork = work->lwork - ltau;
             PLASMA_Complex64_t *TAU = ((PLASMA_Complex64_t*)work->spaces[tid]);
-            PLASMA_Complex64_t *W   = 
+            PLASMA_Complex64_t *W   =
                 ((PLASMA_Complex64_t*)work->spaces[tid]) + ltau;
+
+            // Call the kernel.
             int info = CORE_zgeqrt(m, n, ib,
                                    A, lda,
                                    T, ldt,
                                    TAU,
-                                   W, work->lwork - ltau);
+                                   W, lwork);
+
             if (info != PLASMA_SUCCESS) {
                 plasma_error_with_code("Error in call to COREBLAS in argument",
                                        -info);

@@ -179,7 +179,7 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
 
     // Allocate workspace.
     PLASMA_workspace work;
-    size_t lwork = nb + ib*nb;  // geqrt: tau + work
+    size_t lwork = nb + ib*nb;  // geqrt/gelqt: tau + work
     retval = plasma_workspace_alloc(&work, lwork, PlasmaComplexDouble);
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_workspace_alloc() failed");
@@ -203,21 +203,17 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
     {
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
+        PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
 
         // Call the tile async function.
-        if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_zgels_Tile_Async(PlasmaNoTrans, &descA, descT, &descB, &work,
-                                    sequence, &request);
-        }
+        PLASMA_zgels_Tile_Async(PlasmaNoTrans, &descA, descT, &descB,
+                                &work, sequence, &request);
 
         // Translate back to LAPACK layout.
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
-    } // pragma omp parallel block closed
+        PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
+        PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
+    }
+    // implicit synchronization
 
     plasma_workspace_free(&work);
 
@@ -263,6 +259,12 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
  *          Descriptor of matrix B.
  *          On entry, right-hand side matrix B in the tile layout.
  *          On exit, solution matrix X in the tile layout.
+ *
+ * @param[in] work
+ *          Workspace for the auxiliary arrays needed by some coreblas kernels.
+ *          For QR/LQ factorizations used in GELS, it contains preallocated
+ *          space for TAU and WORK arrays.
+ *          Allocated by the plasma_workspace_alloc function.
  *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to
@@ -355,7 +357,7 @@ void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *descA,
         // Note that PlasmaConjTrans is protected from this conversion.
         plasma_pzunmqr(PlasmaLeft, Plasma_ConjTrans,
                        *descA, *descB, *descT,
-                       sequence, request);
+                       work, sequence, request);
 
         plasma_pztrsm(PlasmaLeft, PlasmaUpper,
                       PlasmaNoTrans, PlasmaNonUnit,
@@ -366,7 +368,7 @@ void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *descA,
     }
     else {
         // solution based on LQ factorization of A
-        plasma_pzgelqf(*descA, *descT, sequence, request);
+        plasma_pzgelqf(*descA, *descT, work, sequence, request);
 
         // zero the trailing block of the right-hand side matrix
         // (B has less rows than X)
@@ -389,6 +391,6 @@ void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *descA,
         // Note that PlasmaConjTrans is protected from this conversion.
         plasma_pzunmlq(PlasmaLeft, Plasma_ConjTrans,
                        *descA, *descB, *descT,
-                       sequence, request);
+                       work, sequence, request);
     }
 }

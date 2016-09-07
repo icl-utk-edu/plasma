@@ -24,6 +24,7 @@
  *  Parallel construction of Q using tile V (application to identity)
  **/
 void plasma_pzunglq(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
+                    PLASMA_workspace *work,
                     PLASMA_sequence *sequence, PLASMA_request *request)
 {
     int k, m, n;
@@ -62,7 +63,9 @@ void plasma_pzunglq(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
                     Q(m, k), ldqm,
                     Q(m, n), ldqm,
                     A(k, n), ldak,
-                    T(k, n), T.mb);
+                    T(k, n), T.mb,
+                    work,
+                    sequence, request);
             }
         }
         for (m = k; m < Q.mt; m++) {
@@ -73,7 +76,9 @@ void plasma_pzunglq(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
                 tempmm, tempkn, tempkmin, ib, T.nb,
                 A(k, k), ldak,
                 T(k, k), T.mb,
-                Q(m, k), ldqm);
+                Q(m, k), ldqm,
+                work,
+                sequence, request);
         }
     }
 }

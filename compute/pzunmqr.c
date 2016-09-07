@@ -26,6 +26,7 @@
  **/
 void plasma_pzunmqr(PLASMA_enum side, PLASMA_enum trans,
                     PLASMA_desc A, PLASMA_desc B, PLASMA_desc T,
+                    PLASMA_workspace *work,
                     PLASMA_sequence *sequence, PLASMA_request *request)
 {
     int k, m, n;
@@ -75,7 +76,9 @@ void plasma_pzunmqr(PLASMA_enum side, PLASMA_enum trans,
                         tempkm, tempnn, tempkmin, ib, T.nb,
                         A(k, k), ldak,
                         T(k, k), T.mb,
-                        B(k, n), ldbk);
+                        B(k, n), ldbk,
+                        work,
+                        sequence, request);
                 }
                 for (m = k+1; m < B.mt; m++) {
                     tempmm = m == B.mt-1 ? B.m-m*B.mb : B.mb;
@@ -89,7 +92,9 @@ void plasma_pzunmqr(PLASMA_enum side, PLASMA_enum trans,
                             B(k, n), ldbk,
                             B(m, n), ldbm,
                             A(m, k), ldam,
-                            T(m, k), T.mb);
+                            T(m, k), T.mb,
+                            work,
+                            sequence, request);
                     }
                 }
             }
@@ -113,7 +118,9 @@ void plasma_pzunmqr(PLASMA_enum side, PLASMA_enum trans,
                             B(k, n), ldbk,
                             B(m, n), ldbm,
                             A(m, k), ldam,
-                            T(m, k), T.mb);
+                            T(m, k), T.mb,
+                            work,
+                            sequence, request);
                     }
                 }
                 for (n = 0; n < B.nt; n++) {
@@ -123,7 +130,9 @@ void plasma_pzunmqr(PLASMA_enum side, PLASMA_enum trans,
                         tempkm, tempnn, tempkmin, ib, T.nb,
                         A(k, k), ldak,
                         T(k, k), T.mb,
-                        B(k, n), ldbk);
+                        B(k, n), ldbk,
+                        work,
+                        sequence, request);
                 }
             }
         }
@@ -151,7 +160,9 @@ void plasma_pzunmqr(PLASMA_enum side, PLASMA_enum trans,
                             B(m, k), ldbm,
                             B(m, n), ldbm,
                             A(n, k), ldan,
-                            T(n, k), T.mb);
+                            T(n, k), T.mb,
+                            work,
+                            sequence, request);
                     }
                 }
                 for (m = 0; m < B.mt; m++) {
@@ -162,7 +173,9 @@ void plasma_pzunmqr(PLASMA_enum side, PLASMA_enum trans,
                         tempmm, tempkn, tempkmin, ib, T.nb,
                         A(k, k), ldak,
                         T(k, k), T.mb,
-                        B(m, k), ldbm);
+                        B(m, k), ldbm,
+                        work,
+                        sequence, request);
                 }
             }
         }
@@ -180,7 +193,9 @@ void plasma_pzunmqr(PLASMA_enum side, PLASMA_enum trans,
                         tempmm, tempkn, tempkmin, ib, T.nb,
                         A(k, k), ldak,
                         T(k, k), T.mb,
-                        B(m, k), ldbm);
+                        B(m, k), ldbm,
+                        work,
+                        sequence, request);
                 }
                 for (n = k+1; n < B.nt; n++) {
                     tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
@@ -194,7 +209,9 @@ void plasma_pzunmqr(PLASMA_enum side, PLASMA_enum trans,
                             B(m, k), ldbm,
                             B(m, n), ldbm,
                             A(n, k), ldan,
-                            T(n, k), T.mb);
+                            T(n, k), T.mb,
+                            work,
+                            sequence, request);
                     }
                 }
             }

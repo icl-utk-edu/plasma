@@ -15,22 +15,22 @@
 #include "plasma_internal.h"
 #include "core_lapack.h"
 
-static inline void CORE_zpamm_a2(PLASMA_enum side, PLASMA_enum trans,
-                                 PLASMA_enum uplo,
-                                 int m, int n, int k, int l,
-                                 int vi2, int vi3,
-                                       PLASMA_Complex64_t *A2, int lda2,
-                                 const PLASMA_Complex64_t *V,  int ldv,
-                                       PLASMA_Complex64_t *W,  int ldw);
-
-static inline void CORE_zpamm_w(PLASMA_enum side, PLASMA_enum trans,
+static inline int CORE_zpamm_a2(PLASMA_enum side, PLASMA_enum trans,
                                 PLASMA_enum uplo,
                                 int m, int n, int k, int l,
                                 int vi2, int vi3,
-                                const PLASMA_Complex64_t *A1, int lda1,
                                       PLASMA_Complex64_t *A2, int lda2,
                                 const PLASMA_Complex64_t *V,  int ldv,
                                       PLASMA_Complex64_t *W,  int ldw);
+
+static inline int CORE_zpamm_w(PLASMA_enum side, PLASMA_enum trans,
+                               PLASMA_enum uplo,
+                               int m, int n, int k, int l,
+                               int vi2, int vi3,
+                               const PLASMA_Complex64_t *A1, int lda1,
+                                     PLASMA_Complex64_t *A2, int lda2,
+                               const PLASMA_Complex64_t *V,  int ldv,
+                                     PLASMA_Complex64_t *W,  int ldw);
 
 /***************************************************************************//**
  *
@@ -165,65 +165,70 @@ static inline void CORE_zpamm_w(PLASMA_enum side, PLASMA_enum trans,
  * @param[in] ldw
  *         The leading dimension of array W.
  *
+ *******************************************************************************
+ *
+ * @retval PLASMA_SUCCESS successful exit
+ * @retval < 0 if -i, the i-th argument had an illegal value
+ *
  ******************************************************************************/
-void CORE_zpamm(int op, PLASMA_enum side, PLASMA_enum storev,
-                int m, int n, int k, int l,
-                const PLASMA_Complex64_t *A1, int lda1,
-                      PLASMA_Complex64_t *A2, int lda2,
-                const PLASMA_Complex64_t *V,  int ldv,
-                      PLASMA_Complex64_t *W,  int ldw)
+int CORE_zpamm(int op, PLASMA_enum side, PLASMA_enum storev,
+               int m, int n, int k, int l,
+               const PLASMA_Complex64_t *A1, int lda1,
+                     PLASMA_Complex64_t *A2, int lda2,
+               const PLASMA_Complex64_t *V,  int ldv,
+                     PLASMA_Complex64_t *W,  int ldw)
 {
     int vi2, vi3, uplo, trans;
 
     // Check input arguments.
     if ((op != PlasmaW) && (op != PlasmaA2)) {
-        plasma_error("illegal value of op");
-        return;
+        coreblas_error("Illegal value of op");
+        return -1;
     }
     if ((side != PlasmaLeft) && (side != PlasmaRight)) {
-        plasma_error("illegal value of side");
-        return;
+        coreblas_error("Illegal value of side");
+        return -2;
     }
     if ((storev != PlasmaColumnwise) && (storev != PlasmaRowwise)) {
-        plasma_error("illegal value of storev");
-        return;
+        coreblas_error("Illegal value of storev");
+        return -3;
     }
     if (m < 0) {
-        plasma_error("illegal value of m");
-        return;
+        coreblas_error("Illegal value of m");
+        return -4;
     }
     if (n < 0) {
-        plasma_error("illegal value of n");
-        return;
+        coreblas_error("Illegal value of n");
+        return -5;
     }
     if (k < 0) {
-        plasma_error("illegal value of k");
-        return;
+        coreblas_error("Illegal value of k");
+        return -6;
     }
     if (l < 0) {
-        plasma_error("illegal value of l");
-        return;
+        coreblas_error("Illegal value of l");
+        return -7;
     }
     if (lda1 < 0) {
-        plasma_error("illegal value of lda1");
-        return;
+        coreblas_error("Illegal value of lda1");
+        return -9;
     }
     if (lda2 < 0) {
-        plasma_error("illegal value of lda2");
-        return;
+        coreblas_error("Illegal value of lda2");
+        return -11;
     }
     if (ldv < 0) {
-        plasma_error("illegal value of ldv");
-        return;
+        coreblas_error("Illegal value of ldv");
+        return -13;
     }
     if (ldw < 0) {
-        plasma_error("illegal value of ldw");
-        return;
+        coreblas_error("Illegal value of ldw");
+        return -15;
     }
 
     // quick return
     if ((m == 0) || (n == 0) || (k == 0))
-        return;
+        return PLASMA_SUCCESS;
 
     // TRANS is set as:
     //
@@ -273,10 +278,12 @@ void CORE_zpamm(int op, PLASMA_enum side, PLASMA_enum storev,
         CORE_zpamm_a2(side, trans, uplo, m, n, k, l, vi2, vi3,
                       A2, lda2, V, ldv, W, ldw);
     }
+
+    return PLASMA_SUCCESS;
 }
 
 /******************************************************************************/
-static inline void CORE_zpamm_w(
+static inline int CORE_zpamm_w(
         PLASMA_enum side, PLASMA_enum trans, PLASMA_enum uplo,
         int m, int n, int k, int l,
         int vi2, int vi3,
@@ -342,17 +349,17 @@ static inline void CORE_zpamm_w(
             }
         }
         else {
-            plasma_error(
+            coreblas_error(
                 "Left Upper/NoTrans & Lower/[Conj]Trans not implemented");
-            return;
+            return PLASMA_ERR_NOT_SUPPORTED;
         }
     }
     else { //side right
         if (((trans == Plasma_ConjTrans) && (uplo == CblasUpper)) ||
             ((trans == PlasmaNoTrans) && (uplo == CblasLower))) {
-            plasma_error(
+            coreblas_error(
                 "Right Upper/[Conj]Trans & Lower/NoTrans not implemented");
-            return;
+            return PLASMA_ERR_NOT_SUPPORTED;
         }
         else {
             // W = A1 + A2 * V
@@ -401,10 +408,12 @@ static inline void CORE_zpamm_w(
             }
         }
     }
+
+    return PLASMA_SUCCESS;
 }
 
 /******************************************************************************/
-static inline void CORE_zpamm_a2(
+static inline int CORE_zpamm_a2(
         PLASMA_enum side, PLASMA_enum trans, PLASMA_enum uplo,
         int m, int n, int k, int l,
         int vi2, int vi3,
@@ -421,9 +430,9 @@ static inline void CORE_zpamm_a2(
     if (side == PlasmaLeft) {
         if (((trans == Plasma_ConjTrans) && (uplo == CblasUpper)) ||
             ((trans == PlasmaNoTrans) && (uplo == CblasLower))) {
-            plasma_error(
+            coreblas_error(
                 "Left Upper/[Conj]Trans & Lower/NoTrans not implemented");
-            return;
+            return PLASMA_ERR_NOT_SUPPORTED;
         }
         else {  //trans
             // A2 = A2 - V * W
@@ -505,9 +514,11 @@ static inline void CORE_zpamm_a2(
             }
         }
         else {
-            plasma_error(
+            coreblas_error(
                 "Right Upper/NoTrans & Lower/[Conj]Trans not implemented");
-            return;
+            return PLASMA_ERR_NOT_SUPPORTED;
         }
     }
+
+    return PLASMA_SUCCESS;
 }

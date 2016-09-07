@@ -32,7 +32,6 @@ void plasma_pzlaset(PLASMA_enum uplo,
     int m, n;
 
     for (i = 0; i < A.mt; i++) {
-
         if (i == 0 && i == A.mt-1)
             m = A.m;
         else if (i == 0)
@@ -43,7 +42,6 @@ void plasma_pzlaset(PLASMA_enum uplo,
             m = A.mb;
 
         for (j = 0; j < A.nt; j++) {
-
             if (j == 0 && j == A.nt-1)
                 n = A.n;
             else if (j == 0)

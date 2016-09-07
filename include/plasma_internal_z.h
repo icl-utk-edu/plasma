@@ -23,6 +23,7 @@ extern "C" {
 
 /******************************************************************************/
 void plasma_pzgelqf(PLASMA_desc A, PLASMA_desc T,
+                    PLASMA_workspace *work,
                     PLASMA_sequence *sequence, PLASMA_request *request);
 
 void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
@@ -111,17 +112,21 @@ void plasma_pztrsm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_sequence *sequence, PLASMA_request *request);
 
 void plasma_pzunglq(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
+                    PLASMA_workspace *work,
                     PLASMA_sequence *sequence, PLASMA_request *request);
 
 void plasma_pzungqr(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
+                    PLASMA_workspace *work,
                     PLASMA_sequence *sequence, PLASMA_request *request);
 
 void plasma_pzunmlq(PLASMA_enum side, PLASMA_enum trans,
                     PLASMA_desc A, PLASMA_desc B, PLASMA_desc T,
+                    PLASMA_workspace *work,
                     PLASMA_sequence *sequence, PLASMA_request *request);
 
 void plasma_pzunmqr(PLASMA_enum side, PLASMA_enum trans,
                     PLASMA_desc A, PLASMA_desc B, PLASMA_desc T,
+                    PLASMA_workspace *work,
                     PLASMA_sequence *sequence, PLASMA_request *request);
 
 #ifdef __cplusplus

@@ -79,7 +79,7 @@ static const char *lapack_constants[] = {
 };
 
 /***************************************************************************//**
- * @return LAPACK character constant corresponding to PLASMA constant
+ * @retval LAPACK character constant corresponding to PLASMA constant
  * @ingroup plasma_const
  ******************************************************************************/
 static inline char lapack_const(int plasma_const) {
