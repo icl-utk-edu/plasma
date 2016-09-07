@@ -12,6 +12,7 @@
 #include "test.h"
 #include "flops.h"
 #include "core_lapack.h"
+#include "plasma.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -20,7 +21,6 @@
 #include <string.h>
 
 #include <omp.h>
-#include <plasma.h>
 
 #define COMPLEX
 
