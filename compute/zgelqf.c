@@ -68,7 +68,7 @@ int PLASMA_zgelqf(int m, int n,
                   PLASMA_Complex64_t *A, int lda,
                   PLASMA_desc *descT)
 {
-    int nb;
+    int ib, nb;
     int retval;
     int status;
 
@@ -101,6 +101,7 @@ int PLASMA_zgelqf(int m, int n,
     //    plasma_error("PLASMA_zgelqf", "plasma_tune() failed");
     //    return status;
     //}
+    ib = plasma->ib;
     nb = plasma->nb;
 
     // Initialize tile matrix descriptor.
@@ -112,6 +113,15 @@ int PLASMA_zgelqf(int m, int n,
     retval = plasma_desc_mat_alloc(&descA);
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");
+        return retval;
+    }
+
+    // Allocate workspace.
+    PLASMA_workspace work;
+    size_t lwork = nb + ib*nb;  // gelqt: tau + work
+    retval = plasma_workspace_alloc(&work, lwork, PlasmaComplexDouble);
+    if (retval != PLASMA_SUCCESS) {
+        plasma_error("plasma_workspace_alloc() failed");
         return retval;
     }
 
@@ -140,14 +150,14 @@ int PLASMA_zgelqf(int m, int n,
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
 
         // Call the tile async function.
-        if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_zgelqf_Tile_Async(&descA, descT, sequence, &request);
-        }
+        PLASMA_zgelqf_Tile_Async(&descA, descT, &work, sequence, &request);
 
         // Translate back to LAPACK layout.
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
-    } // pragma omp parallel block closed
+        PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
+    }
+    // implicit synchronization
+
+    plasma_workspace_free(&work);
 
     // Free matrix A in tile layout.
     plasma_desc_mat_free(&descA);
@@ -178,6 +188,11 @@ int PLASMA_zgelqf(int m, int n,
  *          On exit, auxiliary factorization data, required by PLASMA_zgelqs to
  *          solve the system of equations.
  *
+ * @param[in] work
+ *          Workspace for the auxiliary arrays needed by some coreblas kernels.
+ *          For LQ factorization, contains preallocated space for TAU and WORK
+ *          arrays. Allocated by the plasma_workspace_alloc function.
+ *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to
  *          (for completion checks and exception handling purposes).
@@ -202,6 +217,7 @@ int PLASMA_zgelqf(int m, int n,
  *
  ******************************************************************************/
 void PLASMA_zgelqf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
+                              PLASMA_workspace *work,
                               PLASMA_sequence *sequence,
                               PLASMA_request *request)
 {
@@ -251,7 +267,5 @@ void PLASMA_zgelqf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
         return;
 
     // Call the parallel function.
-    plasma_pzgelqf(*descA, *descT, sequence, request);
-
-    return;
+    plasma_pzgelqf(*descA, *descT, work, sequence, request);
 }

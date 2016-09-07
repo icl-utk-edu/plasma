@@ -60,7 +60,7 @@ typedef struct {
     int kl;           ///< number of rows below the diagonal
     int ku;           ///< number of rows above the diagonal
     int klt;          ///< number of tile rows below the diagonal tile
-    int kut;          ///< number of tile rows above the diagonal tile, 
+    int kut;          ///< number of tile rows above the diagonal tile
                       ///  includes the space for potential fills, i.e., kl+ku
 } PLASMA_desc;
 
@@ -113,30 +113,34 @@ static inline void *plasma_getaddr(PLASMA_desc A, int m, int n)
 static inline int BLKLDD_BAND(PLASMA_enum uplo,
                               PLASMA_desc A, int m, int n)
 {
-    int KUT;
+    int kut;
     if (uplo == PlasmaFull) {
-        KUT = (A.kl+A.kl+A.nb-1)/A.nb;
-    } else if (uplo == PlasmaUpper) {
-        KUT = (A.ku+A.nb-1)/A.nb;
-    } else {
-        KUT = 0;
+        kut = (A.kl+A.kl+A.nb-1)/A.nb;
     }
-    return BLKLDD(A, KUT+m-n);
+    else if (uplo == PlasmaUpper) {
+        kut = (A.ku+A.nb-1)/A.nb;
+    }
+    else {
+        kut = 0;
+    }
+    return BLKLDD(A, kut+m-n);
 }
 
 /******************************************************************************/
 static inline void *plasma_getaddr_band(PLASMA_enum uplo,
                                         PLASMA_desc A, int m, int n)
 {
-    int KUT;
+    int kut;
     if (uplo == PlasmaFull) {
-        KUT = (A.kl+A.kl+A.nb-1)/A.nb;
-    } else if (uplo == PlasmaUpper) {
-        KUT = (A.ku+A.nb-1)/A.nb;
-    } else {
-        KUT = 0;
+        kut = (A.kl+A.kl+A.nb-1)/A.nb;
     }
-    return plasma_getaddr(A, KUT+m-n, n);
+    else if (uplo == PlasmaUpper) {
+        kut = (A.ku+A.nb-1)/A.nb;
+    }
+    else {
+        kut = 0;
+    }
+    return plasma_getaddr(A, kut+m-n, n);
 }
 
 /******************************************************************************/

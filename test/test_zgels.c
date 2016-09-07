@@ -9,10 +9,10 @@
  * @precisions normal z -> s d c
  *
  **/
-
-#include "core_blas.h"
 #include "test.h"
 #include "flops.h"
+#include "core_lapack.h"
+#include "plasma.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -20,20 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef PLASMA_WITH_MKL
-    #include <mkl_cblas.h>
-    #include <mkl_lapacke.h>
-#else
-    #include <cblas.h>
-    #include <lapacke.h>
-#endif
 #include <omp.h>
-
-#include "plasma_types.h"
-#include "plasma_async.h"
-#include "plasma_context.h"
-#include "plasma_descriptor.h"
-#include "plasma_z.h"
 
 #define COMPLEX
 
@@ -128,12 +115,6 @@ void test_zgels(param_value_t param[], char *info)
 
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*nrhs, B);
     assert(retval == 0);
-    // initialize bottom part of B to zero
-    for (int j = 0; j < nrhs; j++) {
-        for (int i = m; i < ldb; i++) {
-            B[ldb*j + i] = (PLASMA_Complex64_t) 0.;
-        }
-    }
 
     // store the original arrays if residual is to be evaluated
     PLASMA_Complex64_t *Aref = NULL;

@@ -35,10 +35,12 @@ void plasma_pzooccrb2cm_band(PLASMA_enum uplo,
         if (uplo == PlasmaFull) {
             m_start = (imax(0, n*A.nb-A.ku-A.kl)) / A.nb;
             m_end = (imin(A.m-1, (n+1)*A.nb+A.kl-1)) / A.nb;
-        } else if (uplo == PlasmaUpper) {
+        }
+        else if (uplo == PlasmaUpper) {
             m_start = (imax(0, n*A.nb-A.ku-A.kl)) / A.nb;
             m_end = (imin(A.m-1, (n+1)*A.nb-1)) / A.nb;
-        } else {
+        }
+        else {
             m_start = (imax(0, n*A.nb)) / A.nb;
             m_end = (imin(A.m-1, (n+1)*A.nb+A.kl-1)) / A.nb;
         }

@@ -11,6 +11,8 @@
  **/
 #include "test.h"
 #include "flops.h"
+#include "core_lapack.h"
+#include "plasma.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -18,15 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef PLASMA_WITH_MKL
-    #include <mkl_cblas.h>
-    #include <mkl_lapacke.h>
-#else
-    #include <cblas.h>
-    #include <lapacke.h>
-#endif
 #include <omp.h>
-#include <plasma.h>
 
 #define COMPLEX
 
@@ -97,32 +91,10 @@ void test_ztrsm(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    PLASMA_enum side;
-    PLASMA_enum uplo;
-    PLASMA_enum transa;
-    PLASMA_enum diag;
-
-    if (param[PARAM_SIDE].c == 'l')
-        side = PlasmaLeft;
-    else
-        side = PlasmaRight;
-
-    if (param[PARAM_UPLO].c == 'l')
-        uplo = PlasmaLower;
-    else
-        uplo = PlasmaUpper;
-
-    if (param[PARAM_TRANSA].c == 'n')
-        transa = PlasmaNoTrans;
-    else if (param[PARAM_TRANSA].c == 't')
-        transa = PlasmaTrans;
-    else
-        transa = PlasmaConjTrans;
-
-    if (param[PARAM_DIAG].c == 'n')
-        diag = PlasmaNonUnit;
-    else
-        diag = PlasmaUnit;
+    PLASMA_enum side = PLASMA_side_const(param[PARAM_SIDE].c);
+    PLASMA_enum uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
+    PLASMA_enum transa = PLASMA_trans_const(param[PARAM_TRANSA].c);
+    PLASMA_enum diag = PLASMA_diag_const(param[PARAM_DIAG].c);
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
@@ -202,8 +174,8 @@ void test_ztrsm(param_value_t param[], char *info)
     plasma_time_t start = omp_get_wtime();
 
     PLASMA_ztrsm(
-        (CBLAS_SIDE)side, (CBLAS_UPLO) uplo,
-        (CBLAS_TRANSPOSE)transa, (CBLAS_DIAG)diag,
+        side, uplo,
+        transa, diag,
         m, n,
         alpha, A, lda,
                B, ldb);
