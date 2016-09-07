@@ -12,6 +12,7 @@
 #include "test.h"
 #include "flops.h"
 #include "core_lapack.h"
+#include "plasma.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -20,12 +21,6 @@
 #include <string.h>
 
 #include <omp.h>
-
-#include "plasma_types.h"
-#include "plasma_async.h"
-#include "plasma_context.h"
-#include "plasma_descriptor.h"
-#include "plasma_z.h"
 
 #define COMPLEX
 

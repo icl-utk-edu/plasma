@@ -8,13 +8,12 @@
  *
  **/
 #include "test.h"
+#include "plasma.h"
 
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "plasma.h"
 
 /***************************************************************************//**
  *
