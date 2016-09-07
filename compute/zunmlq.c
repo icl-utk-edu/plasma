@@ -95,7 +95,7 @@ int PLASMA_zunmlq(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
                   PLASMA_desc *descT,
                   PLASMA_Complex64_t *C, int ldc)
 {
-    int nb;
+    int ib, nb;
     int retval;
     int status;
 
@@ -153,6 +153,7 @@ int PLASMA_zunmlq(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
     //    plasma_error("plasma_tune() failed");
     //    return status;
     //}
+    ib = plasma->ib;
     nb = plasma->nb;
 
     // Initialize tile matrix descriptors.
@@ -172,6 +173,15 @@ int PLASMA_zunmlq(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");
         plasma_desc_mat_free(&descA);
+        return retval;
+    }
+
+    // Allocate workspace.
+    PLASMA_workspace work;
+    size_t lwork = ib*nb;  // unmlq: work
+    retval = plasma_workspace_alloc(&work, lwork, PlasmaComplexDouble);
+    if (retval != PLASMA_SUCCESS) {
+        plasma_error("plasma_workspace_alloc() failed");
         return retval;
     }
 
@@ -198,22 +208,20 @@ int PLASMA_zunmlq(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
 
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zcm2ccrb_Async(C, ldc, &descC, sequence, &request);
+        PLASMA_zcm2ccrb_Async(C, ldc, &descC, sequence, &request);
 
         // Call the tile async function.
-        if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_zunmlq_Tile_Async(side, trans, &descA, descT, &descC,
-                                     sequence, &request);
-        }
+        PLASMA_zunmlq_Tile_Async(side, trans, &descA, descT, &descC,
+                                 &work, sequence, &request);
 
         // Translate back to LAPACK layout.
         // this does not seem needed for A
-        //if (sequence->status == PLASMA_SUCCESS)
-        //    PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
-    } // pragma omp parallel block closed
+        //PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
+        PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
+    }
+    // implicit synchronization
+
+    plasma_workspace_free(&work);
 
     // Free matrices in tile layout.
     plasma_desc_mat_free(&descA);
@@ -259,6 +267,11 @@ int PLASMA_zunmlq(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
  *          On entry, the m-by-n matrix C.
  *          On exit, C is overwritten by Q*C, Q^H*C, C*Q, or C*Q^H.
  *
+ * @param[in] work
+ *          Workspace for the auxiliary arrays needed by some coreblas kernels.
+ *          For multiplication by Q contains preallocated space for WORK
+ *          arrays. Allocated by the plasma_workspace_alloc function.
+ *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to
  *          (for completion checks and exception handling purposes).
@@ -285,6 +298,7 @@ int PLASMA_zunmlq(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
 void PLASMA_zunmlq_Tile_Async(PLASMA_enum side, PLASMA_enum trans,
                               PLASMA_desc *descA, PLASMA_desc *descT,
                               PLASMA_desc *descC,
+                              PLASMA_workspace *work,
                               PLASMA_sequence *sequence,
                               PLASMA_request *request)
 {
@@ -352,5 +366,5 @@ void PLASMA_zunmlq_Tile_Async(PLASMA_enum side, PLASMA_enum trans,
 
     plasma_pzunmlq(side, trans,
                    *descA, *descC, *descT,
-                   sequence, request);
+                   work, sequence, request);
 }

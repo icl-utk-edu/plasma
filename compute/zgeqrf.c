@@ -189,6 +189,11 @@ int PLASMA_zgeqrf(int m, int n,
  *          On exit, auxiliary factorization data, required by PLASMA_zgeqrs to
  *          solve the system of equations.
  *
+ * @param[in] work
+ *          Workspace for the auxiliary arrays needed by some coreblas kernels.
+ *          For QR factorization, contains preallocated space for TAU and WORK
+ *          arrays. Allocated by the plasma_workspace_alloc function.
+ *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to
  *          (for completion checks and exception handling purposes).

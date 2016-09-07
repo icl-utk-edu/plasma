@@ -23,10 +23,10 @@
 /***************************************************************************//**
  *  Parallel tile triangular solve - dynamic scheduling
  **/
-void plasma_pztbsm(PLASMA_enum side, PLASMA_enum uplo, 
+void plasma_pztbsm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_enum trans, PLASMA_enum diag,
-                   PLASMA_Complex64_t alpha, PLASMA_desc A, 
-                                             PLASMA_desc B, 
+                   PLASMA_Complex64_t alpha, PLASMA_desc A,
+                                             PLASMA_desc B,
                    const int *IPIV,
                    PLASMA_sequence *sequence, PLASMA_request *request)
 {
@@ -210,9 +210,9 @@ void plasma_pztbsm(PLASMA_enum side, PLASMA_enum uplo,
                                 plasma->quark, &task_flags,
                                 PlasmaNoTrans, PlasmaNoTrans,
                                 tempmm, tempnn, B.mb, A.mb,
-                                mzone,  B(m, k), ldbm,  
-                                        A(k, n), ldak,  
-                                lalpha, B(m, n), ldbm); 
+                                mzone,  B(m, k), ldbm,
+                                        A(k, n), ldak,
+                                lalpha, B(m, n), ldbm);
                         }
                     }
                 }
@@ -231,8 +231,8 @@ void plasma_pztbsm(PLASMA_enum side, PLASMA_enum uplo,
                             plasma->quark, &task_flags,
                             side, uplo, trans, diag,
                             tempmm, tempkn, A.mb,
-                            alpha, A(B.nt-1-k, B.nt-1-k), ldak,  
-                                   B(       m, B.nt-1-k), ldbm); 
+                            alpha, A(B.nt-1-k, B.nt-1-k), ldak,
+                                   B(       m, B.nt-1-k), ldbm);
 
                         for (n = k+1; n < B.nt; n++) {
                             ldan = BLKLDD(A, B.nt-1-n);
@@ -293,8 +293,8 @@ void plasma_pztbsm(PLASMA_enum side, PLASMA_enum uplo,
                             plasma->quark, &task_flags,
                             side, uplo, trans, diag,
                             tempmm, tempkn, A.mb,
-                            alpha, A(k, k), ldak,  /* lda * tempkn */
-                                   B(m, k), ldbm); /* ldb * tempkn */
+                            alpha, A(k, k), ldak,
+                                   B(m, k), ldbm);
 
                         for (n = k+1; n < B.nt; n++) {
                             tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;

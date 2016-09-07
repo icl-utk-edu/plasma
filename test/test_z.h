@@ -12,6 +12,8 @@
 #ifndef TEST_Z_H
 #define TEST_Z_H
 
+#include "test.h"
+
 //==============================================================================
 // test routines
 //==============================================================================
@@ -24,8 +26,9 @@ void test_zgeqrs(param_value_t param[], char *info);
 void test_zhemm(param_value_t param[], char *info);
 void test_zher2k(param_value_t param[], char *info);
 void test_zherk(param_value_t param[], char *info);
+void test_zpbsv(param_value_t param[], char *info);
 void test_zpbtrf(param_value_t param[], char *info);
-void test_zpotsv(param_value_t param[], char *info);
+void test_zposv(param_value_t param[], char *info);
 void test_zpotrf(param_value_t param[], char *info);
 void test_zpotrs(param_value_t param[], char *info);
 void test_zsymm(param_value_t param[], char *info);

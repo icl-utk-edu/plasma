@@ -5,6 +5,9 @@
 @defgroup plasma_descriptor         PLASMA descriptor
 
 @defgroup plasma_util               Utilities
+@{
+    @defgroup plasma_const          Map LAPACK <=> PLASMA constants
+@}
 
 @defgroup group_conversion          Matrix layout conversion
 @{

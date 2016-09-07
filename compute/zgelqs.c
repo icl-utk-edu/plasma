@@ -71,7 +71,7 @@ int PLASMA_zgelqs(int m, int n, int nrhs,
                   PLASMA_desc *descT,
                   PLASMA_Complex64_t *B, int ldb)
 {
-    int nb;
+    int ib, nb;
     int retval;
     int status;
 
@@ -115,7 +115,7 @@ int PLASMA_zgelqs(int m, int n, int nrhs,
     //    plasma_error("plasma_tune() failed");
     //    return status;
     //}
-
+    ib = plasma->ib;
     nb = plasma->nb;
 
     // Initialize tile matrix descriptors.
@@ -136,6 +136,15 @@ int PLASMA_zgelqs(int m, int n, int nrhs,
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");
         plasma_desc_mat_free(&descA);
+        return retval;
+    }
+
+    // Allocate workspace.
+    PLASMA_workspace work;
+    size_t lwork = ib*nb;  // unmlq: work
+    retval = plasma_workspace_alloc(&work, lwork, PlasmaComplexDouble);
+    if (retval != PLASMA_SUCCESS) {
+        plasma_error("plasma_workspace_alloc() failed");
         return retval;
     }
 
@@ -162,22 +171,21 @@ int PLASMA_zgelqs(int m, int n, int nrhs,
 
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
+        PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
 
         // Call the tile async function.
-        if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_zgelqs_Tile_Async(&descA, descT, &descB, sequence, &request);
-        }
+        PLASMA_zgelqs_Tile_Async(&descA, descT, &descB,
+                                 &work, sequence, &request);
 
         // Translate back to LAPACK layout.
         // It is not needed to translate the descriptor back
         // for out-of-place storage.
-        //if (sequence->status == PLASMA_SUCCESS)
-        //    PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
-    } // pragma omp parallel block closed
+        //PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
+        PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
+    }
+    // implicit synchronization
+
+    plasma_workspace_free(&work);
 
     // Free matrices in tile layout.
     plasma_desc_mat_free(&descA);
@@ -213,6 +221,11 @@ int PLASMA_zgelqs(int m, int n, int nrhs,
  *          On entry, right-hand side matrix B in the tile layout.
  *          On exit, solution matrix X in the tile layout.
  *
+ * @param[in] work
+ *          Workspace for the auxiliary arrays needed by some coreblas kernels.
+ *          For multiplication by Q contains preallocated space for WORK
+ *          arrays. Allocated by the plasma_workspace_alloc function.
+ *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to
  *          (for completion checks and exception handling purposes).
@@ -239,6 +252,7 @@ int PLASMA_zgelqs(int m, int n, int nrhs,
 void PLASMA_zgelqs_Tile_Async(PLASMA_desc *descA,
                               PLASMA_desc *descT,
                               PLASMA_desc *descB,
+                              PLASMA_workspace *work,
                               PLASMA_sequence *sequence,
                               PLASMA_request *request)
 {
@@ -293,16 +307,12 @@ void PLASMA_zgelqs_Tile_Async(PLASMA_desc *descA,
     if (descA->m == 0 || descA->n == 0 || descB->n == 0)
         return;
 
-    //plasma_pztile_zero(
-    //    plasma_desc_submatrix(*descB, descA->m, 0,
-    //                          descA->n - descA->m, descB->n),
-    //    sequence, request);
-
-    // TODO: zero lower part of the right-hand side matrix
-//    plasma_pzlaset(PlasmaFull, 0., 0.,
-//                   plasma_desc_submatrix(*descB, descA->m, 0,
-//                                         descA->n - descA->m, descB->n),
-//                   sequence, request);
+    // zero the trailing block of the right-hand side matrix
+    // (B has less rows than X)
+    plasma_pzlaset(PlasmaFull, 0., 0.,
+                   plasma_desc_submatrix(*descB, descA->m, 0,
+                                         descA->n - descA->m, descB->n),
+                   sequence, request);
 
     // Solve L * Y = B
     PLASMA_Complex64_t zone  =  1.0;
@@ -318,7 +328,5 @@ void PLASMA_zgelqs_Tile_Async(PLASMA_desc *descA,
     // Note that PlasmaConjTrans is protected from this conversion.
     plasma_pzunmlq(PlasmaLeft, Plasma_ConjTrans,
                    *descA, *descB, *descT,
-                   sequence, request);
-
-    return;
+                   work, sequence, request);
 }

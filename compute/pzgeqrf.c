@@ -53,7 +53,9 @@ void plasma_pzgeqrf(PLASMA_desc A, PLASMA_desc T,
         CORE_OMP_zgeqrt(
             tempkm, tempkn, ib, T.nb,
             A(k, k), ldak,
-            T(k, k), T.mb, work);
+            T(k, k), T.mb,
+            work,
+            sequence, request);
 
         for (n = k+1; n < A.nt; n++) {
             tempnn = n == A.nt-1 ? A.n-n*A.nb : A.nb;
@@ -66,7 +68,9 @@ void plasma_pzgeqrf(PLASMA_desc A, PLASMA_desc T,
                 tempkm, tempnn, tempkm, ib, T.nb,
                 A(k, k), ldak,
                 T(k, k), T.mb,
-                A(k, n), ldak);
+                A(k, n), ldak,
+                work,
+                sequence, request);
         }
         for (m = k+1; m < A.mt; m++) {
             tempmm = m == A.mt-1 ? A.m-m*A.mb : A.mb;
@@ -75,7 +79,9 @@ void plasma_pzgeqrf(PLASMA_desc A, PLASMA_desc T,
                 tempmm, tempkn, ib, T.nb,
                 A(k, k), ldak,
                 A(m, k), ldam,
-                T(m, k), T.mb);
+                T(m, k), T.mb,
+                work,
+                sequence, request);
 
             for (n = k+1; n < A.nt; n++) {
                 tempnn = n == A.nt-1 ? A.n-n*A.nb : A.nb;
@@ -85,7 +91,9 @@ void plasma_pzgeqrf(PLASMA_desc A, PLASMA_desc T,
                     A(k, n), ldak,
                     A(m, n), ldam,
                     A(m, k), ldam,
-                    T(m, k), T.mb);
+                    T(m, k), T.mb,
+                    work,
+                    sequence, request);
             }
         }
     }

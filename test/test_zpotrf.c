@@ -12,6 +12,8 @@
 #include "core_blas.h"
 #include "test.h"
 #include "flops.h"
+#include "core_lapack.h"
+#include "plasma.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -19,15 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef PLASMA_WITH_MKL
-    #include <mkl_cblas.h>
-    #include <mkl_lapacke.h>
-#else
-    #include <cblas.h>
-    #include <lapacke.h>
-#endif
 #include <omp.h>
-#include <plasma.h>
 
 #define COMPLEX
 
@@ -80,12 +74,7 @@ void test_zpotrf(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    PLASMA_enum uplo;
-
-    if (param[PARAM_UPLO].c == 'l')
-        uplo = PlasmaLower;
-    else
-        uplo = PlasmaUpper;
+    PLASMA_enum uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
 
     int n = param[PARAM_N].i;
 
@@ -142,7 +131,7 @@ void test_zpotrf(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zpotrf((CBLAS_UPLO)uplo, n, A, lda);
+    PLASMA_zpotrf(uplo, n, A, lda);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 

@@ -16,10 +16,12 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define A(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(A, m, n))
+#define A(m, n) ((PLASMA_Complex64_t*)plasma_getaddr(A, m, n))
 /***************************************************************************//**
- *  Parallel initialization a 2-D array A to BETA on the diagonal and
- *  ALPHA on the offdiagonals.
+ *  Initializes the matrix A to beta on the diagonal and alpha on the
+ *  offdiagonals. Applies alpha correctly for any shape of the submatrix
+ *  described by A, but applies beta correctly on for submatrices aligned
+ *  with the diagonal of the main matrix (descA.i = descA.j).
  **/
 void plasma_pzlaset(PLASMA_enum uplo,
                     PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
@@ -27,71 +29,41 @@ void plasma_pzlaset(PLASMA_enum uplo,
                     PLASMA_sequence *sequence, PLASMA_request *request)
 {
     int i, j;
-    int ldai, ldaj;
-    int tempim, tempjm, tempjn;
-    int minmn = imin(A.mt, A.nt);
+    int m, n;
 
-    // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
-        return;
-    }
+    for (i = 0; i < A.mt; i++) {
+        if (i == 0 && i == A.mt-1)
+            m = A.m;
+        else if (i == 0)
+            m = A.mb-A.i%A.mb;
+        else if (i == A.mt-1)
+            m = (A.i+A.m+A.mb-1)%A.mb+1;
+        else
+            m = A.mb;
 
-    if (uplo == PlasmaLower) {
-        for (j = 0; j < minmn; j++) {
-            tempjm = j == A.mt-1 ? A.m-j*A.mb : A.mb;
-            tempjn = j == A.nt-1 ? A.n-j*A.nb : A.nb;
-            ldaj = BLKLDD(A, j);
-            CORE_OMP_zlaset(PlasmaLower, tempjm, tempjn, alpha, beta,
-                            A(j, j), ldaj);
+        for (j = 0; j < A.nt; j++) {
+            if (j == 0 && j == A.nt-1)
+                n = A.n;
+            else if (j == 0)
+                n = A.nb-A.j%A.nb;
+            else if (j == A.nt-1)
+                n = (A.j+A.n+A.nb-1)%A.nb+1;
+            else
+                n = A.nb;
 
-            for (i = j+1; i < A.mt; i++) {
-                tempim = i == A.mt-1 ? A.m-i*A.mb : A.mb;
-                ldai = BLKLDD(A, i);
-                CORE_OMP_zlaset(PlasmaFull,
-                                tempim, tempjn,
-                                alpha, alpha, A(i, j), ldai);
-            }
-        }
-    }
-    else if (uplo == PlasmaUpper) {
-        for (j = 1; j < A.nt; j++) {
-            tempjn = j == A.nt-1 ? A.n-j*A.nb : A.nb;
-            for (i = 0; i < imin(j, A.mt); i++) {
-                tempim = i == A.mt-1 ? A.m-i*A.mb : A.mb;
-                ldai = BLKLDD(A, i);
-                CORE_OMP_zlaset(PlasmaFull,
-                                tempim, tempjn,
-                                alpha, alpha, A(i, j), ldai);
-            }
-        }
-        for (j = 0; j < minmn; j++) {
-            tempjm = j == A.mt-1 ? A.m-j*A.mb : A.mb;
-            tempjn = j == A.nt-1 ? A.n-j*A.nb : A.nb;
-            ldaj = BLKLDD(A, j);
-            CORE_OMP_zlaset(PlasmaUpper,
-                            tempjm, tempjn,
-                            alpha, beta, A(j, j), ldaj);
-        }
-    }
-    else { // PlasmaFull, i.e. diagonal matrix
-        for (i = 0; i < A.mt; i++) {
-            tempim = i == A.mt-1 ? A.m-i*A.mb : A.mb;
-            ldai = BLKLDD(A, i);
-            for (j = 0; j < A.nt; j++) {
-                tempjn = j == A.nt-1 ? A.n-j*A.nb : A.nb;
-                CORE_OMP_zlaset(PlasmaFull,
-                                tempim, tempjn,
-                                alpha, alpha, A(i, j), ldai);
-            }
-        }
-        for (j = 0; j < minmn; j++) {
-            tempjm = j == A.mt-1 ? A.m-j*A.mb : A.mb;
-            tempjn = j == A.nt-1 ? A.n-j*A.nb : A.nb;
-            ldaj = BLKLDD(A, j);
-            CORE_OMP_zlaset(PlasmaFull,
-                            tempjm, tempjn,
-                            alpha, beta, A(j, j), ldaj);
+            if (uplo == PlasmaFull ||
+                (uplo == PlasmaLower && i >= j) ||
+                (uplo == PlasmaUpper && i <= j))
+                CORE_OMP_zlaset(i == j ? uplo : PlasmaFull,
+                                A.i/A.mb+i == A.lm1 ? A.lm-A.lm1*A.mb : A.mb,
+                                A.j/A.nb+j == A.ln1 ? A.ln-A.ln1*A.nb : A.nb,
+                                i == 0 ? A.i%A.mb : 0,
+                                j == 0 ? A.j%A.nb : 0,
+                                m,
+                                n,
+                                alpha,
+                                i != j ? alpha : beta,
+                                A(i, j));
         }
     }
 }

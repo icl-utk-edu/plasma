@@ -13,13 +13,9 @@
 #include "core_blas.h"
 #include "plasma_types.h"
 #include "plasma_internal.h"
+#include "core_lapack.h"
 
-#ifdef PLASMA_WITH_MKL
-    #include <mkl.h>
-#else
-    #include <cblas.h>
-    #include <lapacke.h>
-#endif
+#include <omp.h>
 
 /***************************************************************************//**
  *
@@ -101,13 +97,18 @@
  *             ldwork >= max(1,ib) if side == PlasmaLeft
  *             ldwork >= max(1,m)  if side == PlasmaRight
  *
+ *******************************************************************************
+ *
+ * @retval PLASMA_SUCCESS successful exit
+ * @retval < 0 if -i, the i-th argument had an illegal value
+ *
  ******************************************************************************/
-void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
-                 int m, int n, int k, int ib,
-                 const PLASMA_Complex64_t *A,    int lda,
-                 const PLASMA_Complex64_t *T,    int ldt,
-                       PLASMA_Complex64_t *C,    int ldc,
-                       PLASMA_Complex64_t *WORK, int ldwork)
+int CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
+                int m, int n, int k, int ib,
+                const PLASMA_Complex64_t *A,    int lda,
+                const PLASMA_Complex64_t *T,    int ldt,
+                      PLASMA_Complex64_t *C,    int ldc,
+                      PLASMA_Complex64_t *WORK, int ldwork)
 {
     int i, kb;
     int i1, i3;
@@ -119,8 +120,8 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
 
     // Check input arguments.
     if ((side != PlasmaLeft) && (side != PlasmaRight)) {
-        plasma_error("illegal value of side");
-        return;
+        coreblas_error("illegal value of side");
+        return -1;
     }
     // nq is the order of Q and nw is the minimum dimension of WORK
     if (side == PlasmaLeft) {
@@ -136,41 +137,45 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
     // automatic datatype conversion, which is what we want here.
     // PlasmaConjTrans is protected from this conversion.
     if ((trans != PlasmaNoTrans) && (trans != Plasma_ConjTrans)) {
-        plasma_error("illegal value of trans");
-        return;
+        coreblas_error("Illegal value of trans");
+        return -2;
     }
     if (m < 0) {
-        plasma_error("illegal value of m");
-        return;
+        coreblas_error("Illegal value of m");
+        return -3;
     }
     if (n < 0) {
-        plasma_error("illegal value of n");
-        return;
+        coreblas_error("Illegal value of n");
+        return -4;
     }
     if ((k < 0) || (k > nq)) {
-        plasma_error("illegal value of k");
-        return;
+        coreblas_error("Illegal value of k");
+        return -5;
     }
     if ((ib < 0) || ( (ib == 0) && ((m > 0) && (n > 0)) )) {
-        plasma_error("illegal value of ib");
-        return;
+        coreblas_error("Illegal value of ib");
+        return -6;
     }
     if ((lda < imax(1,nq)) && (nq > 0)) {
-        plasma_error("illegal value of lda");
-        return;
+        coreblas_error("Illegal value of lda");
+        return -8;
+    }
+    if (ldt < imax(1,ib)) {
+        coreblas_error("Illegal value of ldt");
+        return -10;
     }
     if ((ldc < imax(1,m)) && (m > 0)) {
-        plasma_error("illegal value of ldc");
-        return;
+        coreblas_error("Illegal value of ldc");
+        return -12;
     }
     if ((ldwork < imax(1,nw)) && (nw > 0)) {
-        plasma_error("illegal value of ldwork");
-        return;
+        coreblas_error("Illegal value of ldwork");
+        return -14;
     }
 
     // quick return
     if ((m == 0) || (n == 0) || (k == 0))
-        return;
+        return PLASMA_SUCCESS;
 
     if (((side == PlasmaLeft) && (trans != PlasmaNoTrans))
         || ((side == PlasmaRight) && (trans == PlasmaNoTrans))) {
@@ -207,6 +212,8 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
                             &C[ldc*jc+ic], ldc,
                             WORK, ldwork);
     }
+
+    return PLASMA_SUCCESS;
 }
 
 /******************************************************************************/
@@ -214,32 +221,36 @@ void CORE_OMP_zunmqr(PLASMA_enum side, PLASMA_enum trans,
                      int m, int n, int k, int ib, int nb,
                      const PLASMA_Complex64_t *A, int lda,
                      const PLASMA_Complex64_t *T, int ldt,
-                           PLASMA_Complex64_t *C, int ldc)
+                           PLASMA_Complex64_t *C, int ldc,
+                     PLASMA_workspace *work,
+                     PLASMA_sequence *sequence, PLASMA_request *request)
 {
     // OpenMP depends on lda == m == n == nb, ldc == nb, ldt == ib.
     #pragma omp task depend(in:A[0:nb*nb]) \
                      depend(in:T[0:ib*nb]) \
                      depend(inout:C[0:nb*nb])
     {
-        // Allocate the auxiliary array.
-        PLASMA_Complex64_t *WORK =
-            (PLASMA_Complex64_t *) malloc((size_t)ib*nb *
-                                          sizeof(PLASMA_Complex64_t));
-        if (WORK == NULL) {
-            plasma_error("malloc() failed");
+        if (sequence->status == PLASMA_SUCCESS) {
+            int tid = omp_get_thread_num();
+            PLASMA_Complex64_t *W   =
+                ((PLASMA_Complex64_t*)work->spaces[tid]);
+
+            int ldwork = nb;
+
+            // Call the kernel.
+            int info = CORE_zunmqr(side, trans,
+                                   m, n, k, ib,
+                                   A, lda,
+                                   T, ldt,
+                                   C, ldc,
+                                   W, ldwork);
+
+            if (info != PLASMA_SUCCESS) {
+                plasma_error_with_code("Error in call to COREBLAS in argument",
+                                       -info);
+                plasma_request_fail(sequence, request,
+                                    PLASMA_ERR_ILLEGAL_VALUE);
+            }
         }
-
-        int ldwork = nb;
-
-        // Call the kernel.
-        CORE_zunmqr(side, trans,
-                    m, n, k, ib,
-                    A, lda,
-                    T, ldt,
-                    C, ldc,
-                    WORK, ldwork);
-
-        // Free the auxiliary array.
-        free(WORK);
     }
 }

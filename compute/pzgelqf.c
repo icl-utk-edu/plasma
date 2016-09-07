@@ -24,6 +24,7 @@
  * @see PLASMA_zgelqf_Tile_Async
  **/
 void plasma_pzgelqf(PLASMA_desc A, PLASMA_desc T,
+                    PLASMA_workspace *work,
                     PLASMA_sequence *sequence, PLASMA_request *request)
 {
     int k, m, n;
@@ -49,7 +50,9 @@ void plasma_pzgelqf(PLASMA_desc A, PLASMA_desc T,
         CORE_OMP_zgelqt(
             tempkm, tempkn, ib, T.nb,
             A(k, k), ldak,
-            T(k, k), T.mb);
+            T(k, k), T.mb,
+            work,
+            sequence, request);
 
         for (m = k+1; m < A.mt; m++) {
             tempmm = m == A.mt-1 ? A.m-m*A.mb : A.mb;
@@ -63,7 +66,9 @@ void plasma_pzgelqf(PLASMA_desc A, PLASMA_desc T,
                 tempmm, tempkn, tempkn, ib, T.nb,
                 A(k, k), ldak,
                 T(k, k), T.mb,
-                A(m, k), ldam);
+                A(m, k), ldam,
+                work,
+                sequence, request);
         }
         for (n = k+1; n < A.nt; n++) {
             tempnn = n == A.nt-1 ? A.n-n*A.nb : A.nb;
@@ -71,7 +76,9 @@ void plasma_pzgelqf(PLASMA_desc A, PLASMA_desc T,
                 tempkm, tempnn, ib, T.nb,
                 A(k, k), ldak,
                 A(k, n), ldak,
-                T(k, n), T.mb);
+                T(k, n), T.mb,
+                work,
+                sequence, request);
 
             for (m = k+1; m < A.mt; m++) {
                 tempmm = m == A.mt-1 ? A.m-m*A.mb : A.mb;
@@ -82,7 +89,9 @@ void plasma_pzgelqf(PLASMA_desc A, PLASMA_desc T,
                     A(m, k), ldam,
                     A(m, n), ldam,
                     A(k, n), ldak,
-                    T(k, n), T.mb);
+                    T(k, n), T.mb,
+                    work,
+                    sequence, request);
             }
         }
     }

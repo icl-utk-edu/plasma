@@ -13,13 +13,9 @@
 #include "core_blas.h"
 #include "plasma_types.h"
 #include "plasma_internal.h"
+#include "core_lapack.h"
 
-#ifdef PLASMA_WITH_MKL
-    #include <mkl.h>
-#else
-    #include <cblas.h>
-    #include <lapacke.h>
-#endif
+#include <omp.h>
 
 // this will be swapped during the automatic code generation
 #undef REAL
@@ -91,12 +87,18 @@
  * @param WORK
  *         Auxiliary workspace array of length ib*m.
  *
+ *******************************************************************************
+ *
+ * @retval PLASMA_SUCCESS successful exit
+ * @retval < 0 if -i, the i-th argument had an illegal value
+ *
  ******************************************************************************/
-void CORE_ztslqt(int m, int n, int ib,
-                 PLASMA_Complex64_t *A1, int lda1,
-                 PLASMA_Complex64_t *A2, int lda2,
-                 PLASMA_Complex64_t *T, int ldt,
-                 PLASMA_Complex64_t *TAU, PLASMA_Complex64_t *WORK)
+int CORE_ztslqt(int m, int n, int ib,
+                PLASMA_Complex64_t *A1, int lda1,
+                PLASMA_Complex64_t *A2, int lda2,
+                PLASMA_Complex64_t *T, int ldt,
+                PLASMA_Complex64_t *TAU,
+                PLASMA_Complex64_t *WORK)
 {
     static PLASMA_Complex64_t zone  = 1.0;
     static PLASMA_Complex64_t zzero = 0.0;
@@ -106,25 +108,25 @@ void CORE_ztslqt(int m, int n, int ib,
 
     // Check input arguments
     if (m < 0) {
-        plasma_error("Illegal value of m");
-        return;
+        coreblas_error("Illegal value of m");
+        return -1;
     }
     if (n < 0) {
-        plasma_error("Illegal value of n");
-        return;
+        coreblas_error("Illegal value of n");
+        return -2;
     }
     if (ib < 0) {
-        plasma_error("Illegal value of ib");
-        return;
+        coreblas_error("Illegal value of ib");
+        return -3;
     }
     if ((lda2 < imax(1,m)) && (m > 0)) {
-        plasma_error("Illegal value of lda2");
-        return;
+        coreblas_error("Illegal value of lda2");
+        return -7;
     }
 
     // Quick return
     if ((m == 0) || (n == 0) || (ib == 0))
-        return;
+        return PLASMA_SUCCESS;
 
     for (ii = 0; ii < m; ii += ib) {
         sb = imin(m-ii, ib);
@@ -196,42 +198,46 @@ void CORE_ztslqt(int m, int n, int ib,
                 WORK, lda1);
         }
     }
+
+    return PLASMA_SUCCESS;
 }
 
 /******************************************************************************/
 void CORE_OMP_ztslqt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A1, int lda1,
                      PLASMA_Complex64_t *A2, int lda2,
-                     PLASMA_Complex64_t *T,  int ldt)
+                     PLASMA_Complex64_t *T,  int ldt,
+                     PLASMA_workspace *work,
+                     PLASMA_sequence *sequence, PLASMA_request *request)
 {
     // assuming m == nb, n == nb
     #pragma omp task depend(inout:A1[0:nb*nb]) \
                      depend(inout:A2[0:nb*nb]) \
                      depend(out:T[0:ib*nb])
     {
-        // prepare memory for auxiliary arrays
-        PLASMA_Complex64_t *TAU  =
-            (PLASMA_Complex64_t *) malloc((size_t)nb *
-                                          sizeof(PLASMA_Complex64_t));
-        if (TAU == NULL) {
-            plasma_error("malloc() failed");
-        }
-        PLASMA_Complex64_t *WORK =
-            (PLASMA_Complex64_t *) malloc((size_t)ib*nb *
-                                          sizeof(PLASMA_Complex64_t));
-        if (WORK == NULL) {
-            plasma_error("malloc() failed");
-        }
+        if (sequence->status == PLASMA_SUCCESS) {
+            int tid = omp_get_thread_num();
+            // split spaces into TAU and WORK
+            int ltau = m;
+            int lwork = work->lwork - ltau;
+            PLASMA_Complex64_t *TAU = ((PLASMA_Complex64_t*)work->spaces[tid]);
+            PLASMA_Complex64_t *W   =
+                ((PLASMA_Complex64_t*)work->spaces[tid]) + ltau;
 
-        CORE_ztslqt(m, n, ib,
-                    A1, lda1,
-                    A2, lda2,
-                    T,  ldt,
-                    TAU,
-                    WORK);
+            // Call the kernel.
+            int info = CORE_ztslqt(m, n, ib,
+                                   A1, lda1,
+                                   A2, lda2,
+                                   T,  ldt,
+                                   TAU,
+                                   W);
 
-        // deallocate auxiliary arrays
-        free(TAU);
-        free(WORK);
+            if (info != PLASMA_SUCCESS) {
+                plasma_error_with_code("Error in call to COREBLAS in argument",
+                                       -info);
+                plasma_request_fail(sequence, request,
+                                    PLASMA_ERR_ILLEGAL_VALUE);
+            }
+        }
     }
 }

@@ -11,6 +11,8 @@
  **/
 #include "test.h"
 #include "flops.h"
+#include "core_lapack.h"
+#include "plasma.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -19,15 +21,7 @@
 #include <string.h>
 #include <math.h>
 
-#ifdef PLASMA_WITH_MKL
-    #include <mkl_cblas.h>
-    #include <mkl_lapacke.h>
-#else
-    #include <cblas.h>
-    #include <lapacke.h>
-#endif
 #include <omp.h>
-#include <plasma.h>
 
 #define COMPLEX
 
@@ -99,22 +93,8 @@ void test_zgemm(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    PLASMA_enum transa;
-    PLASMA_enum transb;
-
-    if (param[PARAM_TRANSA].c == 'n')
-        transa = PlasmaNoTrans;
-    else if (param[PARAM_TRANSA].c == 't')
-        transa = PlasmaTrans;
-    else
-        transa = PlasmaConjTrans;
-
-    if (param[PARAM_TRANSB].c == 'n')
-        transb = PlasmaNoTrans;
-    else if (param[PARAM_TRANSB].c == 't')
-        transb = PlasmaTrans;
-    else
-        transb = PlasmaConjTrans;
+    PLASMA_enum transa = PLASMA_trans_const(param[PARAM_TRANSA].c);
+    PLASMA_enum transb = PLASMA_trans_const(param[PARAM_TRANSB].c);
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
@@ -204,7 +184,7 @@ void test_zgemm(param_value_t param[], char *info)
     plasma_time_t start = omp_get_wtime();
 
     PLASMA_zgemm(
-        (CBLAS_TRANSPOSE)transa, (CBLAS_TRANSPOSE)transb,
+        transa, transb,
         m, n, k,
         alpha, A, lda,
                B, ldb,

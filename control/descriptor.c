@@ -123,10 +123,12 @@ PLASMA_desc plasma_desc_band_init(PLASMA_enum dtyp, PLASMA_enum uplo,
     if (uplo == PlasmaFull) {
         desc.klt = 1+(i+kl + mb-1)/mb - i/mb;
         desc.kut = 1+(i+ku+kl + nb-1)/nb - i/nb;
-    } else if (uplo == PlasmaUpper) {
+    }
+    else if (uplo == PlasmaUpper) {
         desc.klt = 1;
         desc.kut = 1+(i+ku + nb-1)/nb - i/nb;
-    } else {
+    }
+    else {
         desc.klt = 1+(i+kl + mb-1)/mb - i/mb;
         desc.kut = 1;
     }
@@ -243,11 +245,11 @@ int plasma_desc_band_check(PLASMA_enum uplo, PLASMA_desc *desc)
         plasma_error("invalid leading column dimensions");
         return PLASMA_ERR_ILLEGAL_VALUE;
     }
-    if ((uplo == PlasmaFull && 
+    if ((uplo == PlasmaFull &&
          desc->lm < desc->mb*((2*desc->kl+desc->ku+desc->mb)/desc->mb)) ||
-        (uplo == PlasmaUpper && 
+        (uplo == PlasmaUpper &&
          desc->lm < desc->mb*((desc->ku + desc->mb)/desc->mb)) ||
-        (uplo == PlasmaUpper && 
+        (uplo == PlasmaUpper &&
          desc->lm < desc->mb*((desc->kl + desc->mb)/desc->mb))) {
         plasma_error("invalid leading row dimensions");
         return PLASMA_ERR_ILLEGAL_VALUE;

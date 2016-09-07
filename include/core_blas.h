@@ -10,6 +10,8 @@
 #ifndef ICL_CORE_BLAS_H
 #define ICL_CORE_BLAS_H
 
+#include <stdio.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -76,8 +78,23 @@ static const char *lapack_constants[] = {
     "Rowwise"                              ///< 402: PlasmaRowwise
 };
 
+/***************************************************************************//**
+ * @retval LAPACK character constant corresponding to PLASMA constant
+ * @ingroup plasma_const
+ ******************************************************************************/
 static inline char lapack_const(int plasma_const) {
     return lapack_constants[plasma_const][0];
+}
+
+#define coreblas_error(msg) \
+        coreblas_error_func_line_file(__func__, __LINE__, __FILE__, msg)
+
+static inline void coreblas_error_func_line_file(
+    char const *func, int line, const char *file, const char *msg)
+{
+    fprintf(stderr,
+            "COREBLAS ERROR at %d of %s() in %s: %s\n",
+            line, func, file, msg);
 }
 
 #ifdef __cplusplus

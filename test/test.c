@@ -8,13 +8,12 @@
  *
  **/
 #include "test.h"
+#include "plasma.h"
 
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "plasma.h"
 
 /***************************************************************************//**
  *
@@ -273,7 +272,16 @@ void run_routine(const char *name, param_value_t pval[], char *info)
     else if (strcmp(name, "cherk") == 0)
         test_cherk(pval, info);
 
-	else if (strcmp(name, "zpbtrf") == 0)
+    else if (strcmp(name, "zpbsv") == 0)
+        test_zpbsv(pval, info);
+    else if (strcmp(name, "dpbsv") == 0)
+        test_dpbsv(pval, info);
+    else if (strcmp(name, "cpbsv") == 0)
+        test_cpbsv(pval, info);
+    else if (strcmp(name, "spbsv") == 0)
+        test_spbsv(pval, info);
+
+    else if (strcmp(name, "zpbtrf") == 0)
         test_zpbtrf(pval, info);
     else if (strcmp(name, "dpbtrf") == 0)
         test_dpbtrf(pval, info);
