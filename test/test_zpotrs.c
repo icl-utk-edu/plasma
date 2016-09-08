@@ -165,9 +165,8 @@ void test_zpotrs(param_value_t param[], char *info)
     PLASMA_zpotrs(uplo, n, nrhs, A, lda, B, ldb);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
-    double flops = flops_zpotrf(n) + 2*flops_ztrsm(uplo, n, nrhs);
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = flops / time / 1e9;
+    param[PARAM_GFLOPS].d = flops_zpotrs(n, nrhs) / time / 1e9;
 
     //================================================================
     // Test results by checking the residual (backward error)

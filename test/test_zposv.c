@@ -149,7 +149,7 @@ void test_zposv(param_value_t param[], char *info)
     PLASMA_zposv(uplo, n, nrhs, A, lda, B, ldb);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
-    double flops = flops_zpotrf(n) + 2*flops_ztrsm(uplo, n, nrhs);
+    double flops = flops_zpotrf(n) + flops_zpotrs(n, nrhs);
     param[PARAM_TIME].d = time;
     param[PARAM_GFLOPS].d = flops / time / 1e9;
 
