@@ -16,6 +16,18 @@
 #else
     #include <cblas.h>
     #include <lapacke.h>
+
+    // Intel mkl_cblas.h does: typedef enum {...} CBLAS_ORDER;
+    // Netlib    cblas.h does: enum CBLAS_ORDER {...};
+    // OpenBLAS  cblas.h does: typedef enum CBLAS_ORDER {...} CBLAS_ORDER;
+    // We use (CBLAS_ORDER), so add these typedefs for Netlib.
+    #ifndef OPENBLAS_VERSION
+    typedef enum CBLAS_ORDER CBLAS_ORDER;
+    typedef enum CBLAS_TRANSPOSE CBLAS_TRANSPOSE;
+    typedef enum CBLAS_UPLO CBLAS_UPLO;
+    typedef enum CBLAS_DIAG CBLAS_DIAG;
+    typedef enum CBLAS_SIDE CBLAS_SIDE;
+    #endif
 #endif
 
 #endif // ICL_CORE_LAPACK_H
