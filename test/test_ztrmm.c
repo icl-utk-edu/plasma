@@ -80,7 +80,7 @@ void test_ztrmm(param_value_t param[], char *info)
         InfoSpacing, param[PARAM_DIAG].c,
         InfoSpacing, param[PARAM_M].i,
         InfoSpacing, param[PARAM_N].i,
-        InfoSpacing, __real__(param[PARAM_ALPHA].z),
+        InfoSpacing, creal(param[PARAM_ALPHA].z),
         InfoSpacing, param[PARAM_PADA].i,
         InfoSpacing, param[PARAM_PADB].i);
 
@@ -114,7 +114,7 @@ void test_ztrmm(param_value_t param[], char *info)
 #ifdef COMPLEX
     PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
 #else
-    PLASMA_Complex64_t alpha = __real__(param[PARAM_ALPHA].z);
+    double alpha = creal(param[PARAM_ALPHA].z);
 #endif
 
     //================================================================

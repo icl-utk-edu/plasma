@@ -211,6 +211,7 @@ int plasma_desc_check(PLASMA_desc *desc)
     }
     return PLASMA_SUCCESS;
 }
+
 /******************************************************************************/
 int plasma_desc_band_check(PLASMA_enum uplo, PLASMA_desc *desc)
 {

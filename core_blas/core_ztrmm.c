@@ -107,7 +107,7 @@ void CORE_ztrmm(
         B, ldb);
 }
 
-/***************************************************************************/
+/******************************************************************************/
 void CORE_OMP_ztrmm(
     PLASMA_enum side, PLASMA_enum uplo, PLASMA_enum transA, PLASMA_enum diag,
     int m, int n,

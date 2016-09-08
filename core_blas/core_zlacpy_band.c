@@ -123,7 +123,6 @@ void CORE_OMP_zlacpy_lapack2tile_band(PLASMA_enum uplo,
     CORE_zlacpy_lapack2tile_band(uplo, it, jt, m, n, nb, kl, ku, A, lda, B, ldb);
 }
 
-
 /*******************************************************************************
  *
  * @ingroup CORE_PLASMA_Complex64_t
