@@ -145,7 +145,8 @@ void test_zgeqrf(param_value_t param[], char *info)
         // Check the orthogonality of Q
         PLASMA_Complex64_t zzero =  0.0;
         PLASMA_Complex64_t zone  =  1.0;
-        PLASMA_Complex64_t mzone = -1.0;
+        double one  =  1.0;
+        double mone = -1.0;
         int minmn = imin(m, n);
 
         // Allocate space for Q.
@@ -166,7 +167,7 @@ void test_zgeqrf(param_value_t param[], char *info)
 
         // Perform Id - Q^H * Q
         cblas_zherk(CblasColMajor, CblasUpper, CblasConjTrans, minmn, m,
-                    mzone, Q, ldq, zone, Id, minmn);
+                    mone, Q, ldq, one, Id, minmn);
 
         // WORK array of size m is needed for computing L_oo norm
         double *WORK = (double *) malloc((size_t)m*sizeof(double));

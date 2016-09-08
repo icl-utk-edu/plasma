@@ -115,7 +115,7 @@ void test_zpbsv(param_value_t param[], char *info)
     // make it SPD
     int i,j;
     for (i = 0; i < n; ++i) {
-        A(i,i) = (creal(A(i,i)) + n) + 0. * I;
+        A(i,i) = creal(A(i,i)) + n;
         for (j = 0; j < i; ++j) {
             A(j,i) = conj(A(i,j));
         }

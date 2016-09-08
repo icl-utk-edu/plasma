@@ -568,7 +568,7 @@ int param_read(int argc, char **argv, param_t param[])
     }
     if (param[PARAM_BETA].num == 0) {
         PLASMA_Complex64_t z = 6.7890 + 7.8901*_Complex_I;
-        param_add_double(z, &param[PARAM_BETA]);
+        param_add_complex(z, &param[PARAM_BETA]);
     }
 
     return iter;
