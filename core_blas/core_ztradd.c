@@ -11,6 +11,7 @@
  **/
 
 #include "core_blas.h"
+#include "plasma_internal.h"
 #include "plasma_types.h"
 
 #ifdef PLASMA_WITH_MKL
@@ -92,17 +93,14 @@ void CORE_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
     int i, j;
 
     if (uplo == PlasmaFull) {
-        int rc = CORE_zgeadd(transA, m, n, alpha, A, lda, beta, B, ldb);
-        if (rc != PLASMA_SUCCESS)
-            return rc-1;
-        else
-            return rc;
+        CORE_zgeadd(transA, m, n, alpha, A, lda, beta, B, ldb);
+        return;
     }
 
     if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
-        return -1;
+        return;
     }
 
     if ((transA != PlasmaNoTrans) &&
@@ -110,39 +108,39 @@ void CORE_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
         (transA != PlasmaConjTrans)) {
 
         plasma_error("illegal value of transA");
-        return -2;
+        return;
     }
 
     if (m < 0) {
         plasma_error("Illegal value of m");
-        return -3;
+        return;
     }
 
     if (n < 0) {
         plasma_error("Illegal value of m");
-        return -4;
+        return;
     }
 
     if (A == NULL) {
         plasma_error("NULL A");
-        return -6;
+        return;
     }
 
     if ( ((transA == PlasmaNoTrans) && (lda < imax(1,m)) && (m > 0)) ||
          ((transA != PlasmaNoTrans) && (lda < imax(1,n)) && (n > 0)) ) {
 
         plasma_error("Illegal value of lda");
-        return -7;
+        return;
     }
 
     if (B == NULL) {
         plasma_error("NULL B");
-        return -9;
+        return;
     }
 
     if ( (ldb < imax(1,m)) && (m > 0) ) {
         plasma_error("Illegal value of ldb");
-        return -10;
+        return;
     }
 
     //=============
@@ -216,7 +214,6 @@ void CORE_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
             }
         }
     }
-    return PLASMA_SUCCESS;
 }
 
 /******************************************************************************/

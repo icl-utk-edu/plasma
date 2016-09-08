@@ -21,6 +21,12 @@ extern "C" {
 #endif
 
 /******************************************************************************/
+void CORE_zgeadd(PLASMA_enum transA, int m, int n,
+                      PLASMA_Complex64_t  alpha,
+                const PLASMA_Complex64_t *A, int lda,
+                      PLASMA_Complex64_t  beta,
+                      PLASMA_Complex64_t *B, int ldb);
+
 void CORE_zgelqt(int m, int n, int ib,
                  PLASMA_Complex64_t *A, int lda,
                  PLASMA_Complex64_t *T, int ldt,
@@ -110,17 +116,17 @@ void CORE_zsyrk(PLASMA_enum uplo, PLASMA_enum trans,
                 PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                 PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc);
 
+void CORE_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
+                       PLASMA_Complex64_t  alpha,
+                 const PLASMA_Complex64_t *A, int lda,
+                       PLASMA_Complex64_t  beta,
+                       PLASMA_Complex64_t *B, int ldb);
+
 void CORE_ztrmm(PLASMA_enum side, PLASMA_enum uplo,
                 PLASMA_enum transA, PLASMA_enum diag,
                 int m, int n,
                 PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                                                 PLASMA_Complex64_t *B, int ldb);
-
-void CORE_ztrmm_p2(PLASMA_enum side, PLASMA_enum uplo,
-                   PLASMA_enum transA, PLASMA_enum diag,
-                   int m, int n, PLASMA_Complex64_t alpha,
-                   const PLASMA_Complex64_t  *A, int lda,
-                         PLASMA_Complex64_t **B, int ldb);
 
 void CORE_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
                 PLASMA_enum transA, PLASMA_enum diag,
@@ -172,6 +178,11 @@ void CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
                        PLASMA_Complex64_t *WORK, int ldwork);
 
 /******************************************************************************/
+void CORE_OMP_zgeadd(
+    PLASMA_enum transA, int m, int n,
+    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+    PLASMA_Complex64_t beta,        PLASMA_Complex64_t *B, int ldb);
+
 void CORE_OMP_zgelqt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A, int lda,
                      PLASMA_Complex64_t *T, int ldt);
@@ -243,19 +254,17 @@ void CORE_OMP_zsyrk(
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
     PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc);
 
+void CORE_OMP_ztradd(
+    PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
+    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
+    PLASMA_Complex64_t beta,        PLASMA_Complex64_t *B, int ldb);
+
 void CORE_OMP_ztrmm(
     PLASMA_enum side, PLASMA_enum uplo,
     PLASMA_enum transA, PLASMA_enum diag,
     int m, int n,
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                                     PLASMA_Complex64_t *B, int ldb);
-
-void CORE_OMP_ztrmm_p2(
-    PLASMA_enum side, PLASMA_enum uplo,
-    PLASMA_enum transA, PLASMA_enum diag,
-    int m, int n,
-    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t  *A, int lda,
-                                    PLASMA_Complex64_t **B, int ldb);
 
 void CORE_OMP_ztrsm(
     PLASMA_enum side, PLASMA_enum uplo,

@@ -11,6 +11,7 @@
  **/
 
 #include "core_blas.h"
+#include "plasma_internal.h"
 #include "plasma_types.h"
 
 #ifdef PLASMA_WITH_MKL
@@ -89,39 +90,39 @@ void CORE_zgeadd(PLASMA_enum transA, int m, int n,
         (transA != PlasmaConjTrans)) {
 
         plasma_error("illegal value of transA");
-        return -1;
+        return;
     }
 
     if (m < 0) {
         plasma_error("Illegal value of m");
-        return -2;
+        return;
     }
 
     if (n < 0) {
         plasma_error("Illegal value of n");
-        return -3;
+        return;
     }
 
     if (A == NULL) {
         plasma_error("NULL A");
-        return -5;
+        return;
     }
 
-    if ( ((transA == PlasmaNoTrans) && (lda < max(1,m)) && (m > 0)) ||
-         ((transA != PlasmaNoTrans) && (lda < max(1,n)) && (n > 0)) ) {
+    if ( ((transA == PlasmaNoTrans) && (lda < imax(1,m)) && (m > 0)) ||
+         ((transA != PlasmaNoTrans) && (lda < imax(1,n)) && (n > 0)) ) {
 
-        plasma_error(6, "Illegal value of lda");
-        return -6;
+        plasma_error("Illegal value of lda");
+        return;
     }
 
     if (B == NULL) {
         plasma_error("NULL B");
-        return -8;
+        return;
     }
 
-    if ( (ldb < max(1,m)) && (m > 0) ) {
+    if ( (ldb < imax(1,m)) && (m > 0) ) {
         plasma_error("Illegal value of ldb");
-        return -9;
+        return;
     }
 
     switch( transA ) {
@@ -157,7 +158,7 @@ void CORE_zgeadd(PLASMA_enum transA, int m, int n,
 
 /******************************************************************************/
 void CORE_OMP_zgeadd(
-    PLASMA_enum transA, int m, int n, int nb,
+    PLASMA_enum transA, int m, int n,
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
     PLASMA_Complex64_t beta,        PLASMA_Complex64_t *B, int ldb)
 {

@@ -81,6 +81,11 @@ void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
                    PLASMA_Complex64_t beta,  PLASMA_desc C,
                    PLASMA_sequence *sequence, PLASMA_request *request);
 
+void plasma_pztradd(PLASMA_enum uplo, PLASMA_enum transA,
+                    PLASMA_Complex64_t alpha,  PLASMA_desc A,
+                    PLASMA_Complex64_t beta,   PLASMA_desc B,
+                    PLASMA_sequence *sequence, PLASMA_request *request);
+
 void plasma_pztrmm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_enum trans, PLASMA_enum diag,
                    PLASMA_Complex64_t alpha, PLASMA_desc A, PLASMA_desc B,

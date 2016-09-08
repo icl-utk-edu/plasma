@@ -92,10 +92,10 @@
  *
  ******************************************************************************/
 int PLASMA_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
-                        PLASMA_Complex64_t  alpha,
-                  const PLASMA_Complex64_t *A, int lda,
-                        PLASMA_Complex64_t  beta,
-                        PLASMA_Complex64_t *B, int ldb)
+                  PLASMA_Complex64_t  alpha,
+                  PLASMA_Complex64_t *A, int lda,
+                  PLASMA_Complex64_t  beta,
+                  PLASMA_Complex64_t *B, int ldb)
 {
     int Am, An;
     int Bm, Bn;
