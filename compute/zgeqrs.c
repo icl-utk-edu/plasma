@@ -209,15 +209,15 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
  *
  *******************************************************************************
  *
- * @param[in] descA
+ * @param[in] A
  *          Descriptor of matrix A.
  *          A is stored in the tile layout.
  *
- * @param[in] descT
+ * @param[in] T
  *          Descriptor of matrix T.
  *          Auxiliary factorization data, computed by PLASMA_zgeqrf.
  *
- * @param[in,out] descB
+ * @param[in,out] B
  *          Descriptor of matrix B.
  *          On entry, right-hand side matrix B in the tile layout.
  *          On exit, solution matrix X in the tile layout.
@@ -251,8 +251,8 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
  * @sa PLASMA_zgels_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
-                              PLASMA_desc *descB,
+void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *A, PLASMA_desc *T,
+                              PLASMA_desc *B,
                               PLASMA_workspace *work,
                               PLASMA_sequence *sequence,
                               PLASMA_request *request)
@@ -266,17 +266,17 @@ void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
     }
 
     // Check input arguments.
-    if (plasma_desc_check(descA) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(A) != PLASMA_SUCCESS) {
         plasma_error("invalid descriptor A");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (plasma_desc_check(descT) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(T) != PLASMA_SUCCESS) {
         plasma_error("invalid descriptor T");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (plasma_desc_check(descB) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(B) != PLASMA_SUCCESS) {
         plasma_error("invalid descriptor B");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -300,7 +300,7 @@ void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
 
     // Quick return
     // (m == 0 || n == 0 || nrhs == 0)
-    if (descA->m == 0 || descA->n == 0 || descB->n == 0)
+    if (A->m == 0 || A->n == 0 || B->n == 0)
         return;
 
     // Find Y = Q^H * B
@@ -308,14 +308,14 @@ void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
     // automatic datatype conversion, which is what we want here.
     // Note that PlasmaConjTrans is protected from this conversion.
     plasma_pzunmqr(PlasmaLeft, Plasma_ConjTrans,
-                   *descA, *descB, *descT,
+                   *A, *B, *T,
                    work, sequence, request);
 
     // Solve R * X = Y
     PLASMA_Complex64_t zone  =  1.0;
     plasma_pztrsm(PlasmaLeft, PlasmaUpper,
                   PlasmaNoTrans, PlasmaNonUnit,
-                  zone, plasma_desc_submatrix(*descA, 0, 0, descA->n, descA->n),
-                  plasma_desc_submatrix(*descB, 0, 0, descA->n, descB->n),
+                  zone, plasma_desc_submatrix(*A, 0, 0, A->n, A->n),
+                  plasma_desc_submatrix(*B, 0, 0, A->n, B->n),
                   sequence, request);
 }

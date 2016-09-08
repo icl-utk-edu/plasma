@@ -21,7 +21,7 @@
  *  Initializes the matrix A to beta on the diagonal and alpha on the
  *  offdiagonals. Applies alpha correctly for any shape of the submatrix
  *  described by A, but applies beta correctly on for submatrices aligned
- *  with the diagonal of the main matrix (descA.i = descA.j).
+ *  with the diagonal of the main matrix (A.i = A.j).
  **/
 void plasma_pzlaset(PLASMA_enum uplo,
                     PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,

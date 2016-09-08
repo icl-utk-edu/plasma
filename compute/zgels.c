@@ -242,20 +242,20 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
  *          - PlasmaNoTrans:  the linear system involves A
  *                            (the only supported option for now).
  *
- * @param[in,out] descA
+ * @param[in,out] A
  *          Descriptor of matrix A stored in the tile layout.
  *          On exit,
- *          if m >= n, descA is overwritten by details of its QR factorization
+ *          if m >= n, A is overwritten by details of its QR factorization
  *                     as returned by PLASMA_zgeqrf;
- *          if m < n,  descA is overwritten by details of its LQ factorization
+ *          if m < n,  A is overwritten by details of its LQ factorization
  *                     as returned by PLASMA_zgelqf.
  *
- * @param[out] descT
+ * @param[out] T
  *          Descriptor of matrix T.
  *          Auxiliary factorization data, computed by
  *          PLASMA_zgeqrf or PLASMA_zgelqf.
  *
- * @param[in,out] descB
+ * @param[in,out] B
  *          Descriptor of matrix B.
  *          On entry, right-hand side matrix B in the tile layout.
  *          On exit, solution matrix X in the tile layout.
@@ -288,8 +288,8 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
  * @sa PLASMA_sgels_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *descA,
-                             PLASMA_desc *descT, PLASMA_desc *descB,
+void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *A,
+                             PLASMA_desc *T, PLASMA_desc *B,
                              PLASMA_workspace *work,
                              PLASMA_sequence *sequence,
                              PLASMA_request *request)
@@ -308,17 +308,17 @@ void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *descA,
         plasma_request_fail(sequence, request, PLASMA_ERR_NOT_SUPPORTED);
         return;
     }
-    if (plasma_desc_check(descA) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(A) != PLASMA_SUCCESS) {
         plasma_error("invalid descriptor A");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (plasma_desc_check(descT) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(T) != PLASMA_SUCCESS) {
         plasma_error("invalid descriptor T");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (plasma_desc_check(descB) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(B) != PLASMA_SUCCESS) {
         plasma_error("invalid descriptor B");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -342,47 +342,47 @@ void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *descA,
 
     // Quick return
     // (imin(m, imin(n, nrhs)) == 0)
-    if (imin(descA->m, imin(descA->n, descB->n)) == 0) {
+    if (imin(A->m, imin(A->n, B->n)) == 0) {
         // zero matrix B
-        plasma_pzlaset(PlasmaFull, 0., 0., *descB, sequence, request);
+        plasma_pzlaset(PlasmaFull, 0., 0., *B, sequence, request);
         return;
     }
 
-    if (descA->m >= descA->n) {
+    if (A->m >= A->n) {
         // solution based on QR factorization of A
-        plasma_pzgeqrf(*descA, *descT, work, sequence, request);
+        plasma_pzgeqrf(*A, *T, work, sequence, request);
 
         // Plasma_ConjTrans will be converted to PlasmaTrans by the
         // automatic datatype conversion, which is what we want here.
         // Note that PlasmaConjTrans is protected from this conversion.
         plasma_pzunmqr(PlasmaLeft, Plasma_ConjTrans,
-                       *descA, *descB, *descT,
+                       *A, *B, *T,
                        work, sequence, request);
 
         plasma_pztrsm(PlasmaLeft, PlasmaUpper,
                       PlasmaNoTrans, PlasmaNonUnit,
                       1.0,
-                      plasma_desc_submatrix(*descA, 0, 0, descA->n, descA->n),
-                      plasma_desc_submatrix(*descB, 0, 0, descA->n, descB->n),
+                      plasma_desc_submatrix(*A, 0, 0, A->n, A->n),
+                      plasma_desc_submatrix(*B, 0, 0, A->n, B->n),
                       sequence, request);
     }
     else {
         // solution based on LQ factorization of A
-        plasma_pzgelqf(*descA, *descT, work, sequence, request);
+        plasma_pzgelqf(*A, *T, work, sequence, request);
 
         // zero the trailing block of the right-hand side matrix
         // (B has less rows than X)
         plasma_pzlaset(PlasmaFull, 0., 0.,
-                       plasma_desc_submatrix(*descB, descA->m, 0,
-                                             descA->n - descA->m, descB->n),
+                       plasma_desc_submatrix(*B, A->m, 0,
+                                             A->n - A->m, B->n),
                        sequence, request);
 
         // Solve L * Y = B
         PLASMA_Complex64_t zone  =  1.0;
         plasma_pztrsm(
             PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaNonUnit,
-            zone, plasma_desc_submatrix(*descA, 0, 0, descA->m, descA->m),
-            plasma_desc_submatrix(*descB, 0, 0, descA->m, descB->n),
+            zone, plasma_desc_submatrix(*A, 0, 0, A->m, A->m),
+            plasma_desc_submatrix(*B, 0, 0, A->m, B->n),
             sequence, request);
 
         // Find X = Q^H * Y
@@ -390,7 +390,7 @@ void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *descA,
         // automatic datatype conversion, which is what we want here.
         // Note that PlasmaConjTrans is protected from this conversion.
         plasma_pzunmlq(PlasmaLeft, Plasma_ConjTrans,
-                       *descA, *descB, *descT,
+                       *A, *B, *T,
                        work, sequence, request);
     }
 }

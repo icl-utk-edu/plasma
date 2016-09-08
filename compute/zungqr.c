@@ -199,15 +199,15 @@ int PLASMA_zungqr(int m, int n, int k,
  *
  *******************************************************************************
  *
- * @param[in] descA
+ * @param[in] A
  *          Descriptor of matrix A.
  *          A is stored in the tile layout.
  *
- * @param[in] descT
+ * @param[in] T
  *          Descriptor of matrix T.
  *          Auxiliary factorization data, computed by PLASMA_zgeqrf.
  *
- * @param[out] descQ
+ * @param[out] Q
  *          Descriptor of matrix Q. On exit, matrix Q stored in the tile layout.
  *
  * @param[in] work
@@ -238,8 +238,8 @@ int PLASMA_zungqr(int m, int n, int k,
  * @sa PLASMA_zgeqrf_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zungqr_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
-                              PLASMA_desc *descQ,
+void PLASMA_zungqr_Tile_Async(PLASMA_desc *A, PLASMA_desc *T,
+                              PLASMA_desc *Q,
                               PLASMA_workspace *work,
                               PLASMA_sequence *sequence,
                               PLASMA_request *request)
@@ -253,17 +253,17 @@ void PLASMA_zungqr_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
     }
 
     // Check input arguments
-    if (plasma_desc_check(descA) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(A) != PLASMA_SUCCESS) {
         plasma_error("invalid descriptor A");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (plasma_desc_check(descT) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(T) != PLASMA_SUCCESS) {
         plasma_error("invalid descriptor T");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (plasma_desc_check(descQ) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(Q) != PLASMA_SUCCESS) {
         plasma_error("invalid descriptor Q");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -280,14 +280,14 @@ void PLASMA_zungqr_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
     }
 
     // Quick return
-    if (descQ->n <= 0)
+    if (Q->n <= 0)
         return;
 
     // set ones to diagonal of Q
     plasma_pzlaset(PlasmaFull,
-                   (PLASMA_Complex64_t)0.0, (PLASMA_Complex64_t)1.0, *descQ,
+                   (PLASMA_Complex64_t)0.0, (PLASMA_Complex64_t)1.0, *Q,
                    sequence, request);
 
     // construct Q
-    plasma_pzungqr(*descA, *descQ, *descT, work, sequence, request);
+    plasma_pzungqr(*A, *Q, *T, work, sequence, request);
 }

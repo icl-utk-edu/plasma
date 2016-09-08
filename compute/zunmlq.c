@@ -253,16 +253,16 @@ int PLASMA_zunmlq(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
  *          - PlasmaNoTrans:    apply Q;
  *          - Plasma_ConjTrans: apply Q^H.
  *
- * @param[in] descA
+ * @param[in] A
  *          Descriptor of matrix A stored in the tile layout.
  *          Details of the QR factorization of the original matrix A as returned
  *          by PLASMA_zgeqrf.
  *
- * @param[in] descT
+ * @param[in] T
  *          Descriptor of matrix T.
  *          Auxiliary factorization data, computed by PLASMA_zgeqrf.
  *
- * @param[in,out] descC
+ * @param[in,out] C
  *          Descriptor of matrix C.
  *          On entry, the m-by-n matrix C.
  *          On exit, C is overwritten by Q*C, Q^H*C, C*Q, or C*Q^H.
@@ -296,8 +296,8 @@ int PLASMA_zunmlq(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
  *
  ******************************************************************************/
 void PLASMA_zunmlq_Tile_Async(PLASMA_enum side, PLASMA_enum trans,
-                              PLASMA_desc *descA, PLASMA_desc *descT,
-                              PLASMA_desc *descC,
+                              PLASMA_desc *A, PLASMA_desc *T,
+                              PLASMA_desc *C,
                               PLASMA_workspace *work,
                               PLASMA_sequence *sequence,
                               PLASMA_request *request)
@@ -322,17 +322,17 @@ void PLASMA_zunmlq_Tile_Async(PLASMA_enum side, PLASMA_enum trans,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (plasma_desc_check(descA) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(A) != PLASMA_SUCCESS) {
         plasma_error("invalid descriptor A");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (plasma_desc_check(descT) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(T) != PLASMA_SUCCESS) {
         plasma_error("invalid descriptor T");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (plasma_desc_check(descC) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(C) != PLASMA_SUCCESS) {
         plasma_error("invalid descriptor C");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -347,7 +347,7 @@ void PLASMA_zunmlq_Tile_Async(PLASMA_enum side, PLASMA_enum trans,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (descA->nb != descA->mb || descC->nb != descC->mb) {
+    if (A->nb != A->mb || C->nb != C->mb) {
         plasma_error("only square tiles supported");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -361,10 +361,10 @@ void PLASMA_zunmlq_Tile_Async(PLASMA_enum side, PLASMA_enum trans,
 
     // Quick return
     // (m == 0 || n == 0 || k == 0)
-    if (descC->m == 0 || descC->n == 0 || imin(descA->m, descA->n) == 0)
+    if (C->m == 0 || C->n == 0 || imin(A->m, A->n) == 0)
         return;
 
     plasma_pzunmlq(side, trans,
-                   *descA, *descC, *descT,
+                   *A, *C, *T,
                    work, sequence, request);
 }

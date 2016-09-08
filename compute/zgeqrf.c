@@ -180,12 +180,12 @@ int PLASMA_zgeqrf(int m, int n,
  *
  *******************************************************************************
  *
- * @param[in,out] descA
+ * @param[in,out] A
  *          Descriptor of matrix A.
  *          A is stored in the tile layout.
  *
- * @param[out] descT
- *          Descriptor of matrix descT.
+ * @param[out] T
+ *          Descriptor of matrix T.
  *          On exit, auxiliary factorization data, required by PLASMA_zgeqrs to
  *          solve the system of equations.
  *
@@ -219,7 +219,7 @@ int PLASMA_zgeqrf(int m, int n,
  * @sa PLASMA_zgels_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
+void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *A, PLASMA_desc *T,
                               PLASMA_workspace *work,
                               PLASMA_sequence *sequence,
                               PLASMA_request *request)
@@ -233,12 +233,12 @@ void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
     }
 
     // Check input arguments.
-    if (plasma_desc_check(descA) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(A) != PLASMA_SUCCESS) {
         plasma_error("invalid A");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (plasma_desc_check(descT) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(T) != PLASMA_SUCCESS) {
         plasma_error("invalid T");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -260,9 +260,9 @@ void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
     }
 
     // Quick return
-    if (imin(descA->m, descA->n) == 0)
+    if (imin(A->m, A->n) == 0)
         return;
 
     // Call the parallel function.
-    plasma_pzgeqrf(*descA, *descT, work, sequence, request);
+    plasma_pzgeqrf(*A, *T, work, sequence, request);
 }
