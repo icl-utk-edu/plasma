@@ -164,7 +164,7 @@ void test_zgeqrs(param_value_t param[], char *info)
     plasma_time_t time = stop-start;
 
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = flops_zgeqrs(m,n,nrhs) / time / 1e9;
+    param[PARAM_GFLOPS].d = flops_zgeqrs(m, n, nrhs) / time / 1e9;
 
     //================================================================
     // Test results by solving a linear system.

@@ -167,8 +167,8 @@ void test_zgelqs(param_value_t param[], char *info)
 
     param[PARAM_TIME].d = time;
     param[PARAM_GFLOPS].d =
-        (flops_ztrsm(PlasmaLeft,m,nrhs) + flops_zunmlq(PlasmaLeft,n,nrhs,m)) /
-        time / 1e9;
+        (flops_ztrsm(PlasmaLeft, m, nrhs) +
+         flops_zunmlq(PlasmaLeft, n, nrhs, m)) / time / 1e9;
 
     //================================================================
     // Test results by solving a linear system.

@@ -136,7 +136,7 @@ void test_zgelqf(param_value_t param[], char *info)
     plasma_time_t time = stop-start;
 
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = flops_zgelqf(m,n) / time / 1e9;
+    param[PARAM_GFLOPS].d = flops_zgelqf(m, n) / time / 1e9;
 
     //=================================================================
     // Test results by checking orthogonality of Q and precision of L*Q

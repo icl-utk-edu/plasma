@@ -112,7 +112,7 @@ void test_zpbtrf(param_value_t param[], char *info)
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
     // make it SPD
-    int i,j;
+    int i, j;
     for (i = 0; i < n; ++i) {
         A(i,i) = creal(A(i,i)) + n;
         for (j = 0; j < i; ++j) {
@@ -152,7 +152,7 @@ void test_zpbtrf(param_value_t param[], char *info)
 
     plasma_time_t start = omp_get_wtime();
     iinfo = PLASMA_zpbtrf(uplo, n, kd, AB, ldab);
-    if (iinfo != 0) printf( " zpbtrf failed with info=%d\n",iinfo );
+    if (iinfo != 0) printf( " zpbtrf failed with info=%d\n", iinfo );
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
@@ -182,11 +182,11 @@ void test_zpbtrf(param_value_t param[], char *info)
         PLASMA_Complex64_t *X = NULL;
         X = (PLASMA_Complex64_t*)malloc((size_t)ldx*nrhs*sizeof(PLASMA_Complex64_t));
         assert(X != NULL);
-        LAPACKE_zlacpy_work(LAPACK_COL_MAJOR,'F', n, nrhs, B, ldb, X, ldx);
+        LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'F', n, nrhs, B, ldb, X, ldx);
 
         // solve for X
         iinfo = PLASMA_zpbtrs(uplo, n, kd, nrhs, AB, ldab, X, ldb);
-        if (iinfo != 0) printf( " zpbtrs failed with info = %d\n",iinfo );
+        if (iinfo != 0) printf( " zpbtrs failed with info = %d\n", iinfo );
 
         // compute residual vector
         cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, nrhs, n,

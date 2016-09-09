@@ -164,13 +164,13 @@ void test_zgels(param_value_t param[], char *info)
     double flop;
     if (m >= n) {
         // cost of QR-based factorization and solve
-        flop = flops_zgeqrf(m,n) + flops_zgeqrs(m,n,nrhs);
+        flop = flops_zgeqrf(m, n) + flops_zgeqrs(m, n, nrhs);
     }
     else {
         // cost of LQ-based factorization, triangular solve, and Q^H application
-        flop = flops_zgelqf(m,n) +
-               flops_ztrsm(PlasmaLeft,m,nrhs) +
-               flops_zunmlq(PlasmaLeft,n,nrhs,m);
+        flop = flops_zgelqf(m, n) +
+               flops_ztrsm(PlasmaLeft, m, nrhs) +
+               flops_zunmlq(PlasmaLeft, n, nrhs, m);
     }
     param[PARAM_GFLOPS].d = flop / time / 1e9;
 

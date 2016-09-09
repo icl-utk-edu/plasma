@@ -113,7 +113,7 @@ void test_zpbsv(param_value_t param[], char *info)
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
     // make it SPD
-    int i,j;
+    int i, j;
     for (i = 0; i < n; ++i) {
         A(i,i) = creal(A(i,i)) + n;
         for (j = 0; j < i; ++j) {
@@ -161,7 +161,7 @@ void test_zpbsv(param_value_t param[], char *info)
     if (test) {
         B = (PLASMA_Complex64_t*)malloc((size_t)ldb*nrhs*sizeof(PLASMA_Complex64_t));
         assert(B != NULL);
-        LAPACKE_zlacpy_work(LAPACK_COL_MAJOR,'F', n, nrhs, X, ldx, B, ldb);
+        LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'F', n, nrhs, X, ldx, B, ldb);
     }
 
     //================================================================
@@ -171,7 +171,7 @@ void test_zpbsv(param_value_t param[], char *info)
 
     plasma_time_t start = omp_get_wtime();
     iinfo = PLASMA_zpbsv(uplo, n, kd, nrhs, AB, ldab, X, ldx);
-    if (iinfo != 0) printf( " zpbsv failed with info=%d\n",iinfo );
+    if (iinfo != 0) printf( " zpbsv failed with info=%d\n", iinfo );
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
