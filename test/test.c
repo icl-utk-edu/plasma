@@ -326,6 +326,15 @@ void run_routine(const char *name, param_value_t pval[], char *info)
     else if (strcmp(name, "ssyr2k") == 0)
         test_ssyr2k(pval, info);
 
+    else if (strcmp(name, "ztradd") == 0)
+        test_ztradd(pval, info);
+    else if (strcmp(name, "dtradd") == 0)
+        test_dtradd(pval, info);
+    else if (strcmp(name, "ctradd") == 0)
+        test_ctradd(pval, info);
+    else if (strcmp(name, "stradd") == 0)
+        test_stradd(pval, info);
+
     else if (strcmp(name, "ztrsm") == 0)
         test_ztrsm(pval, info);
     else if (strcmp(name, "dtrsm") == 0)
@@ -343,11 +352,6 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_ctrmm(pval, info);
     else if (strcmp(name, "strmm") == 0)
         test_strmm(pval, info);
-
-    else if (strcmp(name, "zcposv") == 0)
-        test_zcposv(pval, info);
-//    else if (strcmp(name, "dsposv") == 0)
-//        test_dsposv(pval, info);
 
     else {
         printf("unknown routine: %s\n", name);

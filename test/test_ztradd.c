@@ -34,9 +34,12 @@
 #define COMPLEX
 
 // Declarations of local functions
-int vec_cpy(int n, PLASMA_Complex64_t a[], PLASMA_Complex64_t b[]);
-int mtrx_cpy(int m, int n, PLASMA_Complex64_t A[], PLASMA_Complex64_t B[]);
-int mtrx_tran(bool conjFlag, int m, int n, PLASMA_Complex64_t A[]);
+static int save_vec(int n, PLASMA_Complex64_t a[], FILE *f);
+static int save_mtrx(int m, int n, PLASMA_Complex64_t A[], FILE *f);
+static int ext_tria_mtrx(int m, int n, char uplo, PLASMA_Complex64_t A[]);
+static int vec_cpy(int n, PLASMA_Complex64_t a[], PLASMA_Complex64_t b[]);
+static int mtrx_cpy(int m, int n, PLASMA_Complex64_t A[], PLASMA_Complex64_t B[]);
+static int mtrx_tran(bool conjFlag, int m, int n, PLASMA_Complex64_t A[]);
 
 /***************************************************************************//**
  *
@@ -165,6 +168,23 @@ void test_ztradd(param_value_t param[], char *info)
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*Bn, B);
     assert(retval == 0);
 
+    //================================================================
+    // @test Save random matrix A
+    //================================================================
+    FILE *f;
+    f = fopen("A0.mtrx", "w");
+    save_mtrx(Am, An, A, f);
+    fclose(f);
+
+    //================================================================
+    // @test Save random matrix B
+    //================================================================
+    f = fopen("B0.mtrx", "w");
+    save_mtrx(Bm, Bn, B, f);
+    fclose(f);
+
+    //================================================================
+
     PLASMA_Complex64_t *Bref = NULL;
     if (test) {
         Bref = (PLASMA_Complex64_t*)malloc(
@@ -194,28 +214,71 @@ void test_ztradd(param_value_t param[], char *info)
     plasma_time_t time = stop-start;
 
     param[PARAM_TIME].d   = time;
-    // @todo Create correct formula for TRADD FLOP/s calculation
-    // param[PARAM_GFLOPS].d = flops_ztradd(m, n) / time / 1e9;
-    param[PARAM_GFLOPS].d = 0.0;
+    param[PARAM_GFLOPS].d = flops_ztradd(m, n) / time / 1e9;
+
+    //================================================================
+    // @test Save result matrix B
+    //================================================================
+    f = fopen("B.mtrx", "w");
+    save_mtrx(Bm, Bn, B, f);
+    fclose(f);
 
     //================================================================
     // Test results by comparing to a matrix addition in a for loop
     //================================================================
     if (test) {
-        // |R - R_ref|_p < gamma_{k+2} * |alpha| * |A|_p * |B|_p +
-        //                 gamma_2 * |beta| * |C|_p
-        // holds component-wise or with |.|_p as 1, inf, or Frobenius norm.
-        // gamma_k = k*eps / (1 - k*eps), but we use
-        // gamma_k = sqrt(k)*eps as a statistical average case.
-        // Using 3*eps covers complex arithmetic.
-        // See Higham, Accuracy and Stability of Numerical Algorithms, ch 2-3.
+        // Calculate relative error |B_ref - B|_F / |B_ref|_F < 3*eps
+        // Using 3*eps covers complex arithmetic
+
+        //================================================================
+        // @test Save random matrix A
+        //================================================================
+        f = fopen("A.mtrx", "w");
+        save_mtrx(An, Am, A, f);
+        fclose(f);
+
+        // Make matrix A upper or lower triangular
+        if (uplo == PlasmaUpper) {
+            ext_tria_mtrx(Am, An, 'u', A);
+
+            //================================================================
+            // @test Save upper triangular matrix A
+            //================================================================
+            f = fopen("Au.mtrx", "w");
+            save_mtrx(An, Am, A, f);
+            fclose(f);
+        }
+        else if (uplo == PlasmaLower) {
+            ext_tria_mtrx(Am, An, 'l', A);
+
+            //================================================================
+            // @test Save lower triangular matrix A
+            //================================================================
+            f = fopen("Al.mtrx", "w");
+            save_mtrx(An, Am, A, f);
+            fclose(f);
+        }
 
         // Transpose matrix A
         if (transA == PlasmaTrans) {
             mtrx_tran(false, Am, An, A);
+
+            //================================================================
+            // @test Save transposed matrix A
+            //================================================================
+            f = fopen("At.mtrx", "w");
+            save_mtrx(An, Am, A, f);
+            fclose(f);
         }
         else if (transA == PlasmaConjTrans) {
             mtrx_tran(true, Am, An, A);
+
+            //================================================================
+            // @test Save conjugate transposed matrix A
+            //================================================================
+            f = fopen("Ac.mtrx", "w");
+            save_mtrx(An, Am, A, f);
+            fclose(f);
         }
 
         for (int i = 0; i < Bm; i++) {
@@ -226,22 +289,39 @@ void test_ztradd(param_value_t param[], char *info)
             }
         }
 
-        PLASMA_Complex64_t zmone = -1.0;
-        cblas_zaxpy((size_t)ldb*Bn, CBLAS_SADDR(zmone), Bref, 1, B, 1);
+        //================================================================
+        // @test Save result matrix Bref
+        //================================================================
+        f = fopen("Bref.mtrx", "w");
+        save_mtrx(Bm, Bn, Bref, f);
+        fclose(f);
 
         double work[1];
-        double Anorm = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', Am, An, A,    lda, work);
-        double Bnorm = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', Bm, Bn, B,    ldb, work);
-        double Cnorm = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', Cm, Cn, Cref, ldc, work);
-        double error = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', Cm, Cn, C,    ldc, work);
-        double normalize = sqrt((double)k+2) * cabs(alpha) * Anorm * Bnorm
-                         + 2 * cabs(beta) * Cnorm;
-        if (normalize != 0)
-            error /= normalize;
+
+        // Calculate Frobenius norm of reference result B_ref
+        double BnormRef  = LAPACKE_zlange_work(
+                               LAPACK_COL_MAJOR, 'F', Bm, Bn, Bref, ldb, work);
+
+        // Calculate difference B_ref-B
+        PLASMA_Complex64_t zmone = -1.0;
+        cblas_zaxpy((size_t)ldb*Bn, CBLAS_SADDR(zmone), B, 1, Bref, 1);
+
+        //================================================================
+        // @test Save difference matrix B_ref-B
+        //================================================================
+        f = fopen("D.mtrx", "w");
+        save_mtrx(Bm, Bn, Bref, f);
+        fclose(f);
+
+        // Calculate Frobenius norm of B_ref-B
+        double BnormDiff = LAPACKE_zlange_work(
+                               LAPACK_COL_MAJOR, 'F', Bm, Bn, Bref, ldb, work);
+
+        // Calculate relative error |B_ref-B|_F / |B_ref|_F
+        double error = BnormDiff/BnormRef;
+    
+        printf("|B_ref-B|_F: %g\t|B_ref|_F: %g\terror: %g\n",
+            BnormDiff, BnormRef, error);
 
         param[PARAM_ERROR].d   = error;
         param[PARAM_SUCCESS].i = error < 3*eps;
@@ -252,13 +332,72 @@ void test_ztradd(param_value_t param[], char *info)
     //================================================================
     free(A);
     free(B);
-    free(C);
+
     if (test)
-        free(Cref);
+        free(Bref);
+}
+
+// Saves contents of vector to given file
+static int save_vec(int n, PLASMA_Complex64_t a[], FILE *f) {
+
+  int i;
+
+  for (i = 0; i < n; i++) {
+
+    // fprintf(f, "%g\t", a[i]);
+    fprintf(f, "%.3f%+.3fi\t", creal(a[i]), cimag(a[i]));
+
+  }
+
+  fprintf(f, "\n");
+
+  return 0;
+
+}
+
+// Saves contents of matrix to given file
+static int save_mtrx(int m, int n, PLASMA_Complex64_t A[], FILE *f) {
+
+  int i;
+
+  for (i = 0; i < m*n; i = i+n) {
+
+    save_vec(n, &A[i], f);
+
+  }
+
+  return 0;
+
+}
+
+// Extracts triagonal matrix: upper or lower from given matrix A
+static int ext_tria_mtrx(int m, int n, char uplo, PLASMA_Complex64_t A[]) {
+
+    // Erase lower triangualr part, preserve upper triangular part
+    // incl. main diagonal
+    if (uplo == 'u' || uplo == 'U') {
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < i; j++) {
+                A[i*n+j] = 0.0;
+            }
+        }
+    }
+    // Erase upper triangualr part, preserve lower triangular part
+    // incl. main diagonal
+    else if (uplo == 'l' || uplo == 'L') {
+
+        for (int i = 0; i < m-1; i++) {
+            for (int j = i+1; j < n; j++) {
+                A[i*n+j] = 0.0;
+            }
+        }
+    }
+    return 0;
 }
 
 // Copies one vector into another vector
-int vec_cpy(int n, PLASMA_Complex64_t a[], PLASMA_Complex64_t b[]) {
+static int vec_cpy(int n, PLASMA_Complex64_t a[], PLASMA_Complex64_t b[]) {
 
   int i;
 
@@ -273,7 +412,7 @@ int vec_cpy(int n, PLASMA_Complex64_t a[], PLASMA_Complex64_t b[]) {
 }
 
 // Copies one matrix into another
-int mtrx_cpy(int m, int n, PLASMA_Complex64_t A[], PLASMA_Complex64_t B[]) {
+static int mtrx_cpy(int m, int n, PLASMA_Complex64_t A[], PLASMA_Complex64_t B[]) {
 
   int i;
 
@@ -288,7 +427,7 @@ int mtrx_cpy(int m, int n, PLASMA_Complex64_t A[], PLASMA_Complex64_t B[]) {
 }
 
 // Transposes matrix
-int mtrx_tran(bool conjFlag, int m, int n, PLASMA_Complex64_t A[]) {
+static int mtrx_tran(bool conjFlag, int m, int n, PLASMA_Complex64_t A[]) {
 
   int i, j;
 

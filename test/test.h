@@ -27,7 +27,7 @@ typedef enum {
     PARAM_TRANSA, // transposition of A
     PARAM_TRANSB, // transposition of B
     PARAM_SIDE,   // left of right side application
-    PARAM_UPLO,   // full rectangualr or upper or lower triangular
+    PARAM_UPLO,   // full rectangular or upper or lower triangular
     PARAM_DIAG,   // non-unit or unit diagonal
     PARAM_M,      // M dimension
     PARAM_N,      // N dimension
@@ -40,7 +40,6 @@ typedef enum {
     PARAM_PADA,   // padding of A
     PARAM_PADB,   // padding of B
     PARAM_PADC,   // padding of C
-    PARAM_PADX,   // padding of X
 
     //------------------------------------------------------
     // output parameters

@@ -65,7 +65,6 @@ void test_zcposv(param_value_t param[], char *info)
             print_usage(PARAM_NRHS);
             print_usage(PARAM_PADA);
             print_usage(PARAM_PADB);
-            print_usage(PARAM_PADX);
         }
         else {
             // Return column labels
@@ -75,8 +74,7 @@ void test_zcposv(param_value_t param[], char *info)
                 InfoSpacing, "n",
                 InfoSpacing, "nrhs",
                 InfoSpacing, "PadA",
-                InfoSpacing, "PadB",
-                InfoSpacing, "PadX");
+                InfoSpacing, "PadB");
         }
         return;
     }

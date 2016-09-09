@@ -7,9 +7,11 @@
 #
 # Implements an exhaustive test of PLASMA ZTRMM routine.
 
+source ~/.profile
+
 m=1000
 n=750
-alpha=3.1415
+alpha=2.7182818284
 
 for side in "l" "r"; do
   for uplo in "u" "l"; do
