@@ -11,6 +11,7 @@
  **/
 #include "test.h"
 #include "flops.h"
+#include "core_blas.h"
 #include "core_lapack.h"
 #include "plasma.h"
 
@@ -204,29 +205,60 @@ void test_ztrsm(param_value_t param[], char *info)
     param[PARAM_GFLOPS].d = flops_ztrsm(side, m, n) / time / 1e9;
 
     //================================================================
-    // Test results by comparing to a reference implementation.
+    // Test results by checking the residual
+    // ||alpha*B - A*X|| / (||A||*||X||)
     //================================================================
     if (test) {
-        cblas_ztrsm(
+        PLASMA_Complex64_t zzero =  0.0;
+        PLASMA_Complex64_t zone  =  1.0;
+        PLASMA_Complex64_t zmone = -1.0;
+        double work[1];
+
+        // LAPACKE_[ds]lantr_work has a bug (returns 0)
+        // in MKL <= 11.3.3 (at least). Fixed in LAPACK 3.6.1.
+        // For now, zero out the opposite triangle, set diag, and use lange.
+        // See also test_ztrmm.c
+        if (uplo == PlasmaLower) {
+            LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'U', Am-1, Am-1,
+                                zzero, zzero, &A(0,1), lda);
+        }
+        else {
+            LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'L', Am-1, Am-1,
+                                zzero, zzero, &A(1,0), lda);
+        }
+        if (diag == PlasmaUnit) {
+            for (int i = 0; i < Am; ++i) {
+                A(i,i) = zone;
+            }
+        }
+        double Anorm = LAPACKE_zlange_work(
+                           LAPACK_COL_MAJOR, 'F', Am, Am, A, lda, work);
+        //double Anorm = LAPACKE_zlantr_work(
+        //                   LAPACK_COL_MAJOR, 'F', lapack_const(uplo),
+        //                   lapack_const(diag), Am, Am, A, lda, work);
+        double Xnorm = LAPACKE_zlange_work(
+                           LAPACK_COL_MAJOR, 'F', m, n, B, ldb, work);
+
+        // B = A*X
+        cblas_ztrmm(
             CblasColMajor,
             (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
             (CBLAS_TRANSPOSE)transa, (CBLAS_DIAG)diag,
             m, n,
-            CBLAS_SADDR(alpha), A, lda,
-            Bref, ldb);
+            CBLAS_SADDR(zone), A, lda,
+            B, ldb);
 
-        PLASMA_Complex64_t zmone = -1.0;
+        // B -= alpha*Bref
+        cblas_zscal((size_t)ldb*n, CBLAS_SADDR(alpha), Bref, 1);
         cblas_zaxpy((size_t)ldb*n, CBLAS_SADDR(zmone), Bref, 1, B, 1);
 
-        double work[1];
-        double Bnorm = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', m, n, Bref, ldb, work);
         double error = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', m, n, B,    ldb, work);
-        if (Bnorm != 0)
-            error /= Bnorm;
+                           LAPACK_COL_MAJOR, 'F', m, n, B, ldb, work);
+        if (Anorm * Xnorm != 0)
+            error /= (Anorm * Xnorm);
+
         param[PARAM_ERROR].d = error;
-        param[PARAM_SUCCESS].i = error < tol*n;
+        param[PARAM_SUCCESS].i = error < tol;
     }
 
     //================================================================
