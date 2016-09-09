@@ -138,18 +138,32 @@ void test_ztrsm(param_value_t param[], char *info)
 
     //=================================================================
     // Initialize the matrices.
-    // Factor A into LU to get well-conditioned triangular matrix.
-    // Copy L to U, since L seems okay when used with non-unit diagonal
-    // (i.e., from U), while U fails when used with unit diagonal.
+    // Factor A into LU to get well-conditioned triangular matrices.
+    // Use L for unit triangle, and U for non-unit triangle,
+    // transposing as necessary.
+    // (There is some danger, as L^T or U^T may be much worse conditioned
+    // than L or U, but in practice it seems okay.
+    // See Higham, Accuracy and Stability of Numerical Algorithms, ch 8.)
     //=================================================================
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*lda, A);
     assert(retval == 0);
 
     LAPACKE_zgetrf(CblasColMajor, Am, Am, A, lda, ipiv);
 
-    for (int j = 0; j < Am; j++) {
-        for (int i = 0; i < j; i++) {
-            A(i,j) = A(j,i);
+    if (diag == PlasmaUnit && uplo == PlasmaUpper) {
+        // U = L^T
+        for (int j = 0; j < Am; j++) {
+            for (int i = 0; i < j; i++) {
+                A(i,j) = A(j,i);
+            }
+        }
+    }
+    else if (diag == PlasmaNonUnit && uplo == PlasmaLower) {
+        // L = U^T
+        for (int j = 0; j < Am; j++) {
+            for (int i = 0; i < j; i++) {
+                A(j,i) = A(i,j);
+            }
         }
     }
 
