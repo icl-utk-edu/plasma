@@ -9,9 +9,9 @@
  * @precisions normal z -> s d c
  *
  **/
-#include "core_blas.h"
 #include "test.h"
 #include "flops.h"
+#include "core_blas.h"
 #include "core_lapack.h"
 #include "plasma.h"
 
@@ -78,12 +78,7 @@ void test_zpotrf(param_value_t param[], char *info)
 
     int n = param[PARAM_N].i;
 
-    int Am, An;
-
-    Am = n;
-    An = n;
-
-    int lda = imax(1, Am + param[PARAM_PADA].i);
+    int lda = imax(1, n + param[PARAM_PADA].i);
 
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
@@ -97,12 +92,12 @@ void test_zpotrf(param_value_t param[], char *info)
     // Allocate and initialize arrays.
     //================================================================
     PLASMA_Complex64_t *A =
-        (PLASMA_Complex64_t*)malloc((size_t)lda*An*sizeof(PLASMA_Complex64_t));
+        (PLASMA_Complex64_t*)malloc((size_t)lda*n*sizeof(PLASMA_Complex64_t));
     assert(A != NULL);
 
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
-    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*An, A);
+    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
 
     //================================================================
@@ -121,10 +116,10 @@ void test_zpotrf(param_value_t param[], char *info)
     PLASMA_Complex64_t *Aref = NULL;
     if (test) {
         Aref = (PLASMA_Complex64_t*)malloc(
-            (size_t)lda*An*sizeof(PLASMA_Complex64_t));
+            (size_t)lda*n*sizeof(PLASMA_Complex64_t));
         assert(Aref != NULL);
 
-        memcpy(Aref, A, (size_t)lda*An*sizeof(PLASMA_Complex64_t));
+        memcpy(Aref, A, (size_t)lda*n*sizeof(PLASMA_Complex64_t));
     }
 
     //================================================================
@@ -148,13 +143,13 @@ void test_zpotrf(param_value_t param[], char *info)
             Aref, lda);
 
         PLASMA_Complex64_t zmone = -1.0;
-        cblas_zaxpy((size_t)lda*An, CBLAS_SADDR(zmone), Aref, 1, A, 1);
+        cblas_zaxpy((size_t)lda*n, CBLAS_SADDR(zmone), Aref, 1, A, 1);
 
         double work[1];
-        double Anorm = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', Am, An, Aref, lda, work);
+        double Anorm = LAPACKE_zlanhe_work(
+            LAPACK_COL_MAJOR, 'F', lapack_const(uplo), n, Aref, lda, work);
         double error = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', Am, An, A,    lda, work);
+            LAPACK_COL_MAJOR, 'F', n, n, A, lda, work);
         if (Anorm != 0)
             error /= Anorm;
 

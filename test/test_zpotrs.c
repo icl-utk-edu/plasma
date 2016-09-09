@@ -11,6 +11,7 @@
  **/
 #include "test.h"
 #include "flops.h"
+#include "core_blas.h"
 #include "core_lapack.h"
 #include "plasma.h"
 
@@ -84,15 +85,8 @@ void test_zpotrs(param_value_t param[], char *info)
     int n = param[PARAM_N].i;
     int nrhs = param[PARAM_NRHS].i;
 
-    int Am, An, Bm, Bn;
-
-    Am = n;
-    An = n;
-    Bm = n;
-    Bn = nrhs;
-
-    int lda = imax(1, Am + param[PARAM_PADA].i);
-    int ldb = imax(1, Bm + param[PARAM_PADB].i);
+    int lda = imax(1, n + param[PARAM_PADA].i);
+    int ldb = imax(1, n + param[PARAM_PADB].i);
 
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
@@ -106,19 +100,19 @@ void test_zpotrs(param_value_t param[], char *info)
     // Allocate and initialize arrays.
     //================================================================
     PLASMA_Complex64_t *A =
-        (PLASMA_Complex64_t*)malloc((size_t)lda*An*sizeof(PLASMA_Complex64_t));
+        (PLASMA_Complex64_t*)malloc((size_t)lda*n*sizeof(PLASMA_Complex64_t));
     assert(A != NULL);
 
     PLASMA_Complex64_t *B =
-        (PLASMA_Complex64_t*)malloc((size_t)ldb*Bn*sizeof(PLASMA_Complex64_t));
+        (PLASMA_Complex64_t*)malloc((size_t)ldb*nrhs*sizeof(PLASMA_Complex64_t));
     assert(B != NULL);
 
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
-    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*An, A);
+    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
 
-    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*Bn, B);
+    retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*nrhs, B);
     assert(retval == 0);
 
     //================================================================
@@ -139,18 +133,15 @@ void test_zpotrs(param_value_t param[], char *info)
     double *work = NULL;
     if (test) {
         Aref = (PLASMA_Complex64_t*)malloc(
-            (size_t)lda*An*sizeof(PLASMA_Complex64_t));
+            (size_t)lda*n*sizeof(PLASMA_Complex64_t));
         assert(Aref != NULL);
 
         Bref = (PLASMA_Complex64_t*)malloc(
-            (size_t)ldb*Bn*sizeof(PLASMA_Complex64_t));
+            (size_t)ldb*nrhs*sizeof(PLASMA_Complex64_t));
         assert(Bref != NULL);
 
-        work = (double*)malloc((size_t)n*sizeof(double));
-        assert(work != NULL);
-
-        memcpy(Aref, A, (size_t)lda*An*sizeof(PLASMA_Complex64_t));
-        memcpy(Bref, B, (size_t)ldb*Bn*sizeof(PLASMA_Complex64_t));
+        memcpy(Aref, A, (size_t)lda*n*sizeof(PLASMA_Complex64_t));
+        memcpy(Bref, B, (size_t)ldb*nrhs*sizeof(PLASMA_Complex64_t));
     }
 
     //================================================================
@@ -169,24 +160,27 @@ void test_zpotrs(param_value_t param[], char *info)
     param[PARAM_GFLOPS].d = flops_zpotrs(n, nrhs) / time / 1e9;
 
     //================================================================
-    // Test results by checking the residual (backward error)
+    // Test results by checking the residual
     //================================================================
     if (test) {
-        PLASMA_Complex64_t zone  =   1.0;
-        PLASMA_Complex64_t zmone =  -1.0;
+        PLASMA_Complex64_t zone  =  1.0;
+        PLASMA_Complex64_t zmone = -1.0;
+        work = (double*)malloc((size_t)n*sizeof(double));
+        assert(work != NULL);
 
-        double Anorm = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'I', Am, An, Aref, lda, work);
+        double Anorm = LAPACKE_zlanhe_work(
+            LAPACK_COL_MAJOR, 'I', lapack_const(uplo), n, Aref, lda, work);
         double Xnorm = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'I', Bm, Bn, B,    ldb, work);
+            LAPACK_COL_MAJOR, 'I', n, nrhs, B, ldb, work);
 
+        // Bref -= Aref*B
         cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, nrhs, n,
-                        CBLAS_SADDR(zmone), Aref, lda,
-                                            B, ldb,
-                        CBLAS_SADDR(zone), Bref, ldb);
+                    CBLAS_SADDR(zmone), Aref, lda,
+                                        B,    ldb,
+                    CBLAS_SADDR(zone),  Bref, ldb);
 
         double Rnorm = LAPACKE_zlange_work(
-                            LAPACK_COL_MAJOR, 'I', n, nrhs, Bref, ldb, work);
+            LAPACK_COL_MAJOR, 'I', n, nrhs, Bref, ldb, work);
         double residual = Rnorm/(n*Anorm*Xnorm);
 
         param[PARAM_ERROR].d = residual;

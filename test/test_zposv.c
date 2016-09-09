@@ -11,6 +11,7 @@
  **/
 #include "test.h"
 #include "flops.h"
+#include "core_blas.h"
 #include "core_lapack.h"
 #include "plasma.h"
 
@@ -110,6 +111,7 @@ void test_zposv(param_value_t param[], char *info)
     lapack_int retval;
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
+
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*nrhs, B);
     assert(retval == 0);
 
@@ -157,25 +159,26 @@ void test_zposv(param_value_t param[], char *info)
     // Test results by checking the residual
     //
     //                      || B - AX ||_I
-    //                --------------------------- < espilon
+    //                --------------------------- < epsilon
     //                 || A ||_I * || X ||_I * N
     //
     //================================================================
     if (test) {
-        PLASMA_Complex64_t zone =   1.0;
+        PLASMA_Complex64_t zone  =  1.0;
         PLASMA_Complex64_t zmone = -1.0;
         work = (double*)malloc((size_t)n*sizeof(double));
         assert(work != NULL);
 
-        double Anorm = LAPACKE_zlange_work(
-            LAPACK_COL_MAJOR, 'I', n, n, Aref, lda, work);
+        double Anorm = LAPACKE_zlanhe_work(
+            LAPACK_COL_MAJOR, 'I', lapack_const(uplo), n, Aref, lda, work);
         double Xnorm = LAPACKE_zlange_work(
             LAPACK_COL_MAJOR, 'I', n, nrhs, B, ldb, work);
 
+        // Bref -= Aref*B
         cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, nrhs, n,
                     CBLAS_SADDR(zmone), Aref, lda,
-                    B, ldb,
-                    CBLAS_SADDR(zone), Bref, ldb);
+                                        B,    ldb,
+                    CBLAS_SADDR(zone),  Bref, ldb);
 
         double Rnorm = LAPACKE_zlange_work(
             LAPACK_COL_MAJOR, 'I', n, nrhs, Bref, ldb, work);
