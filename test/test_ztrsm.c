@@ -24,7 +24,7 @@
 
 #define COMPLEX
 
-#define A(i_, j_)  (A + (i_) + (size_t)lda*(j_))
+#define A(i_, j_) A[(i_) + (size_t)lda*(j_)]
 
 /***************************************************************************//**
  *
@@ -129,6 +129,10 @@ void test_ztrsm(param_value_t param[], char *info)
         (PLASMA_Complex64_t*)malloc((size_t)ldb*n*sizeof(PLASMA_Complex64_t));
     assert(B != NULL);
 
+    int *ipiv;
+    ipiv = (int*)malloc((size_t)Am*sizeof(int));
+    assert(ipiv != NULL);
+
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
 
@@ -141,12 +145,11 @@ void test_ztrsm(param_value_t param[], char *info)
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*lda, A);
     assert(retval == 0);
 
-    int ipiv[lda];
     LAPACKE_zgetrf(CblasColMajor, Am, Am, A, lda, ipiv);
 
     for (int j = 0; j < Am; j++) {
         for (int i = 0; i < j; i++) {
-            *A(i,j) = *A(j,i);
+            A(i,j) = A(j,i);
         }
     }
 
@@ -217,6 +220,7 @@ void test_ztrsm(param_value_t param[], char *info)
     //================================================================
     free(A);
     free(B);
+    free(ipiv);
     if (test)
         free(Bref);
 }
