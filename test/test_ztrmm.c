@@ -19,10 +19,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include <omp.h>
 
 #define COMPLEX
+
+#define A(i_, j_) A[(i_) + (size_t)lda*(j_)]
 
 /***************************************************************************//**
  *
@@ -109,7 +112,7 @@ void test_ztrmm(param_value_t param[], char *info)
 
     int    ldb  = imax(1, m + param[PARAM_PADB].i);
     int    test = param[PARAM_TEST].c == 'y';
-    double tol  = param[PARAM_TOL].d * LAPACKE_dlamch('E');
+    double eps  = LAPACKE_dlamch('E');
 
 #ifdef COMPLEX
     PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
@@ -118,7 +121,12 @@ void test_ztrmm(param_value_t param[], char *info)
 #endif
 
     //================================================================
-    // Allocate and initialize arrays
+    // Set tuning parameters.
+    //================================================================
+    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_NB].i);
+
+    //================================================================
+    // Allocate and initialize arrays.
     //================================================================
     PLASMA_Complex64_t *A =
         (PLASMA_Complex64_t *)malloc((size_t)lda*k*sizeof(PLASMA_Complex64_t));
@@ -146,7 +154,7 @@ void test_ztrmm(param_value_t param[], char *info)
     }
 
     //================================================================
-    // Run and time PLASMA
+    // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
@@ -161,33 +169,59 @@ void test_ztrmm(param_value_t param[], char *info)
     param[PARAM_GFLOPS].d = flops_ztrmm(side, m, n) / time / 1e9;
 
     //================================================================
-    // Test results by comparing to a reference implementation
+    // Test results by comparing to a reference implementation.
     //================================================================
     if (test) {
+        // see comments in test_zgemm.c
+        PLASMA_Complex64_t zzero =  0.0;
+        PLASMA_Complex64_t zone  =  1.0;
+        PLASMA_Complex64_t zmone = -1.0;
+        double work[1];
+
+        // LAPACKE_[ds]lantr_work has a bug (returns 0)
+        // in MKL <= 11.3.3 (at least). Fixed in LAPACK 3.6.1.
+        // For now, zero out the opposite triangle, set diag, and use lange.
+        // See also test_ztrsm.c
+        if (uplo == PlasmaLower) {
+            LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'U', k-1, k-1,
+                                zzero, zzero, &A(0,1), lda);
+        }
+        else {
+            LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'L', k-1, k-1,
+                                zzero, zzero, &A(1,0), lda);
+        }
+        if (diag == PlasmaUnit) {
+            for (int i = 0; i < k; ++i) {
+                A(i,i) = zone;
+            }
+        }
+        double Anorm = LAPACKE_zlange_work(
+                           LAPACK_COL_MAJOR, 'F', k, k, A, lda, work);
+        //double Anorm = LAPACKE_zlantr_work(
+        //                   LAPACK_COL_MAJOR, 'F', lapack_const(uplo),
+        //                   lapack_const(diag), k, k, A, lda, work);
+
+        double Bnorm = LAPACKE_zlange_work(
+                           LAPACK_COL_MAJOR, 'F', m, n, Bref, ldb, work);
+
         cblas_ztrmm(CblasColMajor, (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
                    (CBLAS_TRANSPOSE)transa, (CBLAS_DIAG)diag,
                     m, n, CBLAS_SADDR(alpha), A, lda, Bref, ldb);
 
-        PLASMA_Complex64_t zmone = -1.0;
+        cblas_zaxpy((size_t)ldb*n, CBLAS_SADDR(zmone), Bref, 1, B, 1);
 
-        k = ldb > m ? ldb : m;
-
-        cblas_zaxpy((size_t)k*n, CBLAS_SADDR(zmone), Bref, 1, B, 1);
-
-        double work[1];
-        double Bnorm = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', m, n, Bref, ldb, work);
         double error = LAPACKE_zlange_work(
                            LAPACK_COL_MAJOR, 'F', m, n, B,    ldb, work);
-        if (Bnorm != 0)
-            error /= Bnorm;
+        double normalize = sqrt((double)k+2) * cabs(alpha) * Anorm * Bnorm;
+        if (normalize != 0)
+            error /= normalize;
 
-        param[PARAM_ERROR].d   = error;
-        param[PARAM_SUCCESS].i = error < tol;
+        param[PARAM_ERROR].d = error;
+        param[PARAM_SUCCESS].i = error < 3*eps;
     }
 
     //================================================================
-    // Free arrays
+    // Free arrays.
     //================================================================
     free(A);
     free(B);
