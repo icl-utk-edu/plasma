@@ -207,6 +207,14 @@ void test_zgemm(param_value_t param[], char *info)
         // gamma_k = sqrt(k)*eps as a statistical average case.
         // Using 3*eps covers complex arithmetic.
         // See Higham, Accuracy and Stability of Numerical Algorithms, ch 2-3.
+        double work[1];
+        double Anorm = LAPACKE_zlange_work(
+                           LAPACK_COL_MAJOR, 'F', Am, An, A,    lda, work);
+        double Bnorm = LAPACKE_zlange_work(
+                           LAPACK_COL_MAJOR, 'F', Bm, Bn, B,    ldb, work);
+        double Cnorm = LAPACKE_zlange_work(
+                           LAPACK_COL_MAJOR, 'F', Cm, Cn, Cref, ldc, work);
+
         cblas_zgemm(
             CblasColMajor,
             (CBLAS_TRANSPOSE)transa, (CBLAS_TRANSPOSE)transb,
@@ -218,13 +226,6 @@ void test_zgemm(param_value_t param[], char *info)
         PLASMA_Complex64_t zmone = -1.0;
         cblas_zaxpy((size_t)ldc*Cn, CBLAS_SADDR(zmone), Cref, 1, C, 1);
 
-        double work[1];
-        double Anorm = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', Am, An, A,    lda, work);
-        double Bnorm = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', Bm, Bn, B,    ldb, work);
-        double Cnorm = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', Cm, Cn, Cref, ldc, work);
         double error = LAPACKE_zlange_work(
                            LAPACK_COL_MAJOR, 'F', Cm, Cn, C,    ldc, work);
         double normalize = sqrt((double)k+2) * cabs(alpha) * Anorm * Bnorm

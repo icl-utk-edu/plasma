@@ -176,6 +176,13 @@ void test_zsyrk(param_value_t param[], char *info)
     //================================================================
     if (test) {
         // see comments in test_zgemm.c
+        char uplo_ = param[PARAM_UPLO].c;
+        double work[1];
+        double Anorm = LAPACKE_zlange_work(
+                           LAPACK_COL_MAJOR, 'F', Am, An, A, lda, work);
+        double Cnorm = LAPACKE_zlansy_work(
+                           LAPACK_COL_MAJOR, 'F', uplo_, Cn, Cref, ldc, work);
+
         cblas_zsyrk(
             CblasColMajor,
             (CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)trans,
@@ -186,12 +193,6 @@ void test_zsyrk(param_value_t param[], char *info)
         PLASMA_Complex64_t zmone = -1.0;
         cblas_zaxpy((size_t)ldc*Cn, CBLAS_SADDR(zmone), Cref, 1, C, 1);
 
-        char uplo_ = param[PARAM_UPLO].c;
-        double work[1];
-        double Anorm = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', Am, An, A, lda, work);
-        double Cnorm = LAPACKE_zlansy_work(
-                           LAPACK_COL_MAJOR, 'F', uplo_, Cn, Cref, ldc, work);
         double error = LAPACKE_zlansy_work(
                            LAPACK_COL_MAJOR, 'F', uplo_, Cn, C,    ldc, work);
         double normalize = sqrt((double)k+2) * cabs(alpha) * Anorm * Anorm
