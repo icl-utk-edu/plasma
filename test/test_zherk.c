@@ -113,6 +113,9 @@ void test_zherk(param_value_t param[], char *info)
     int test = param[PARAM_TEST].c == 'y';
     double eps = LAPACKE_dlamch('E');
 
+    double alpha = creal(param[PARAM_ALPHA].z);
+    double beta  = creal(param[PARAM_BETA].z);
+
     //================================================================
     // Set tuning parameters.
     //================================================================
@@ -145,9 +148,6 @@ void test_zherk(param_value_t param[], char *info)
 
         memcpy(Cref, C, (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
     }
-
-    double alpha = creal(param[PARAM_ALPHA].z);
-    double beta  = creal(param[PARAM_BETA].z);
 
     //================================================================
     // Run and time PLASMA.

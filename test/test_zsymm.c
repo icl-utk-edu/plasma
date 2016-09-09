@@ -121,6 +121,14 @@ void test_zsymm(param_value_t param[], char *info)
     int test = param[PARAM_TEST].c == 'y';
     double eps = LAPACKE_dlamch('E');
 
+#ifdef COMPLEX
+    PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
+    PLASMA_Complex64_t beta  = param[PARAM_BETA].z;
+#else
+    double alpha = creal(param[PARAM_ALPHA].z);
+    double beta  = creal(param[PARAM_BETA].z);
+#endif
+
     //================================================================
     // Set tuning parameters.
     //================================================================
@@ -160,14 +168,6 @@ void test_zsymm(param_value_t param[], char *info)
 
         memcpy(Cref, C, (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
     }
-
-#ifdef COMPLEX
-    PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
-    PLASMA_Complex64_t beta  = param[PARAM_BETA].z;
-#else
-    double alpha = creal(param[PARAM_ALPHA].z);
-    double beta  = creal(param[PARAM_BETA].z);
-#endif
 
     //================================================================
     // Run and time PLASMA.

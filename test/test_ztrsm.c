@@ -114,6 +114,12 @@ void test_ztrsm(param_value_t param[], char *info)
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
 
+#ifdef COMPLEX
+    PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
+#else
+    double alpha = creal(param[PARAM_ALPHA].z);
+#endif
+
     //================================================================
     // Set tuning parameters.
     //================================================================
@@ -179,12 +185,6 @@ void test_ztrsm(param_value_t param[], char *info)
 
         memcpy(Bref, B, (size_t)ldb*n*sizeof(PLASMA_Complex64_t));
     }
-
-#ifdef COMPLEX
-    PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
-#else
-    double alpha = creal(param[PARAM_ALPHA].z);
-#endif
 
     //================================================================
     // Run and time PLASMA.
