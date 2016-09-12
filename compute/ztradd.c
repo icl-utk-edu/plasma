@@ -230,6 +230,7 @@ int PLASMA_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
         }
 
         // Revert to LAPACK layout
+        PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
         PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
     }
     // Implicit synchronization
