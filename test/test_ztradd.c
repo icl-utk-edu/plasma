@@ -10,9 +10,11 @@
  *
  **/
 
-#include "core_blas.h"
 #include "test.h"
 #include "flops.h"
+#include "core_blas.h"
+#include "core_lapack.h"
+#include "plasma.h"
 
 #include <assert.h>
 #include <stdbool.h>
@@ -22,15 +24,7 @@
 #include <string.h>
 #include <math.h>
 
-#ifdef PLASMA_WITH_MKL
-    #include <mkl_cblas.h>
-    #include <mkl_lapacke.h>
-#else
-    #include <cblas.h>
-    #include <lapacke.h>
-#endif
 #include <omp.h>
-#include <plasma.h>
 
 #define COMPLEX
 
@@ -96,22 +90,8 @@ void test_ztradd(param_value_t param[], char *info)
     //================================================================
     // Set parameters
     //================================================================
-    PLASMA_enum uplo;
-    PLASMA_enum transA;
-
-    if (param[PARAM_UPLO].c == 'f')
-        uplo = PlasmaFull;
-    else if (param[PARAM_UPLO].c == 'u')
-        uplo = PlasmaUpper;
-    else
-        uplo = PlasmaLower;
-
-    if (param[PARAM_TRANSA].c == 'n')
-        transA = PlasmaNoTrans;
-    else if (param[PARAM_TRANSA].c == 't')
-        transA = PlasmaTrans;
-    else
-        transA = PlasmaConjTrans;
+    PLASMA_enum uplo   = PLASMA_uplo_const(param[PARAM_UPLO].c);
+    PLASMA_enum transA = PLASMA_trans_const(param[PARAM_TRANSA].c);
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;

@@ -38,7 +38,7 @@ void plasma_pztradd(PLASMA_enum uplo, PLASMA_enum transA,
         return;
     }
 
-    switch(uplo){
+    switch(uplo) {
     case PlasmaLower:
         if (transA == PlasmaNoTrans) {
             for (n = 0; n < imin(B.mt,B.nt); n++) {
