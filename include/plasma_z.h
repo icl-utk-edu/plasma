@@ -235,12 +235,6 @@ void PLASMA_zpbsv_Tile_Async(PLASMA_enum uplo,
                              PLASMA_sequence *sequence,
                              PLASMA_request *request);
 
-void PLASMA_zpbsv_Tile_Async(PLASMA_enum uplo,
-                             PLASMA_desc *AB,
-                             PLASMA_desc *B,
-                             PLASMA_sequence *sequence,
-                             PLASMA_request *request);
-
 void PLASMA_zpbtrf_Tile_Async(PLASMA_enum uplo,
                               PLASMA_desc *AB,
                               PLASMA_sequence *sequence,
