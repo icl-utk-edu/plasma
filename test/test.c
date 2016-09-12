@@ -1,6 +1,6 @@
 /**
  *
- * @file test.c
+ * @file
  *
  *  PLASMA is a software package provided by:
  *  University of Tennessee, US,
@@ -8,13 +8,12 @@
  *
  **/
 #include "test.h"
+#include "plasma.h"
 
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "plasma.h"
 
 /***************************************************************************//**
  *
@@ -203,6 +202,7 @@ int test_routine(int test, const char *name, param_value_t pval[])
  ******************************************************************************/
 void run_routine(const char *name, param_value_t pval[], char *info)
 {
+
     if      (strcmp(name, "zgelqf") == 0)
         test_zgelqf(pval, info);
     else if (strcmp(name, "dgelqf") == 0)
@@ -271,6 +271,24 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_zherk(pval, info);
     else if (strcmp(name, "cherk") == 0)
         test_cherk(pval, info);
+
+    else if (strcmp(name, "zpbsv") == 0)
+        test_zpbsv(pval, info);
+    else if (strcmp(name, "dpbsv") == 0)
+        test_dpbsv(pval, info);
+    else if (strcmp(name, "cpbsv") == 0)
+        test_cpbsv(pval, info);
+    else if (strcmp(name, "spbsv") == 0)
+        test_spbsv(pval, info);
+
+    else if (strcmp(name, "zpbtrf") == 0)
+        test_zpbtrf(pval, info);
+    else if (strcmp(name, "dpbtrf") == 0)
+        test_dpbtrf(pval, info);
+    else if (strcmp(name, "cpbtrf") == 0)
+        test_cpbtrf(pval, info);
+    else if (strcmp(name, "spbtrf") == 0)
+        test_spbtrf(pval, info);
 
     else if (strcmp(name, "zposv") == 0)
         test_zpotrf(pval, info);
@@ -437,6 +455,10 @@ int param_read(int argc, char **argv, param_t param[])
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_N]);
         else if (param_starts_with(argv[i], "--k="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_K]);
+        else if (param_starts_with(argv[i], "--kl="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_KL]);
+        else if (param_starts_with(argv[i], "--ku="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_KU]);
         else if (param_starts_with(argv[i], "--nrhs="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NRHS]);
 
@@ -521,6 +543,10 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_int(1000, &param[PARAM_N]);
     if (param[PARAM_K].num == 0)
         param_add_int(1000, &param[PARAM_K]);
+    if (param[PARAM_KL].num == 0)
+        param_add_int(200, &param[PARAM_KL]);
+    if (param[PARAM_KU].num == 0)
+        param_add_int(200, &param[PARAM_KU]);
     if (param[PARAM_NRHS].num == 0)
         param_add_int(1000, &param[PARAM_NRHS]);
 
@@ -551,7 +577,7 @@ int param_read(int argc, char **argv, param_t param[])
     }
     if (param[PARAM_BETA].num == 0) {
         PLASMA_Complex64_t z = 6.7890 + 7.8901*_Complex_I;
-        param_add_double(z, &param[PARAM_BETA]);
+        param_add_complex(z, &param[PARAM_BETA]);
     }
 
     return iter;
@@ -698,8 +724,8 @@ int param_scan_double(const char *str, param_t *param)
 
 /***************************************************************************//**
  *
- * @brief Scans a list of complex numbers in format: 1.23 or 1.23+2.45i. (No ranges.)
- *        Adds the value(s) to a parameter iterator.
+ * @brief Scans a list of complex numbers in format: 1.23 or 1.23+2.45i.
+ *        Adds the value to a parameter iterator. No ranges.
  *
  * @param[in]    str   - string containing a double precision number
  * @param[inout] param - parameter iterator

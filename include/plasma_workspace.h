@@ -27,7 +27,8 @@ typedef struct {
 } PLASMA_workspace;
 
 /******************************************************************************/
-int plasma_workspace_alloc(PLASMA_workspace *work, size_t lwork, PLASMA_enum dtyp);
+int plasma_workspace_alloc(PLASMA_workspace *work, size_t lwork,
+                           PLASMA_enum dtyp);
 
 int plasma_workspace_free(PLASMA_workspace *work);
 

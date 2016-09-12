@@ -1,6 +1,6 @@
 /**
  *
- * @file core_zher2k.c
+ * @file
  *
  *  PLASMA is a software package provided by:
  *  University of Tennessee, US,
@@ -12,13 +12,7 @@
 
 #include "core_blas.h"
 #include "plasma_types.h"
-
-#ifdef PLASMA_WITH_MKL
-     #include <mkl.h>
-#else
-    #include <cblas.h>
-    #include <lapacke.h>
-#endif
+#include "core_lapack.h"
 
 #undef REAL
 #define COMPLEX

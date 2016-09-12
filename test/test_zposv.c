@@ -1,6 +1,6 @@
 /**
  *
- * @file test_zposv.c
+ * @file
  *
  *  PLASMA is a software package provided by:
  *  University of Tennessee, US,
@@ -9,9 +9,11 @@
  * @precisions normal z -> s d c
  *
  **/
-#include "core_blas.h"
 #include "test.h"
 #include "flops.h"
+#include "core_blas.h"
+#include "core_lapack.h"
+#include "plasma.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -19,19 +21,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef PLASMA_WITH_MKL
-    #include <mkl_cblas.h>
-    #include <mkl_lapacke.h>
-#else
-    #include <cblas.h>
-    #include <lapacke.h>
-#endif
 #include <omp.h>
-#include <plasma.h>
 
 #define COMPLEX
 
-#define A(i,j)  A[i + j*lda]
+#define A(i_, j_) A[(i_) + (size_t)lda*(j_)]
 
 /***************************************************************************//**
  *
@@ -86,12 +80,7 @@ void test_zposv(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    PLASMA_enum uplo;
-
-    if (param[PARAM_UPLO].c == 'l')
-        uplo = PlasmaLower;
-    else
-        uplo = PlasmaUpper;
+    PLASMA_enum uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
 
     int n = param[PARAM_N].i;
     int nrhs = param[PARAM_NRHS].i;
@@ -122,6 +111,7 @@ void test_zposv(param_value_t param[], char *info)
     lapack_int retval;
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
+
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*nrhs, B);
     assert(retval == 0);
 
@@ -158,10 +148,10 @@ void test_zposv(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zposv((CBLAS_UPLO)uplo, n, nrhs, A, lda, B, ldb);
+    PLASMA_zposv(uplo, n, nrhs, A, lda, B, ldb);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
-    double flops = flops_zpotrf(n) + 2*flops_ztrsm(uplo, n, nrhs);
+    double flops = flops_zpotrf(n) + flops_zpotrs(n, nrhs);
     param[PARAM_TIME].d = time;
     param[PARAM_GFLOPS].d = flops / time / 1e9;
 
@@ -169,25 +159,26 @@ void test_zposv(param_value_t param[], char *info)
     // Test results by checking the residual
     //
     //                      || B - AX ||_I
-    //                --------------------------- < espilon
+    //                --------------------------- < epsilon
     //                 || A ||_I * || X ||_I * N
     //
     //================================================================
     if (test) {
-        PLASMA_Complex64_t zone =   1.0;
+        PLASMA_Complex64_t zone  =  1.0;
         PLASMA_Complex64_t zmone = -1.0;
         work = (double*)malloc((size_t)n*sizeof(double));
         assert(work != NULL);
 
-        double Anorm = LAPACKE_zlange_work(
-            LAPACK_COL_MAJOR, 'I', n, n, Aref, lda, work);
+        double Anorm = LAPACKE_zlanhe_work(
+            LAPACK_COL_MAJOR, 'I', lapack_const(uplo), n, Aref, lda, work);
         double Xnorm = LAPACKE_zlange_work(
             LAPACK_COL_MAJOR, 'I', n, nrhs, B, ldb, work);
 
+        // Bref -= Aref*B
         cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, nrhs, n,
                     CBLAS_SADDR(zmone), Aref, lda,
-                    B, ldb,
-                    CBLAS_SADDR(zone), Bref, ldb);
+                                        B,    ldb,
+                    CBLAS_SADDR(zone),  Bref, ldb);
 
         double Rnorm = LAPACKE_zlange_work(
             LAPACK_COL_MAJOR, 'I', n, nrhs, Bref, ldb, work);

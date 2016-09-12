@@ -1,6 +1,6 @@
 /**
  *
- * @file testing_ztrsm.c
+ * @file
  *
  *  PLASMA is a software package provided by:
  *  University of Tennessee, US,
@@ -11,6 +11,9 @@
  **/
 #include "test.h"
 #include "flops.h"
+#include "core_blas.h"
+#include "core_lapack.h"
+#include "plasma.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -18,19 +21,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef PLASMA_WITH_MKL
-    #include <mkl_cblas.h>
-    #include <mkl_lapacke.h>
-#else
-    #include <cblas.h>
-    #include <lapacke.h>
-#endif
 #include <omp.h>
-#include <plasma.h>
 
 #define COMPLEX
 
-#define A(i_, j_)  (A + (i_) + (size_t)lda*(j_))
+#define A(i_, j_) A[(i_) + (size_t)lda*(j_)]
 
 /***************************************************************************//**
  *
@@ -97,32 +92,10 @@ void test_ztrsm(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    PLASMA_enum side;
-    PLASMA_enum uplo;
-    PLASMA_enum transa;
-    PLASMA_enum diag;
-
-    if (param[PARAM_SIDE].c == 'l')
-        side = PlasmaLeft;
-    else
-        side = PlasmaRight;
-
-    if (param[PARAM_UPLO].c == 'l')
-        uplo = PlasmaLower;
-    else
-        uplo = PlasmaUpper;
-
-    if (param[PARAM_TRANSA].c == 'n')
-        transa = PlasmaNoTrans;
-    else if (param[PARAM_TRANSA].c == 't')
-        transa = PlasmaTrans;
-    else
-        transa = PlasmaConjTrans;
-
-    if (param[PARAM_DIAG].c == 'n')
-        diag = PlasmaNonUnit;
-    else
-        diag = PlasmaUnit;
+    PLASMA_enum side = PLASMA_side_const(param[PARAM_SIDE].c);
+    PLASMA_enum uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
+    PLASMA_enum transa = PLASMA_trans_const(param[PARAM_TRANSA].c);
+    PLASMA_enum diag = PLASMA_diag_const(param[PARAM_DIAG].c);
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
@@ -141,6 +114,12 @@ void test_ztrsm(param_value_t param[], char *info)
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
 
+#ifdef COMPLEX
+    PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
+#else
+    double alpha = creal(param[PARAM_ALPHA].z);
+#endif
+
     //================================================================
     // Set tuning parameters.
     //================================================================
@@ -157,24 +136,41 @@ void test_ztrsm(param_value_t param[], char *info)
         (PLASMA_Complex64_t*)malloc((size_t)ldb*n*sizeof(PLASMA_Complex64_t));
     assert(B != NULL);
 
+    int *ipiv;
+    ipiv = (int*)malloc((size_t)Am*sizeof(int));
+    assert(ipiv != NULL);
+
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
 
     //=================================================================
     // Initialize the matrices.
-    // Factor A into LU to get well-conditioned triangular matrix.
-    // Copy L to U, since L seems okay when used with non-unit diagonal
-    // (i.e., from U), while U fails when used with unit diagonal.
+    // Factor A into LU to get well-conditioned triangular matrices.
+    // Use L for unit triangle, and U for non-unit triangle,
+    // transposing as necessary.
+    // (There is some danger, as L^T or U^T may be much worse conditioned
+    // than L or U, but in practice it seems okay.
+    // See Higham, Accuracy and Stability of Numerical Algorithms, ch 8.)
     //=================================================================
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*lda, A);
     assert(retval == 0);
 
-    int ipiv[lda];
     LAPACKE_zgetrf(CblasColMajor, Am, Am, A, lda, ipiv);
 
-    for (int j = 0; j < Am; j++) {
-        for (int i = 0; i < j; i++) {
-            *A(i,j) = *A(j,i);
+    if (diag == PlasmaUnit && uplo == PlasmaUpper) {
+        // U = L^T
+        for (int j = 0; j < Am; j++) {
+            for (int i = 0; i < j; i++) {
+                A(i,j) = A(j,i);
+            }
+        }
+    }
+    else if (diag == PlasmaNonUnit && uplo == PlasmaLower) {
+        // L = U^T
+        for (int j = 0; j < Am; j++) {
+            for (int i = 0; i < j; i++) {
+                A(j,i) = A(i,j);
+            }
         }
     }
 
@@ -190,20 +186,14 @@ void test_ztrsm(param_value_t param[], char *info)
         memcpy(Bref, B, (size_t)ldb*n*sizeof(PLASMA_Complex64_t));
     }
 
-#ifdef COMPLEX
-    PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
-#else
-    double alpha = creal(param[PARAM_ALPHA].z);
-#endif
-
     //================================================================
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
     PLASMA_ztrsm(
-        (CBLAS_SIDE)side, (CBLAS_UPLO) uplo,
-        (CBLAS_TRANSPOSE)transa, (CBLAS_DIAG)diag,
+        side, uplo,
+        transa, diag,
         m, n,
         alpha, A, lda,
                B, ldb);
@@ -215,29 +205,60 @@ void test_ztrsm(param_value_t param[], char *info)
     param[PARAM_GFLOPS].d = flops_ztrsm(side, m, n) / time / 1e9;
 
     //================================================================
-    // Test results by comparing to a reference implementation.
+    // Test results by checking the residual
+    // ||alpha*B - A*X|| / (||A||*||X||)
     //================================================================
     if (test) {
-        cblas_ztrsm(
+        PLASMA_Complex64_t zzero =  0.0;
+        PLASMA_Complex64_t zone  =  1.0;
+        PLASMA_Complex64_t zmone = -1.0;
+        double work[1];
+
+        // LAPACKE_[ds]lantr_work has a bug (returns 0)
+        // in MKL <= 11.3.3 (at least). Fixed in LAPACK 3.6.1.
+        // For now, zero out the opposite triangle, set diag, and use lange.
+        // See also test_ztrmm.c
+        if (uplo == PlasmaLower) {
+            LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'U', Am-1, Am-1,
+                                zzero, zzero, &A(0,1), lda);
+        }
+        else {
+            LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'L', Am-1, Am-1,
+                                zzero, zzero, &A(1,0), lda);
+        }
+        if (diag == PlasmaUnit) {
+            for (int i = 0; i < Am; ++i) {
+                A(i,i) = zone;
+            }
+        }
+        double Anorm = LAPACKE_zlange_work(
+                           LAPACK_COL_MAJOR, 'F', Am, Am, A, lda, work);
+        //double Anorm = LAPACKE_zlantr_work(
+        //                   LAPACK_COL_MAJOR, 'F', lapack_const(uplo),
+        //                   lapack_const(diag), Am, Am, A, lda, work);
+        double Xnorm = LAPACKE_zlange_work(
+                           LAPACK_COL_MAJOR, 'F', m, n, B, ldb, work);
+
+        // B = A*X
+        cblas_ztrmm(
             CblasColMajor,
             (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
             (CBLAS_TRANSPOSE)transa, (CBLAS_DIAG)diag,
             m, n,
-            CBLAS_SADDR(alpha), A, lda,
-            Bref, ldb);
+            CBLAS_SADDR(zone), A, lda,
+            B, ldb);
 
-        PLASMA_Complex64_t zmone = -1.0;
+        // B -= alpha*Bref
+        cblas_zscal((size_t)ldb*n, CBLAS_SADDR(alpha), Bref, 1);
         cblas_zaxpy((size_t)ldb*n, CBLAS_SADDR(zmone), Bref, 1, B, 1);
 
-        double work[1];
-        double Bnorm = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', m, n, Bref, ldb, work);
         double error = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', m, n, B,    ldb, work);
-        if (Bnorm != 0)
-            error /= Bnorm;
+                           LAPACK_COL_MAJOR, 'F', m, n, B, ldb, work);
+        if (Anorm * Xnorm != 0)
+            error /= (Anorm * Xnorm);
+
         param[PARAM_ERROR].d = error;
-        param[PARAM_SUCCESS].i = error < tol*n;
+        param[PARAM_SUCCESS].i = error < tol;
     }
 
     //================================================================
@@ -245,6 +266,7 @@ void test_ztrsm(param_value_t param[], char *info)
     //================================================================
     free(A);
     free(B);
+    free(ipiv);
     if (test)
         free(Bref);
 }

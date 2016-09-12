@@ -9,10 +9,10 @@
  * @precisions normal z -> s d c
  *
  **/
-
-#include "core_blas.h"
 #include "test.h"
 #include "flops.h"
+#include "core_lapack.h"
+#include "plasma.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -20,20 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef PLASMA_WITH_MKL
-    #include <mkl_cblas.h>
-    #include <mkl_lapacke.h>
-#else
-    #include <cblas.h>
-    #include <lapacke.h>
-#endif
 #include <omp.h>
-
-#include "plasma_types.h"
-#include "plasma_async.h"
-#include "plasma_context.h"
-#include "plasma_descriptor.h"
-#include "plasma_z.h"
 
 #define COMPLEX
 
@@ -100,8 +87,8 @@ void test_zgelqf(param_value_t param[], char *info)
     //================================================================
     // Set tuning parameters.
     //================================================================
-    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_NB].i);
-    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_IB].i);
+    PLASMA_Set(PLASMA_TILE_SIZE,        param[PARAM_NB].i);
+    PLASMA_Set(PLASMA_INNER_BLOCK_SIZE, param[PARAM_IB].i);
 
     //================================================================
     // Allocate and initialize arrays.
@@ -149,7 +136,7 @@ void test_zgelqf(param_value_t param[], char *info)
     plasma_time_t time = stop-start;
 
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = flops_zgelqf(m,n) / time / 1e9;
+    param[PARAM_GFLOPS].d = flops_zgelqf(m, n) / time / 1e9;
 
     //=================================================================
     // Test results by checking orthogonality of Q and precision of L*Q
@@ -158,7 +145,8 @@ void test_zgelqf(param_value_t param[], char *info)
         // Check the orthogonality of Q
         PLASMA_Complex64_t zzero =  0.0;
         PLASMA_Complex64_t zone  =  1.0;
-        PLASMA_Complex64_t mzone = -1.0;
+        double one  =  1.0;
+        double mone = -1.0;
         int minmn = imin(m, n);
 
         // Allocate space for Q.
@@ -181,7 +169,7 @@ void test_zgelqf(param_value_t param[], char *info)
 
         // Perform Id - Q * Q^H
         cblas_zherk(CblasColMajor, CblasUpper, CblasNoTrans, minmn, n,
-                    mzone, Q, ldq, zone, Id, minmn);
+                    mone, Q, ldq, one, Id, minmn);
 
         // WORK array of size m is needed for computing L_oo norm
         double *WORK = (double *) malloc((size_t)m*sizeof(double));

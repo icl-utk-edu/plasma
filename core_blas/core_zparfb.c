@@ -13,13 +13,7 @@
 #include "core_blas.h"
 #include "plasma_types.h"
 #include "plasma_internal.h"
-
-#ifdef PLASMA_WITH_MKL
-    #include <mkl.h>
-#else
-    #include <cblas.h>
-    #include <lapacke.h>
-#endif
+#include "core_lapack.h"
 
 /***************************************************************************//**
  *
@@ -125,15 +119,20 @@
  * @param[in] ldwork
  *         The leading dimension of the array WORK.
  *
+ *******************************************************************************
+ *
+ * @retval PLASMA_SUCCESS successful exit
+ * @retval < 0 if -i, the i-th argument had an illegal value
+ *
  ******************************************************************************/
-void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
-                 PLASMA_enum direct, PLASMA_enum storev,
-                 int m1, int n1, int m2, int n2, int k, int l,
-                       PLASMA_Complex64_t *A1, int lda1,
-                       PLASMA_Complex64_t *A2, int lda2,
-                 const PLASMA_Complex64_t *V,  int ldv,
-                 const PLASMA_Complex64_t *T,  int ldt,
-                       PLASMA_Complex64_t *WORK, int ldwork)
+int CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
+                PLASMA_enum direct, PLASMA_enum storev,
+                int m1, int n1, int m2, int n2, int k, int l,
+                      PLASMA_Complex64_t *A1, int lda1,
+                      PLASMA_Complex64_t *A2, int lda2,
+                const PLASMA_Complex64_t *V,  int ldv,
+                const PLASMA_Complex64_t *T,  int ldt,
+                      PLASMA_Complex64_t *WORK, int ldwork)
 {
     static PLASMA_Complex64_t zone  =  1.0;
     static PLASMA_Complex64_t mzone = -1.0;
@@ -142,50 +141,50 @@ void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
 
     // Check input arguments.
     if ((side != PlasmaLeft) && (side != PlasmaRight)) {
-        plasma_error("illegal value of side");
-        return;
+        coreblas_error("Illegal value of side");
+        return -1;
     }
     // Plasma_ConjTrans will be converted to PlasmaTrans in
     // automatic datatype conversion, which is what we want here.
     // PlasmaConjTrans is protected from this conversion.
     if ((trans != PlasmaNoTrans) && (trans != Plasma_ConjTrans)) {
-        plasma_error("illegal value of trans");
-        return;
+        coreblas_error("Illegal value of trans");
+        return -2;
     }
     if ((direct != PlasmaForward) && (direct != PlasmaBackward)) {
-        plasma_error("illegal value of direct");
-        return;
+        coreblas_error("Illegal value of direct");
+        return -3;
     }
     if ((storev != PlasmaColumnwise) && (storev != PlasmaRowwise)) {
-        plasma_error("illegal value of storev");
-        return;
+        coreblas_error("Illegal value of storev");
+        return -4;
     }
     if (m1 < 0) {
-        plasma_error("illegal value of m1");
-        return;
+        coreblas_error("Illegal value of m1");
+        return -5;
     }
     if (n1 < 0) {
-        plasma_error("illegal value of n1");
-        return;
+        coreblas_error("Illegal value of n1");
+        return -6;
     }
     if ((m2 < 0) ||
         ( (side == PlasmaRight) && (m1 != m2) ) ) {
-        plasma_error("illegal value of m2");
-        return;
+        coreblas_error("Illegal value of m2");
+        return -7;
     }
     if ((n2 < 0) ||
         ( (side == PlasmaLeft) && (n1 != n2) ) ) {
-        plasma_error("illegal value of n2");
-        return;
+        coreblas_error("Illegal value of n2");
+        return -8;
     }
     if (k < 0) {
-        plasma_error("illegal value of k");
-        return;
+        coreblas_error("Illegal value of k");
+        return -9;
     }
 
     // quick return
     if ((m1 == 0) || (n1 == 0) || (m2 == 0) || (n2 == 0) || (k == 0))
-        return;
+        return PLASMA_SUCCESS;
 
     if (direct == PlasmaForward) {
         if (side == PlasmaLeft) {
@@ -267,7 +266,9 @@ void CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
         }
     }
     else {
-        plasma_error("Not implemented (Backward / Left or Right)");
-        return;
+        coreblas_error("Not implemented (Backward / Left or Right)");
+        return PLASMA_ERR_NOT_SUPPORTED;
     }
+
+    return PLASMA_SUCCESS;
 }

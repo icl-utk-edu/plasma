@@ -1,6 +1,6 @@
 /**
  *
- * @file pzherk.c
+ * @file
  *
  *  PLASMA is a software package provided by:
  *  University of Tennessee, US,
@@ -33,6 +33,7 @@ void plasma_pzherk(PLASMA_enum uplo, PLASMA_enum trans,
 
     PLASMA_Complex64_t zbeta;
     PLASMA_Complex64_t zone = 1.0;
+    double dbeta;
 
     // Check sequence status.
     if (sequence->status != PLASMA_SUCCESS) {
@@ -50,12 +51,12 @@ void plasma_pzherk(PLASMA_enum uplo, PLASMA_enum trans,
         if (trans == PlasmaNoTrans) {
             for (k = 0; k < A.nt; k++) {
                 tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
-                zbeta = k == 0 ? beta : zone;
+                dbeta = k == 0 ? beta : 1.0;
                 CORE_OMP_zherk(
                     uplo, trans,
                     tempnn, tempkn,
                     alpha, A(n, k), ldan,
-                    zbeta, C(n, n), ldcn);
+                    dbeta, C(n, n), ldcn);
             }
             //=======================================
             // PlasmaNoTrans / PlasmaLower
@@ -104,12 +105,12 @@ void plasma_pzherk(PLASMA_enum uplo, PLASMA_enum trans,
             for (k = 0; k < A.mt; k++) {
                 tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
                 ldak = BLKLDD(A, k);
-                zbeta = k == 0 ? beta : zone;
+                dbeta = k == 0 ? beta : 1.0;
                 CORE_OMP_zherk(
                     uplo, trans,
                     tempnn, tempkm,
                     alpha, A(k, n), ldak,
-                    zbeta, C(n, n), ldcn);
+                    dbeta, C(n, n), ldcn);
             }
             //=======================================
             // PlasmaConjTrans / PlasmaLower

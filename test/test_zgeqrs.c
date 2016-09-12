@@ -9,10 +9,10 @@
  * @precisions normal z -> s d c
  *
  **/
-
-#include "core_blas.h"
 #include "test.h"
 #include "flops.h"
+#include "core_lapack.h"
+#include "plasma.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -20,20 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef PLASMA_WITH_MKL
-    #include <mkl_cblas.h>
-    #include <mkl_lapacke.h>
-#else
-    #include <cblas.h>
-    #include <lapacke.h>
-#endif
 #include <omp.h>
-
-#include "plasma_types.h"
-#include "plasma_async.h"
-#include "plasma_context.h"
-#include "plasma_descriptor.h"
-#include "plasma_z.h"
 
 #define COMPLEX
 
@@ -177,7 +164,7 @@ void test_zgeqrs(param_value_t param[], char *info)
     plasma_time_t time = stop-start;
 
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = flops_zgeqrs(m,n,nrhs) / time / 1e9;
+    param[PARAM_GFLOPS].d = flops_zgeqrs(m, n, nrhs) / time / 1e9;
 
     //================================================================
     // Test results by solving a linear system.
@@ -226,7 +213,8 @@ void test_zgeqrs(param_value_t param[], char *info)
     plasma_desc_mat_free(&descT);
     free(A);
     free(B);
-    if (test)
+    if (test) {
         free(Aref);
         free(Bref);
+    }
 }

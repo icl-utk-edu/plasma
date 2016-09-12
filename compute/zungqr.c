@@ -73,7 +73,7 @@ int PLASMA_zungqr(int m, int n, int k,
                   PLASMA_desc *descT,
                   PLASMA_Complex64_t *Q, int ldq)
 {
-    int nb;
+    int ib, nb;
     int retval;
     int status;
 
@@ -118,6 +118,7 @@ int PLASMA_zungqr(int m, int n, int k,
     //    plasma_error("PLASMA_zungqr", "plasma_tune() failed");
     //    return status;
     //}
+    ib = plasma->ib;
     nb = plasma->nb;
 
     // Initialize tile matrix descriptors.
@@ -140,6 +141,15 @@ int PLASMA_zungqr(int m, int n, int k,
         return retval;
     }
 
+    // Allocate workspace.
+    PLASMA_workspace work;
+    size_t lwork = ib*nb;  // unmqr: work
+    retval = plasma_workspace_alloc(&work, lwork, PlasmaComplexDouble);
+    if (retval != PLASMA_SUCCESS) {
+        plasma_error("plasma_workspace_alloc() failed");
+        return retval;
+    }
+
     // Create sequence.
     PLASMA_sequence *sequence = NULL;
     retval = plasma_sequence_create(&sequence);
@@ -159,12 +169,15 @@ int PLASMA_zungqr(int m, int n, int k,
         PLASMA_zcm2ccrb_Async(Q, ldq, &descQ, sequence, &request);
 
         // Call the tile async function.
-        PLASMA_zungqr_Tile_Async(&descA, descT, &descQ, sequence, &request);
+        PLASMA_zungqr_Tile_Async(&descA, descT, &descQ,
+                                 &work, sequence, &request);
 
         // Translate Q back to LAPACK layout.
         PLASMA_zccrb2cm_Async(&descQ, Q, ldq, sequence, &request);
     }
     // implicit synchronization
+
+    plasma_workspace_free(&work);
 
     // Free matrices in tile layout.
     plasma_desc_mat_free(&descA);
@@ -186,16 +199,21 @@ int PLASMA_zungqr(int m, int n, int k,
  *
  *******************************************************************************
  *
- * @param[in] descA
+ * @param[in] A
  *          Descriptor of matrix A.
  *          A is stored in the tile layout.
  *
- * @param[in] descT
+ * @param[in] T
  *          Descriptor of matrix T.
  *          Auxiliary factorization data, computed by PLASMA_zgeqrf.
  *
- * @param[out] descQ
+ * @param[out] Q
  *          Descriptor of matrix Q. On exit, matrix Q stored in the tile layout.
+ *
+ * @param[in] work
+ *          Workspace for the auxiliary arrays needed by some coreblas kernels.
+ *          For multiplication by Q contains preallocated space for WORK
+ *          arrays. Allocated by the plasma_workspace_alloc function.
  *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to
@@ -220,8 +238,9 @@ int PLASMA_zungqr(int m, int n, int k,
  * @sa PLASMA_zgeqrf_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zungqr_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
-                              PLASMA_desc *descQ,
+void PLASMA_zungqr_Tile_Async(PLASMA_desc *A, PLASMA_desc *T,
+                              PLASMA_desc *Q,
+                              PLASMA_workspace *work,
                               PLASMA_sequence *sequence,
                               PLASMA_request *request)
 {
@@ -234,17 +253,17 @@ void PLASMA_zungqr_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
     }
 
     // Check input arguments
-    if (plasma_desc_check(descA) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(A) != PLASMA_SUCCESS) {
         plasma_error("invalid descriptor A");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (plasma_desc_check(descT) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(T) != PLASMA_SUCCESS) {
         plasma_error("invalid descriptor T");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (plasma_desc_check(descQ) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(Q) != PLASMA_SUCCESS) {
         plasma_error("invalid descriptor Q");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -261,14 +280,14 @@ void PLASMA_zungqr_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
     }
 
     // Quick return
-    if (descQ->n <= 0)
+    if (Q->n <= 0)
         return;
 
     // set ones to diagonal of Q
     plasma_pzlaset(PlasmaFull,
-                   (PLASMA_Complex64_t)0.0, (PLASMA_Complex64_t)1.0, *descQ,
+                   (PLASMA_Complex64_t)0.0, (PLASMA_Complex64_t)1.0, *Q,
                    sequence, request);
 
     // construct Q
-    plasma_pzungqr(*descA, *descQ, *descT, sequence, request);
+    plasma_pzungqr(*A, *Q, *T, work, sequence, request);
 }
