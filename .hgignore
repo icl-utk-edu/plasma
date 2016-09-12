@@ -6,7 +6,8 @@ docs/tags
 include/tags
 lib/pkgconfig/tags
 lib/tags
-proto/core_blas/tags
-proto/tags
-tags
 test/tags
+proto
+make.inc
+make.inc.mkl-icc
+tags
