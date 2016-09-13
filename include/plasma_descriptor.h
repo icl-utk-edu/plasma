@@ -1,6 +1,6 @@
 /**
  *
- * @file plasma_descriptor.h
+ * @file
  *
  *  PLASMA is a software package provided by:
  *  University of Tennessee, US,
@@ -57,6 +57,11 @@ typedef struct {
     int n;            ///< number of columns of the submatrix
     int mt;           ///< number of tile rows of the submatrix
     int nt;           ///< number of tile columns of the submatrix
+    int kl;           ///< number of rows below the diagonal
+    int ku;           ///< number of rows above the diagonal
+    int klt;          ///< number of tile rows below the diagonal tile
+    int kut;          ///< number of tile rows above the diagonal tile
+                      ///  includes the space for potential fills, i.e., kl+ku
 } PLASMA_desc;
 
 /******************************************************************************/
@@ -105,6 +110,40 @@ static inline void *plasma_getaddr(PLASMA_desc A, int m, int n)
 }
 
 /******************************************************************************/
+static inline int BLKLDD_BAND(PLASMA_enum uplo,
+                              PLASMA_desc A, int m, int n)
+{
+    int kut;
+    if (uplo == PlasmaFull) {
+        kut = (A.kl+A.kl+A.nb-1)/A.nb;
+    }
+    else if (uplo == PlasmaUpper) {
+        kut = (A.ku+A.nb-1)/A.nb;
+    }
+    else {
+        kut = 0;
+    }
+    return BLKLDD(A, kut+m-n);
+}
+
+/******************************************************************************/
+static inline void *plasma_getaddr_band(PLASMA_enum uplo,
+                                        PLASMA_desc A, int m, int n)
+{
+    int kut;
+    if (uplo == PlasmaFull) {
+        kut = (A.kl+A.kl+A.nb-1)/A.nb;
+    }
+    else if (uplo == PlasmaUpper) {
+        kut = (A.ku+A.nb-1)/A.nb;
+    }
+    else {
+        kut = 0;
+    }
+    return plasma_getaddr(A, kut+m-n, n);
+}
+
+/******************************************************************************/
 int PLASMA_Desc_Create(PLASMA_desc **desc, void *mat, PLASMA_enum dtyp,
                        int mb, int nb, int bsiz, int lm, int ln, int i,
                        int j, int m, int n);
@@ -114,9 +153,16 @@ int PLASMA_Desc_Destroy(PLASMA_desc **desc);
 PLASMA_desc plasma_desc_init(PLASMA_enum dtyp, int mb, int nb, int bsiz,
                              int lm, int ln, int i, int j, int m, int n);
 
+
+PLASMA_desc plasma_desc_band_init(PLASMA_enum dtyp, PLASMA_enum uplo,
+                                  int mb, int nb, int bsiz,
+                                  int lm, int ln, int i, int j, int m, int n,
+                                  int kl, int ku);
+
 PLASMA_desc plasma_desc_submatrix(PLASMA_desc descA, int i, int j, int m, int n);
 
 int plasma_desc_check(PLASMA_desc *desc);
+int plasma_desc_band_check(PLASMA_enum uplo, PLASMA_desc *desc);
 int plasma_desc_mat_alloc(PLASMA_desc *desc);
 int plasma_desc_mat_free(PLASMA_desc *desc);
 

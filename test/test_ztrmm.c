@@ -1,6 +1,6 @@
 /**
  *
- * @file test_ztrmm.c
+ * @file
  *
  *  PLASMA is a software package provided by:
  *  University of Tennessee, US,
@@ -11,24 +11,21 @@
  **/
 #include "test.h"
 #include "flops.h"
+#include "core_lapack.h"
+#include "plasma.h"
 
 #include <assert.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
-#ifdef PLASMA_WITH_MKL
-    #include <mkl_cblas.h>
-    #include <mkl_lapacke.h>
-#else
-    #include <cblas.h>
-    #include <lapacke.h>
-#endif
 #include <omp.h>
-#include <plasma.h>
 
 #define COMPLEX
+
+#define A(i_, j_) A[(i_) + (size_t)lda*(j_)]
 
 /***************************************************************************//**
  *
@@ -86,17 +83,17 @@ void test_ztrmm(param_value_t param[], char *info)
         InfoSpacing, param[PARAM_DIAG].c,
         InfoSpacing, param[PARAM_M].i,
         InfoSpacing, param[PARAM_N].i,
-        InfoSpacing, __real__(param[PARAM_ALPHA].z),
+        InfoSpacing, creal(param[PARAM_ALPHA].z),
         InfoSpacing, param[PARAM_PADA].i,
         InfoSpacing, param[PARAM_PADB].i);
 
     //================================================================
     // Set parameters
     //================================================================
-    PLASMA_enum side;
-    PLASMA_enum uplo;
-    PLASMA_enum transA;
-    PLASMA_enum diag;
+    PLASMA_enum side = PLASMA_side_const(param[PARAM_SIDE].c);
+    PLASMA_enum uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
+    PLASMA_enum transa = PLASMA_trans_const(param[PARAM_TRANSA].c);
+    PLASMA_enum diag = PLASMA_diag_const(param[PARAM_DIAG].c);
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
@@ -104,46 +101,32 @@ void test_ztrmm(param_value_t param[], char *info)
     int k;
     int lda;
 
-    if (param[PARAM_SIDE].c == 'l') {
-        side = PlasmaLeft;
+    if (side == PlasmaLeft) {
         k    = m;
         lda  = imax(1, m + param[PARAM_PADA].i);
     }
     else {
-        side = PlasmaRight;
         k    = n;
         lda  = imax(1, n + param[PARAM_PADA].i);
     }
 
-    if (param[PARAM_UPLO].c == 'u')
-        uplo = PlasmaUpper;
-    else
-        uplo = PlasmaLower;
-
-    if (param[PARAM_TRANSA].c == 'n')
-        transA = PlasmaNoTrans;
-    else if (param[PARAM_TRANS].c == 't')
-        transA = PlasmaTrans;
-    else
-        transA = PlasmaConjTrans;
-
-    if (param[PARAM_DIAG].c == 'u')
-        diag = PlasmaUnit;
-    else
-        diag = PlasmaNonUnit;
-
     int    ldb  = imax(1, m + param[PARAM_PADB].i);
     int    test = param[PARAM_TEST].c == 'y';
-    double tol  = param[PARAM_TOL].d * LAPACKE_dlamch('E');
+    double eps  = LAPACKE_dlamch('E');
 
 #ifdef COMPLEX
     PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
 #else
-    PLASMA_Complex64_t alpha = __real__(param[PARAM_ALPHA].z);
+    double alpha = creal(param[PARAM_ALPHA].z);
 #endif
 
     //================================================================
-    // Allocate and initialize arrays
+    // Set tuning parameters.
+    //================================================================
+    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_NB].i);
+
+    //================================================================
+    // Allocate and initialize arrays.
     //================================================================
     PLASMA_Complex64_t *A =
         (PLASMA_Complex64_t *)malloc((size_t)lda*k*sizeof(PLASMA_Complex64_t));
@@ -171,13 +154,13 @@ void test_ztrmm(param_value_t param[], char *info)
     }
 
     //================================================================
-    // Run and time PLASMA
+    // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    PLASMA_ztrmm((CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
-                 (CBLAS_TRANSPOSE)transA, (CBLAS_DIAG)diag,
-                  m, n, alpha, A, lda, B, ldb);
+    PLASMA_ztrmm(side, uplo,
+                 transa, diag,
+                 m, n, alpha, A, lda, B, ldb);
 
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
@@ -186,34 +169,62 @@ void test_ztrmm(param_value_t param[], char *info)
     param[PARAM_GFLOPS].d = flops_ztrmm(side, m, n) / time / 1e9;
 
     //================================================================
-    // Test results by comparing to a reference implementation
+    // Test results by comparing to a reference implementation.
     //================================================================
     if (test) {
-        cblas_ztrmm(CblasColMajor, (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
-                   (CBLAS_TRANSPOSE)transA, (CBLAS_DIAG)diag,
-                    m, n, CBLAS_SADDR(alpha), A, lda, Bref, ldb);
-
+        // see comments in test_zgemm.c
+        PLASMA_Complex64_t zzero =  0.0;
+        PLASMA_Complex64_t zone  =  1.0;
         PLASMA_Complex64_t zmone = -1.0;
-
-        cblas_zaxpy((size_t)m*n, CBLAS_SADDR(zmone), Bref, 1, B, 1);
-
         double work[1];
+
+        // LAPACKE_[ds]lantr_work has a bug (returns 0)
+        // in MKL <= 11.3.3 (at least). Fixed in LAPACK 3.6.1.
+        // For now, zero out the opposite triangle, set diag, and use lange.
+        // See also test_ztrsm.c
+        if (uplo == PlasmaLower) {
+            LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'U', k-1, k-1,
+                                zzero, zzero, &A(0,1), lda);
+        }
+        else {
+            LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'L', k-1, k-1,
+                                zzero, zzero, &A(1,0), lda);
+        }
+        if (diag == PlasmaUnit) {
+            for (int i = 0; i < k; ++i) {
+                A(i,i) = zone;
+            }
+        }
+        double Anorm = LAPACKE_zlange_work(
+                           LAPACK_COL_MAJOR, 'F', k, k, A, lda, work);
+        //double Anorm = LAPACKE_zlantr_work(
+        //                   LAPACK_COL_MAJOR, 'F', lapack_const(uplo),
+        //                   lapack_const(diag), k, k, A, lda, work);
+
         double Bnorm = LAPACKE_zlange_work(
                            LAPACK_COL_MAJOR, 'F', m, n, Bref, ldb, work);
+
+        cblas_ztrmm(CblasColMajor, (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
+                   (CBLAS_TRANSPOSE)transa, (CBLAS_DIAG)diag,
+                    m, n, CBLAS_SADDR(alpha), A, lda, Bref, ldb);
+
+        cblas_zaxpy((size_t)ldb*n, CBLAS_SADDR(zmone), Bref, 1, B, 1);
+
         double error = LAPACKE_zlange_work(
                            LAPACK_COL_MAJOR, 'F', m, n, B,    ldb, work);
-        if (Bnorm != 0)
-            error /= Bnorm;
+        double normalize = sqrt((double)k+2) * cabs(alpha) * Anorm * Bnorm;
+        if (normalize != 0)
+            error /= normalize;
 
-        param[PARAM_ERROR].d   = error;
-        param[PARAM_SUCCESS].i = error < tol;
+        param[PARAM_ERROR].d = error;
+        param[PARAM_SUCCESS].i = error < 3*eps;
     }
 
     //================================================================
-    // Free arrays
+    // Free arrays.
     //================================================================
-    free(A); free(B);
-
+    free(A);
+    free(B);
     if (test)
         free(Bref);
 }

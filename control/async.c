@@ -1,6 +1,6 @@
 /**
  *
- * @file async.c
+ * @file
  *
  *  PLASMA is a software package provided by:
  *  University of Tennessee, US,
@@ -27,7 +27,7 @@ int plasma_request_fail(PLASMA_sequence *sequence,
 /******************************************************************************/
 int plasma_sequence_create(PLASMA_sequence **sequence)
 {
-    *sequence = (PLASMA_sequence*) malloc(sizeof(PLASMA_sequence));
+    *sequence = (PLASMA_sequence*)malloc(sizeof(PLASMA_sequence));
     if (*sequence == NULL) {
         plasma_error("malloc() failed");
         return PLASMA_ERR_OUT_OF_RESOURCES;

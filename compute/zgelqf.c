@@ -68,7 +68,7 @@ int PLASMA_zgelqf(int m, int n,
                   PLASMA_Complex64_t *A, int lda,
                   PLASMA_desc *descT)
 {
-    int nb;
+    int ib, nb;
     int retval;
     int status;
 
@@ -101,6 +101,7 @@ int PLASMA_zgelqf(int m, int n,
     //    plasma_error("PLASMA_zgelqf", "plasma_tune() failed");
     //    return status;
     //}
+    ib = plasma->ib;
     nb = plasma->nb;
 
     // Initialize tile matrix descriptor.
@@ -112,6 +113,15 @@ int PLASMA_zgelqf(int m, int n,
     retval = plasma_desc_mat_alloc(&descA);
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_desc_mat_alloc() failed");
+        return retval;
+    }
+
+    // Allocate workspace.
+    PLASMA_workspace work;
+    size_t lwork = nb + ib*nb;  // gelqt: tau + work
+    retval = plasma_workspace_alloc(&work, lwork, PlasmaComplexDouble);
+    if (retval != PLASMA_SUCCESS) {
+        plasma_error("plasma_workspace_alloc() failed");
         return retval;
     }
 
@@ -140,14 +150,14 @@ int PLASMA_zgelqf(int m, int n,
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
 
         // Call the tile async function.
-        if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_zgelqf_Tile_Async(&descA, descT, sequence, &request);
-        }
+        PLASMA_zgelqf_Tile_Async(&descA, descT, &work, sequence, &request);
 
         // Translate back to LAPACK layout.
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
-    } // pragma omp parallel block closed
+        PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
+    }
+    // implicit synchronization
+
+    plasma_workspace_free(&work);
 
     // Free matrix A in tile layout.
     plasma_desc_mat_free(&descA);
@@ -169,14 +179,19 @@ int PLASMA_zgelqf(int m, int n,
  *
  *******************************************************************************
  *
- * @param[in,out] descA
+ * @param[in,out] A
  *          Descriptor of matrix A.
  *          A is stored in the tile layout.
  *
- * @param[out] descT
- *          Descriptor of matrix descT.
+ * @param[out] T
+ *          Descriptor of matrix T.
  *          On exit, auxiliary factorization data, required by PLASMA_zgelqs to
  *          solve the system of equations.
+ *
+ * @param[in] work
+ *          Workspace for the auxiliary arrays needed by some coreblas kernels.
+ *          For LQ factorization, contains preallocated space for TAU and WORK
+ *          arrays. Allocated by the plasma_workspace_alloc function.
  *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to
@@ -201,7 +216,8 @@ int PLASMA_zgelqf(int m, int n,
  * @sa PLASMA_zgelqs_Tile_Async
  *
  ******************************************************************************/
-void PLASMA_zgelqf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
+void PLASMA_zgelqf_Tile_Async(PLASMA_desc *A, PLASMA_desc *T,
+                              PLASMA_workspace *work,
                               PLASMA_sequence *sequence,
                               PLASMA_request *request)
 {
@@ -214,12 +230,12 @@ void PLASMA_zgelqf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
     }
 
     // Check input arguments.
-    if (plasma_desc_check(descA) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(A) != PLASMA_SUCCESS) {
         plasma_error("invalid A");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (plasma_desc_check(descT) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(T) != PLASMA_SUCCESS) {
         plasma_error("invalid T");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -234,7 +250,7 @@ void PLASMA_zgelqf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
     }
-    if (descA->nb != descA->mb) {
+    if (A->nb != A->mb) {
         plasma_error("only square tiles supported");
         plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
         return;
@@ -247,11 +263,9 @@ void PLASMA_zgelqf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
     }
 
     // Quick return
-    if (imin(descA->m, descA->n) == 0)
+    if (imin(A->m, A->n) == 0)
         return;
 
     // Call the parallel function.
-    plasma_pzgelqf(*descA, *descT, sequence, request);
-
-    return;
+    plasma_pzgelqf(*A, *T, work, sequence, request);
 }

@@ -1,6 +1,6 @@
 /**
  *
- * @file descriptor.c
+ * @file
  *
  *  PLASMA is a software package provided by:
  *  University of Tennessee, US,
@@ -105,6 +105,38 @@ PLASMA_desc plasma_desc_init(PLASMA_enum dtyp, int mb, int nb, int bsiz,
 }
 
 /******************************************************************************/
+PLASMA_desc plasma_desc_band_init(PLASMA_enum dtyp, PLASMA_enum uplo,
+                                  int mb, int nb, int bsiz,
+                                  int lm, int ln, int i, int j, int m, int n,
+                                  int kl, int ku)
+{
+    PLASMA_desc desc;
+    // init params for a general matrix
+    desc = plasma_desc_init(dtyp, mb, nb, bsiz, lm, ln, i, j, m, n);
+
+    // init params for band matrix
+    // * band width
+    desc.kl = kl;
+    desc.ku = ku;
+
+    // * number of tiles within band, 1+ for diagonal
+    if (uplo == PlasmaFull) {
+        desc.klt = 1+(i+kl + mb-1)/mb - i/mb;
+        desc.kut = 1+(i+ku+kl + nb-1)/nb - i/nb;
+    }
+    else if (uplo == PlasmaUpper) {
+        desc.klt = 1;
+        desc.kut = 1+(i+ku + nb-1)/nb - i/nb;
+    }
+    else {
+        desc.klt = 1+(i+kl + mb-1)/mb - i/mb;
+        desc.kut = 1;
+    }
+
+    return desc;
+}
+
+/******************************************************************************/
 PLASMA_desc plasma_desc_submatrix(PLASMA_desc descA, int i, int j, int m, int n)
 {
     if ((descA.i+i+m) > descA.lm)
@@ -175,6 +207,70 @@ int plasma_desc_check(PLASMA_desc *desc)
     }
     if ((desc->i % desc->mb != 0) || (desc->j % desc->nb != 0)) {
         plasma_error("submatrix not aligned to a tile");
+        return PLASMA_ERR_ILLEGAL_VALUE;
+    }
+    return PLASMA_SUCCESS;
+}
+
+/******************************************************************************/
+int plasma_desc_band_check(PLASMA_enum uplo, PLASMA_desc *desc)
+{
+    if (desc == NULL) {
+        plasma_error("NULL descriptor");
+        return PLASMA_ERR_ILLEGAL_VALUE;
+    }
+    if (desc->mat == NULL) {
+        plasma_error("NULL matrix pointer");
+        return PLASMA_ERR_UNALLOCATED;
+    }
+    if (desc->dtyp != PlasmaRealFloat &&
+        desc->dtyp != PlasmaRealDouble &&
+        desc->dtyp != PlasmaComplexFloat &&
+        desc->dtyp != PlasmaComplexDouble  ) {
+        plasma_error("invalid matrix type");
+        return PLASMA_ERR_ILLEGAL_VALUE;
+    }
+    if (desc->mb <= 0 || desc->nb <= 0) {
+        plasma_error("negative tile dimension");
+        return PLASMA_ERR_ILLEGAL_VALUE;
+    }
+    if (desc->bsiz < desc->mb*desc->nb) {
+        plasma_error("invalid tile memory size");
+        return PLASMA_ERR_ILLEGAL_VALUE;
+    }
+    if ((desc->m < 0) || (desc->n < 0)) {
+        plasma_error("negative matrix dimension");
+        return PLASMA_ERR_ILLEGAL_VALUE;
+    }
+    if (desc->ln < desc->n) {
+        plasma_error("invalid leading column dimensions");
+        return PLASMA_ERR_ILLEGAL_VALUE;
+    }
+    if ((uplo == PlasmaFull &&
+         desc->lm < desc->mb*((2*desc->kl+desc->ku+desc->mb)/desc->mb)) ||
+        (uplo == PlasmaUpper &&
+         desc->lm < desc->mb*((desc->ku + desc->mb)/desc->mb)) ||
+        (uplo == PlasmaUpper &&
+         desc->lm < desc->mb*((desc->kl + desc->mb)/desc->mb))) {
+        plasma_error("invalid leading row dimensions");
+        return PLASMA_ERR_ILLEGAL_VALUE;
+    }
+    if ((desc->i > 0 && desc->i >= desc->lm) ||
+        (desc->j > 0 && desc->j >= desc->ln)) {
+        plasma_error("beginning of the matrix out of bounds");
+        return PLASMA_ERR_ILLEGAL_VALUE;
+    }
+    if (desc->j+desc->n > desc->ln) {
+        plasma_error("submatrix out of bounds");
+        return PLASMA_ERR_ILLEGAL_VALUE;
+    }
+    if ((desc->i % desc->mb != 0) || (desc->j % desc->nb != 0)) {
+        plasma_error("submatrix not aligned to a tile");
+        return PLASMA_ERR_ILLEGAL_VALUE;
+    }
+
+    if (desc->kl+1 > desc->m || desc->ku+1 > desc->n) {
+        plasma_error("band width larger than matrix dimension");
         return PLASMA_ERR_ILLEGAL_VALUE;
     }
     return PLASMA_SUCCESS;

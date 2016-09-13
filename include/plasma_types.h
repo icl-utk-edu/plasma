@@ -1,6 +1,6 @@
 /**
  *
- * @file plasma_types.h
+ * @file
  *
  *  PLASMA is a software package provided by:
  *  University of Tennessee, US,
@@ -47,6 +47,8 @@ enum {
  *
  **/
 enum {
+    PlasmaInvalid    = -1,
+
     PlasmaNoTrans    = 111,
     PlasmaTrans      = 112,
     PlasmaConjTrans  = 113,
@@ -104,6 +106,14 @@ typedef int PLASMA_bool;
 
 typedef float  _Complex PLASMA_Complex32_t;
 typedef double _Complex PLASMA_Complex64_t;
+
+/******************************************************************************/
+PLASMA_enum PLASMA_trans_const(char lapack_char);
+PLASMA_enum PLASMA_uplo_const(char lapack_char);
+PLASMA_enum PLASMA_diag_const(char lapack_char);
+PLASMA_enum PLASMA_side_const(char lapack_char);
+PLASMA_enum PLASMA_direct_const(char lapack_char);
+PLASMA_enum PLASMA_storev_const(char lapack_char);
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -1,6 +1,6 @@
 /**
  *
- * @file plasma_async.h
+ * @file
  *
  *  PLASMA is a software package provided by:
  *  University of Tennessee, US,

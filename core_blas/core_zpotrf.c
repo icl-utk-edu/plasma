@@ -1,6 +1,6 @@
 /**
  *
- * @file core_zpotrf.c
+ * @file
  *
  *  PLASMA is a software package provided by:
  *  University of Tennessee, US,
@@ -12,13 +12,7 @@
 
 #include "core_blas.h"
 #include "plasma_types.h"
-
-#ifdef PLASMA_WITH_MKL
-    #include <mkl.h>
-#else
-    #include <cblas.h>
-    #include <lapacke.h>
-#endif
+#include "core_lapack.h"
 
 /***************************************************************************//**
  *
@@ -45,13 +39,13 @@
  * @param[in,out] A
  *          On entry, the Hermitian positive definite matrix A.
  *          If uplo = PlasmaUpper, the leading N-by-N upper triangular part of A
- *          contains the upper triangular part of the matrix A, and the strictly lower triangular
- *          part of A is not referenced.
- *          If uplo = 'L', the leading N-by-N lower triangular part of A contains the lower
- *          triangular part of the matrix A, and the strictly upper triangular part of A is not
- *          referenced.
- *          On exit, if return value = 0, the factor U or L from the Cholesky factorization
- *          A = U^H*U or A = L*L^H.
+ *          contains the upper triangular part of the matrix A, and the strictly
+ *          lower triangular part of A is not referenced.
+ *          If uplo = PlasmaLower, the leading N-by-N lower triangular part of A
+ *          contains the lower triangular part of the matrix A, and the strictly
+ *          upper triangular part of A is not referenced.
+ *          On exit, if return value = 0, the factor U or L from the Cholesky
+ *          factorization A = U^H*U or A = L*L^H.
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,n).
