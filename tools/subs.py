@@ -354,6 +354,10 @@ subs = {
     ('float',                'PLASMA_Complex32_t'  ),
 
     # ----- PLASMA / MAGMA functions, alphabetic order
+    ('dccrb2cm',             'zccrb2cm'            ),
+    ('dcm2ccrb',             'zcm2ccrb'            ),
+    ('sccrb2cm',             'cccrb2cm'            ),
+    ('scm2ccrb',             'ccm2ccrb'            ),
 
     # ----- header files
     (r'_ds\.h\b',           r'_zc\.h\b'            ),
