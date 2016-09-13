@@ -86,14 +86,14 @@ enum {
 };
 
 enum {
-    PLASMA_INPLACE,
-    PLASMA_OUTOFPLACE
+    PlasmaInplace,
+    PlasmaOutplace
 };
 
 enum {
-    PLASMA_TILE_SIZE,
-    PLASMA_INNER_BLOCK_SIZE,
-    PLASMA_TRANSLATION_MODE
+    PlasmaNb,
+    PlasmaIb,
+    PlasmaInplaceOutplace
 };
 
 /******************************************************************************/

@@ -87,8 +87,8 @@ void test_zgeqrf(param_value_t param[], char *info)
     //================================================================
     // Set tuning parameters.
     //================================================================
-    PLASMA_Set(PLASMA_TILE_SIZE,        param[PARAM_NB].i);
-    PLASMA_Set(PLASMA_INNER_BLOCK_SIZE, param[PARAM_IB].i);
+    PLASMA_Set(PlasmaNb, param[PARAM_NB].i);
+    PLASMA_Set(PlasmaIb, param[PARAM_IB].i);
 
     //================================================================
     // Allocate and initialize arrays.

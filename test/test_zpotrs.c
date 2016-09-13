@@ -94,7 +94,7 @@ void test_zpotrs(param_value_t param[], char *info)
     //================================================================
     // Set tuning parameters.
     //================================================================
-    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_NB].i);
+    PLASMA_Set(PlasmaNb, param[PARAM_NB].i);
 
     //================================================================
     // Allocate and initialize arrays.

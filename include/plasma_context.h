@@ -20,9 +20,9 @@ extern "C" {
 
 /******************************************************************************/
 typedef struct {
-    int nb;                  ///< PLASMA_TILE_SIZE
-    int ib;                  ///< PLASMA_INNER_BLOCK_SIZE
-    plasma_enum_t translation; ///< in-place or out-of-place PLASMA_TRANSLATION_MODE
+    int nb;                  		///< PlasmaNb
+    int ib;                  		///< PlasmaIb
+    plasma_enum_t inplace_outplace; ///< PlasmaInplaceOutplace
 } plasma_context_t;
 
 typedef struct {
