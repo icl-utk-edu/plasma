@@ -10,9 +10,11 @@
  *
  **/
 
-#include "core_blas.h"
 #include "test.h"
 #include "flops.h"
+#include "core_blas.h"
+#include "core_lapack.h"
+#include "plasma.h"
 
 #include <assert.h>
 #include <math.h>
@@ -21,23 +23,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef PLASMA_WITH_MKL
-    #include <mkl_cblas.h>
-    #include <mkl_lapacke.h>
-#else
-    #include <cblas.h>
-    #include <lapacke.h>
-#endif
 #include <omp.h>
 
-#include "plasma_types.h"
-#include "plasma_async.h"
-#include "plasma_context.h"
-#include "plasma_descriptor.h"
-#include "plasma_z.h"
-
 // Use custom matrix library
-#include "ma-mtrx.h"
+// #include "ma-mtrx.h"
 
 #define COMPLEX
 

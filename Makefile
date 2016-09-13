@@ -37,10 +37,10 @@ INC       ?= -I$(LAPACKDIR)/LAPACKE/include -I$(CBLASDIR)/include
 LIBS      ?= -L$(LAPACKDIR) -llapack -llapacke -L$(CBLASDIR)/lib -lcblas -lblas
 
 # Use custom matrix library
-MAMTRXDIR = /opt/ma-mtrx
+# MAMTRXDIR = /opt/ma-mtrx
 
-INC  += -I$(MAMTRXDIR)/include
-LIBS += -L$(MAMTRXDIR)/lib -lma-mtrx-c
+# INC  += -I$(MAMTRXDIR)/include
+# LIBS += -L$(MAMTRXDIR)/lib -lma-mtrx-c
 
 prefix    ?= /usr/local/plasma
 

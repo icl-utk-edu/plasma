@@ -239,9 +239,11 @@ int PLASMA_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
     plasma_desc_mat_free(&descA);
     plasma_desc_mat_free(&descB);
 
+    // Destroy sequence
+    plasma_sequence_destroy(sequence);
+
     // Return status
     status = sequence->status;
-    plasma_sequence_destroy(sequence);
     return status;
 }
 

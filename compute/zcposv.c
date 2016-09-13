@@ -16,12 +16,9 @@
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
 #include "plasma_z.h"
+#include "plasma_zc.h"
 
-#ifdef PLASMA_WITH_MKL
-    #include <mkl_lapacke.h>
-#else
-    #include <lapacke.h>
-#endif
+#include "core_lapack.h"
 
 /***************************************************************************//**
  *
@@ -58,9 +55,9 @@
  *
  *  - iter is the number of the current iteration in the iterative refinement
  *  process
- *  - Rnorm is the infinity-norm of the residual
- *  - Xnorm is the infinity-norm of the solution
- *  - Anorm is the infinity-operator-norm of the matrix A
+ *  - Rnorm is the Frobenius-norm of the residual
+ *  - Xnorm is the Frobenius-norm of the solution
+ *  - Anorm is the Frobenius-operator-norm of the matrix A
  *  - eps is the machine epsilon returned by DLAMCH('Epsilon').
  *
  *  Actually, in its current state (PLASMA 3.0.0), the test is slightly
@@ -116,10 +113,6 @@
  *******************************************************************************
  *
  * @retval PLASMA_SUCCESS successful exit
- * @retval <0 if -i, the i-th argument had an illegal value
- * @retval >0 if i, the leading minor of order i of A is not positive definite,
- *            so the factorization could not be completed, and the solution has
- *            not been computed.
  *
  *******************************************************************************
  *
@@ -246,8 +239,10 @@ int PLASMA_zcposv(PLASMA_enum uplo, int n, int nrhs,
         PLASMA_zcm2ccrb_Async(X, ldx, &descX, sequence, &request);
 
         // Call the tile async interface
-        PLASMA_zcposv_Tile_Async(uplo, &descA, &descB, &descX,
-                                 iter, sequence, &request);
+        if (sequence->status == PLASMA_SUCCESS) {
+            PLASMA_zcposv_Tile_Async(uplo, &descA, &descB, &descX, iter,
+                                    sequence, &request);
+        }
     
         // Revert matrices to LAPACK layout
         PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
@@ -328,17 +323,18 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     PLASMA_desc descR, descAs, descXs;
     PLASMA_enum transA;
 
-    const int itermax = 30;
-    const double bwdmax = 1.0;
-    const PLASMA_Complex64_t negone = -1.0;
-    const PLASMA_Complex64_t one = 1.0;
+    const int    itermax = 30;
+    const double bwdmax  = 1.0;
+    const PLASMA_Complex64_t zmone = -1.0;
+    const PLASMA_Complex32_t cone  =  1.0;
+    const PLASMA_Complex64_t zone  =  1.0;
     int iiter, retval;
     double Anorm = 0.0, Rnorm = 0.0, Xnorm = 0.0;
     double cte, eps;
     *iter = 0;
 
     PLASMA_enum mtrxLayout = LAPACK_COL_MAJOR;
-    char        mtrxNorm   = 'I';
+    char        mtrxNorm   = 'F';
 
     // Get PLASMA context
     plasma = plasma_context_self();
@@ -404,7 +400,9 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     // Quick return - currently NOT equivalent to LAPACK's
     // LAPACK does not have such check for DPOSV
 
-    if (A->m == 0 || A->n == 0 || B->m == 0 || B->n == 0 || X->m == 0 || X->n == 0)
+    if (descA.m == 0 || descA.n == 0 ||
+        descB.m == 0 || descB.n == 0 ||
+        descX.m == 0 || descX.n == 0)
         return;
 
     // Set n, nb
@@ -464,9 +462,9 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     // Compute constants
     // @todo Convert to OpenMP
     // plasma_pzlanhe(PlasmaInfNorm, uplo, descA, work, Anorm, sequence, request);
-    // @todo Verify if infinity norm of matrix A will remain the same for a matrix in tile layout
+    // @todo Verify if Frobenius norm of matrix A will remain the same for a matrix in tile layout
     Anorm = LAPACKE_zlanhe(mtrxLayout, mtrxNorm, uplo, n, descA.mat, descA.lm);
-    eps = LAPACKE_dlamch_work('e');
+    eps   = LAPACKE_dlamch_work('e');
 
     // Convert B from double to single precision, store result in Xs
     // @todo Convert to OpenMP
@@ -501,14 +499,14 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     // Forward substitution
     transA = (uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans);
 
-    plasma_pctrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit,
-                 (PLASMA_Complex32_t) 1.0, descAs, descXs, sequence, request);
+    plasma_pctrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit, cone, descAs, descXs,
+                  sequence, request);
 
     // Backward substitution
     transA = (uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans);
 
-    plasma_pctrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit,
-                 (PLASMA_Complex32_t) 1.0, descAs, descXs, sequence, request);
+    plasma_pctrsm(PlasmaLeft, uplo, transA, PlasmaNonUnit, cone, descAs, descXs,
+                  sequence, request);
 
     // Convert Xs to double precision
     // @todo Convert to OpenMP
@@ -522,7 +520,7 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     LAPACKE_zlacpy(mtrxLayout, uplo, descB.lm, descB.ln, descB.mat, descB.lm,
                    descR.mat, descR.lm);
 
-    plasma_pzhemm(PlasmaLeft, uplo, negone, descA, descX, one, descR,
+    plasma_pzhemm(PlasmaLeft, uplo, zmone, descA, descX, zone, descR,
                   sequence, request);
 
     // Check, whether nrhs normwise backward error satisfies the
@@ -530,7 +528,7 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
     // @todo Convert to OpenMP
     // plasma_pzlange(PlasmaInfNorm, descX, Xnorm, wrk);
     // plasma_pzlange(PlasmaInfNorm, descR, Rnorm, wrk);
-    // @todo Verify if infinity norm of matrices X, R will remain the same for matrices in tile layout
+    // @todo Verify if Frobenius norm of matrices X, R will remain the same for matrices in tile layout
     Xnorm = LAPACKE_zlange(mtrxLayout, mtrxNorm, descX.lm, descX.ln,
                            descX.mat, descX.lm);
 
@@ -554,9 +552,6 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
 
         return;
     }
-
-    double *Xmtrx = (double *) malloc(sizeof(double)*descX.lm*descX.ln);
-    double *Rmtrx = (double *) malloc(sizeof(double)*descR.lm*descR.ln);
 
     // Iterative refinement
     for (iiter = 0; iiter < itermax; iiter++) {
@@ -588,17 +583,8 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
                        descR.mat, descR.lm);
 
         // Update solution matrix X:=X+R
-        // @todo Convert to OpenMP
-        // plasma_pztradd(PlasmaFull, PlasmaNoTrans, (PLASMA_Complex64_t) one,
-        //                descR, (PLASMA_Complex64_t) 1.0, descX, sequence, request);
-        Xmtrx = descX.mat;
-        Rmtrx = descR.mat;
-
-        for (int i = 0; i < descX.lm*descX.ln; i++) {
-            Xmtrx[i] = Xmtrx[i] + Rmtrx[i];
-        }
-
-        descX.mat = Xmtrx;
+        plasma_pztradd(PlasmaFull, PlasmaNoTrans, zone, descR, zone, descX,
+                       sequence, request);
 
         // Compute residual R = B-A*X
         // @todo Convert to OpenMP
@@ -606,15 +592,15 @@ void PLASMA_zcposv_Tile_Async(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
         LAPACKE_zlacpy(mtrxLayout, uplo, descB.lm, descB.ln, descB.mat, descB.lm,
                        descR.mat, descR.lm);
 
-        plasma_pzhemm(PlasmaLeft, uplo, negone, descA, descX,
-                      one, descR, sequence, request);
+        plasma_pzhemm(PlasmaLeft, uplo, zmone, descA, descX, zone, descR,
+                      sequence, request);
 
         // Check, whether nrhs normwise backward error satisfies the
         // stopping criterion. If yes, set iter = iiter > 0 and return
         // @todo Convert to OpenMP
         // plasma_pzlange(PlasmaInfNorm, descX, Xnorm, wrk);
         // plasma_pzlange(PlasmaInfNorm, descR, Rnorm, wrk);
-        // @todo Verify if infinity norm of matrices X, R will remain the same
+        // @todo Verify if Frobenius norm of matrices X, R will remain the same
         // for matrices in tile layout
         Xnorm = LAPACKE_zlange(mtrxLayout, mtrxNorm, descX.lm, descX.ln,
                                descX.mat, descX.lm);
