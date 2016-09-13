@@ -18,7 +18,7 @@ extern "C" {
 
 /******************************************************************************/
 #ifdef PLASMA_WITH_MKL
-#define lapack_complex_float PLASMA_Complex32_t
+#define lapack_complex_float plasma_complex32_t
 #define lapack_complex_double PLASMA_Complex64_t
 #endif
 
@@ -104,7 +104,7 @@ enum {
 typedef int PLASMA_enum;
 typedef int PLASMA_bool;
 
-typedef float  _Complex PLASMA_Complex32_t;
+typedef float  _Complex plasma_complex32_t;
 typedef double _Complex PLASMA_Complex64_t;
 
 /******************************************************************************/
