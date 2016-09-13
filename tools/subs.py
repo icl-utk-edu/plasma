@@ -125,6 +125,7 @@ blas = [
     ('scopy',                'dcopy',                'scopy',                'dcopy'               ),
     ('sdot',                 'ddot',                 'cdotc',                'zdotc'               ),
     ('sdot',                 'ddot',                 'cdotu',                'zdotu'               ),
+    ('sgeadd',               'dgeadd',               'cgeadd',               'zgeadd'              ),
     ('sgemm',                'dgemm',                'cgemm',                'zgemm'               ),
     ('sgemv',                'dgemv',                'cgemv',                'zgemv'               ),
     ('sger',                 'dger',                 'cgerc',                'zgerc'               ),
@@ -144,6 +145,7 @@ blas = [
     ('ssyr',                 'dsyr',                 'cher',                 'zher'                ),  # also does zher2, zher2k, zherk
     ('ssyr',                 'dsyr',                 'csyr',                 'zsyr'                ),  # also does zsyrk, zsyr2k
     ('stbsm',                'dtbsm',                'ctbsm',                'ztbsm'               ),
+    ('stradd',               'dtradd',               'ctradd',               'ztradd'              ),
     ('strmm',                'dtrmm',                'ctrmm',                'ztrmm'               ),
     ('strmv',                'dtrmv',                'ctrmv',                'ztrmv'               ),
     ('strsm',                'dtrsm',                'ctrsm',                'ztrsm'               ),

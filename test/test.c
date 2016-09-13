@@ -344,6 +344,15 @@ void run_routine(const char *name, param_value_t pval[], char *info)
     else if (strcmp(name, "ssyr2k") == 0)
         test_ssyr2k(pval, info);
 
+    else if (strcmp(name, "ztradd") == 0)
+        test_ztradd(pval, info);
+    else if (strcmp(name, "dtradd") == 0)
+        test_dtradd(pval, info);
+    else if (strcmp(name, "ctradd") == 0)
+        test_ctradd(pval, info);
+    else if (strcmp(name, "stradd") == 0)
+        test_stradd(pval, info);
+
     else if (strcmp(name, "ztrmm") == 0)
         test_ztrmm(pval, info);
     else if (strcmp(name, "dtrmm") == 0)
@@ -361,15 +370,6 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_ctrsm(pval, info);
     else if (strcmp(name, "strsm") == 0)
         test_strsm(pval, info);
-
-    else if (strcmp(name, "ztrmm") == 0)
-        test_ztrmm(pval, info);
-    else if (strcmp(name, "dtrmm") == 0)
-        test_dtrmm(pval, info);
-    else if (strcmp(name, "ctrmm") == 0)
-        test_ctrmm(pval, info);
-    else if (strcmp(name, "strmm") == 0)
-        test_strmm(pval, info);
 
     else if (strcmp(name, "zcposv") == 0)
         test_zcposv(pval, info);
