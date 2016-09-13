@@ -85,8 +85,8 @@
  *
  ******************************************************************************/
 int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
-                 PLASMA_Complex64_t alpha, PLASMA_Complex64_t *A, int lda,
-                 PLASMA_Complex64_t beta,  PLASMA_Complex64_t *C, int ldc)
+                 plasma_complex64_t alpha, plasma_complex64_t *A, int lda,
+                 plasma_complex64_t beta,  plasma_complex64_t *C, int ldc)
 {
     int Am, An;
     int nb;
@@ -268,8 +268,8 @@ int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
  *
  ******************************************************************************/
 void plasma_omp_zsyrk(PLASMA_enum uplo, PLASMA_enum trans,
-                      PLASMA_Complex64_t alpha, plasma_desc_t *A,
-                      PLASMA_Complex64_t beta,  plasma_desc_t *C,
+                      plasma_complex64_t alpha, plasma_desc_t *A,
+                      plasma_complex64_t beta,  plasma_desc_t *C,
                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
@@ -316,8 +316,8 @@ void plasma_omp_zsyrk(PLASMA_enum uplo, PLASMA_enum trans,
 
     // quick return
     int k = trans == PlasmaNoTrans ? A->n : A->m;
-    PLASMA_Complex64_t zzero = (PLASMA_Complex64_t)0.0;
-    PLASMA_Complex64_t zone  = (PLASMA_Complex64_t)1.0;
+    plasma_complex64_t zzero = (plasma_complex64_t)0.0;
+    plasma_complex64_t zone  = (plasma_complex64_t)1.0;
 
     if (C->m == 0 || ((alpha == zzero || k == 0) && beta == zone))
         return;

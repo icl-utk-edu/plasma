@@ -84,9 +84,9 @@
  ******************************************************************************/
 void core_zsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
                  int n, int k,
-                 PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
-                                           const PLASMA_Complex64_t *B, int ldb,
-                 PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc)
+                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+                                           const plasma_complex64_t *B, int ldb,
+                 plasma_complex64_t beta,        plasma_complex64_t *C, int ldc)
 {
     cblas_zsyr2k(CblasColMajor,
                  (CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)trans,
@@ -100,9 +100,9 @@ void core_zsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
 void core_omp_zsyr2k(
     PLASMA_enum uplo, PLASMA_enum trans,
     int n, int k,
-    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
-                              const PLASMA_Complex64_t *B, int ldb,
-    PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc)
+    plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+                              const plasma_complex64_t *B, int ldb,
+    plasma_complex64_t beta,        plasma_complex64_t *C, int ldc)
 {
     // omp depends assume lda == n or k, ldb == n or k, and ldc == n,
     // depending on trans.

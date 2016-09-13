@@ -16,25 +16,25 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define A(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(A, m, n))
-#define B(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(B, m, n))
-#define C(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(C, m, n))
+#define A(m, n) ((plasma_complex64_t*) plasma_getaddr(A, m, n))
+#define B(m, n) ((plasma_complex64_t*) plasma_getaddr(B, m, n))
+#define C(m, n) ((plasma_complex64_t*) plasma_getaddr(C, m, n))
 /***************************************************************************//**
  * Parallel tile matrix-matrix multiplication.
  * @see plasma_omp_zgemm
  ******************************************************************************/
 void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
-                   PLASMA_Complex64_t alpha, plasma_desc_t A,
+                   plasma_complex64_t alpha, plasma_desc_t A,
                                              plasma_desc_t B,
-                   PLASMA_Complex64_t beta,  plasma_desc_t C,
+                   plasma_complex64_t beta,  plasma_desc_t C,
                    plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int m, n, k;
     int ldam, ldak, ldbn, ldbk, ldcm;
     int tempmm, tempnn, tempkn, tempkm;
 
-    PLASMA_Complex64_t zbeta;
-    PLASMA_Complex64_t zone = 1.0;
+    plasma_complex64_t zbeta;
+    plasma_complex64_t zone = 1.0;
 
     int innerK = (transA == PlasmaNoTrans ? A.n : A.m);
 

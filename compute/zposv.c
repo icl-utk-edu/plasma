@@ -86,8 +86,8 @@
  *
  ******************************************************************************/
 int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
-                 PLASMA_Complex64_t *A, int lda,
-                 PLASMA_Complex64_t *B, int ldb)
+                 plasma_complex64_t *A, int lda,
+                 plasma_complex64_t *B, int ldb)
 {
     int nb;
     int status;
@@ -300,7 +300,7 @@ void plasma_omp_zposv(PLASMA_enum uplo,
     // Call the parallel functions.
     plasma_pzpotrf(uplo, *A, sequence, request);
 
-    PLASMA_Complex64_t zone = 1.0;
+    plasma_complex64_t zone = 1.0;
     PLASMA_enum trans = uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans;
 
     plasma_pztrsm(PlasmaLeft, uplo,

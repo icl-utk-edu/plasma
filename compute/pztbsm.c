@@ -16,8 +16,8 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define A(m,n) ((PLASMA_Complex64_t*)plasma_getaddr_band(uplo, A, (m), (n)))
-#define B(m,n) ((PLASMA_Complex64_t*)plasma_getaddr(B, (m), (n)))
+#define A(m,n) ((plasma_complex64_t*)plasma_getaddr_band(uplo, A, (m), (n)))
+#define B(m,n) ((plasma_complex64_t*)plasma_getaddr(B, (m), (n)))
 #define IPIV(k) (&(IPIV[B.mb*(k)]))
 
 /***************************************************************************//**
@@ -25,7 +25,7 @@
  **/
 void plasma_pztbsm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_enum trans, PLASMA_enum diag,
-                   PLASMA_Complex64_t alpha, plasma_desc_t A,
+                   plasma_complex64_t alpha, plasma_desc_t A,
                                              plasma_desc_t B,
                    const int *IPIV,
                    plasma_sequence_t *sequence, plasma_request_t *request)
@@ -33,9 +33,9 @@ void plasma_pztbsm(PLASMA_enum side, PLASMA_enum uplo,
     int k, m, n;
     int tempkm, tempmm, tempnn;
 
-    PLASMA_Complex64_t zone       = (PLASMA_Complex64_t) 1.0;
-    PLASMA_Complex64_t mzone      = (PLASMA_Complex64_t)-1.0;
-    PLASMA_Complex64_t lalpha;
+    plasma_complex64_t zone       = (plasma_complex64_t) 1.0;
+    plasma_complex64_t mzone      = (plasma_complex64_t)-1.0;
+    plasma_complex64_t lalpha;
 
     if (sequence->status != PLASMA_SUCCESS)
         return;

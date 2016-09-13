@@ -131,8 +131,8 @@ void test_zgemm(param_value_t param[], char *info)
     double eps = LAPACKE_dlamch('E');
 
 #ifdef COMPLEX
-    PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
-    PLASMA_Complex64_t beta  = param[PARAM_BETA].z;
+    plasma_complex64_t alpha = param[PARAM_ALPHA].z;
+    plasma_complex64_t beta  = param[PARAM_BETA].z;
 #else
     double alpha = creal(param[PARAM_ALPHA].z);
     double beta  = creal(param[PARAM_BETA].z);
@@ -146,16 +146,16 @@ void test_zgemm(param_value_t param[], char *info)
     //================================================================
     // Allocate and initialize arrays.
     //================================================================
-    PLASMA_Complex64_t *A =
-        (PLASMA_Complex64_t*)malloc((size_t)lda*An*sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *A =
+        (plasma_complex64_t*)malloc((size_t)lda*An*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
-    PLASMA_Complex64_t *B =
-        (PLASMA_Complex64_t*)malloc((size_t)ldb*Bn*sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *B =
+        (plasma_complex64_t*)malloc((size_t)ldb*Bn*sizeof(plasma_complex64_t));
     assert(B != NULL);
 
-    PLASMA_Complex64_t *C =
-        (PLASMA_Complex64_t*)malloc((size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *C =
+        (plasma_complex64_t*)malloc((size_t)ldc*Cn*sizeof(plasma_complex64_t));
     assert(C != NULL);
 
     int seed[] = {0, 0, 0, 1};
@@ -169,13 +169,13 @@ void test_zgemm(param_value_t param[], char *info)
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldc*Cn, C);
     assert(retval == 0);
 
-    PLASMA_Complex64_t *Cref = NULL;
+    plasma_complex64_t *Cref = NULL;
     if (test) {
-        Cref = (PLASMA_Complex64_t*)malloc(
-            (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
+        Cref = (plasma_complex64_t*)malloc(
+            (size_t)ldc*Cn*sizeof(plasma_complex64_t));
         assert(Cref != NULL);
 
-        memcpy(Cref, C, (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
+        memcpy(Cref, C, (size_t)ldc*Cn*sizeof(plasma_complex64_t));
     }
 
     //================================================================
@@ -223,7 +223,7 @@ void test_zgemm(param_value_t param[], char *info)
                                 B, ldb,
              CBLAS_SADDR(beta), Cref, ldc);
 
-        PLASMA_Complex64_t zmone = -1.0;
+        plasma_complex64_t zmone = -1.0;
         cblas_zaxpy((size_t)ldc*Cn, CBLAS_SADDR(zmone), Cref, 1, C, 1);
 
         double error = LAPACKE_zlange_work(

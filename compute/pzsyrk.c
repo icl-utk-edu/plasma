@@ -16,23 +16,23 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define A(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(A, m, n))
-#define C(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(C, m, n))
+#define A(m, n) ((plasma_complex64_t*) plasma_getaddr(A, m, n))
+#define C(m, n) ((plasma_complex64_t*) plasma_getaddr(C, m, n))
 /***************************************************************************//**
  * Parallel tile symetric rank k update.
  * @see plasma_omp_zsyrk
  ******************************************************************************/
 void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
-                   PLASMA_Complex64_t alpha, plasma_desc_t A,
-                   PLASMA_Complex64_t beta,  plasma_desc_t C,
+                   plasma_complex64_t alpha, plasma_desc_t A,
+                   plasma_complex64_t beta,  plasma_desc_t C,
                    plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int m, n, k;
     int ldak, ldam, ldan, ldcm, ldcn;
     int tempnn, tempmm, tempkn, tempkm;
 
-    PLASMA_Complex64_t zbeta;
-    PLASMA_Complex64_t zone = 1.0;
+    plasma_complex64_t zbeta;
+    plasma_complex64_t zone = 1.0;
 
     // Check sequence status.
     if (sequence->status != PLASMA_SUCCESS) {

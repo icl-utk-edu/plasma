@@ -98,13 +98,13 @@ void test_zgeqrs(param_value_t param[], char *info)
     //================================================================
     // Allocate and initialize arrays.
     //================================================================
-    PLASMA_Complex64_t *A =
-        (PLASMA_Complex64_t*)malloc((size_t)lda*n*sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *A =
+        (plasma_complex64_t*)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
-    PLASMA_Complex64_t *B =
-        (PLASMA_Complex64_t*)malloc((size_t)ldb*nrhs*
-                                    sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *B =
+        (plasma_complex64_t*)malloc((size_t)ldb*nrhs*
+                                    sizeof(plasma_complex64_t));
     assert(B != NULL);
 
     int seed[] = {0, 0, 0, 1};
@@ -116,20 +116,20 @@ void test_zgeqrs(param_value_t param[], char *info)
     assert(retval == 0);
 
     // store the original arrays if residual is to be evaluated
-    PLASMA_Complex64_t *Aref = NULL;
-    PLASMA_Complex64_t *Bref = NULL;
+    plasma_complex64_t *Aref = NULL;
+    plasma_complex64_t *Bref = NULL;
     if (test) {
-        Aref = (PLASMA_Complex64_t*)malloc(
-            (size_t)lda*n*sizeof(PLASMA_Complex64_t));
+        Aref = (plasma_complex64_t*)malloc(
+            (size_t)lda*n*sizeof(plasma_complex64_t));
         assert(Aref != NULL);
 
-        memcpy(Aref, A, (size_t)lda*n*sizeof(PLASMA_Complex64_t));
+        memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
 
-        Bref = (PLASMA_Complex64_t*)malloc(
-            (size_t)ldb*nrhs*sizeof(PLASMA_Complex64_t));
+        Bref = (plasma_complex64_t*)malloc(
+            (size_t)ldb*nrhs*sizeof(plasma_complex64_t));
         assert(Bref != NULL);
 
-        memcpy(Bref, B, (size_t)ldb*nrhs*sizeof(PLASMA_Complex64_t));
+        memcpy(Bref, B, (size_t)ldb*nrhs*sizeof(plasma_complex64_t));
     }
 
     // Get PLASMA context.
@@ -184,9 +184,9 @@ void test_zgeqrs(param_value_t param[], char *info)
                                            B, ldb, work);
 
         // compute residual and store it in B = A*X - B
-        PLASMA_Complex64_t zone  =  1.0;
-        PLASMA_Complex64_t mzone = -1.0;
-        PLASMA_Complex64_t zzero =  0.0;
+        plasma_complex64_t zone  =  1.0;
+        plasma_complex64_t mzone = -1.0;
+        plasma_complex64_t zzero =  0.0;
         cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, nrhs, n,
                     CBLAS_SADDR(zone), Aref, lda, B, ldb,
                     CBLAS_SADDR(mzone), Bref, ldb);

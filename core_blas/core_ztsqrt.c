@@ -83,17 +83,17 @@
  *
  ******************************************************************************/
 int core_ztsqrt(int m, int n, int ib,
-                PLASMA_Complex64_t *A1, int lda1,
-                PLASMA_Complex64_t *A2, int lda2,
-                PLASMA_Complex64_t *T,  int ldt,
-                PLASMA_Complex64_t *TAU,
-                PLASMA_Complex64_t *WORK)
+                plasma_complex64_t *A1, int lda1,
+                plasma_complex64_t *A2, int lda2,
+                plasma_complex64_t *T,  int ldt,
+                plasma_complex64_t *TAU,
+                plasma_complex64_t *WORK)
 {
     int i, ii, sb;
-    PLASMA_Complex64_t alpha;
+    plasma_complex64_t alpha;
 
-    static PLASMA_Complex64_t zone  = 1.0;
-    static PLASMA_Complex64_t zzero = 0.0;
+    static plasma_complex64_t zone  = 1.0;
+    static plasma_complex64_t zzero = 0.0;
 
     // Check input arguments.
     if (m < 0) {
@@ -190,9 +190,9 @@ int core_ztsqrt(int m, int n, int ib,
 
 /******************************************************************************/
 void core_omp_ztsqrt(int m, int n, int ib, int nb,
-                     PLASMA_Complex64_t *A1, int lda1,
-                     PLASMA_Complex64_t *A2, int lda2,
-                     PLASMA_Complex64_t *T,  int ldt,
+                     plasma_complex64_t *A1, int lda1,
+                     plasma_complex64_t *A2, int lda2,
+                     plasma_complex64_t *T,  int ldt,
                      plasma_workspace_t *work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
@@ -206,9 +206,9 @@ void core_omp_ztsqrt(int m, int n, int ib, int nb,
             // split spaces into TAU and WORK
             int ltau = n;
             int lwork = work->lwork - ltau;
-            PLASMA_Complex64_t *TAU = ((PLASMA_Complex64_t*)work->spaces[tid]);
-            PLASMA_Complex64_t *W   =
-                ((PLASMA_Complex64_t*)work->spaces[tid]) + ltau;
+            plasma_complex64_t *TAU = ((plasma_complex64_t*)work->spaces[tid]);
+            plasma_complex64_t *W   =
+                ((plasma_complex64_t*)work->spaces[tid]) + ltau;
 
             // Call the kernel.
             int info = core_ztsqrt(m, n, ib,

@@ -93,9 +93,9 @@
  *
  ******************************************************************************/
 int PLASMA_zunmqr(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
-                  PLASMA_Complex64_t *A, int lda,
+                  plasma_complex64_t *A, int lda,
                   plasma_desc_t *descT,
-                  PLASMA_Complex64_t *C, int ldc)
+                  plasma_complex64_t *C, int ldc)
 {
     int ib, nb;
     int retval;

@@ -16,15 +16,15 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define A(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(A, m, n))
-#define B(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(B, m, n))
-#define C(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(C, m, n))
+#define A(m, n) ((plasma_complex64_t*) plasma_getaddr(A, m, n))
+#define B(m, n) ((plasma_complex64_t*) plasma_getaddr(B, m, n))
+#define C(m, n) ((plasma_complex64_t*) plasma_getaddr(C, m, n))
 /***************************************************************************//**
  * Parallel tile Hermitian rank 2k update.
  * @see plasma_omp_zher2k
  ******************************************************************************/
 void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
-                    PLASMA_Complex64_t alpha, plasma_desc_t A,
+                    plasma_complex64_t alpha, plasma_desc_t A,
                     plasma_desc_t B, double beta,  plasma_desc_t C,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
@@ -33,8 +33,8 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
     int ldbk, ldbm, ldbn;
     int tempnn, tempmm, tempkn, tempkm;
 
-    PLASMA_Complex64_t zone   = (PLASMA_Complex64_t)1.0;
-    PLASMA_Complex64_t zbeta;
+    plasma_complex64_t zone   = (plasma_complex64_t)1.0;
+    plasma_complex64_t zbeta;
     double dbeta;
 
     // Check sequence status.
@@ -73,7 +73,7 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
                     ldcm = BLKLDD(C, m);
                     for (k = 0; k < A.nt; k++) {
                         tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
-                        zbeta = k == 0 ? (PLASMA_Complex64_t)beta : zone;
+                        zbeta = k == 0 ? (plasma_complex64_t)beta : zone;
                         core_omp_zgemm(
                             trans, PlasmaConjTrans,
                             tempmm, tempnn, tempkn,
@@ -100,7 +100,7 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
                     ldbm = BLKLDD(B, m);
                     for (k = 0; k < A.nt; k++) {
                         tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
-                        zbeta = k == 0 ? (PLASMA_Complex64_t)beta : zone;
+                        zbeta = k == 0 ? (plasma_complex64_t)beta : zone;
                         core_omp_zgemm(
                             trans, PlasmaConjTrans,
                             tempnn, tempmm, tempkn,
@@ -145,7 +145,7 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
                         tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
                         ldak = BLKLDD(A, k);
                         ldbk = BLKLDD(B, k);
-                        zbeta = k == 0 ? (PLASMA_Complex64_t)beta : zone;
+                        zbeta = k == 0 ? (plasma_complex64_t)beta : zone;
                         core_omp_zgemm(
                             trans, PlasmaNoTrans,
                             tempmm, tempnn, tempkm,
@@ -172,7 +172,7 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
                         tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
                         ldak = BLKLDD(A, k);
                         ldbk = BLKLDD(B, k);
-                        zbeta = k == 0 ? (PLASMA_Complex64_t)beta : zone;
+                        zbeta = k == 0 ? (plasma_complex64_t)beta : zone;
 
                         core_omp_zgemm(
                             trans, PlasmaNoTrans,

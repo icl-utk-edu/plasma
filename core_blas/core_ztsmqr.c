@@ -117,11 +117,11 @@
  ******************************************************************************/
 int core_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
                 int m1, int n1, int m2, int n2, int k, int ib,
-                      PLASMA_Complex64_t *A1,   int lda1,
-                      PLASMA_Complex64_t *A2,   int lda2,
-                const PLASMA_Complex64_t *V,    int ldv,
-                const PLASMA_Complex64_t *T,    int ldt,
-                      PLASMA_Complex64_t *WORK, int ldwork)
+                      plasma_complex64_t *A1,   int lda1,
+                      plasma_complex64_t *A2,   int lda2,
+                const plasma_complex64_t *V,    int ldv,
+                const plasma_complex64_t *T,    int ldt,
+                      plasma_complex64_t *WORK, int ldwork)
 {
     int i, i1, i3;
     int nq, nw;
@@ -247,10 +247,10 @@ int core_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
 /******************************************************************************/
 void core_omp_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
                      int m1, int n1, int m2, int n2, int k, int ib, int nb,
-                           PLASMA_Complex64_t *A1, int lda1,
-                           PLASMA_Complex64_t *A2, int lda2,
-                     const PLASMA_Complex64_t *V, int ldv,
-                     const PLASMA_Complex64_t *T, int ldt,
+                           plasma_complex64_t *A1, int lda1,
+                           plasma_complex64_t *A2, int lda2,
+                     const plasma_complex64_t *V, int ldv,
+                     const plasma_complex64_t *T, int ldt,
                      plasma_workspace_t *work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
@@ -262,8 +262,8 @@ void core_omp_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
     {
         if (sequence->status == PLASMA_SUCCESS) {
             int tid = omp_get_thread_num();
-            PLASMA_Complex64_t *W   =
-                ((PLASMA_Complex64_t*)work->spaces[tid]);
+            plasma_complex64_t *W   =
+                ((plasma_complex64_t*)work->spaces[tid]);
 
             int ldwork = side == PlasmaLeft ? ib : nb;
 

@@ -72,10 +72,10 @@
  *
  ******************************************************************************/
 void core_zgeadd(PLASMA_enum transA, int m, int n,
-                      PLASMA_Complex64_t  alpha,
-                const PLASMA_Complex64_t *A, int lda,
-                      PLASMA_Complex64_t  beta,
-                      PLASMA_Complex64_t *B, int ldb)
+                      plasma_complex64_t  alpha,
+                const plasma_complex64_t *A, int lda,
+                      plasma_complex64_t  beta,
+                      plasma_complex64_t *B, int ldb)
 {
     int i, j;
 
@@ -153,8 +153,8 @@ void core_zgeadd(PLASMA_enum transA, int m, int n,
 /******************************************************************************/
 void core_omp_zgeadd(
     PLASMA_enum transA, int m, int n,
-    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
-    PLASMA_Complex64_t beta,        PLASMA_Complex64_t *B, int ldb)
+    plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+    plasma_complex64_t beta,        plasma_complex64_t *B, int ldb)
 {
     // omp depend assumes lda = PlasmaNoTrans ? m : n; ldb = m
     #pragma omp task depend(in:A[0:m*n]) depend(inout:B[0:m*n])

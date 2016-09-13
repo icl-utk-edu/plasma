@@ -77,8 +77,8 @@
  *
  ******************************************************************************/
 int PLASMA_zpbtrs(PLASMA_enum uplo, int n, int kd, int nrhs,
-                  PLASMA_Complex64_t *AB, int ldab,
-                  PLASMA_Complex64_t *B, int ldb)
+                  plasma_complex64_t *AB, int ldab,
+                  plasma_complex64_t *B, int ldb)
 {
     int nb;
     int retval;

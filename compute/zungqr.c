@@ -69,9 +69,9 @@
  *
  ******************************************************************************/
 int PLASMA_zungqr(int m, int n, int k,
-                  PLASMA_Complex64_t *A, int lda,
+                  plasma_complex64_t *A, int lda,
                   plasma_desc_t *descT,
-                  PLASMA_Complex64_t *Q, int ldq)
+                  plasma_complex64_t *Q, int ldq)
 {
     int ib, nb;
     int retval;
@@ -282,7 +282,7 @@ void plasma_omp_zungqr(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *Q,
 
     // set ones to diagonal of Q
     plasma_pzlaset(PlasmaFull,
-                   (PLASMA_Complex64_t)0.0, (PLASMA_Complex64_t)1.0, *Q,
+                   (plasma_complex64_t)0.0, (plasma_complex64_t)1.0, *Q,
                    sequence, request);
 
     // construct Q

@@ -88,8 +88,8 @@
  *
  ******************************************************************************/
 int PLASMA_zpbsv(PLASMA_enum uplo, int n, int kd, int nrhs,
-                 PLASMA_Complex64_t *AB, int ldab,
-                 PLASMA_Complex64_t *B, int ldb)
+                 plasma_complex64_t *AB, int ldab,
+                 plasma_complex64_t *B, int ldb)
 {
     int nb;
     int status;
@@ -254,7 +254,7 @@ int PLASMA_zpbsv(PLASMA_enum uplo, int n, int kd, int nrhs,
 void plasma_omp_zpbsv(PLASMA_enum uplo, plasma_desc_t *AB, plasma_desc_t *B,
                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    PLASMA_Complex64_t zone = 1.0;
+    plasma_complex64_t zone = 1.0;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

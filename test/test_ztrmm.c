@@ -115,7 +115,7 @@ void test_ztrmm(param_value_t param[], char *info)
     double eps  = LAPACKE_dlamch('E');
 
 #ifdef COMPLEX
-    PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
+    plasma_complex64_t alpha = param[PARAM_ALPHA].z;
 #else
     double alpha = creal(param[PARAM_ALPHA].z);
 #endif
@@ -128,12 +128,12 @@ void test_ztrmm(param_value_t param[], char *info)
     //================================================================
     // Allocate and initialize arrays.
     //================================================================
-    PLASMA_Complex64_t *A =
-        (PLASMA_Complex64_t *)malloc((size_t)lda*k*sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *A =
+        (plasma_complex64_t *)malloc((size_t)lda*k*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
-    PLASMA_Complex64_t *B =
-        (PLASMA_Complex64_t *)malloc((size_t)ldb*n*sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *B =
+        (plasma_complex64_t *)malloc((size_t)ldb*n*sizeof(plasma_complex64_t));
     assert(B != NULL);
 
     int seed[] = {0, 0, 0, 1};
@@ -144,13 +144,13 @@ void test_ztrmm(param_value_t param[], char *info)
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*n, B);
     assert(retval == 0);
 
-    PLASMA_Complex64_t *Bref = NULL;
+    plasma_complex64_t *Bref = NULL;
     if (test) {
-        Bref = (PLASMA_Complex64_t*)malloc(
-            (size_t)ldb*n*sizeof(PLASMA_Complex64_t));
+        Bref = (plasma_complex64_t*)malloc(
+            (size_t)ldb*n*sizeof(plasma_complex64_t));
         assert(Bref != NULL);
 
-        memcpy(Bref, B, (size_t)ldb*n*sizeof(PLASMA_Complex64_t));
+        memcpy(Bref, B, (size_t)ldb*n*sizeof(plasma_complex64_t));
     }
 
     //================================================================
@@ -173,9 +173,9 @@ void test_ztrmm(param_value_t param[], char *info)
     //================================================================
     if (test) {
         // see comments in test_zgemm.c
-        PLASMA_Complex64_t zzero =  0.0;
-        PLASMA_Complex64_t zone  =  1.0;
-        PLASMA_Complex64_t zmone = -1.0;
+        plasma_complex64_t zzero =  0.0;
+        plasma_complex64_t zone  =  1.0;
+        plasma_complex64_t zmone = -1.0;
         double work[1];
 
         // LAPACKE_[ds]lantr_work has a bug (returns 0)

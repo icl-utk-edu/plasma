@@ -16,12 +16,12 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define tileA(m, n) ((PLASMA_Complex64_t*)plasma_getaddr_band(uplo, A, (m), (n)))
+#define tileA(m, n) ((plasma_complex64_t*)plasma_getaddr_band(uplo, A, (m), (n)))
 #define bandA(m, n) (&(Af77[lda*(A.nb*(n)) + (uplo == PlasmaUpper ? A.ku : 0)+A.mb*((m)-(n))]))
 
 /******************************************************************************/
 void plasma_pzooccrb2cm_band(PLASMA_enum uplo,
-                             plasma_desc_t A, PLASMA_Complex64_t *Af77, int lda,
+                             plasma_desc_t A, plasma_complex64_t *Af77, int lda,
                              plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int n, m;

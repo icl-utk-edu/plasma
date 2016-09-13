@@ -67,7 +67,7 @@
  *
  ******************************************************************************/
 int PLASMA_zgeqrf(int m, int n,
-                  PLASMA_Complex64_t *A, int lda,
+                  plasma_complex64_t *A, int lda,
                   plasma_desc_t *descT)
 {
     int ib, nb;

@@ -79,9 +79,9 @@
  ******************************************************************************/
 void core_zhemm(PLASMA_enum side, PLASMA_enum uplo,
                 int m, int n,
-                PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
-                                          const PLASMA_Complex64_t *B, int ldb,
-                PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc)
+                plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+                                          const plasma_complex64_t *B, int ldb,
+                plasma_complex64_t beta,        plasma_complex64_t *C, int ldc)
 {
     cblas_zhemm(CblasColMajor,
                 (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
@@ -95,9 +95,9 @@ void core_zhemm(PLASMA_enum side, PLASMA_enum uplo,
 void core_omp_zhemm(
     PLASMA_enum side, PLASMA_enum uplo,
     int m, int n,
-    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
-                              const PLASMA_Complex64_t *B, int ldb,
-    PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc)
+    plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+                              const plasma_complex64_t *B, int ldb,
+    plasma_complex64_t beta,        plasma_complex64_t *C, int ldc)
 {
     if (side == PlasmaLeft) {
         #pragma omp task depend(in:A[0:m*m]) \

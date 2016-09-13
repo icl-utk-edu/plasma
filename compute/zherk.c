@@ -84,8 +84,8 @@
  ******************************************************************************/
 int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans,
                  int n, int k,
-                 double alpha, PLASMA_Complex64_t *A, int lda,
-                 double beta,  PLASMA_Complex64_t *C, int ldc)
+                 double alpha, plasma_complex64_t *A, int lda,
+                 double beta,  plasma_complex64_t *C, int ldc)
 {
     int Am, An;
     int nb;
@@ -314,8 +314,8 @@ void plasma_omp_zherk(PLASMA_enum uplo, PLASMA_enum trans,
 
     // quick return
     int k = trans == PlasmaNoTrans ? A->n : A->m;
-    PLASMA_Complex64_t zzero = (PLASMA_Complex64_t)0.0;
-    PLASMA_Complex64_t zone  = (PLASMA_Complex64_t)1.0;
+    plasma_complex64_t zzero = (plasma_complex64_t)0.0;
+    plasma_complex64_t zone  = (plasma_complex64_t)1.0;
 
     if (C->m == 0 || ((alpha == zzero || k == 0) && beta == zone))
         return;

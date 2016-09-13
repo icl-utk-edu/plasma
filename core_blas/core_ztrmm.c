@@ -95,8 +95,8 @@
 void core_ztrmm(
     PLASMA_enum side, PLASMA_enum uplo, PLASMA_enum transA, PLASMA_enum diag,
     int m, int n,
-    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
-                                    PLASMA_Complex64_t *B, int ldb)
+    plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+                                    plasma_complex64_t *B, int ldb)
 {
     cblas_ztrmm(
         CblasColMajor,
@@ -111,8 +111,8 @@ void core_ztrmm(
 void core_omp_ztrmm(
     PLASMA_enum side, PLASMA_enum uplo, PLASMA_enum transA, PLASMA_enum diag,
     int m, int n,
-    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
-                                    PLASMA_Complex64_t *B, int ldb)
+    plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+                                    plasma_complex64_t *B, int ldb)
 {
     // OpenMP depends assume lda == m or n, ldb == n or m
     // depending on transpose parameter transA

@@ -93,8 +93,8 @@ void test_zgeqrf(param_value_t param[], char *info)
     //================================================================
     // Allocate and initialize arrays.
     //================================================================
-    PLASMA_Complex64_t *A =
-        (PLASMA_Complex64_t*)malloc((size_t)lda*n*sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *A =
+        (plasma_complex64_t*)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
     int seed[] = {0, 0, 0, 1};
@@ -102,13 +102,13 @@ void test_zgeqrf(param_value_t param[], char *info)
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
 
-    PLASMA_Complex64_t *Aref = NULL;
+    plasma_complex64_t *Aref = NULL;
     if (test) {
-        Aref = (PLASMA_Complex64_t*)malloc(
-            (size_t)lda*n*sizeof(PLASMA_Complex64_t));
+        Aref = (plasma_complex64_t*)malloc(
+            (size_t)lda*n*sizeof(plasma_complex64_t));
         assert(Aref != NULL);
 
-        memcpy(Aref, A, (size_t)lda*n*sizeof(PLASMA_Complex64_t));
+        memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
     }
 
     // Get PLASMA context.
@@ -143,25 +143,25 @@ void test_zgeqrf(param_value_t param[], char *info)
     //=================================================================
     if (test) {
         // Check the orthogonality of Q
-        PLASMA_Complex64_t zzero =  0.0;
-        PLASMA_Complex64_t zone  =  1.0;
+        plasma_complex64_t zzero =  0.0;
+        plasma_complex64_t zone  =  1.0;
         double one  =  1.0;
         double mone = -1.0;
         int minmn = imin(m, n);
 
         // Allocate space for Q.
         int ldq = m;
-        PLASMA_Complex64_t *Q =
-            (PLASMA_Complex64_t *)malloc((size_t)ldq*minmn*
-                                         sizeof(PLASMA_Complex64_t));
+        plasma_complex64_t *Q =
+            (plasma_complex64_t *)malloc((size_t)ldq*minmn*
+                                         sizeof(plasma_complex64_t));
 
         // Build Q.
         PLASMA_zungqr(m, minmn, minmn, A, lda, &descT, Q, ldq);
 
         // Build the identity matrix
-        PLASMA_Complex64_t *Id =
-            (PLASMA_Complex64_t *) malloc((size_t)minmn*minmn*
-                                          sizeof(PLASMA_Complex64_t));
+        plasma_complex64_t *Id =
+            (plasma_complex64_t *) malloc((size_t)minmn*minmn*
+                                          sizeof(plasma_complex64_t));
         LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'g', minmn, minmn,
                             zzero, zone, Id, minmn);
 
@@ -187,9 +187,9 @@ void test_zgeqrf(param_value_t param[], char *info)
         // LAPACK version does not construct Q, it uses only application of it
 
         // Extract the R.
-        PLASMA_Complex64_t *R =
-            (PLASMA_Complex64_t *)malloc((size_t)m*n*
-                                         sizeof(PLASMA_Complex64_t));
+        plasma_complex64_t *R =
+            (plasma_complex64_t *)malloc((size_t)m*n*
+                                         sizeof(plasma_complex64_t));
         LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'l', m, n,
                             zzero, zzero, R, m);
         LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'u', m, n, A, lda, R, m);

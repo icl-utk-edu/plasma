@@ -16,7 +16,7 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define A(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(A, m, n))
+#define A(m, n) ((plasma_complex64_t*) plasma_getaddr(A, m, n))
 /***************************************************************************//**
  *  Parallel tile Cholesky factorization.
  * @see plasma_omp_zpotrf
@@ -28,8 +28,8 @@ void plasma_pzpotrf(PLASMA_enum uplo, plasma_desc_t A,
     int ldak, ldam, ldan;
     int tempkm, tempmm;
 
-    PLASMA_Complex64_t zone  = (PLASMA_Complex64_t) 1.0;
-    PLASMA_Complex64_t mzone = (PLASMA_Complex64_t)-1.0;
+    plasma_complex64_t zone  = (plasma_complex64_t) 1.0;
+    plasma_complex64_t mzone = (plasma_complex64_t)-1.0;
 
     // Check sequence status.
     if (sequence->status != PLASMA_SUCCESS) {

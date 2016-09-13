@@ -16,8 +16,8 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define A(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(A, m, n))
-#define B(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(B, m, n))
+#define A(m, n) ((plasma_complex64_t*) plasma_getaddr(A, m, n))
+#define B(m, n) ((plasma_complex64_t*) plasma_getaddr(B, m, n))
 
 /***************************************************************************//**
  *  Parallel tile triangular matrix-matrix multiplication.
@@ -25,14 +25,14 @@
  ******************************************************************************/
 void plasma_pztrmm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_enum trans, PLASMA_enum diag,
-                   PLASMA_Complex64_t alpha, plasma_desc_t A, plasma_desc_t B,
+                   plasma_complex64_t alpha, plasma_desc_t A, plasma_desc_t B,
                    plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int k, m, n;
     int ldak, ldam, ldan, ldbk, ldbm;
     int tempkm, tempkn, tempmm, tempnn;
 
-    PLASMA_Complex64_t zone = (PLASMA_Complex64_t)1.0;
+    plasma_complex64_t zone = (plasma_complex64_t)1.0;
 
     // Check sequence status
     if (sequence->status != PLASMA_SUCCESS) {

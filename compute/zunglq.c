@@ -69,9 +69,9 @@
  *
  ******************************************************************************/
 int PLASMA_zunglq(int m, int n, int k,
-                  PLASMA_Complex64_t *A, int lda,
+                  plasma_complex64_t *A, int lda,
                   plasma_desc_t *descT,
-                  PLASMA_Complex64_t *Q, int ldq)
+                  plasma_complex64_t *Q, int ldq)
 {
     int ib, nb;
     int retval;

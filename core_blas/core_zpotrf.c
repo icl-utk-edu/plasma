@@ -53,7 +53,7 @@
  ******************************************************************************/
 int core_zpotrf(PLASMA_enum uplo,
                  int n,
-                 PLASMA_Complex64_t *A, int lda)
+                 plasma_complex64_t *A, int lda)
 {
     return LAPACKE_zpotrf(LAPACK_COL_MAJOR,
                           lapack_const(uplo),
@@ -64,7 +64,7 @@ int core_zpotrf(PLASMA_enum uplo,
 /******************************************************************************/
 void core_omp_zpotrf(PLASMA_enum uplo,
                      int n,
-                     PLASMA_Complex64_t *A, int lda,
+                     plasma_complex64_t *A, int lda,
                      plasma_sequence_t *sequence, plasma_request_t *request,
                      int iinfo)
 {

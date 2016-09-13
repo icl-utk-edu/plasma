@@ -102,9 +102,9 @@
  ******************************************************************************/
 int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
                  int m, int n, int k,
-                 PLASMA_Complex64_t alpha, PLASMA_Complex64_t *A, int lda,
-                                           PLASMA_Complex64_t *B, int ldb,
-                 PLASMA_Complex64_t beta,  PLASMA_Complex64_t *C, int ldc)
+                 plasma_complex64_t alpha, plasma_complex64_t *A, int lda,
+                                           plasma_complex64_t *B, int ldb,
+                 plasma_complex64_t beta,  plasma_complex64_t *C, int ldc)
 {
     int Am, An;
     int Bm, Bn;
@@ -116,8 +116,8 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
     plasma_desc_t descB;
     plasma_desc_t descC;
 
-    PLASMA_Complex64_t zzero = 0.0;
-    PLASMA_Complex64_t zone  = 1.0;
+    plasma_complex64_t zzero = 0.0;
+    plasma_complex64_t zone  = 1.0;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -342,9 +342,9 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
  *
  ******************************************************************************/
 void plasma_omp_zgemm(PLASMA_enum transA, PLASMA_enum transB,
-                      PLASMA_Complex64_t alpha, plasma_desc_t *A,
+                      plasma_complex64_t alpha, plasma_desc_t *A,
                                                 plasma_desc_t *B,
-                      PLASMA_Complex64_t beta,  plasma_desc_t *C,
+                      plasma_complex64_t beta,  plasma_desc_t *C,
                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
@@ -398,7 +398,7 @@ void plasma_omp_zgemm(PLASMA_enum transA, PLASMA_enum transB,
 
     // quick return
     int k = transA == PlasmaNoTrans ? A->n : A->m;
-    PLASMA_Complex64_t zzero = (PLASMA_Complex64_t)0.0;
+    plasma_complex64_t zzero = (plasma_complex64_t)0.0;
 
     if (C->m == 0 || C->n == 0 || ((alpha == zzero || k == 0) && beta == 1.0))
         return;

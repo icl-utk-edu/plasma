@@ -98,16 +98,16 @@
  ******************************************************************************/
 int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
                   int n, int k,
-                  PLASMA_Complex64_t alpha, PLASMA_Complex64_t *A, int lda,
-                                            PLASMA_Complex64_t *B, int ldb,
-                               double beta, PLASMA_Complex64_t *C, int ldc)
+                  plasma_complex64_t alpha, plasma_complex64_t *A, int lda,
+                                            plasma_complex64_t *B, int ldb,
+                               double beta, plasma_complex64_t *C, int ldc)
 {
     int Am, An;
     int Bm, Bn;
     int nb;
     int retval;
     int status;
-    PLASMA_Complex64_t zzero = 0.0;
+    plasma_complex64_t zzero = 0.0;
 
     plasma_desc_t descA;
     plasma_desc_t descB;
@@ -312,7 +312,7 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
  *
  ******************************************************************************/
 void plasma_omp_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
-                       PLASMA_Complex64_t alpha, plasma_desc_t *A,
+                       plasma_complex64_t alpha, plasma_desc_t *A,
                                                  plasma_desc_t *B,
                        double beta,              plasma_desc_t *C,
                        plasma_sequence_t *sequence,
@@ -366,8 +366,8 @@ void plasma_omp_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
 
     // quick return
     int k = trans == PlasmaNoTrans ? A->n : A->m;
-    PLASMA_Complex64_t zzero = (PLASMA_Complex64_t)0.0;
-    PLASMA_Complex64_t zone  = (PLASMA_Complex64_t)1.0;
+    plasma_complex64_t zzero = (plasma_complex64_t)0.0;
+    plasma_complex64_t zone  = (plasma_complex64_t)1.0;
 
     if (C->m == 0 || ((alpha == zzero || k == 0) && beta == zone))
         return;

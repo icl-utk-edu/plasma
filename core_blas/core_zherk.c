@@ -72,8 +72,8 @@
  ******************************************************************************/
 void core_zherk(PLASMA_enum uplo, PLASMA_enum trans,
                 int n, int k,
-                double alpha, const PLASMA_Complex64_t *A, int lda,
-                double beta,        PLASMA_Complex64_t *C, int ldc)
+                double alpha, const plasma_complex64_t *A, int lda,
+                double beta,        plasma_complex64_t *C, int ldc)
 {
     cblas_zherk(CblasColMajor,
                 (CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)trans,
@@ -85,8 +85,8 @@ void core_zherk(PLASMA_enum uplo, PLASMA_enum trans,
 /******************************************************************************/
 void core_omp_zherk(PLASMA_enum uplo, PLASMA_enum trans,
                     int n, int k,
-                    double alpha, const PLASMA_Complex64_t *A, int lda,
-                    double beta,        PLASMA_Complex64_t *C, int ldc)
+                    double alpha, const plasma_complex64_t *A, int lda,
+                    double beta,        plasma_complex64_t *C, int ldc)
 {
     // omp depends assume lda == n or k, and ldc == n,
     // depending on trans.

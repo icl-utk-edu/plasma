@@ -16,15 +16,15 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define A(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(A, m, n))
-#define B(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(B, m, n))
+#define A(m, n) ((plasma_complex64_t*) plasma_getaddr(A, m, n))
+#define B(m, n) ((plasma_complex64_t*) plasma_getaddr(B, m, n))
 /***************************************************************************//**
  * Parallel tile triangular solve.
  * @see plasma_omp_ztrsm
  ******************************************************************************/
 void plasma_pztrsm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_enum trans, PLASMA_enum diag,
-                   PLASMA_Complex64_t alpha, plasma_desc_t A,
+                   plasma_complex64_t alpha, plasma_desc_t A,
                                              plasma_desc_t B,
                    plasma_sequence_t *sequence, plasma_request_t *request)
 {
@@ -32,10 +32,10 @@ void plasma_pztrsm(PLASMA_enum side, PLASMA_enum uplo,
     int ldak, ldam, ldan, ldbk, ldbm;
     int tempkm, tempkn, tempmm, tempnn;
 
-    PLASMA_Complex64_t zone       = (PLASMA_Complex64_t) 1.0;
-    PLASMA_Complex64_t mzone      = (PLASMA_Complex64_t)-1.0;
-    PLASMA_Complex64_t minvalpha  = (PLASMA_Complex64_t)-1.0 / alpha;
-    PLASMA_Complex64_t lalpha;
+    plasma_complex64_t zone       = (plasma_complex64_t) 1.0;
+    plasma_complex64_t mzone      = (plasma_complex64_t)-1.0;
+    plasma_complex64_t minvalpha  = (plasma_complex64_t)-1.0 / alpha;
+    plasma_complex64_t lalpha;
 
     // Check sequence status.
     if (sequence->status != PLASMA_SUCCESS) {

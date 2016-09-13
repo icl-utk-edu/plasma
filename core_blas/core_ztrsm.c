@@ -87,8 +87,8 @@
 void core_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
                 PLASMA_enum transA, PLASMA_enum diag,
                 int m, int n,
-                PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
-                                                PLASMA_Complex64_t *B, int ldb)
+                plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+                                                plasma_complex64_t *B, int ldb)
 {
     cblas_ztrsm(CblasColMajor,
                 (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
@@ -103,8 +103,8 @@ void core_omp_ztrsm(
     PLASMA_enum side, PLASMA_enum uplo,
     PLASMA_enum transA, PLASMA_enum diag,
     int m, int n,
-    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
-                                    PLASMA_Complex64_t *B, int ldb)
+    plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+                                    plasma_complex64_t *B, int ldb)
 {
     // omp depends assume lda == m or n, ldb == m,
     // depending on side.

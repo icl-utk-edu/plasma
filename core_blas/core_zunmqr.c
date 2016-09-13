@@ -105,10 +105,10 @@
  ******************************************************************************/
 int core_zunmqr(PLASMA_enum side, PLASMA_enum trans,
                 int m, int n, int k, int ib,
-                const PLASMA_Complex64_t *A,    int lda,
-                const PLASMA_Complex64_t *T,    int ldt,
-                      PLASMA_Complex64_t *C,    int ldc,
-                      PLASMA_Complex64_t *WORK, int ldwork)
+                const plasma_complex64_t *A,    int lda,
+                const plasma_complex64_t *T,    int ldt,
+                      plasma_complex64_t *C,    int ldc,
+                      plasma_complex64_t *WORK, int ldwork)
 {
     int i, kb;
     int i1, i3;
@@ -219,9 +219,9 @@ int core_zunmqr(PLASMA_enum side, PLASMA_enum trans,
 /******************************************************************************/
 void core_omp_zunmqr(PLASMA_enum side, PLASMA_enum trans,
                      int m, int n, int k, int ib, int nb,
-                     const PLASMA_Complex64_t *A, int lda,
-                     const PLASMA_Complex64_t *T, int ldt,
-                           PLASMA_Complex64_t *C, int ldc,
+                     const plasma_complex64_t *A, int lda,
+                     const plasma_complex64_t *T, int ldt,
+                           plasma_complex64_t *C, int ldc,
                      plasma_workspace_t *work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
@@ -232,8 +232,8 @@ void core_omp_zunmqr(PLASMA_enum side, PLASMA_enum trans,
     {
         if (sequence->status == PLASMA_SUCCESS) {
             int tid = omp_get_thread_num();
-            PLASMA_Complex64_t *W   =
-                ((PLASMA_Complex64_t*)work->spaces[tid]);
+            plasma_complex64_t *W   =
+                ((plasma_complex64_t*)work->spaces[tid]);
 
             int ldwork = nb;
 

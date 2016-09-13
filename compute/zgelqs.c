@@ -67,9 +67,9 @@
  *
  ******************************************************************************/
 int PLASMA_zgelqs(int m, int n, int nrhs,
-                  PLASMA_Complex64_t *A, int lda,
+                  plasma_complex64_t *A, int lda,
                   plasma_desc_t *descT,
-                  PLASMA_Complex64_t *B, int ldb)
+                  plasma_complex64_t *B, int ldb)
 {
     int ib, nb;
     int retval;
@@ -311,7 +311,7 @@ void plasma_omp_zgelqs(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *B,
                    sequence, request);
 
     // Solve L * Y = B
-    PLASMA_Complex64_t zone  =  1.0;
+    plasma_complex64_t zone  =  1.0;
     plasma_pztrsm(
         PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaNonUnit,
         zone, plasma_desc_submatrix(*A, 0, 0, A->m, A->m),

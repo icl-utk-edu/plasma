@@ -54,15 +54,15 @@
  *
  ******************************************************************************/
 void core_zlaset(PLASMA_enum uplo, int m, int n,
-                 PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
-                 PLASMA_Complex64_t *A, int lda)
+                 plasma_complex64_t alpha, plasma_complex64_t beta,
+                 plasma_complex64_t *A, int lda)
 {
-    if (alpha == (PLASMA_Complex64_t)0.0 &&
-        beta == (PLASMA_Complex64_t)0.0 &&
+    if (alpha == (plasma_complex64_t)0.0 &&
+        beta == (plasma_complex64_t)0.0 &&
         uplo == PlasmaFull &&
         m == lda) {
         // Use memset to zero continuous memory.
-        memset((void*)A, 0, (size_t)m*n*sizeof(PLASMA_Complex64_t));
+        memset((void*)A, 0, (size_t)m*n*sizeof(plasma_complex64_t));
     }
     else {
         // Use LAPACKE_zlaset_work to initialize the matrix.
@@ -76,8 +76,8 @@ void core_omp_zlaset(PLASMA_enum uplo,
                      int mb, int nb,
                      int i, int j,
                      int m, int n,
-                     PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
-                     PLASMA_Complex64_t *A)
+                     plasma_complex64_t alpha, plasma_complex64_t beta,
+                     plasma_complex64_t *A)
 {
     #pragma omp task depend(out:A[0:mb*nb])
     core_zlaset(uplo, m, n,

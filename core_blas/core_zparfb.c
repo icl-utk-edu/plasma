@@ -128,14 +128,14 @@
 int core_zparfb(PLASMA_enum side, PLASMA_enum trans,
                 PLASMA_enum direct, PLASMA_enum storev,
                 int m1, int n1, int m2, int n2, int k, int l,
-                      PLASMA_Complex64_t *A1, int lda1,
-                      PLASMA_Complex64_t *A2, int lda2,
-                const PLASMA_Complex64_t *V,  int ldv,
-                const PLASMA_Complex64_t *T,  int ldt,
-                      PLASMA_Complex64_t *WORK, int ldwork)
+                      plasma_complex64_t *A1, int lda1,
+                      plasma_complex64_t *A2, int lda2,
+                const plasma_complex64_t *V,  int ldv,
+                const plasma_complex64_t *T,  int ldt,
+                      plasma_complex64_t *WORK, int ldwork)
 {
-    static PLASMA_Complex64_t zone  =  1.0;
-    static PLASMA_Complex64_t mzone = -1.0;
+    static plasma_complex64_t zone  =  1.0;
+    static plasma_complex64_t mzone = -1.0;
 
     int j;
 
