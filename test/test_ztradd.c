@@ -163,8 +163,7 @@ void test_ztradd(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    PLASMA_ztradd((CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)transA, m, n,
-                   alpha, A, lda, beta, B, ldb);
+    PLASMA_ztradd(uplo, transA, m, n, alpha, A, lda, beta, B, ldb);
 
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
@@ -179,8 +178,7 @@ void test_ztradd(param_value_t param[], char *info)
         // Calculate relative error |B_ref - B|_F / |B_ref|_F < 3*eps
         // Using 3*eps covers complex arithmetic
 
-        CORE_ztradd((CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)transA, m, n,
-                     alpha, A, lda, beta, Bref, ldb);
+        CORE_ztradd(uplo, transA, m, n, alpha, A, lda, beta, Bref, ldb);
 
         double work[1];
 
@@ -198,7 +196,7 @@ void test_ztradd(param_value_t param[], char *info)
 
         // Calculate relative error |B_ref-B|_F / |B_ref|_F
         double error = BnormDiff/BnormRef;
-    
+
         param[PARAM_ERROR].d   = error;
         param[PARAM_SUCCESS].i = error < 3*eps;
     }

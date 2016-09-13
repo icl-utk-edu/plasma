@@ -15,7 +15,7 @@
 #include "plasma_types.h"
 #include "core_lapack.h"
 
-/***************************************************************************//*
+/****************************************************************************//*
  *
  * @ingroup core_geadd
  *
@@ -119,10 +119,10 @@ void CORE_zgeadd(PLASMA_enum transA, int m, int n,
         return;
     }
 
-    switch( transA ) {
+    switch (transA) {
     case PlasmaConjTrans:
-        for (j=0; j<n; j++, A++) {
-            for(i=0; i<m; i++, B++) {
+        for (j = 0; j < n; j++, A++) {
+            for (i = 0; i < m; i++, B++) {
                 *B = beta * (*B) + alpha * conj(A[lda*i]);
             }
             B += ldb-m;
@@ -130,8 +130,8 @@ void CORE_zgeadd(PLASMA_enum transA, int m, int n,
         break;
 
     case PlasmaTrans:
-        for (j=0; j<n; j++, A++) {
-            for(i=0; i<m; i++, B++) {
+        for (j = 0; j < n; j++, A++) {
+            for (i = 0; i < m; i++, B++) {
                 *B = beta * (*B) + alpha * A[lda*i];
             }
             B += ldb-m;
@@ -140,8 +140,8 @@ void CORE_zgeadd(PLASMA_enum transA, int m, int n,
 
     case PlasmaNoTrans:
     default:
-        for (j=0; j<n; j++) {
-            for(i=0; i<m; i++, B++, A++) {
+        for (j = 0; j < n; j++) {
+            for (i = 0; i < m; i++, B++, A++) {
                 *B = beta * (*B) + alpha * (*A);
             }
             A += lda-m;
