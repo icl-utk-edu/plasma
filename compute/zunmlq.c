@@ -90,7 +90,7 @@
  * @sa PLASMA_zgelqf
  *
  ******************************************************************************/
-int PLASMA_zunmlq(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
+int PLASMA_zunmlq(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
                   plasma_complex64_t *A, int lda,
                   plasma_desc_t *descT,
                   plasma_complex64_t *C, int ldc)
@@ -296,7 +296,7 @@ int PLASMA_zunmlq(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
  * @sa plasma_omp_zgelqf
  *
  ******************************************************************************/
-void plasma_omp_zunmlq(PLASMA_enum side, PLASMA_enum trans,
+void plasma_omp_zunmlq(plasma_enum_t side, plasma_enum_t trans,
                        plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *C,
                        plasma_workspace_t *work,
                        plasma_sequence_t *sequence, plasma_request_t *request)

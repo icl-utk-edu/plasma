@@ -21,7 +21,7 @@
  *  Parallel tile Cholesky factorization.
  * @see plasma_omp_zpotrf
  ******************************************************************************/
-void plasma_pzpotrf(PLASMA_enum uplo, plasma_desc_t A,
+void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int k, m, n;

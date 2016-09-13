@@ -23,8 +23,8 @@
 /***************************************************************************//**
  *  Parallel tile triangular solve - dynamic scheduling
  **/
-void plasma_pztbsm(PLASMA_enum side, PLASMA_enum uplo,
-                   PLASMA_enum trans, PLASMA_enum diag,
+void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
+                   plasma_enum_t trans, plasma_enum_t diag,
                    plasma_complex64_t alpha, plasma_desc_t A,
                                              plasma_desc_t B,
                    const int *IPIV,

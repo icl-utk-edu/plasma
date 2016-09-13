@@ -51,7 +51,7 @@
  *          The leading dimension of the array A. lda >= max(1,n).
  *
  ******************************************************************************/
-int core_zpotrf(PLASMA_enum uplo,
+int core_zpotrf(plasma_enum_t uplo,
                  int n,
                  plasma_complex64_t *A, int lda)
 {
@@ -62,7 +62,7 @@ int core_zpotrf(PLASMA_enum uplo,
 }
 
 /******************************************************************************/
-void core_omp_zpotrf(PLASMA_enum uplo,
+void core_omp_zpotrf(plasma_enum_t uplo,
                      int n,
                      plasma_complex64_t *A, int lda,
                      plasma_sequence_t *sequence, plasma_request_t *request,

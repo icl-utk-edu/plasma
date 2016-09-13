@@ -89,7 +89,7 @@
  * @sa PLASMA_chemm
  *
  ******************************************************************************/
-int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
+int PLASMA_zhemm(plasma_enum_t side, plasma_enum_t uplo, int m, int n,
                  plasma_complex64_t alpha, plasma_complex64_t *A, int lda,
                                            plasma_complex64_t *B, int ldb,
                  plasma_complex64_t beta,  plasma_complex64_t *C, int ldc)
@@ -292,7 +292,7 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
  * @sa plasma_omp_chemm
  *
  ******************************************************************************/
-void plasma_omp_zhemm(PLASMA_enum side, PLASMA_enum uplo,
+void plasma_omp_zhemm(plasma_enum_t side, plasma_enum_t uplo,
                       plasma_complex64_t alpha, plasma_desc_t *A,
                                                 plasma_desc_t *B,
                       plasma_complex64_t beta,  plasma_desc_t *C,

@@ -51,7 +51,7 @@
  *          ldb >= max(1,M).
  *
  ******************************************************************************/
-void core_zlacpy(PLASMA_enum uplo,
+void core_zlacpy(plasma_enum_t uplo,
                  int m, int n,
                  const plasma_complex64_t *A, int lda,
                        plasma_complex64_t *B, int ldb)
@@ -64,7 +64,7 @@ void core_zlacpy(PLASMA_enum uplo,
 }
 
 /******************************************************************************/
-void core_omp_zlacpy(PLASMA_enum uplo,
+void core_omp_zlacpy(plasma_enum_t uplo,
                      int m, int n, int nb,
                      const plasma_complex64_t *A, int lda,
                            plasma_complex64_t *B, int ldb)

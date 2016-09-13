@@ -23,7 +23,7 @@
  * Parallel tile matrix-matrix multiplication.
  * @see plasma_omp_zgemm
  ******************************************************************************/
-void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
+void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
                    plasma_complex64_t alpha, plasma_desc_t A,
                                              plasma_desc_t B,
                    plasma_complex64_t beta,  plasma_desc_t C,

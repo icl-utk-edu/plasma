@@ -125,8 +125,8 @@
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int core_zparfb(PLASMA_enum side, PLASMA_enum trans,
-                PLASMA_enum direct, PLASMA_enum storev,
+int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
+                plasma_enum_t direct, plasma_enum_t storev,
                 int m1, int n1, int m2, int n2, int k, int l,
                       plasma_complex64_t *A1, int lda1,
                       plasma_complex64_t *A2, int lda2,

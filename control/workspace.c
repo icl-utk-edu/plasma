@@ -14,7 +14,7 @@
 
 /******************************************************************************/
 int plasma_workspace_alloc(plasma_workspace_t *work, size_t lwork,
-                           PLASMA_enum dtyp)
+                           plasma_enum_t dtyp)
 {
     // Allocate array of pointers.
     #pragma omp parallel

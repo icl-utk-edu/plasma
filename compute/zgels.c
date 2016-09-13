@@ -96,7 +96,7 @@
  * @sa PLASMA_zgeqrs
  *
  ******************************************************************************/
-int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
+int PLASMA_zgels(plasma_enum_t trans, int m, int n, int nrhs,
                  plasma_complex64_t *A, int lda,
                  plasma_desc_t *descT,
                  plasma_complex64_t *B, int ldb)
@@ -288,7 +288,7 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
  * @sa plasma_omp_sgels
  *
  ******************************************************************************/
-void plasma_omp_zgels(PLASMA_enum trans, plasma_desc_t *A,
+void plasma_omp_zgels(plasma_enum_t trans, plasma_desc_t *A,
                       plasma_desc_t *T, plasma_desc_t *B,
                       plasma_workspace_t *work,
                       plasma_sequence_t *sequence,

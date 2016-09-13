@@ -85,7 +85,7 @@
  * @sa PLASMA_sposv
  *
  ******************************************************************************/
-int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
+int PLASMA_zposv(plasma_enum_t uplo, int n, int nrhs,
                  plasma_complex64_t *A, int lda,
                  plasma_complex64_t *B, int ldb)
 {
@@ -253,7 +253,7 @@ int PLASMA_zposv(PLASMA_enum uplo, int n, int nrhs,
  * @sa plasma_omp_sposv
  *
  ******************************************************************************/
-void plasma_omp_zposv(PLASMA_enum uplo,
+void plasma_omp_zposv(plasma_enum_t uplo,
                       plasma_desc_t *A,
                       plasma_desc_t *B,
                       plasma_sequence_t *sequence, plasma_request_t *request)
@@ -301,7 +301,7 @@ void plasma_omp_zposv(PLASMA_enum uplo,
     plasma_pzpotrf(uplo, *A, sequence, request);
 
     plasma_complex64_t zone = 1.0;
-    PLASMA_enum trans = uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans;
+    plasma_enum_t trans = uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans;
 
     plasma_pztrsm(PlasmaLeft, uplo,
                   trans, PlasmaNonUnit,

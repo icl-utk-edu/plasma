@@ -22,7 +22,7 @@
  * Parallel tile symetric rank k update.
  * @see plasma_omp_zsyrk
  ******************************************************************************/
-void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
+void plasma_pzsyrk(plasma_enum_t uplo, plasma_enum_t trans,
                    plasma_complex64_t alpha, plasma_desc_t A,
                    plasma_complex64_t beta,  plasma_desc_t C,
                    plasma_sequence_t *sequence, plasma_request_t *request)

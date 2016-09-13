@@ -93,7 +93,7 @@
  *
  ******************************************************************************/
 void core_ztrmm(
-    PLASMA_enum side, PLASMA_enum uplo, PLASMA_enum transA, PLASMA_enum diag,
+    plasma_enum_t side, plasma_enum_t uplo, plasma_enum_t transA, plasma_enum_t diag,
     int m, int n,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                                     plasma_complex64_t *B, int ldb)
@@ -109,7 +109,7 @@ void core_ztrmm(
 
 /******************************************************************************/
 void core_omp_ztrmm(
-    PLASMA_enum side, PLASMA_enum uplo, PLASMA_enum transA, PLASMA_enum diag,
+    plasma_enum_t side, plasma_enum_t uplo, plasma_enum_t transA, plasma_enum_t diag,
     int m, int n,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                                     plasma_complex64_t *B, int ldb)

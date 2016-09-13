@@ -70,7 +70,7 @@
  *          The leading dimension of the array C. ldc >= max(1, n).
  *
  ******************************************************************************/
-void core_zsyrk(PLASMA_enum uplo, PLASMA_enum trans,
+void core_zsyrk(plasma_enum_t uplo, plasma_enum_t trans,
                 int n, int k,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                 plasma_complex64_t beta,        plasma_complex64_t *C, int ldc)
@@ -84,7 +84,7 @@ void core_zsyrk(PLASMA_enum uplo, PLASMA_enum trans,
 
 /******************************************************************************/
 void core_omp_zsyrk(
-    PLASMA_enum uplo, PLASMA_enum trans,
+    plasma_enum_t uplo, plasma_enum_t trans,
     int n, int k,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
     plasma_complex64_t beta,        plasma_complex64_t *C, int ldc)

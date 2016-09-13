@@ -23,7 +23,7 @@
  * Parallel tile matrix-matrix addition.
  * @see plasma_omp_ztradd
  ******************************************************************************/
-void plasma_pztradd(PLASMA_enum uplo, PLASMA_enum transA,
+void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
                     plasma_complex64_t alpha,  plasma_desc_t A,
                     plasma_complex64_t beta,   plasma_desc_t B,
                     plasma_sequence_t *sequence, plasma_request_t *request)

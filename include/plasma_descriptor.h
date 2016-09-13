@@ -41,7 +41,7 @@ typedef struct {
     size_t A21;       ///< pointer to the beginning of A21
     size_t A12;       ///< pointer to the beginning of A12
     size_t A22;       ///< pointer to the beginning of A22
-    PLASMA_enum dtyp; ///< precision of the matrix
+    plasma_enum_t dtyp; ///< precision of the matrix
     int mb;           ///< number of rows in a tile
     int nb;           ///< number of columns in a tile
     int bsiz;         ///< size in elements
@@ -110,7 +110,7 @@ static inline void *plasma_getaddr(plasma_desc_t A, int m, int n)
 }
 
 /******************************************************************************/
-static inline int BLKLDD_BAND(PLASMA_enum uplo,
+static inline int BLKLDD_BAND(plasma_enum_t uplo,
                               plasma_desc_t A, int m, int n)
 {
     int kut;
@@ -127,7 +127,7 @@ static inline int BLKLDD_BAND(PLASMA_enum uplo,
 }
 
 /******************************************************************************/
-static inline void *plasma_getaddr_band(PLASMA_enum uplo,
+static inline void *plasma_getaddr_band(plasma_enum_t uplo,
                                         plasma_desc_t A, int m, int n)
 {
     int kut;
@@ -144,17 +144,17 @@ static inline void *plasma_getaddr_band(PLASMA_enum uplo,
 }
 
 /******************************************************************************/
-int PLASMA_Desc_Create(plasma_desc_t **desc, void *mat, PLASMA_enum dtyp,
+int PLASMA_Desc_Create(plasma_desc_t **desc, void *mat, plasma_enum_t dtyp,
                        int mb, int nb, int bsiz, int lm, int ln, int i,
                        int j, int m, int n);
 
 int PLASMA_Desc_Destroy(plasma_desc_t **desc);
 
-plasma_desc_t plasma_desc_init(PLASMA_enum dtyp, int mb, int nb, int bsiz,
+plasma_desc_t plasma_desc_init(plasma_enum_t dtyp, int mb, int nb, int bsiz,
                              int lm, int ln, int i, int j, int m, int n);
 
 
-plasma_desc_t plasma_desc_band_init(PLASMA_enum dtyp, PLASMA_enum uplo,
+plasma_desc_t plasma_desc_band_init(plasma_enum_t dtyp, plasma_enum_t uplo,
                                   int mb, int nb, int bsiz,
                                   int lm, int ln, int i, int j, int m, int n,
                                   int kl, int ku);
@@ -162,7 +162,7 @@ plasma_desc_t plasma_desc_band_init(PLASMA_enum dtyp, PLASMA_enum uplo,
 plasma_desc_t plasma_desc_submatrix(plasma_desc_t descA, int i, int j, int m, int n);
 
 int plasma_desc_check(plasma_desc_t *desc);
-int plasma_desc_band_check(PLASMA_enum uplo, plasma_desc_t *desc);
+int plasma_desc_band_check(plasma_enum_t uplo, plasma_desc_t *desc);
 int plasma_desc_mat_alloc(plasma_desc_t *desc);
 int plasma_desc_mat_free(plasma_desc_t *desc);
 

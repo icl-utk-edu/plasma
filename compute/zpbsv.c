@@ -87,7 +87,7 @@
  * @sa PLASMA_spbsv
  *
  ******************************************************************************/
-int PLASMA_zpbsv(PLASMA_enum uplo, int n, int kd, int nrhs,
+int PLASMA_zpbsv(plasma_enum_t uplo, int n, int kd, int nrhs,
                  plasma_complex64_t *AB, int ldab,
                  plasma_complex64_t *B, int ldb)
 {
@@ -251,7 +251,7 @@ int PLASMA_zpbsv(PLASMA_enum uplo, int n, int kd, int nrhs,
  * @sa plasma_omp_spbsv
  *
  ******************************************************************************/
-void plasma_omp_zpbsv(PLASMA_enum uplo, plasma_desc_t *AB, plasma_desc_t *B,
+void plasma_omp_zpbsv(plasma_enum_t uplo, plasma_desc_t *AB, plasma_desc_t *B,
                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
     plasma_complex64_t zone = 1.0;

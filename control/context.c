@@ -55,7 +55,7 @@ int PLASMA_Finalize()
 }
 
 /******************************************************************************/
-int PLASMA_Set(PLASMA_enum param, int value)
+int PLASMA_Set(plasma_enum_t param, int value)
 {
     plasma_context_t *plasma;
 
@@ -87,7 +87,7 @@ int PLASMA_Set(PLASMA_enum param, int value)
 }
 
 /******************************************************************************/
-int PLASMA_Get(PLASMA_enum param, int *value)
+int PLASMA_Get(plasma_enum_t param, int *value)
 {
     plasma_context_t *plasma;
 

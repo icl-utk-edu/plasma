@@ -70,7 +70,7 @@
  *          The leading dimension of the array C. ldc >= max(1, n).
  *
  ******************************************************************************/
-void core_zherk(PLASMA_enum uplo, PLASMA_enum trans,
+void core_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                 int n, int k,
                 double alpha, const plasma_complex64_t *A, int lda,
                 double beta,        plasma_complex64_t *C, int ldc)
@@ -83,7 +83,7 @@ void core_zherk(PLASMA_enum uplo, PLASMA_enum trans,
 }
 
 /******************************************************************************/
-void core_omp_zherk(PLASMA_enum uplo, PLASMA_enum trans,
+void core_omp_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                     int n, int k,
                     double alpha, const plasma_complex64_t *A, int lda,
                     double beta,        plasma_complex64_t *C, int ldc)

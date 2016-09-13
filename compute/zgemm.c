@@ -100,7 +100,7 @@
  * @sa PLASMA_sgemm
  *
  ******************************************************************************/
-int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
+int PLASMA_zgemm(plasma_enum_t transA, plasma_enum_t transB,
                  int m, int n, int k,
                  plasma_complex64_t alpha, plasma_complex64_t *A, int lda,
                                            plasma_complex64_t *B, int ldb,
@@ -341,7 +341,7 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
  * @sa plasma_omp_sgemm
  *
  ******************************************************************************/
-void plasma_omp_zgemm(PLASMA_enum transA, PLASMA_enum transB,
+void plasma_omp_zgemm(plasma_enum_t transA, plasma_enum_t transB,
                       plasma_complex64_t alpha, plasma_desc_t *A,
                                                 plasma_desc_t *B,
                       plasma_complex64_t beta,  plasma_desc_t *C,

@@ -23,7 +23,7 @@
     Convert tiled (CCRB) to column-major (CM) layout for a band matrix.
     Out-of-place.
 */
-void PLASMA_zccrb2cm_band_Async(PLASMA_enum uplo,
+void PLASMA_zccrb2cm_band_Async(plasma_enum_t uplo,
                                 plasma_desc_t *A, plasma_complex64_t *Af77, int lda,
                                 plasma_sequence_t *sequence, plasma_request_t *request)
 {

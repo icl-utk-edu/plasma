@@ -84,7 +84,7 @@
  * @sa PLASMA_ssyrk
  *
  ******************************************************************************/
-int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
+int PLASMA_zsyrk(plasma_enum_t uplo, plasma_enum_t trans, int n, int k,
                  plasma_complex64_t alpha, plasma_complex64_t *A, int lda,
                  plasma_complex64_t beta,  plasma_complex64_t *C, int ldc)
 {
@@ -267,7 +267,7 @@ int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
  * @sa plasma_omp_ssyrk
  *
  ******************************************************************************/
-void plasma_omp_zsyrk(PLASMA_enum uplo, PLASMA_enum trans,
+void plasma_omp_zsyrk(plasma_enum_t uplo, plasma_enum_t trans,
                       plasma_complex64_t alpha, plasma_desc_t *A,
                       plasma_complex64_t beta,  plasma_desc_t *C,
                       plasma_sequence_t *sequence, plasma_request_t *request)

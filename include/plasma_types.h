@@ -101,19 +101,19 @@ enum {
 };
 
 /******************************************************************************/
-typedef int PLASMA_enum;
+typedef int plasma_enum_t;
 typedef int PLASMA_bool;
 
 typedef float  _Complex plasma_complex32_t;
 typedef double _Complex plasma_complex64_t;
 
 /******************************************************************************/
-PLASMA_enum PLASMA_trans_const(char lapack_char);
-PLASMA_enum PLASMA_uplo_const(char lapack_char);
-PLASMA_enum PLASMA_diag_const(char lapack_char);
-PLASMA_enum PLASMA_side_const(char lapack_char);
-PLASMA_enum PLASMA_direct_const(char lapack_char);
-PLASMA_enum PLASMA_storev_const(char lapack_char);
+plasma_enum_t PLASMA_trans_const(char lapack_char);
+plasma_enum_t PLASMA_uplo_const(char lapack_char);
+plasma_enum_t PLASMA_diag_const(char lapack_char);
+plasma_enum_t PLASMA_side_const(char lapack_char);
+plasma_enum_t PLASMA_direct_const(char lapack_char);
+plasma_enum_t PLASMA_storev_const(char lapack_char);
 
 #ifdef __cplusplus
 }  // extern "C"

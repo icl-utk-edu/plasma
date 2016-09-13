@@ -78,7 +78,7 @@
  *          ldb >= max(1,m).
  *
  ******************************************************************************/
-void core_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
+void core_ztradd(plasma_enum_t uplo, plasma_enum_t transA, int m, int n,
                        plasma_complex64_t  alpha,
                  const plasma_complex64_t *A, int lda,
                        plasma_complex64_t  beta,
@@ -212,7 +212,7 @@ void core_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
 
 /******************************************************************************/
 void core_omp_ztradd(
-    PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
+    plasma_enum_t uplo, plasma_enum_t transA, int m, int n,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
     plasma_complex64_t beta,        plasma_complex64_t *B, int ldb)
 {

@@ -23,7 +23,7 @@
  * Parallel tile Hermitian rank 2k update.
  * @see plasma_omp_zher2k
  ******************************************************************************/
-void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
+void plasma_pzher2k(plasma_enum_t uplo, plasma_enum_t trans,
                     plasma_complex64_t alpha, plasma_desc_t A,
                     plasma_desc_t B, double beta,  plasma_desc_t C,
                     plasma_sequence_t *sequence, plasma_request_t *request)

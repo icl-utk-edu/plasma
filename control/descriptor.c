@@ -14,7 +14,7 @@
 #include "plasma_internal.h"
 
 /******************************************************************************/
-int PLASMA_Desc_Create(plasma_desc_t **desc, void *mat, PLASMA_enum dtyp,
+int PLASMA_Desc_Create(plasma_desc_t **desc, void *mat, plasma_enum_t dtyp,
                        int mb, int nb, int bsiz, int lm, int ln, int i,
                        int j, int m, int n)
 {
@@ -60,7 +60,7 @@ int PLASMA_Desc_Destroy(plasma_desc_t **desc)
 }
 
 /******************************************************************************/
-plasma_desc_t plasma_desc_init(PLASMA_enum dtyp, int mb, int nb, int bsiz,
+plasma_desc_t plasma_desc_init(plasma_enum_t dtyp, int mb, int nb, int bsiz,
                              int lm, int ln, int i, int j, int m, int n)
 {
     plasma_desc_t desc;
@@ -105,7 +105,7 @@ plasma_desc_t plasma_desc_init(PLASMA_enum dtyp, int mb, int nb, int bsiz,
 }
 
 /******************************************************************************/
-plasma_desc_t plasma_desc_band_init(PLASMA_enum dtyp, PLASMA_enum uplo,
+plasma_desc_t plasma_desc_band_init(plasma_enum_t dtyp, plasma_enum_t uplo,
                                   int mb, int nb, int bsiz,
                                   int lm, int ln, int i, int j, int m, int n,
                                   int kl, int ku)
@@ -213,7 +213,7 @@ int plasma_desc_check(plasma_desc_t *desc)
 }
 
 /******************************************************************************/
-int plasma_desc_band_check(PLASMA_enum uplo, plasma_desc_t *desc)
+int plasma_desc_band_check(plasma_enum_t uplo, plasma_desc_t *desc)
 {
     if (desc == NULL) {
         plasma_error("NULL descriptor");

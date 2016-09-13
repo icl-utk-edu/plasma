@@ -96,7 +96,7 @@
  * @sa PLASMA_cher2k
  *
  ******************************************************************************/
-int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
+int PLASMA_zher2k(plasma_enum_t uplo, plasma_enum_t trans,
                   int n, int k,
                   plasma_complex64_t alpha, plasma_complex64_t *A, int lda,
                                             plasma_complex64_t *B, int ldb,
@@ -311,7 +311,7 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
  * @sa plasma_omp_cher2k
  *
  ******************************************************************************/
-void plasma_omp_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
+void plasma_omp_zher2k(plasma_enum_t uplo, plasma_enum_t trans,
                        plasma_complex64_t alpha, plasma_desc_t *A,
                                                  plasma_desc_t *B,
                        double beta,              plasma_desc_t *C,

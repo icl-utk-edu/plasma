@@ -24,7 +24,7 @@
  *  Parallel tile Hermitian matrix-matrix multiplication.
  *  @see plasma_omp_zhemm
  ******************************************************************************/
-void plasma_pzhemm(PLASMA_enum side, PLASMA_enum uplo,
+void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                    plasma_complex64_t alpha, plasma_desc_t A,
                                              plasma_desc_t B,
                    plasma_complex64_t beta,  plasma_desc_t C,

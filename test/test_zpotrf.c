@@ -74,7 +74,7 @@ void test_zpotrf(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    PLASMA_enum uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
+    plasma_enum_t uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
 
     int n = param[PARAM_N].i;
 

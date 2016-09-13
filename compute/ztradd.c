@@ -91,7 +91,7 @@
  * @sa PLASMA_stradd
  *
  ******************************************************************************/
-int PLASMA_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
+int PLASMA_ztradd(plasma_enum_t uplo, plasma_enum_t transA, int m, int n,
                   plasma_complex64_t  alpha,
                   plasma_complex64_t *A, int lda,
                   plasma_complex64_t  beta,
@@ -308,7 +308,7 @@ int PLASMA_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
  * @sa plasma_omp_stradd
  *
  ******************************************************************************/
-void plasma_omp_ztradd(PLASMA_enum uplo, PLASMA_enum transA,
+void plasma_omp_ztradd(plasma_enum_t uplo, plasma_enum_t transA,
                        plasma_complex64_t alpha, plasma_desc_t *A,
                        plasma_complex64_t beta,  plasma_desc_t *B,
                        plasma_sequence_t *sequence, plasma_request_t  *request)

@@ -82,7 +82,7 @@
  * @sa PLASMA_cherk
  *
  ******************************************************************************/
-int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans,
+int PLASMA_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                  int n, int k,
                  double alpha, plasma_complex64_t *A, int lda,
                  double beta,  plasma_complex64_t *C, int ldc)
@@ -265,7 +265,7 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans,
  * @sa plasma_omp_sherk
  *
  ******************************************************************************/
-void plasma_omp_zherk(PLASMA_enum uplo, PLASMA_enum trans,
+void plasma_omp_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                       double alpha, plasma_desc_t *A,
                       double beta,  plasma_desc_t *C,
                       plasma_sequence_t *sequence, plasma_request_t *request)

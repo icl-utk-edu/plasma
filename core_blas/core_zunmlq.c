@@ -101,7 +101,7 @@
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int core_zunmlq(PLASMA_enum side, PLASMA_enum trans,
+int core_zunmlq(plasma_enum_t side, plasma_enum_t trans,
                 int m, int n, int k, int ib,
                 const plasma_complex64_t *A,    int lda,
                 const plasma_complex64_t *T,    int ldt,
@@ -222,7 +222,7 @@ int core_zunmlq(PLASMA_enum side, PLASMA_enum trans,
 }
 
 /******************************************************************************/
-void core_omp_zunmlq(PLASMA_enum side, PLASMA_enum trans,
+void core_omp_zunmlq(plasma_enum_t side, plasma_enum_t trans,
                      int m, int n, int k, int ib, int nb,
                      const plasma_complex64_t *A, int lda,
                      const plasma_complex64_t *T, int ldt,

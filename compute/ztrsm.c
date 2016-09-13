@@ -99,8 +99,8 @@
  * @sa PLASMA_strsm
  *
  ******************************************************************************/
-int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
-                 PLASMA_enum transA, PLASMA_enum diag,
+int PLASMA_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
+                 plasma_enum_t transA, plasma_enum_t diag,
                  int m, int n,
                  plasma_complex64_t alpha, plasma_complex64_t *A, int lda,
                                            plasma_complex64_t *B, int ldb)
@@ -298,8 +298,8 @@ int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
  * @sa plasma_omp_strsm
  *
  ******************************************************************************/
-void plasma_omp_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
-                      PLASMA_enum transA, PLASMA_enum diag,
+void plasma_omp_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
+                      plasma_enum_t transA, plasma_enum_t diag,
                       plasma_complex64_t alpha, plasma_desc_t *A,
                                                 plasma_desc_t *B,
                       plasma_sequence_t *sequence, plasma_request_t *request)

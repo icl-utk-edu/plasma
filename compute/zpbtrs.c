@@ -76,7 +76,7 @@
  * @sa PLASMA_zpbtrf
  *
  ******************************************************************************/
-int PLASMA_zpbtrs(PLASMA_enum uplo, int n, int kd, int nrhs,
+int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
                   plasma_complex64_t *AB, int ldab,
                   plasma_complex64_t *B, int ldb)
 {
@@ -254,7 +254,7 @@ int PLASMA_zpbtrs(PLASMA_enum uplo, int n, int kd, int nrhs,
  * @sa plasma_omp_zpbtrf
  *
  ******************************************************************************/
-void plasma_omp_zpbtrs(PLASMA_enum uplo,
+void plasma_omp_zpbtrs(plasma_enum_t uplo,
                        plasma_desc_t *AB,
                        plasma_desc_t *B,
                        plasma_sequence_t *sequence,

@@ -115,7 +115,7 @@
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int core_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
+int core_ztsmqr(plasma_enum_t side, plasma_enum_t trans,
                 int m1, int n1, int m2, int n2, int k, int ib,
                       plasma_complex64_t *A1,   int lda1,
                       plasma_complex64_t *A2,   int lda2,
@@ -245,7 +245,7 @@ int core_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
 }
 
 /******************************************************************************/
-void core_omp_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
+void core_omp_ztsmqr(plasma_enum_t side, plasma_enum_t trans,
                      int m1, int n1, int m2, int n2, int k, int ib, int nb,
                            plasma_complex64_t *A1, int lda1,
                            plasma_complex64_t *A2, int lda2,

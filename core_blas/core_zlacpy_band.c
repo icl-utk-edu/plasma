@@ -50,7 +50,7 @@
  *          The leading dimension of the array B. ldb >= max(1,M).
  *
  ******************************************************************************/
-void core_zlacpy_lapack2tile_band(PLASMA_enum uplo,
+void core_zlacpy_lapack2tile_band(plasma_enum_t uplo,
                                   int it, int jt,
                                   int m, int n, int nb, int kl, int ku,
                                   const plasma_complex64_t *A, int lda,
@@ -113,7 +113,7 @@ void core_zlacpy_lapack2tile_band(PLASMA_enum uplo,
 }
 
 /******************************************************************************/
-void core_omp_zlacpy_lapack2tile_band(PLASMA_enum uplo,
+void core_omp_zlacpy_lapack2tile_band(plasma_enum_t uplo,
                                       int it, int jt,
                                       int m, int n, int nb, int kl, int ku,
                                       const plasma_complex64_t *A, int lda,
@@ -158,7 +158,7 @@ void core_omp_zlacpy_lapack2tile_band(PLASMA_enum uplo,
  *          The leading dimension of the array B. ldb >= max(1, m).
  *
  ******************************************************************************/
-void core_zlacpy_tile2lapack_band(PLASMA_enum uplo,
+void core_zlacpy_tile2lapack_band(plasma_enum_t uplo,
                                   int it, int jt,
                                   int m, int n, int nb, int kl, int ku,
                                   const plasma_complex64_t *B, int ldb,
@@ -205,7 +205,7 @@ void core_zlacpy_tile2lapack_band(PLASMA_enum uplo,
 }
 
 /******************************************************************************/
-void core_omp_zlacpy_tile2lapack_band(PLASMA_enum uplo,
+void core_omp_zlacpy_tile2lapack_band(plasma_enum_t uplo,
                                       int it, int jt,
                                       int m, int n, int nb, int kl, int ku,
                                       const plasma_complex64_t *B, int ldb,

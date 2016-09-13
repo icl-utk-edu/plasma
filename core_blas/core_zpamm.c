@@ -15,16 +15,16 @@
 #include "plasma_internal.h"
 #include "core_lapack.h"
 
-static inline int core_zpamm_a2(PLASMA_enum side, PLASMA_enum trans,
-                                PLASMA_enum uplo,
+static inline int core_zpamm_a2(plasma_enum_t side, plasma_enum_t trans,
+                                plasma_enum_t uplo,
                                 int m, int n, int k, int l,
                                 int vi2, int vi3,
                                       plasma_complex64_t *A2, int lda2,
                                 const plasma_complex64_t *V,  int ldv,
                                       plasma_complex64_t *W,  int ldw);
 
-static inline int core_zpamm_w(PLASMA_enum side, PLASMA_enum trans,
-                               PLASMA_enum uplo,
+static inline int core_zpamm_w(plasma_enum_t side, plasma_enum_t trans,
+                               plasma_enum_t uplo,
                                int m, int n, int k, int l,
                                int vi2, int vi3,
                                const plasma_complex64_t *A1, int lda1,
@@ -171,7 +171,7 @@ static inline int core_zpamm_w(PLASMA_enum side, PLASMA_enum trans,
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int core_zpamm(int op, PLASMA_enum side, PLASMA_enum storev,
+int core_zpamm(int op, plasma_enum_t side, plasma_enum_t storev,
                int m, int n, int k, int l,
                const plasma_complex64_t *A1, int lda1,
                      plasma_complex64_t *A2, int lda2,
@@ -284,7 +284,7 @@ int core_zpamm(int op, PLASMA_enum side, PLASMA_enum storev,
 
 /******************************************************************************/
 static inline int core_zpamm_w(
-        PLASMA_enum side, PLASMA_enum trans, PLASMA_enum uplo,
+        plasma_enum_t side, plasma_enum_t trans, plasma_enum_t uplo,
         int m, int n, int k, int l,
         int vi2, int vi3,
         const plasma_complex64_t *A1, int lda1,
@@ -414,7 +414,7 @@ static inline int core_zpamm_w(
 
 /******************************************************************************/
 static inline int core_zpamm_a2(
-        PLASMA_enum side, PLASMA_enum trans, PLASMA_enum uplo,
+        plasma_enum_t side, plasma_enum_t trans, plasma_enum_t uplo,
         int m, int n, int k, int l,
         int vi2, int vi3,
               plasma_complex64_t *A2, int lda2,

@@ -22,7 +22,7 @@ extern "C" {
 typedef struct {
     int nb;                  ///< PLASMA_TILE_SIZE
     int ib;                  ///< PLASMA_INNER_BLOCK_SIZE
-    PLASMA_enum translation; ///< in-place or out-of-place PLASMA_TRANSLATION_MODE
+    plasma_enum_t translation; ///< in-place or out-of-place PLASMA_TRANSLATION_MODE
 } plasma_context_t;
 
 typedef struct {
@@ -33,8 +33,8 @@ typedef struct {
 /******************************************************************************/
 int PLASMA_Init();
 int PLASMA_Finalize();
-int PLASMA_Set(PLASMA_enum param, int value);
-int PLASMA_Get(PLASMA_enum param, int *value);
+int PLASMA_Set(plasma_enum_t param, int value);
+int PLASMA_Get(plasma_enum_t param, int *value);
 
 int plasma_context_attach();
 int plasma_context_detach();

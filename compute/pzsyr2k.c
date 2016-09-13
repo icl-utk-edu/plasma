@@ -23,7 +23,7 @@
  * Parallel tile symmetric rank 2k update.
  * @see plasma_omp_zsyr2k
  ******************************************************************************/
-void plasma_pzsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
+void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
                     plasma_complex64_t alpha, plasma_desc_t A,
                     plasma_desc_t B, plasma_complex64_t beta,  plasma_desc_t C,
                     plasma_sequence_t *sequence, plasma_request_t *request)

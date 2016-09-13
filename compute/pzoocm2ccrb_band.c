@@ -20,7 +20,7 @@
 #define bandA(m, n) (&(Af77[lda*(A.nb*(n)) + (uplo == PlasmaUpper ? A.ku : 0)+A.mb*((m)-(n))]))
 
 /******************************************************************************/
-void plasma_pzoocm2ccrb_band(PLASMA_enum uplo,
+void plasma_pzoocm2ccrb_band(plasma_enum_t uplo,
                              plasma_complex64_t *Af77, int lda, plasma_desc_t A,
                              plasma_sequence_t *sequence, plasma_request_t *request)
 {

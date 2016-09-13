@@ -86,7 +86,7 @@
  *          The leading dimension of the array C. ldc >= max(1,m).
  *
  ******************************************************************************/
-void core_zgemm(PLASMA_enum transA, PLASMA_enum transB,
+void core_zgemm(plasma_enum_t transA, plasma_enum_t transB,
                 int m, int n, int k,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                                           const plasma_complex64_t *B, int ldb,
@@ -102,7 +102,7 @@ void core_zgemm(PLASMA_enum transA, PLASMA_enum transB,
 
 /******************************************************************************/
 void core_omp_zgemm(
-    PLASMA_enum transA, PLASMA_enum transB,
+    plasma_enum_t transA, plasma_enum_t transB,
     int m, int n, int k,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                               const plasma_complex64_t *B, int ldb,

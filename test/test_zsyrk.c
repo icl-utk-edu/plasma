@@ -87,8 +87,8 @@ void test_zsyrk(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    PLASMA_enum uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
-    PLASMA_enum trans = PLASMA_trans_const(param[PARAM_TRANS].c);
+    plasma_enum_t uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
+    plasma_enum_t trans = PLASMA_trans_const(param[PARAM_TRANS].c);
 
     int n = param[PARAM_N].i;
     int k = param[PARAM_K].i;

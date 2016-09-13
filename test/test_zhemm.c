@@ -90,8 +90,8 @@ void test_zhemm(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    PLASMA_enum side = PLASMA_side_const(param[PARAM_SIDE].c);
-    PLASMA_enum uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
+    plasma_enum_t side = PLASMA_side_const(param[PARAM_SIDE].c);
+    plasma_enum_t uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
