@@ -55,7 +55,7 @@ int main(int argc, char **argv)
     // Print labels.
     test_routine(test, routine, NULL);
 
-    PLASMA_Init();
+    plasma_init();
     if (outer) {
         // outer product iteration
         do {
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
         }
         while (param_step_inner(param));
     }
-    PLASMA_Finalize();
+    plasma_finalize();
     printf("\n");
     return err;
 }

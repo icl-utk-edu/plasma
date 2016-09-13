@@ -23,7 +23,7 @@ pthread_mutex_t context_map_lock = PTHREAD_MUTEX_INITIALIZER;
     @ingroup plasma_init
     Initializes PLASMA, allocating its context.
 */
-int PLASMA_Init()
+int plasma_init()
 {
     pthread_mutex_lock(&context_map_lock);
 
@@ -48,14 +48,14 @@ int PLASMA_Init()
     @ingroup plasma_init
     Finalizes PLASMA, freeing its context.
 */
-int PLASMA_Finalize()
+int plasma_finalize()
 {
     plasma_context_detach();
     return PlasmaSuccess;
 }
 
 /******************************************************************************/
-int PLASMA_Set(plasma_enum_t param, int value)
+int plasma_set(plasma_enum_t param, int value)
 {
     plasma_context_t *plasma;
 
@@ -87,7 +87,7 @@ int PLASMA_Set(plasma_enum_t param, int value)
 }
 
 /******************************************************************************/
-int PLASMA_Get(plasma_enum_t param, int *value)
+int plasma_get(plasma_enum_t param, int *value)
 {
     plasma_context_t *plasma;
 

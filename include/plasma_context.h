@@ -31,10 +31,10 @@ typedef struct {
 } plasma_context_map_t;
 
 /******************************************************************************/
-int PLASMA_Init();
-int PLASMA_Finalize();
-int PLASMA_Set(plasma_enum_t param, int value);
-int PLASMA_Get(plasma_enum_t param, int *value);
+int plasma_init();
+int plasma_finalize();
+int plasma_set(plasma_enum_t param, int value);
+int plasma_get(plasma_enum_t param, int *value);
 
 int plasma_context_attach();
 int plasma_context_detach();
