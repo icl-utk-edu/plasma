@@ -65,7 +65,7 @@ int core_zpotrf(PLASMA_enum uplo,
 void core_omp_zpotrf(PLASMA_enum uplo,
                      int n,
                      PLASMA_Complex64_t *A, int lda,
-                     plasma_sequence_t *sequence, PLASMA_request *request,
+                     plasma_sequence_t *sequence, plasma_request_t *request,
                      int iinfo)
 {
     // omp depends assume lda = n.

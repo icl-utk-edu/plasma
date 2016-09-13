@@ -134,7 +134,7 @@ int PLASMA_zgelqf(int m, int n,
     }
 
     // Initialize request.
-    PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
+    plasma_request_t request = PLASMA_REQUEST_INITIALIZER;
 
     #pragma omp parallel
     #pragma omp master
@@ -219,7 +219,7 @@ int PLASMA_zgelqf(int m, int n,
 void plasma_omp_zgelqf(PLASMA_desc *A, PLASMA_desc *T,
                        PLASMA_workspace *work,
                        plasma_sequence_t *sequence,
-                       PLASMA_request *request)
+                       plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

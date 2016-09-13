@@ -259,7 +259,7 @@ void core_omp_ztsmlq(PLASMA_enum side, PLASMA_enum trans,
                      const PLASMA_Complex64_t *V,  int ldv,
                      const PLASMA_Complex64_t *T,  int ldt,
                      PLASMA_workspace *work,
-                     plasma_sequence_t *sequence, PLASMA_request *request)
+                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // assuming m1 == nb, n1 == nb, m2 == nb, n2 == nb
     #pragma omp task depend(inout:A1[0:nb*nb]) \

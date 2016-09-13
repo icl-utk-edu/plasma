@@ -176,7 +176,7 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans,
         return retval;
     }
     // Initialize request.
-    PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
+    plasma_request_t request = PLASMA_REQUEST_INITIALIZER;
 
     // asynchronous block
     #pragma omp parallel
@@ -268,7 +268,7 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans,
 void plasma_omp_zherk(PLASMA_enum uplo, PLASMA_enum trans,
                       double alpha, PLASMA_desc *A,
                       double beta,  PLASMA_desc *C,
-                      plasma_sequence_t *sequence, PLASMA_request *request)
+                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

@@ -154,7 +154,7 @@ int PLASMA_zpotrs(PLASMA_enum uplo,
         return retval;
     }
     // Initialize request.
-    PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
+    plasma_request_t request = PLASMA_REQUEST_INITIALIZER;
 
     // asynchronous block
     #pragma omp parallel
@@ -238,7 +238,7 @@ void plasma_omp_zpotrs(PLASMA_enum uplo,
                        PLASMA_desc *A,
                        PLASMA_desc *B,
                        plasma_sequence_t *sequence,
-                       PLASMA_request *request)
+                       plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

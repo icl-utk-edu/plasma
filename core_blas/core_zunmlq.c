@@ -228,7 +228,7 @@ void core_omp_zunmlq(PLASMA_enum side, PLASMA_enum trans,
                      const PLASMA_Complex64_t *T, int ldt,
                            PLASMA_Complex64_t *C, int ldc,
                      PLASMA_workspace *work,
-                     plasma_sequence_t *sequence, PLASMA_request *request)
+                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // OpenMP depends on lda == m == n == nb, ldc == nb, ldt == ib.
     #pragma omp task depend(in:A[0:nb*nb]) \

@@ -24,7 +24,7 @@
     Out-of-place.
 */
 void PLASMA_zcm2ccrb_Async(PLASMA_Complex64_t *Af77, int lda, PLASMA_desc *A,
-                           plasma_sequence_t *sequence, PLASMA_request *request)
+                           plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

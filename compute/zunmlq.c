@@ -194,7 +194,7 @@ int PLASMA_zunmlq(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
     }
 
     // Initialize request.
-    PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
+    plasma_request_t request = PLASMA_REQUEST_INITIALIZER;
 
     #pragma omp parallel
     #pragma omp master
@@ -299,7 +299,7 @@ int PLASMA_zunmlq(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
 void plasma_omp_zunmlq(PLASMA_enum side, PLASMA_enum trans,
                        PLASMA_desc *A, PLASMA_desc *T, PLASMA_desc *C,
                        PLASMA_workspace *work,
-                       plasma_sequence_t *sequence, PLASMA_request *request)
+                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

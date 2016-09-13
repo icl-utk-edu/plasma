@@ -173,7 +173,7 @@ int PLASMA_zpbsv(PLASMA_enum uplo, int n, int kd, int nrhs,
         return retval;
     }
     // Initialize request.
-    PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
+    plasma_request_t request = PLASMA_REQUEST_INITIALIZER;
 
     #pragma omp parallel
     #pragma omp master
@@ -252,7 +252,7 @@ int PLASMA_zpbsv(PLASMA_enum uplo, int n, int kd, int nrhs,
  *
  ******************************************************************************/
 void plasma_omp_zpbsv(PLASMA_enum uplo, PLASMA_desc *AB, PLASMA_desc *B,
-                      plasma_sequence_t *sequence, PLASMA_request *request)
+                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
     PLASMA_Complex64_t zone = 1.0;
 

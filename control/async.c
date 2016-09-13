@@ -15,7 +15,7 @@
 
 /******************************************************************************/
 int plasma_request_fail(plasma_sequence_t *sequence,
-                        PLASMA_request *request,
+                        plasma_request_t *request,
                         int status)
 {
     sequence->request = request;

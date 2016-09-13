@@ -205,7 +205,7 @@ int PLASMA_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
         return retval;
     }
     // Initialize request.
-    PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
+    plasma_request_t request = PLASMA_REQUEST_INITIALIZER;
 
     // asynchronous block
     #pragma omp parallel
@@ -302,7 +302,7 @@ void plasma_omp_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
                       PLASMA_enum transA, PLASMA_enum diag,
                       PLASMA_Complex64_t alpha, PLASMA_desc *A,
                                                 PLASMA_desc *B,
-                      plasma_sequence_t *sequence, PLASMA_request *request)
+                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

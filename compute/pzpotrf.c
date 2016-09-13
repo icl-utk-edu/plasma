@@ -22,7 +22,7 @@
  * @see plasma_omp_zpotrf
  ******************************************************************************/
 void plasma_pzpotrf(PLASMA_enum uplo, PLASMA_desc A,
-                    plasma_sequence_t *sequence, PLASMA_request *request)
+                    plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int k, m, n;
     int ldak, ldam, ldan;

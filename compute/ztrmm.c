@@ -117,7 +117,7 @@ int PLASMA_ztrmm(PLASMA_enum side, PLASMA_enum uplo,
     int status;
     plasma_context_t *plasma;
     plasma_sequence_t  *sequence = NULL;
-    PLASMA_request    request = PLASMA_REQUEST_INITIALIZER;
+    plasma_request_t    request = PLASMA_REQUEST_INITIALIZER;
     PLASMA_desc descA, descB;
 
     // Get PLASMA context
@@ -298,7 +298,7 @@ void plasma_omp_ztrmm(PLASMA_enum side, PLASMA_enum uplo,
                             PLASMA_enum transA, PLASMA_enum diag,
                             PLASMA_Complex64_t alpha, PLASMA_desc *A,
                                                       PLASMA_desc *B,
-                            plasma_sequence_t *sequence, PLASMA_request  *request)
+                            plasma_sequence_t *sequence, plasma_request_t  *request)
 {
     PLASMA_desc descA;
     PLASMA_desc descB;
