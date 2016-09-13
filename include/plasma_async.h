@@ -18,13 +18,13 @@ extern "C" {
 
 /******************************************************************************/
 typedef struct {
-    PLASMA_bool status; ///< error code
+    plasma_enum_t status; ///< error code
 } plasma_request_t;
 
 static const plasma_request_t PLASMA_REQUEST_INITIALIZER = {PLASMA_SUCCESS};
 
 typedef struct {
-    PLASMA_bool status;      ///< error code
+    plasma_enum_t status;      ///< error code
     plasma_request_t *request; ///< failed request
 } plasma_sequence_t;
 

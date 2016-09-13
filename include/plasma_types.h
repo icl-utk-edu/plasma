@@ -102,7 +102,6 @@ enum {
 
 /******************************************************************************/
 typedef int plasma_enum_t;
-typedef int PLASMA_bool;
 
 typedef float  _Complex plasma_complex32_t;
 typedef double _Complex plasma_complex64_t;
