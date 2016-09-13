@@ -25,7 +25,7 @@
  **/
 void plasma_pzungqr(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
                     PLASMA_workspace *work,
-                    PLASMA_sequence *sequence, PLASMA_request *request)
+                    plasma_sequence_t *sequence, PLASMA_request *request)
 {
     int k, m, n;
     int ldak, ldqk, ldam, ldqm;

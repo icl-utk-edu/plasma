@@ -27,7 +27,7 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                    PLASMA_Complex64_t alpha, PLASMA_desc A,
                                              PLASMA_desc B,
                    PLASMA_Complex64_t beta,  PLASMA_desc C,
-                   PLASMA_sequence *sequence, PLASMA_request *request)
+                   plasma_sequence_t *sequence, PLASMA_request *request)
 {
     int m, n, k;
     int ldam, ldak, ldbn, ldbk, ldcm;

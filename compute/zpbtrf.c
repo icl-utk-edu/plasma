@@ -134,7 +134,7 @@ int PLASMA_zpbtrf(PLASMA_enum uplo,
     }
 
     // Create sequence.
-    PLASMA_sequence *sequence = NULL;
+    plasma_sequence_t *sequence = NULL;
     retval = plasma_sequence_create(&sequence);
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_sequence_create() failed");
@@ -222,7 +222,7 @@ int PLASMA_zpbtrf(PLASMA_enum uplo,
  ******************************************************************************/
 void plasma_omp_zpbtrf(PLASMA_enum uplo,
                        PLASMA_desc *AB,
-                       PLASMA_sequence *sequence,
+                       plasma_sequence_t *sequence,
                        PLASMA_request *request)
 {
     // Get PLASMA context.

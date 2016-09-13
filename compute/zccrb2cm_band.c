@@ -25,7 +25,7 @@
 */
 void PLASMA_zccrb2cm_band_Async(PLASMA_enum uplo,
                                 PLASMA_desc *A, PLASMA_Complex64_t *Af77, int lda,
-                                PLASMA_sequence *sequence, PLASMA_request *request)
+                                plasma_sequence_t *sequence, PLASMA_request *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

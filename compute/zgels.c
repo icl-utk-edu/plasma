@@ -187,7 +187,7 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
     }
 
     // Create sequence.
-    PLASMA_sequence *sequence = NULL;
+    plasma_sequence_t *sequence = NULL;
     retval = plasma_sequence_create(&sequence);
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_sequence_create() failed");
@@ -291,7 +291,7 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
 void plasma_omp_zgels(PLASMA_enum trans, PLASMA_desc *A,
                       PLASMA_desc *T, PLASMA_desc *B,
                       PLASMA_workspace *work,
-                      PLASMA_sequence *sequence,
+                      plasma_sequence_t *sequence,
                       PLASMA_request *request)
 {
     // Get PLASMA context.

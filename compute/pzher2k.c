@@ -26,7 +26,7 @@
 void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
                     PLASMA_Complex64_t alpha, PLASMA_desc A,
                     PLASMA_desc B, double beta,  PLASMA_desc C,
-                    PLASMA_sequence *sequence, PLASMA_request *request)
+                    plasma_sequence_t *sequence, PLASMA_request *request)
 {
     int m, n, k;
     int ldak, ldam, ldan, ldcm, ldcn;

@@ -25,7 +25,7 @@
 void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
                    PLASMA_Complex64_t alpha, PLASMA_desc A,
                    PLASMA_Complex64_t beta,  PLASMA_desc C,
-                   PLASMA_sequence *sequence, PLASMA_request *request)
+                   plasma_sequence_t *sequence, PLASMA_request *request)
 {
     int m, n, k;
     int ldak, ldam, ldan, ldcm, ldcn;

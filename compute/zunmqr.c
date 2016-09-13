@@ -190,7 +190,7 @@ int PLASMA_zunmqr(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
     }
 
     // Create sequence.
-    PLASMA_sequence *sequence = NULL;
+    plasma_sequence_t *sequence = NULL;
     retval = plasma_sequence_create(&sequence);
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_sequence_create() failed");
@@ -301,7 +301,7 @@ int PLASMA_zunmqr(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
 void plasma_omp_zunmqr(PLASMA_enum side, PLASMA_enum trans,
                        PLASMA_desc *A, PLASMA_desc *T, PLASMA_desc *C,
                        PLASMA_workspace *work,
-                       PLASMA_sequence *sequence, PLASMA_request *request)
+                       plasma_sequence_t *sequence, PLASMA_request *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

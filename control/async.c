@@ -14,7 +14,7 @@
 #include <stdlib.h>
 
 /******************************************************************************/
-int plasma_request_fail(PLASMA_sequence *sequence,
+int plasma_request_fail(plasma_sequence_t *sequence,
                         PLASMA_request *request,
                         int status)
 {
@@ -25,9 +25,9 @@ int plasma_request_fail(PLASMA_sequence *sequence,
 }
 
 /******************************************************************************/
-int plasma_sequence_create(PLASMA_sequence **sequence)
+int plasma_sequence_create(plasma_sequence_t **sequence)
 {
-    *sequence = (PLASMA_sequence*)malloc(sizeof(PLASMA_sequence));
+    *sequence = (plasma_sequence_t*)malloc(sizeof(plasma_sequence_t));
     if (*sequence == NULL) {
         plasma_error("malloc() failed");
         return PLASMA_ERR_OUT_OF_RESOURCES;
@@ -37,7 +37,7 @@ int plasma_sequence_create(PLASMA_sequence **sequence)
 }
 
 /******************************************************************************/
-int plasma_sequence_destroy(PLASMA_sequence *sequence)
+int plasma_sequence_destroy(plasma_sequence_t *sequence)
 {
     free(sequence);
     return PLASMA_SUCCESS;

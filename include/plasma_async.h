@@ -26,15 +26,15 @@ static const PLASMA_request PLASMA_REQUEST_INITIALIZER = {PLASMA_SUCCESS};
 typedef struct {
     PLASMA_bool status;      ///< error code
     PLASMA_request *request; ///< failed request
-} PLASMA_sequence;
+} plasma_sequence_t;
 
 /******************************************************************************/
-int plasma_request_fail(PLASMA_sequence *sequence,
+int plasma_request_fail(plasma_sequence_t *sequence,
                         PLASMA_request *request,
                         int status);
 
-int plasma_sequence_create(PLASMA_sequence **sequence);
-int plasma_sequence_destroy(PLASMA_sequence *sequence);
+int plasma_sequence_create(plasma_sequence_t **sequence);
+int plasma_sequence_destroy(plasma_sequence_t *sequence);
 
 #ifdef __cplusplus
 }  // extern "C"

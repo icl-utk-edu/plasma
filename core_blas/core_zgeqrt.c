@@ -162,7 +162,7 @@ void core_omp_zgeqrt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A, int lda,
                      PLASMA_Complex64_t *T, int ldt,
                      PLASMA_workspace *work,
-                     PLASMA_sequence *sequence, PLASMA_request *request)
+                     plasma_sequence_t *sequence, PLASMA_request *request)
 {
     // assuming lda == m and nb == n
     #pragma omp task depend(inout:A[0:lda*nb]) \

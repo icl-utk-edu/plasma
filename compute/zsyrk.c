@@ -171,7 +171,7 @@ int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
     }
 
     // Create sequence.
-    PLASMA_sequence *sequence = NULL;
+    plasma_sequence_t *sequence = NULL;
     retval = plasma_sequence_create(&sequence);
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_sequence_create() failed");
@@ -270,7 +270,7 @@ int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
 void plasma_omp_zsyrk(PLASMA_enum uplo, PLASMA_enum trans,
                       PLASMA_Complex64_t alpha, PLASMA_desc *A,
                       PLASMA_Complex64_t beta,  PLASMA_desc *C,
-                      PLASMA_sequence *sequence, PLASMA_request *request)
+                      plasma_sequence_t *sequence, PLASMA_request *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

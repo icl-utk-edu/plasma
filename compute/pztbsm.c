@@ -28,7 +28,7 @@ void plasma_pztbsm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_Complex64_t alpha, PLASMA_desc A,
                                              PLASMA_desc B,
                    const int *IPIV,
-                   PLASMA_sequence *sequence, PLASMA_request *request)
+                   plasma_sequence_t *sequence, PLASMA_request *request)
 {
     int k, m, n;
     int tempkm, tempmm, tempnn;

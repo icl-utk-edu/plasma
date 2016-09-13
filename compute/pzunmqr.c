@@ -27,7 +27,7 @@
 void plasma_pzunmqr(PLASMA_enum side, PLASMA_enum trans,
                     PLASMA_desc A, PLASMA_desc B, PLASMA_desc T,
                     PLASMA_workspace *work,
-                    PLASMA_sequence *sequence, PLASMA_request *request)
+                    plasma_sequence_t *sequence, PLASMA_request *request)
 {
     int k, m, n;
     int ldak, ldbk, ldam, ldan, ldbm;

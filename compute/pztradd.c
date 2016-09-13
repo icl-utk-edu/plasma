@@ -26,7 +26,7 @@
 void plasma_pztradd(PLASMA_enum uplo, PLASMA_enum transA,
                     PLASMA_Complex64_t alpha,  PLASMA_desc A,
                     PLASMA_Complex64_t beta,   PLASMA_desc B,
-                    PLASMA_sequence *sequence, PLASMA_request *request)
+                    plasma_sequence_t *sequence, PLASMA_request *request)
 {
     int tempmm, tempnn, tempmn, tempnm;
     int m, n;

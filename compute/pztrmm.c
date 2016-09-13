@@ -26,7 +26,7 @@
 void plasma_pztrmm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_enum trans, PLASMA_enum diag,
                    PLASMA_Complex64_t alpha, PLASMA_desc A, PLASMA_desc B,
-                   PLASMA_sequence *sequence, PLASMA_request *request)
+                   plasma_sequence_t *sequence, PLASMA_request *request)
 {
     int k, m, n;
     int ldak, ldam, ldan, ldbk, ldbm;

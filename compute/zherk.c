@@ -169,7 +169,7 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans,
     }
 
     // Create sequence.
-    PLASMA_sequence *sequence = NULL;
+    plasma_sequence_t *sequence = NULL;
     retval = plasma_sequence_create(&sequence);
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_sequence_create() failed");
@@ -268,7 +268,7 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans,
 void plasma_omp_zherk(PLASMA_enum uplo, PLASMA_enum trans,
                       double alpha, PLASMA_desc *A,
                       double beta,  PLASMA_desc *C,
-                      PLASMA_sequence *sequence, PLASMA_request *request)
+                      plasma_sequence_t *sequence, PLASMA_request *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

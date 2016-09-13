@@ -18,7 +18,7 @@
 
 /******************************************************************************/
 void plasma_pzooccrb2cm(PLASMA_desc A, PLASMA_Complex64_t *Af77, int lda,
-                        PLASMA_sequence *sequence, PLASMA_request *request)
+                        plasma_sequence_t *sequence, PLASMA_request *request)
 {
     PLASMA_Complex64_t *f77;
     PLASMA_Complex64_t *bdl;

@@ -23,7 +23,7 @@
  * @see plasma_omp_zgbtrf
  ******************************************************************************/
 void plasma_pzpbtrf(PLASMA_enum uplo, PLASMA_desc A,
-                    PLASMA_sequence *sequence, PLASMA_request *request)
+                    plasma_sequence_t *sequence, PLASMA_request *request)
 {
     int k, m, n;
     int tempkm, tempmm, tempmn;

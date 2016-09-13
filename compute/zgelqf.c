@@ -126,7 +126,7 @@ int PLASMA_zgelqf(int m, int n,
     }
 
     // Create sequence.
-    PLASMA_sequence *sequence = NULL;
+    plasma_sequence_t *sequence = NULL;
     retval = plasma_sequence_create(&sequence);
     if (retval != PLASMA_SUCCESS) {
         plasma_error("plasma_sequence_create() failed");
@@ -218,7 +218,7 @@ int PLASMA_zgelqf(int m, int n,
  ******************************************************************************/
 void plasma_omp_zgelqf(PLASMA_desc *A, PLASMA_desc *T,
                        PLASMA_workspace *work,
-                       PLASMA_sequence *sequence,
+                       plasma_sequence_t *sequence,
                        PLASMA_request *request)
 {
     // Get PLASMA context.
