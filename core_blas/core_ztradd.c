@@ -78,7 +78,7 @@
  *          ldb >= max(1,m).
  *
  ******************************************************************************/
-void CORE_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
+void core_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
                        PLASMA_Complex64_t  alpha,
                  const PLASMA_Complex64_t *A, int lda,
                        PLASMA_Complex64_t  beta,
@@ -87,7 +87,7 @@ void CORE_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
     int i, j;
 
     if (uplo == PlasmaFull) {
-        CORE_zgeadd(transA, m, n, alpha, A, lda, beta, B, ldb);
+        core_zgeadd(transA, m, n, alpha, A, lda, beta, B, ldb);
         return;
     }
 
@@ -218,5 +218,5 @@ void core_omp_ztradd(
 {
     // omp depend assumes lda = PlasmaNoTrans ? m : n; ldb = m
     #pragma omp task depend(in:A[0:m*n]) depend(inout:B[0:m*n])
-    CORE_ztradd(uplo, transA, m, n, alpha, A, lda, beta, B, ldb);
+    core_ztradd(uplo, transA, m, n, alpha, A, lda, beta, B, ldb);
 }

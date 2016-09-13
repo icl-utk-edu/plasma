@@ -85,7 +85,7 @@
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int CORE_zgelqt(int m, int n, int ib,
+int core_zgelqt(int m, int n, int ib,
                 PLASMA_Complex64_t *A, int lda,
                 PLASMA_Complex64_t *T, int ldt,
                 PLASMA_Complex64_t *TAU,
@@ -174,7 +174,7 @@ void core_omp_zgelqt(int m, int n, int ib, int nb,
                 ((PLASMA_Complex64_t*)work->spaces[tid]) + ltau;
 
             // Call the kernel.
-            int info = CORE_zgelqt(m, n, ib,
+            int info = core_zgelqt(m, n, ib,
                                    A, lda,
                                    T, ldt,
                                    TAU,

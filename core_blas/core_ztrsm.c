@@ -84,7 +84,7 @@
  *          The leading dimension of the array B. ldb >= max(1,m).
  *
  ******************************************************************************/
-void CORE_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
+void core_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
                 PLASMA_enum transA, PLASMA_enum diag,
                 int m, int n,
                 PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
@@ -109,7 +109,7 @@ void core_omp_ztrsm(
     // omp depends assume lda == m or n, ldb == m,
     // depending on side.
     #pragma omp task depend(in:A[0:m*m]) depend(inout:B[0:m*n])
-    CORE_ztrsm(side, uplo,
+    core_ztrsm(side, uplo,
                transA, diag,
                m, n,
                alpha, A, lda,

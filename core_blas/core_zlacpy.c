@@ -51,7 +51,7 @@
  *          ldb >= max(1,M).
  *
  ******************************************************************************/
-void CORE_zlacpy(PLASMA_enum uplo,
+void core_zlacpy(PLASMA_enum uplo,
                  int m, int n,
                  const PLASMA_Complex64_t *A, int lda,
                        PLASMA_Complex64_t *B, int ldb)
@@ -71,7 +71,7 @@ void core_omp_zlacpy(PLASMA_enum uplo,
 {
     // omp depends assume lda == ldb == m.
     #pragma omp task depend(in:A[0:m*n]) depend(out:B[0:m*n])
-    CORE_zlacpy(uplo,
+    core_zlacpy(uplo,
                 m, n,
                 A, lda,
                 B, ldb);

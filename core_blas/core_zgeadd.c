@@ -71,7 +71,7 @@
  *          ldb >= max(1,m)
  *
  ******************************************************************************/
-void CORE_zgeadd(PLASMA_enum transA, int m, int n,
+void core_zgeadd(PLASMA_enum transA, int m, int n,
                       PLASMA_Complex64_t  alpha,
                 const PLASMA_Complex64_t *A, int lda,
                       PLASMA_Complex64_t  beta,
@@ -158,5 +158,5 @@ void core_omp_zgeadd(
 {
     // omp depend assumes lda = PlasmaNoTrans ? m : n; ldb = m
     #pragma omp task depend(in:A[0:m*n]) depend(inout:B[0:m*n])
-    CORE_zgeadd(transA, m, n, alpha, A, lda, beta, B, ldb);
+    core_zgeadd(transA, m, n, alpha, A, lda, beta, B, ldb);
 }

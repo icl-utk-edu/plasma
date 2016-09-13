@@ -86,7 +86,7 @@
  *          The leading dimension of the array C. ldc >= max(1,m).
  *
  ******************************************************************************/
-void CORE_zgemm(PLASMA_enum transA, PLASMA_enum transB,
+void core_zgemm(PLASMA_enum transA, PLASMA_enum transB,
                 int m, int n, int k,
                 PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                                           const PLASMA_Complex64_t *B, int ldb,
@@ -113,7 +113,7 @@ void core_omp_zgemm(
     #pragma omp task depend(in:A[0:m*k]) \
                      depend(in:B[0:k*n]) \
                      depend(inout:C[0:m*n])
-    CORE_zgemm(transA, transB,
+    core_zgemm(transA, transB,
                m, n, k,
                alpha, A, lda,
                       B, ldb,

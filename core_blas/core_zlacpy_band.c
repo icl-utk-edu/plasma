@@ -17,9 +17,9 @@
 
 /*******************************************************************************
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_PLASMA_Complex64_t
  *
- *  CORE_zlacpy copies a sub-block A of a band matrix stored in LAPACK's band format
+ *  core_zlacpy copies a sub-block A of a band matrix stored in LAPACK's band format
  *  to a corresponding sub-block B of a band matrix in PLASMA's band format
  *
  *******************************************************************************
@@ -50,7 +50,7 @@
  *          The leading dimension of the array B. ldb >= max(1,M).
  *
  ******************************************************************************/
-void CORE_zlacpy_lapack2tile_band(PLASMA_enum uplo,
+void core_zlacpy_lapack2tile_band(PLASMA_enum uplo,
                                   int it, int jt,
                                   int m, int n, int nb, int kl, int ku,
                                   const PLASMA_Complex64_t *A, int lda,
@@ -120,14 +120,14 @@ void core_omp_zlacpy_lapack2tile_band(PLASMA_enum uplo,
                                             PLASMA_Complex64_t *B, int ldb)
 {
     #pragma omp task depend(in:A[0:m*n]) depend(out:B[0:m*n])
-    CORE_zlacpy_lapack2tile_band(uplo, it, jt, m, n, nb, kl, ku, A, lda, B, ldb);
+    core_zlacpy_lapack2tile_band(uplo, it, jt, m, n, nb, kl, ku, A, lda, B, ldb);
 }
 
 /*******************************************************************************
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_PLASMA_Complex64_t
  *
- *  CORE_zlacpy copies all or part of a two-dimensional matrix A to another
+ *  core_zlacpy copies all or part of a two-dimensional matrix A to another
  *  matrix B
  *
  *******************************************************************************
@@ -158,7 +158,7 @@ void core_omp_zlacpy_lapack2tile_band(PLASMA_enum uplo,
  *          The leading dimension of the array B. ldb >= max(1, m).
  *
  ******************************************************************************/
-void CORE_zlacpy_tile2lapack_band(PLASMA_enum uplo,
+void core_zlacpy_tile2lapack_band(PLASMA_enum uplo,
                                   int it, int jt,
                                   int m, int n, int nb, int kl, int ku,
                                   const PLASMA_Complex64_t *B, int ldb,
@@ -212,5 +212,5 @@ void core_omp_zlacpy_tile2lapack_band(PLASMA_enum uplo,
                                             PLASMA_Complex64_t *A, int lda)
 {
     #pragma omp task depend(in:B[0:m*n]) depend(out:A[0:m*n])
-    CORE_zlacpy_tile2lapack_band(uplo, it, jt, m, n, nb, kl, ku, B, ldb, A, lda);
+    core_zlacpy_tile2lapack_band(uplo, it, jt, m, n, nb, kl, ku, B, ldb, A, lda);
 }

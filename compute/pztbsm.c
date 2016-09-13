@@ -194,7 +194,7 @@ void plasma_pztbsm(PLASMA_enum side, PLASMA_enum uplo,
                     for (m = 0; m < B.mt; m++) {
                         tempmm = m == B.mt-1 ? B.m-m*B.mb : B.mb;
                         ldbm = BLKLDD(B, m);
-                        QUARK_CORE_ztrsm(
+                        QUARK_core_ztrsm(
                             plasma->quark, &task_flags,
                             side, uplo, trans, diag,
                             tempmm, tempkn, A.mb,
@@ -206,7 +206,7 @@ void plasma_pztbsm(PLASMA_enum side, PLASMA_enum uplo,
                         ldbm = BLKLDD(B, m);
                         for (n = k+1; n < B.nt; n++) {
                             tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
-                            QUARK_CORE_zgemm(
+                            QUARK_core_zgemm(
                                 plasma->quark, &task_flags,
                                 PlasmaNoTrans, PlasmaNoTrans,
                                 tempmm, tempnn, B.mb, A.mb,
@@ -227,7 +227,7 @@ void plasma_pztbsm(PLASMA_enum side, PLASMA_enum uplo,
                     for (m = 0; m < B.mt; m++) {
                         tempmm = m == B.mt-1 ? B.m-m*B.mb : B.mb;
                         ldbm = BLKLDD(B, m);
-                        QUARK_CORE_ztrsm(
+                        QUARK_core_ztrsm(
                             plasma->quark, &task_flags,
                             side, uplo, trans, diag,
                             tempmm, tempkn, A.mb,
@@ -236,7 +236,7 @@ void plasma_pztbsm(PLASMA_enum side, PLASMA_enum uplo,
 
                         for (n = k+1; n < B.nt; n++) {
                             ldan = BLKLDD(A, B.nt-1-n);
-                            QUARK_CORE_zgemm(
+                            QUARK_core_zgemm(
                                 plasma->quark, &task_flags,
                                 PlasmaNoTrans, trans,
                                 tempmm, B.nb, tempkn, A.mb,
@@ -260,7 +260,7 @@ void plasma_pztbsm(PLASMA_enum side, PLASMA_enum uplo,
                     for (m = 0; m < B.mt; m++) {
                         tempmm = m == B.mt-1 ? B.m-m*B.mb : B.mb;
                         ldbm = BLKLDD(B, m);
-                        QUARK_CORE_ztrsm(
+                        QUARK_core_ztrsm(
                             plasma->quark, &task_flags,
                             side, uplo, trans, diag,
                             tempmm, tempkn, A.mb,
@@ -268,7 +268,7 @@ void plasma_pztbsm(PLASMA_enum side, PLASMA_enum uplo,
                                     B(       m, B.nt-1-k), ldbm);
 
                         for (n = k+1; n < B.nt; n++) {
-                            QUARK_CORE_zgemm(
+                            QUARK_core_zgemm(
                                 plasma->quark, &task_flags,
                                 PlasmaNoTrans, PlasmaNoTrans,
                                 tempmm, B.nb, tempkn, A.mb,
@@ -289,7 +289,7 @@ void plasma_pztbsm(PLASMA_enum side, PLASMA_enum uplo,
                     for (m = 0; m < B.mt; m++) {
                         tempmm = m == B.mt-1 ? B.m-m*B.mb : B.mb;
                         ldbm = BLKLDD(B, m);
-                        QUARK_CORE_ztrsm(
+                        QUARK_core_ztrsm(
                             plasma->quark, &task_flags,
                             side, uplo, trans, diag,
                             tempmm, tempkn, A.mb,
@@ -299,7 +299,7 @@ void plasma_pztbsm(PLASMA_enum side, PLASMA_enum uplo,
                         for (n = k+1; n < B.nt; n++) {
                             tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
                             ldan = BLKLDD(A, n);
-                            QUARK_CORE_zgemm(
+                            QUARK_core_zgemm(
                                 plasma->quark, &task_flags,
                                 PlasmaNoTrans, trans,
                                 tempmm, tempnn, B.mb, A.mb,

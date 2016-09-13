@@ -15,7 +15,7 @@
 #include "plasma_internal.h"
 #include "core_lapack.h"
 
-static inline int CORE_zpamm_a2(PLASMA_enum side, PLASMA_enum trans,
+static inline int core_zpamm_a2(PLASMA_enum side, PLASMA_enum trans,
                                 PLASMA_enum uplo,
                                 int m, int n, int k, int l,
                                 int vi2, int vi3,
@@ -23,7 +23,7 @@ static inline int CORE_zpamm_a2(PLASMA_enum side, PLASMA_enum trans,
                                 const PLASMA_Complex64_t *V,  int ldv,
                                       PLASMA_Complex64_t *W,  int ldw);
 
-static inline int CORE_zpamm_w(PLASMA_enum side, PLASMA_enum trans,
+static inline int core_zpamm_w(PLASMA_enum side, PLASMA_enum trans,
                                PLASMA_enum uplo,
                                int m, int n, int k, int l,
                                int vi2, int vi3,
@@ -171,7 +171,7 @@ static inline int CORE_zpamm_w(PLASMA_enum side, PLASMA_enum trans,
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int CORE_zpamm(int op, PLASMA_enum side, PLASMA_enum storev,
+int core_zpamm(int op, PLASMA_enum side, PLASMA_enum storev,
                int m, int n, int k, int l,
                const PLASMA_Complex64_t *A1, int lda1,
                      PLASMA_Complex64_t *A2, int lda2,
@@ -271,11 +271,11 @@ int CORE_zpamm(int op, PLASMA_enum side, PLASMA_enum storev,
     }
 
     if (op == PlasmaW) {
-        CORE_zpamm_w(side, trans, uplo, m, n, k, l, vi2, vi3,
+        core_zpamm_w(side, trans, uplo, m, n, k, l, vi2, vi3,
                      A1, lda1, A2, lda2, V, ldv, W, ldw);
     }
     else if (op == PlasmaA2) {
-        CORE_zpamm_a2(side, trans, uplo, m, n, k, l, vi2, vi3,
+        core_zpamm_a2(side, trans, uplo, m, n, k, l, vi2, vi3,
                       A2, lda2, V, ldv, W, ldw);
     }
 
@@ -283,7 +283,7 @@ int CORE_zpamm(int op, PLASMA_enum side, PLASMA_enum storev,
 }
 
 /******************************************************************************/
-static inline int CORE_zpamm_w(
+static inline int core_zpamm_w(
         PLASMA_enum side, PLASMA_enum trans, PLASMA_enum uplo,
         int m, int n, int k, int l,
         int vi2, int vi3,
@@ -413,7 +413,7 @@ static inline int CORE_zpamm_w(
 }
 
 /******************************************************************************/
-static inline int CORE_zpamm_a2(
+static inline int core_zpamm_a2(
         PLASMA_enum side, PLASMA_enum trans, PLASMA_enum uplo,
         int m, int n, int k, int l,
         int vi2, int vi3,

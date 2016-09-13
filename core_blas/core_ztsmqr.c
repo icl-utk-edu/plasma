@@ -36,7 +36,7 @@
  *
  *    Q = H(1) H(2) . . . H(k)
  *
- *  as returned by CORE_ztsqrt.
+ *  as returned by core_ztsqrt.
  *
  *******************************************************************************
  *
@@ -86,7 +86,7 @@
  * @param[in] V
  *         The i-th row must contain the vector which defines the
  *         elementary reflector H(i), for i = 1,2,...,k, as returned by
- *         CORE_ZTSQRT in the first k columns of its array argument V.
+ *         core_ZTSQRT in the first k columns of its array argument V.
  *
  * @param[in] ldv
  *         The leading dimension of the array V. ldv >= max(1,k).
@@ -115,7 +115,7 @@
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int CORE_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
+int core_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
                 int m1, int n1, int m2, int n2, int k, int ib,
                       PLASMA_Complex64_t *A1,   int lda1,
                       PLASMA_Complex64_t *A2,   int lda2,
@@ -231,8 +231,8 @@ int CORE_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
             ni = n1 - i;
             jc = i;
         }
-        // Apply H or H^H (NOTE: CORE_zparfb used to be CORE_ztsrfb).
-        CORE_zparfb(side, trans, PlasmaForward, PlasmaColumnwise,
+        // Apply H or H^H (NOTE: core_zparfb used to be core_ztsrfb).
+        core_zparfb(side, trans, PlasmaForward, PlasmaColumnwise,
                     mi, ni, m2, n2, kb, 0,
                     &A1[lda1*jc+ic], lda1,
                     A2, lda2,
@@ -268,7 +268,7 @@ void core_omp_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
             int ldwork = side == PlasmaLeft ? ib : nb;
 
             // Call the kernel.
-            int info = CORE_ztsmqr(side, trans,
+            int info = core_ztsmqr(side, trans,
                                    m1, n1, m2, n2, k, ib,
                                    A1, lda1,
                                    A2, lda2,

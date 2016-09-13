@@ -172,13 +172,13 @@ void test_ztradd(param_value_t param[], char *info)
     param[PARAM_GFLOPS].d = flops_ztradd(m, n) / time / 1e9;
 
     //================================================================
-    // Test results by comparing to result of CORE_ztradd function
+    // Test results by comparing to result of core_ztradd function
     //================================================================
     if (test) {
         // Calculate relative error |B_ref - B|_F / |B_ref|_F < 3*eps
         // Using 3*eps covers complex arithmetic
 
-        CORE_ztradd(uplo, transA, m, n, alpha, A, lda, beta, Bref, ldb);
+        core_ztradd(uplo, transA, m, n, alpha, A, lda, beta, Bref, ldb);
 
         double work[1];
 

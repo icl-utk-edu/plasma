@@ -32,7 +32,7 @@
  *    \f[
  *        Q = H(k) . . . H(2) H(1)
  *    \f]
- *  as returned by CORE_zgelqt. Q is of order m if side = PlasmaLeft
+ *  as returned by core_zgelqt. Q is of order m if side = PlasmaLeft
  *  and of order n if side = PlasmaRight.
  *
  *******************************************************************************
@@ -65,7 +65,7 @@
  *                     (lda,n) if SIDE = PlasmaRight,
  *         The i-th row must contain the vector which defines the
  *         elementary reflector H(i), for i = 1,2,...,k, as returned by
- *         CORE_zgelqt in the first k rows of its array argument A.
+ *         core_zgelqt in the first k rows of its array argument A.
  *
  * @param[in] lda
  *         The leading dimension of the array A.  lda >= max(1,k).
@@ -101,7 +101,7 @@
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int CORE_zunmlq(PLASMA_enum side, PLASMA_enum trans,
+int core_zunmlq(PLASMA_enum side, PLASMA_enum trans,
                 int m, int n, int k, int ib,
                 const PLASMA_Complex64_t *A,    int lda,
                 const PLASMA_Complex64_t *T,    int ldt,
@@ -243,7 +243,7 @@ void core_omp_zunmlq(PLASMA_enum side, PLASMA_enum trans,
             int ldwork = nb;
 
             // Call the kernel.
-            int info = CORE_zunmlq(side, trans,
+            int info = core_zunmlq(side, trans,
                                    m, n, k, ib,
                                    A, lda,
                                    T, ldt,

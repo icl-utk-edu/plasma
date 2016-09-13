@@ -70,7 +70,7 @@
  *          The leading dimension of the array C. ldc >= max(1, n).
  *
  ******************************************************************************/
-void CORE_zsyrk(PLASMA_enum uplo, PLASMA_enum trans,
+void core_zsyrk(PLASMA_enum uplo, PLASMA_enum trans,
                 int n, int k,
                 PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                 PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc)
@@ -92,7 +92,7 @@ void core_omp_zsyrk(
     // omp depends assume lda == n or k, and ldc == n,
     // depending on trans.
     #pragma omp task depend(in:A[0:n*k]) depend(inout:C[0:n*n])
-    CORE_zsyrk(uplo, trans,
+    core_zsyrk(uplo, trans,
                n, k,
                alpha, A, lda,
                beta,  C, ldc);

@@ -82,7 +82,7 @@
  *          The leading dimension of the array C. ldc >= max(1, n).
  *
  ******************************************************************************/
-void CORE_zsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
+void core_zsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
                  int n, int k,
                  PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                                            const PLASMA_Complex64_t *B, int ldb,
@@ -109,7 +109,7 @@ void core_omp_zsyr2k(
     #pragma omp task depend(in:A[0:n*k]) \
                      depend(in:B[0:n*k]) \
                      depend(inout:C[0:n*n])
-    CORE_zsyr2k(uplo, trans,
+    core_zsyr2k(uplo, trans,
                 n, k,
                 alpha, A, lda,
                        B, ldb,

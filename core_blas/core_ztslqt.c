@@ -93,7 +93,7 @@
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int CORE_ztslqt(int m, int n, int ib,
+int core_ztslqt(int m, int n, int ib,
                 PLASMA_Complex64_t *A1, int lda1,
                 PLASMA_Complex64_t *A2, int lda2,
                 PLASMA_Complex64_t *T, int ldt,
@@ -188,7 +188,7 @@ int CORE_ztslqt(int m, int n, int ib,
             // Plasma_ConjTrans will be converted to PlasmaTrans in
             // automatic datatype conversion, which is what we want here.
             // PlasmaConjTrans is protected from this conversion.
-            CORE_ztsmlq(
+            core_ztsmlq(
                 PlasmaRight, Plasma_ConjTrans,
                 m-(ii+sb), sb, m-(ii+sb), n, ib, ib,
                 &A1[lda1*ii+ii+sb], lda1,
@@ -225,7 +225,7 @@ void core_omp_ztslqt(int m, int n, int ib, int nb,
                 ((PLASMA_Complex64_t*)work->spaces[tid]) + ltau;
 
             // Call the kernel.
-            int info = CORE_ztslqt(m, n, ib,
+            int info = core_ztslqt(m, n, ib,
                                    A1, lda1,
                                    A2, lda2,
                                    T,  ldt,

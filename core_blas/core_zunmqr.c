@@ -32,7 +32,7 @@
  *    \f[
  *        Q = H(1) H(2) ... H(k)
  *    \f]
- *  as returned by CORE_zgeqrt. Q is of order m if side = PlasmaLeft
+ *  as returned by core_zgeqrt. Q is of order m if side = PlasmaLeft
  *  and of order n if side = PlasmaRight.
  *
  *******************************************************************************
@@ -64,7 +64,7 @@
  *         Dimension:  (lda,k)
  *         The i-th column must contain the vector which defines the
  *         elementary reflector H(i), for i = 1,2,...,k,
- *         as returned by CORE_zgeqrt in the first k columns of its
+ *         as returned by core_zgeqrt in the first k columns of its
  *         array argument A.
  *
  * @param[in] lda
@@ -103,7 +103,7 @@
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
+int core_zunmqr(PLASMA_enum side, PLASMA_enum trans,
                 int m, int n, int k, int ib,
                 const PLASMA_Complex64_t *A,    int lda,
                 const PLASMA_Complex64_t *T,    int ldt,
@@ -238,7 +238,7 @@ void core_omp_zunmqr(PLASMA_enum side, PLASMA_enum trans,
             int ldwork = nb;
 
             // Call the kernel.
-            int info = CORE_zunmqr(side, trans,
+            int info = core_zunmqr(side, trans,
                                    m, n, k, ib,
                                    A, lda,
                                    T, ldt,

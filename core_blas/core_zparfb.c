@@ -125,7 +125,7 @@
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
+int core_zparfb(PLASMA_enum side, PLASMA_enum trans,
                 PLASMA_enum direct, PLASMA_enum storev,
                 int m1, int n1, int m2, int n2, int k, int l,
                       PLASMA_Complex64_t *A1, int lda1,
@@ -195,7 +195,7 @@ int CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
             //                                      ( A2 )
 
             // W = A1 + op(V) * A2
-            CORE_zpamm(PlasmaW, PlasmaLeft, storev,
+            core_zpamm(PlasmaW, PlasmaLeft, storev,
                        k, n1, m2, l,
                        A1, lda1,
                        A2, lda2,
@@ -219,7 +219,7 @@ int CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
 
             // A2 = A2 - op(V) * W
             // W also changes: W = V * W, A2 = A2 - W
-            CORE_zpamm(PlasmaA2, PlasmaLeft, storev,
+            core_zpamm(PlasmaA2, PlasmaLeft, storev,
                        m2, n2, k, l,
                        A1, lda1,
                        A2, lda2,
@@ -233,7 +233,7 @@ int CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
             // Form  H * A  or  H^H * A  where A  = ( A1 A2 )
 
             // W = A1 + A2 * op(V)
-            CORE_zpamm(PlasmaW, PlasmaRight, storev,
+            core_zpamm(PlasmaW, PlasmaRight, storev,
                        m1, k, n2, l,
                        A1, lda1,
                        A2, lda2,
@@ -257,7 +257,7 @@ int CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
 
             // A2 = A2 - W * op(V)
             // W also changes: W = W * V^H, A2 = A2 - W
-            CORE_zpamm(PlasmaA2, PlasmaRight, storev,
+            core_zpamm(PlasmaA2, PlasmaRight, storev,
                        m2, n2, k, l,
                        A1, lda1,
                        A2, lda2,

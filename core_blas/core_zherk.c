@@ -70,7 +70,7 @@
  *          The leading dimension of the array C. ldc >= max(1, n).
  *
  ******************************************************************************/
-void CORE_zherk(PLASMA_enum uplo, PLASMA_enum trans,
+void core_zherk(PLASMA_enum uplo, PLASMA_enum trans,
                 int n, int k,
                 double alpha, const PLASMA_Complex64_t *A, int lda,
                 double beta,        PLASMA_Complex64_t *C, int ldc)
@@ -91,7 +91,7 @@ void core_omp_zherk(PLASMA_enum uplo, PLASMA_enum trans,
     // omp depends assume lda == n or k, and ldc == n,
     // depending on trans.
     #pragma omp task depend(in:A[0:n*k]) depend(inout:C[0:n*n])
-    CORE_zherk(uplo, trans,
+    core_zherk(uplo, trans,
                n, k,
                alpha, A, lda,
                beta,  C, ldc);

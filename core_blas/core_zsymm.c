@@ -77,7 +77,7 @@
  *          The leading dimension of the array C. ldc >= max(1,m).
  *
  ******************************************************************************/
-void CORE_zsymm(PLASMA_enum side, PLASMA_enum uplo,
+void core_zsymm(PLASMA_enum side, PLASMA_enum uplo,
                 int m, int n,
                 PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                                           const PLASMA_Complex64_t *B, int ldb,
@@ -103,7 +103,7 @@ void core_omp_zsymm(
         #pragma omp task depend(in:A[0:m*m]) \
                          depend(in:B[0:m*n]) \
                          depend(inout:C[0:m*n])
-        CORE_zsymm(side, uplo,
+        core_zsymm(side, uplo,
                    m, n,
                    alpha, A, lda,
                           B, ldb,
@@ -113,7 +113,7 @@ void core_omp_zsymm(
         #pragma omp task depend(in:A[0:n*n]) \
                          depend(in:B[0:m*n]) \
                          depend(inout:C[0:m*n])
-        CORE_zsymm(side, uplo,
+        core_zsymm(side, uplo,
                    m, n,
                    alpha, A, lda,
                           B, ldb,

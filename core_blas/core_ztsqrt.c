@@ -82,7 +82,7 @@
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int CORE_ztsqrt(int m, int n, int ib,
+int core_ztsqrt(int m, int n, int ib,
                 PLASMA_Complex64_t *A1, int lda1,
                 PLASMA_Complex64_t *A2, int lda2,
                 PLASMA_Complex64_t *T,  int ldt,
@@ -175,7 +175,7 @@ int CORE_ztsqrt(int m, int n, int ib,
             T[ldt*(ii+i)+i] = TAU[ii+i];
         }
         if (n > ii+sb) {
-            CORE_ztsmqr(PlasmaLeft, Plasma_ConjTrans,
+            core_ztsmqr(PlasmaLeft, Plasma_ConjTrans,
                         sb, n-(ii+sb), m, n-(ii+sb), ib, ib,
                         &A1[lda1*(ii+sb)+ii], lda1,
                         &A2[lda2*(ii+sb)], lda2,
@@ -211,7 +211,7 @@ void core_omp_ztsqrt(int m, int n, int ib, int nb,
                 ((PLASMA_Complex64_t*)work->spaces[tid]) + ltau;
 
             // Call the kernel.
-            int info = CORE_ztsqrt(m, n, ib,
+            int info = core_ztsqrt(m, n, ib,
                                    A1, lda1,
                                    A2, lda2,
                                    T,  ldt,

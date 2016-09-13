@@ -53,7 +53,7 @@
  *         The leading dimension of the array A.  lda >= max(1,m).
  *
  ******************************************************************************/
-void CORE_zlaset(PLASMA_enum uplo, int m, int n,
+void core_zlaset(PLASMA_enum uplo, int m, int n,
                  PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
                  PLASMA_Complex64_t *A, int lda)
 {
@@ -80,7 +80,7 @@ void core_omp_zlaset(PLASMA_enum uplo,
                      PLASMA_Complex64_t *A)
 {
     #pragma omp task depend(out:A[0:mb*nb])
-    CORE_zlaset(uplo, m, n,
+    core_zlaset(uplo, m, n,
                 alpha, beta,
                 A+i+j*mb, mb);
 }
