@@ -207,7 +207,7 @@ void core_omp_ztslqt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A1, int lda1,
                      PLASMA_Complex64_t *A2, int lda2,
                      PLASMA_Complex64_t *T,  int ldt,
-                     PLASMA_workspace *work,
+                     plasma_workspace_t *work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // assuming m == nb, n == nb

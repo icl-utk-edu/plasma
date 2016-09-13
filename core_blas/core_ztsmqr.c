@@ -251,7 +251,7 @@ void core_omp_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
                            PLASMA_Complex64_t *A2, int lda2,
                      const PLASMA_Complex64_t *V, int ldv,
                      const PLASMA_Complex64_t *T, int ldt,
-                     PLASMA_workspace *work,
+                     plasma_workspace_t *work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // omp depends assume m1 == nb, n1 == nb, m2 == nb, n2 == nb.

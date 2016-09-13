@@ -142,7 +142,7 @@ int PLASMA_zungqr(int m, int n, int k,
     }
 
     // Allocate workspace.
-    PLASMA_workspace work;
+    plasma_workspace_t work;
     size_t lwork = ib*nb;  // unmqr: work
     retval = plasma_workspace_alloc(&work, lwork, PlasmaComplexDouble);
     if (retval != PLASMA_SUCCESS) {
@@ -238,7 +238,7 @@ int PLASMA_zungqr(int m, int n, int k,
  *
  ******************************************************************************/
 void plasma_omp_zungqr(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *Q,
-                       PLASMA_workspace *work,
+                       plasma_workspace_t *work,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.

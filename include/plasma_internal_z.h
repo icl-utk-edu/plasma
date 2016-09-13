@@ -23,7 +23,7 @@ extern "C" {
 
 /******************************************************************************/
 void plasma_pzgelqf(plasma_desc_t A, plasma_desc_t T,
-                    PLASMA_workspace *work,
+                    plasma_workspace_t *work,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
@@ -33,7 +33,7 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                    plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzgeqrf(plasma_desc_t A, plasma_desc_t T,
-                    PLASMA_workspace *work,
+                    plasma_workspace_t *work,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzhemm(PLASMA_enum side, PLASMA_enum uplo,
@@ -117,21 +117,21 @@ void plasma_pztrsm(PLASMA_enum side, PLASMA_enum uplo,
                    plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzunglq(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
-                    PLASMA_workspace *work,
+                    plasma_workspace_t *work,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzungqr(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
-                    PLASMA_workspace *work,
+                    plasma_workspace_t *work,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzunmlq(PLASMA_enum side, PLASMA_enum trans,
                     plasma_desc_t A, plasma_desc_t B, plasma_desc_t T,
-                    PLASMA_workspace *work,
+                    plasma_workspace_t *work,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzunmqr(PLASMA_enum side, PLASMA_enum trans,
                     plasma_desc_t A, plasma_desc_t B, plasma_desc_t T,
-                    PLASMA_workspace *work,
+                    plasma_workspace_t *work,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 #ifdef __cplusplus

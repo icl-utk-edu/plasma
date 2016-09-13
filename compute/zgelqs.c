@@ -140,7 +140,7 @@ int PLASMA_zgelqs(int m, int n, int nrhs,
     }
 
     // Allocate workspace.
-    PLASMA_workspace work;
+    plasma_workspace_t work;
     size_t lwork = ib*nb;  // unmlq: work
     retval = plasma_workspace_alloc(&work, lwork, PlasmaComplexDouble);
     if (retval != PLASMA_SUCCESS) {
@@ -249,7 +249,7 @@ int PLASMA_zgelqs(int m, int n, int nrhs,
  *
  ******************************************************************************/
 void plasma_omp_zgelqs(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *B,
-                       PLASMA_workspace *work,
+                       plasma_workspace_t *work,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.

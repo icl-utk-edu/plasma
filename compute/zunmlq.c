@@ -177,7 +177,7 @@ int PLASMA_zunmlq(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
     }
 
     // Allocate workspace.
-    PLASMA_workspace work;
+    plasma_workspace_t work;
     size_t lwork = ib*nb;  // unmlq: work
     retval = plasma_workspace_alloc(&work, lwork, PlasmaComplexDouble);
     if (retval != PLASMA_SUCCESS) {
@@ -298,7 +298,7 @@ int PLASMA_zunmlq(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
  ******************************************************************************/
 void plasma_omp_zunmlq(PLASMA_enum side, PLASMA_enum trans,
                        plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *C,
-                       PLASMA_workspace *work,
+                       plasma_workspace_t *work,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.

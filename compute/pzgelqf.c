@@ -24,7 +24,7 @@
  * @see plasma_omp_zgelqf
  **/
 void plasma_pzgelqf(plasma_desc_t A, plasma_desc_t T,
-                    PLASMA_workspace *work,
+                    plasma_workspace_t *work,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int k, m, n;

@@ -196,7 +196,7 @@ void core_omp_zgeadd(
 void core_omp_zgelqt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A, int lda,
                      PLASMA_Complex64_t *T, int ldt,
-                     PLASMA_workspace *work,
+                     plasma_workspace_t *work,
                      plasma_sequence_t *sequence, plasma_request_t *request);
 
 void core_omp_zgemm(
@@ -209,7 +209,7 @@ void core_omp_zgemm(
 void core_omp_zgeqrt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A, int lda,
                      PLASMA_Complex64_t *T, int ldt,
-                     PLASMA_workspace *work,
+                     plasma_workspace_t *work,
                      plasma_sequence_t *sequence, plasma_request_t *request);
 
 void core_omp_zhemm(
@@ -307,7 +307,7 @@ void core_omp_ztslqt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A1, int lda1,
                      PLASMA_Complex64_t *A2, int lda2,
                      PLASMA_Complex64_t *T,  int ldt,
-                     PLASMA_workspace *work,
+                     plasma_workspace_t *work,
                      plasma_sequence_t *sequence, plasma_request_t *request);
 
 void core_omp_ztsmlq(PLASMA_enum side, PLASMA_enum trans,
@@ -316,7 +316,7 @@ void core_omp_ztsmlq(PLASMA_enum side, PLASMA_enum trans,
                            PLASMA_Complex64_t *A2, int lda2,
                      const PLASMA_Complex64_t *V,  int ldv,
                      const PLASMA_Complex64_t *T,  int ldt,
-                     PLASMA_workspace *work,
+                     plasma_workspace_t *work,
                      plasma_sequence_t *sequence, plasma_request_t *request);
 
 void core_omp_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
@@ -325,14 +325,14 @@ void core_omp_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
                            PLASMA_Complex64_t *A2, int lda2,
                      const PLASMA_Complex64_t *V, int ldv,
                      const PLASMA_Complex64_t *T, int ldt,
-                     PLASMA_workspace *work,
+                     plasma_workspace_t *work,
                      plasma_sequence_t *sequence, plasma_request_t *request);
 
 void core_omp_ztsqrt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A1, int lda1,
                      PLASMA_Complex64_t *A2, int lda2,
                      PLASMA_Complex64_t *T,  int ldt,
-                     PLASMA_workspace *work,
+                     plasma_workspace_t *work,
                      plasma_sequence_t *sequence, plasma_request_t *request);
 
 void core_omp_zunmlq(PLASMA_enum side, PLASMA_enum trans,
@@ -340,7 +340,7 @@ void core_omp_zunmlq(PLASMA_enum side, PLASMA_enum trans,
                      const PLASMA_Complex64_t *A, int lda,
                      const PLASMA_Complex64_t *T, int ldt,
                            PLASMA_Complex64_t *C, int ldc,
-                     PLASMA_workspace *work,
+                     plasma_workspace_t *work,
                      plasma_sequence_t *sequence, plasma_request_t *request);
 
 void core_omp_zunmqr(PLASMA_enum side, PLASMA_enum trans,
@@ -348,7 +348,7 @@ void core_omp_zunmqr(PLASMA_enum side, PLASMA_enum trans,
                      const PLASMA_Complex64_t *A, int lda,
                      const PLASMA_Complex64_t *T, int ldt,
                            PLASMA_Complex64_t *C, int ldc,
-                     PLASMA_workspace *work,
+                     plasma_workspace_t *work,
                      plasma_sequence_t *sequence, plasma_request_t *request);
 
 #ifdef __cplusplus

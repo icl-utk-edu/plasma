@@ -222,7 +222,7 @@ void core_omp_zunmqr(PLASMA_enum side, PLASMA_enum trans,
                      const PLASMA_Complex64_t *A, int lda,
                      const PLASMA_Complex64_t *T, int ldt,
                            PLASMA_Complex64_t *C, int ldc,
-                     PLASMA_workspace *work,
+                     plasma_workspace_t *work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // OpenMP depends on lda == m == n == nb, ldc == nb, ldt == ib.
