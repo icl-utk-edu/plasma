@@ -113,7 +113,7 @@ void CORE_zlacpy_lapack2tile_band(PLASMA_enum uplo,
 }
 
 /******************************************************************************/
-void CORE_OMP_zlacpy_lapack2tile_band(PLASMA_enum uplo,
+void core_omp_zlacpy_lapack2tile_band(PLASMA_enum uplo,
                                       int it, int jt,
                                       int m, int n, int nb, int kl, int ku,
                                       const PLASMA_Complex64_t *A, int lda,
@@ -205,7 +205,7 @@ void CORE_zlacpy_tile2lapack_band(PLASMA_enum uplo,
 }
 
 /******************************************************************************/
-void CORE_OMP_zlacpy_tile2lapack_band(PLASMA_enum uplo,
+void core_omp_zlacpy_tile2lapack_band(PLASMA_enum uplo,
                                       int it, int jt,
                                       int m, int n, int nb, int kl, int ku,
                                       const PLASMA_Complex64_t *B, int ldb,

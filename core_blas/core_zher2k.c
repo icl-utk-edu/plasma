@@ -101,7 +101,7 @@ void CORE_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
 }
 
 /******************************************************************************/
-void CORE_OMP_zher2k(
+void core_omp_zher2k(
     PLASMA_enum uplo, PLASMA_enum trans,
     int n, int k,
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,

@@ -222,7 +222,7 @@ int CORE_zunmlq(PLASMA_enum side, PLASMA_enum trans,
 }
 
 /******************************************************************************/
-void CORE_OMP_zunmlq(PLASMA_enum side, PLASMA_enum trans,
+void core_omp_zunmlq(PLASMA_enum side, PLASMA_enum trans,
                      int m, int n, int k, int ib, int nb,
                      const PLASMA_Complex64_t *A, int lda,
                      const PLASMA_Complex64_t *T, int ldt,

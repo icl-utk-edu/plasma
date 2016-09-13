@@ -72,7 +72,7 @@ void CORE_zlaset(PLASMA_enum uplo, int m, int n,
 }
 
 /******************************************************************************/
-void CORE_OMP_zlaset(PLASMA_enum uplo,
+void core_omp_zlaset(PLASMA_enum uplo,
                      int mb, int nb,
                      int i, int j,
                      int m, int n,

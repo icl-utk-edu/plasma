@@ -51,7 +51,7 @@ void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
             for (k = 0; k < A.nt; k++) {
                 tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
                 zbeta = k == 0 ? beta : zone;
-                CORE_OMP_zsyrk(
+                core_omp_zsyrk(
                     uplo, trans,
                     tempnn, tempkn,
                     alpha, A(n, k), ldan,
@@ -68,7 +68,7 @@ void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
                     for (k = 0; k < A.nt; k++) {
                         tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
                         zbeta = k == 0 ? beta : zone;
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             trans, PlasmaTrans,
                             tempmm, tempnn, tempkn,
                             alpha, A(m, k), ldam,
@@ -87,7 +87,7 @@ void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
                     for (k = 0; k < A.nt; k++) {
                         tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
                         zbeta = k == 0 ? beta : zone;
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             trans, PlasmaTrans,
                             tempnn, tempmm, tempkn,
                             alpha, A(n, k), ldan,
@@ -105,7 +105,7 @@ void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
                 tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
                 ldak = BLKLDD(A, k);
                 zbeta = k == 0 ? beta : zone;
-                CORE_OMP_zsyrk(
+                core_omp_zsyrk(
                     uplo, trans,
                     tempnn, tempkm,
                     alpha, A(k, n), ldak,
@@ -122,7 +122,7 @@ void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
                         tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
                         ldak = BLKLDD(A, k);
                         zbeta = k == 0 ? beta : zone;
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             trans, PlasmaNoTrans,
                             tempmm, tempnn, tempkm,
                             alpha, A(k, m), ldak,
@@ -141,7 +141,7 @@ void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
                         tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
                         ldak = BLKLDD(A, k);
                         zbeta = k == 0 ? beta : zone;
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             trans, PlasmaNoTrans,
                             tempnn, tempmm, tempkm,
                             alpha, A(k, n), ldak,

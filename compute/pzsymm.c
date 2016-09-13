@@ -60,7 +60,7 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
                         ldbk = BLKLDD(B, k);
                         zbeta = k == 0 ? beta : zone;
                         if (k < m) {
-                            CORE_OMP_zgemm(
+                            core_omp_zgemm(
                                 PlasmaNoTrans, PlasmaNoTrans,
                                 tempmm, tempnn, tempkm,
                                 alpha, A(m, k), ldam,
@@ -69,7 +69,7 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
                         }
                         else {
                             if (k == m) {
-                                CORE_OMP_zsymm(
+                                core_omp_zsymm(
                                     side, uplo,
                                     tempmm, tempnn,
                                     alpha, A(k, k), ldak,
@@ -77,7 +77,7 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
                                     zbeta, C(m, n), ldcm);
                             }
                             else {
-                                CORE_OMP_zgemm(
+                                core_omp_zgemm(
                                     PlasmaTrans, PlasmaNoTrans,
                                     tempmm, tempnn, tempkm,
                                     alpha, A(k, m), ldak,
@@ -97,7 +97,7 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
                         ldbk = BLKLDD(B, k);
                         zbeta = k == 0 ? beta : zone;
                         if (k < m) {
-                            CORE_OMP_zgemm(
+                            core_omp_zgemm(
                                 PlasmaTrans, PlasmaNoTrans,
                                 tempmm, tempnn, tempkm,
                                 alpha, A(k, m), ldak,
@@ -106,7 +106,7 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
                         }
                         else {
                             if (k == m) {
-                                CORE_OMP_zsymm(
+                                core_omp_zsymm(
                                     side, uplo,
                                     tempmm, tempnn,
                                     alpha, A(k, k), ldak,
@@ -114,7 +114,7 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
                                     zbeta, C(m, n), ldcm);
                             }
                             else {
-                                CORE_OMP_zgemm(
+                                core_omp_zgemm(
                                     PlasmaNoTrans, PlasmaNoTrans,
                                     tempmm, tempnn, tempkm,
                                     alpha, A(m, k), ldam,
@@ -137,7 +137,7 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
                         ldak = BLKLDD(A, k);
                         zbeta = k == 0 ? beta : zone;
                         if (k < n) {
-                            CORE_OMP_zgemm(
+                            core_omp_zgemm(
                                 PlasmaNoTrans, PlasmaTrans,
                                 tempmm, tempnn, tempkn,
                                 alpha, B(m, k), ldbm,
@@ -146,7 +146,7 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
                         }
                         else {
                             if (n == k) {
-                                CORE_OMP_zsymm(
+                                core_omp_zsymm(
                                     side, uplo,
                                     tempmm, tempnn,
                                     alpha, A(k, k), ldak,
@@ -154,7 +154,7 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
                                     zbeta, C(m, n), ldcm);
                             }
                             else {
-                                CORE_OMP_zgemm(
+                                core_omp_zgemm(
                                     PlasmaNoTrans, PlasmaNoTrans,
                                     tempmm, tempnn, tempkn,
                                     alpha, B(m, k), ldbm,
@@ -173,7 +173,7 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
                         ldak = BLKLDD(A, k);
                         zbeta = k == 0 ? beta : zone;
                         if (k < n) {
-                            CORE_OMP_zgemm(
+                            core_omp_zgemm(
                                 PlasmaNoTrans, PlasmaNoTrans,
                                 tempmm, tempnn, tempkn,
                                 alpha, B(m, k), ldbm,
@@ -182,7 +182,7 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
                         }
                         else {
                             if (n == k) {
-                                CORE_OMP_zsymm(
+                                core_omp_zsymm(
                                     side, uplo,
                                     tempmm, tempnn,
                                     alpha, A(k, k), ldak,
@@ -190,7 +190,7 @@ void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
                                     zbeta, C(m, n), ldcm);
                             }
                             else {
-                                CORE_OMP_zgemm(
+                                core_omp_zgemm(
                                     PlasmaNoTrans, PlasmaTrans,
                                     tempmm, tempnn, tempkn,
                                     alpha, B(m, k), ldbm,

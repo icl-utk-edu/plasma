@@ -64,7 +64,7 @@ void CORE_zlacpy(PLASMA_enum uplo,
 }
 
 /******************************************************************************/
-void CORE_OMP_zlacpy(PLASMA_enum uplo,
+void core_omp_zlacpy(PLASMA_enum uplo,
                      int m, int n, int nb,
                      const PLASMA_Complex64_t *A, int lda,
                            PLASMA_Complex64_t *B, int ldb)

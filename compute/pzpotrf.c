@@ -44,14 +44,14 @@ void plasma_pzpotrf(PLASMA_enum uplo, PLASMA_desc A,
         for (k = 0; k < A.mt; k++) {
             tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
             ldak = BLKLDD(A, k);
-            CORE_OMP_zpotrf(
+            core_omp_zpotrf(
                 PlasmaLower, tempkm,
                 A(k, k), ldak,
                 sequence, request, A.nb*k);
             for (m = k+1; m < A.mt; m++) {
                 tempmm = m == A.mt-1 ? A.m-m*A.mb : A.mb;
                 ldam = BLKLDD(A, m);
-                CORE_OMP_ztrsm(
+                core_omp_ztrsm(
                     PlasmaRight, PlasmaLower,
                     PlasmaConjTrans, PlasmaNonUnit,
                     tempmm, A.mb,
@@ -61,14 +61,14 @@ void plasma_pzpotrf(PLASMA_enum uplo, PLASMA_desc A,
             for (m = k+1; m < A.mt; m++) {
                 tempmm = m == A.mt-1 ? A.m-m*A.mb : A.mb;
                 ldam = BLKLDD(A, m);
-                CORE_OMP_zherk(
+                core_omp_zherk(
                     PlasmaLower, PlasmaNoTrans,
                     tempmm, A.mb,
                     -1.0, A(m, k), ldam,
                      1.0, A(m, m), ldam);
                 for (n = k+1; n < m; n++) {
                     ldan = BLKLDD(A, n);
-                    CORE_OMP_zgemm(
+                    core_omp_zgemm(
                         PlasmaNoTrans, PlasmaConjTrans,
                         tempmm, A.mb, A.mb,
                         mzone, A(m, k), ldam,
@@ -85,13 +85,13 @@ void plasma_pzpotrf(PLASMA_enum uplo, PLASMA_desc A,
         for (k = 0; k < A.nt; k++) {
             tempkm = k == A.nt-1 ? A.n-k*A.nb : A.nb;
             ldak = BLKLDD(A, k);
-            CORE_OMP_zpotrf(
+            core_omp_zpotrf(
                 PlasmaUpper, tempkm,
                 A(k, k), ldak,
                 sequence, request, A.nb*k);
             for (m = k+1; m < A.nt; m++) {
                 tempmm = m == A.nt-1 ? A.n-m*A.nb : A.nb;
-                CORE_OMP_ztrsm(
+                core_omp_ztrsm(
                     PlasmaLeft, PlasmaUpper,
                     PlasmaConjTrans, PlasmaNonUnit,
                     A.nb, tempmm,
@@ -101,14 +101,14 @@ void plasma_pzpotrf(PLASMA_enum uplo, PLASMA_desc A,
             for (m = k+1; m < A.nt; m++) {
                 tempmm = m == A.nt-1 ? A.n-m*A.nb : A.nb;
                 ldam = BLKLDD(A, m);
-                CORE_OMP_zherk(
+                core_omp_zherk(
                     PlasmaUpper, PlasmaConjTrans,
                     tempmm, A.mb,
                     -1.0, A(k, m), ldak,
                      1.0, A(m, m), ldam);
                 for (n = k+1; n < m; n++) {
                     ldan = BLKLDD(A, n);
-                    CORE_OMP_zgemm(
+                    core_omp_zgemm(
                         PlasmaConjTrans, PlasmaNoTrans,
                         A.mb, tempmm, A.mb,
                         mzone, A(k, n), ldak,

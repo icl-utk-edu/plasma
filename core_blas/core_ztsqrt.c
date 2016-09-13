@@ -189,7 +189,7 @@ int CORE_ztsqrt(int m, int n, int ib,
 }
 
 /******************************************************************************/
-void CORE_OMP_ztsqrt(int m, int n, int ib, int nb,
+void core_omp_ztsqrt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A1, int lda1,
                      PLASMA_Complex64_t *A2, int lda2,
                      PLASMA_Complex64_t *T,  int ldt,

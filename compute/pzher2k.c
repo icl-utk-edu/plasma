@@ -55,7 +55,7 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
             for (k = 0; k < A.nt; k++) {
                 tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
                 dbeta = k == 0 ? beta : 1.0;
-                CORE_OMP_zher2k(
+                core_omp_zher2k(
                     uplo, trans,
                     tempnn, tempkn,
                     alpha, A(n, k), ldan,
@@ -74,14 +74,14 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
                     for (k = 0; k < A.nt; k++) {
                         tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
                         zbeta = k == 0 ? (PLASMA_Complex64_t)beta : zone;
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             trans, PlasmaConjTrans,
                             tempmm, tempnn, tempkn,
                             alpha, A(m, k), ldam,
                                    B(n, k), ldbn,
                             zbeta, C(m, n), ldcm);
 
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             trans, PlasmaConjTrans,
                             tempmm, tempnn, tempkn,
                             conj(alpha), B(m, k), ldam,
@@ -101,14 +101,14 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
                     for (k = 0; k < A.nt; k++) {
                         tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
                         zbeta = k == 0 ? (PLASMA_Complex64_t)beta : zone;
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             trans, PlasmaConjTrans,
                             tempnn, tempmm, tempkn,
                             alpha, A(n, k), ldan,
                                    B(m, k), ldbm,
                             zbeta, C(n, m), ldcn);
 
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             trans, PlasmaConjTrans,
                             tempnn, tempmm, tempkn,
                             conj(alpha), B(n, k), ldan,
@@ -127,7 +127,7 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
                 ldak = BLKLDD(A, k);
                 ldbk = BLKLDD(B, k);
                 dbeta = k == 0 ? beta : 1.0;
-                CORE_OMP_zher2k(
+                core_omp_zher2k(
                     uplo, trans,
                     tempnn, tempkm,
                     alpha, A(k, n), ldak,
@@ -146,14 +146,14 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
                         ldak = BLKLDD(A, k);
                         ldbk = BLKLDD(B, k);
                         zbeta = k == 0 ? (PLASMA_Complex64_t)beta : zone;
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             trans, PlasmaNoTrans,
                             tempmm, tempnn, tempkm,
                             alpha, A(k, m), ldak,
                                    B(k, n), ldbk,
                             zbeta, C(m, n), ldcm);
 
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             trans, PlasmaNoTrans,
                             tempmm, tempnn, tempkm,
                             conj(alpha), B(k, m),
@@ -174,14 +174,14 @@ void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
                         ldbk = BLKLDD(B, k);
                         zbeta = k == 0 ? (PLASMA_Complex64_t)beta : zone;
 
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             trans, PlasmaNoTrans,
                             tempnn, tempmm, tempkm,
                             alpha, A(k, n), ldak,
                                    B(k, m), ldbk,
                             zbeta, C(n, m), ldcn);
 
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             trans, PlasmaNoTrans,
                             tempnn, tempmm, tempkm,
                             conj(alpha), B(k, n), ldbk,

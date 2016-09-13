@@ -54,7 +54,7 @@ void plasma_pzlaset(PLASMA_enum uplo,
             if (uplo == PlasmaFull ||
                 (uplo == PlasmaLower && i >= j) ||
                 (uplo == PlasmaUpper && i <= j))
-                CORE_OMP_zlaset(i == j ? uplo : PlasmaFull,
+                core_omp_zlaset(i == j ? uplo : PlasmaFull,
                                 A.i/A.mb+i == A.lm1 ? A.lm-A.lm1*A.mb : A.mb,
                                 A.j/A.nb+j == A.ln1 ? A.ln-A.ln1*A.nb : A.nb,
                                 i == 0 ? A.i%A.mb : 0,

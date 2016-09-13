@@ -92,7 +92,7 @@ void CORE_zsymm(PLASMA_enum side, PLASMA_enum uplo,
 }
 
 /******************************************************************************/
-void CORE_OMP_zsymm(
+void core_omp_zsymm(
     PLASMA_enum side, PLASMA_enum uplo,
     int m, int n,
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,

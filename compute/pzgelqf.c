@@ -47,7 +47,7 @@ void plasma_pzgelqf(PLASMA_desc A, PLASMA_desc T,
         tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
         tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
         ldak = BLKLDD(A, k);
-        CORE_OMP_zgelqt(
+        core_omp_zgelqt(
             tempkm, tempkn, ib, T.nb,
             A(k, k), ldak,
             T(k, k), T.mb,
@@ -61,7 +61,7 @@ void plasma_pzgelqf(PLASMA_desc A, PLASMA_desc T,
             // automatic datatype conversion, which is what we
             // want here.
             // PlasmaConjTrans is protected from this conversion.
-            CORE_OMP_zunmlq(
+            core_omp_zunmlq(
                 PlasmaRight, Plasma_ConjTrans,
                 tempmm, tempkn, tempkn, ib, T.nb,
                 A(k, k), ldak,
@@ -72,7 +72,7 @@ void plasma_pzgelqf(PLASMA_desc A, PLASMA_desc T,
         }
         for (n = k+1; n < A.nt; n++) {
             tempnn = n == A.nt-1 ? A.n-n*A.nb : A.nb;
-            CORE_OMP_ztslqt(
+            core_omp_ztslqt(
                 tempkm, tempnn, ib, T.nb,
                 A(k, k), ldak,
                 A(k, n), ldak,
@@ -83,7 +83,7 @@ void plasma_pzgelqf(PLASMA_desc A, PLASMA_desc T,
             for (m = k+1; m < A.mt; m++) {
                 tempmm = m == A.mt-1 ? A.m-m*A.mb : A.mb;
                 ldam = BLKLDD(A, m);
-                CORE_OMP_ztsmlq(
+                core_omp_ztsmlq(
                     PlasmaRight, Plasma_ConjTrans,
                     tempmm, A.nb, tempmm, tempnn, A.mb, ib, T.nb,
                     A(m, k), ldam,

@@ -83,7 +83,7 @@ void CORE_zsyrk(PLASMA_enum uplo, PLASMA_enum trans,
 }
 
 /******************************************************************************/
-void CORE_OMP_zsyrk(
+void core_omp_zsyrk(
     PLASMA_enum uplo, PLASMA_enum trans,
     int n, int k,
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,

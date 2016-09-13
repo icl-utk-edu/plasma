@@ -158,7 +158,7 @@ int CORE_zgeqrt(int m, int n, int ib,
 }
 
 /******************************************************************************/
-void CORE_OMP_zgeqrt(int m, int n, int ib, int nb,
+void core_omp_zgeqrt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A, int lda,
                      PLASMA_Complex64_t *T, int ldt,
                      PLASMA_workspace *work,

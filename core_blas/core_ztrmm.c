@@ -108,7 +108,7 @@ void CORE_ztrmm(
 }
 
 /******************************************************************************/
-void CORE_OMP_ztrmm(
+void core_omp_ztrmm(
     PLASMA_enum side, PLASMA_enum uplo, PLASMA_enum transA, PLASMA_enum diag,
     int m, int n,
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,

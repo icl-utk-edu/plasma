@@ -62,7 +62,7 @@ int CORE_zpotrf(PLASMA_enum uplo,
 }
 
 /******************************************************************************/
-void CORE_OMP_zpotrf(PLASMA_enum uplo,
+void core_omp_zpotrf(PLASMA_enum uplo,
                      int n,
                      PLASMA_Complex64_t *A, int lda,
                      PLASMA_sequence *sequence, PLASMA_request *request,

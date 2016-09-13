@@ -55,7 +55,7 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                 //=======================================
                 ldam = imax( 1, BLKLDD(A, 0) );
                 ldbk = imax( 1, BLKLDD(B, 0) );
-                CORE_OMP_zgemm(
+                core_omp_zgemm(
                     transA, transB,
                     tempmm, tempnn, 0,
                     alpha, A(0, 0), ldam,
@@ -72,7 +72,7 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                         tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
                         ldbk = BLKLDD(B, k);
                         zbeta = k == 0 ? beta : zone;
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             transA, transB,
                             tempmm, tempnn, tempkn,
                             alpha, A(m, k), ldam,
@@ -88,7 +88,7 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                     for (k = 0; k < A.nt; k++) {
                         tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
                         zbeta = k == 0 ? beta : zone;
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             transA, transB,
                             tempmm, tempnn, tempkn,
                             alpha, A(m, k), ldam,
@@ -107,7 +107,7 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                         ldak = BLKLDD(A, k);
                         ldbk = BLKLDD(B, k);
                         zbeta = k == 0 ? beta : zone;
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             transA, transB,
                             tempmm, tempnn, tempkm,
                             alpha, A(k, m), ldak,
@@ -124,7 +124,7 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                         tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
                         ldak = BLKLDD(A, k);
                         zbeta = k == 0 ? beta : zone;
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             transA, transB,
                             tempmm, tempnn, tempkm,
                             alpha, A(k, m), ldak,

@@ -48,7 +48,7 @@ void plasma_pzoocm2ccrb_band(PLASMA_enum uplo,
         {
             int mb = imin(A.mb, A.m-m*A.mb);
             int nb = imin(A.nb, A.n-n*A.nb);
-            CORE_OMP_zlacpy_lapack2tile_band(
+            core_omp_zlacpy_lapack2tile_band(
                    uplo, m, n,
                    mb, nb, A.mb, A.kl, A.ku,
                    bandA(m, n), lda-1,

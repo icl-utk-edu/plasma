@@ -99,7 +99,7 @@ void CORE_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
 }
 
 /******************************************************************************/
-void CORE_OMP_ztrsm(
+void core_omp_ztrsm(
     PLASMA_enum side, PLASMA_enum uplo,
     PLASMA_enum transA, PLASMA_enum diag,
     int m, int n,

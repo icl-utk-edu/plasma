@@ -252,7 +252,7 @@ int CORE_ztsmlq(PLASMA_enum side, PLASMA_enum trans,
 }
 
 /******************************************************************************/
-void CORE_OMP_ztsmlq(PLASMA_enum side, PLASMA_enum trans,
+void core_omp_ztsmlq(PLASMA_enum side, PLASMA_enum trans,
                      int m1, int n1, int m2, int n2, int k, int ib, int nb,
                            PLASMA_Complex64_t *A1, int lda1,
                            PLASMA_Complex64_t *A2, int lda2,

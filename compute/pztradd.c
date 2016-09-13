@@ -47,7 +47,7 @@ void plasma_pztradd(PLASMA_enum uplo, PLASMA_enum transA,
                 ldan = BLKLDD(A, n);
                 ldbn = BLKLDD(B, n);
 
-                CORE_OMP_ztradd(
+                core_omp_ztradd(
                     uplo, transA, tempnm, tempnn,
                     alpha, A(n, n), ldan,
                     beta,  B(n, n), ldbn);
@@ -57,7 +57,7 @@ void plasma_pztradd(PLASMA_enum uplo, PLASMA_enum transA,
                     ldam = BLKLDD(A, m);
                     ldbm = BLKLDD(B, m);
 
-                    CORE_OMP_zgeadd(
+                    core_omp_zgeadd(
                         transA, tempmm, tempnn,
                         alpha, A(m, n), ldam,
                         beta,  B(m, n), ldbm);
@@ -71,7 +71,7 @@ void plasma_pztradd(PLASMA_enum uplo, PLASMA_enum transA,
                 ldan = BLKLDD(A, n);
                 ldbn = BLKLDD(B, n);
 
-                CORE_OMP_ztradd(
+                core_omp_ztradd(
                     uplo, transA, tempnm, tempnn,
                     alpha, A(n, n), ldan,
                     beta,  B(n, n), ldbn);
@@ -80,7 +80,7 @@ void plasma_pztradd(PLASMA_enum uplo, PLASMA_enum transA,
                     tempmm = m == B.mt-1 ? B.m-B.mb*m : B.nb;
                     ldbm = BLKLDD(B, m);
 
-                    CORE_OMP_zgeadd(
+                    core_omp_zgeadd(
                         transA, tempmm, tempnn,
                         alpha, A(n, m), ldan,
                         beta,  B(m, n), ldbm);
@@ -96,7 +96,7 @@ void plasma_pztradd(PLASMA_enum uplo, PLASMA_enum transA,
                 ldam = BLKLDD(A, m);
                 ldbm = BLKLDD(B, m);
 
-                CORE_OMP_ztradd(
+                core_omp_ztradd(
                     uplo, transA, tempmm, tempmn,
                     alpha, A(m, m), ldam,
                     beta,  B(m, m), ldbm);
@@ -104,7 +104,7 @@ void plasma_pztradd(PLASMA_enum uplo, PLASMA_enum transA,
                 for (n = m+1; n < B.nt; n++) {
                     tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
 
-                    CORE_OMP_zgeadd(
+                    core_omp_zgeadd(
                         transA, tempmm, tempnn,
                         alpha, A(m, n), ldam,
                         beta,  B(m, n), ldbm);
@@ -118,7 +118,7 @@ void plasma_pztradd(PLASMA_enum uplo, PLASMA_enum transA,
                 ldam = BLKLDD(A, m);
                 ldbm = BLKLDD(B, m);
 
-                CORE_OMP_ztradd(
+                core_omp_ztradd(
                     uplo, transA, tempmm, tempmn,
                     alpha, A(m, m), ldam,
                     beta,  B(m, m), ldbm);
@@ -127,7 +127,7 @@ void plasma_pztradd(PLASMA_enum uplo, PLASMA_enum transA,
                     tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
                     ldan = BLKLDD(A, n);
 
-                    CORE_OMP_zgeadd(
+                    core_omp_zgeadd(
                         transA, tempmm, tempnn,
                         alpha, A(n, m), ldan,
                         beta,  B(m, n), ldbm);
@@ -146,7 +146,7 @@ void plasma_pztradd(PLASMA_enum uplo, PLASMA_enum transA,
                 for (n = 0; n < B.nt; n++) {
                     tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
 
-                    CORE_OMP_zgeadd(
+                    core_omp_zgeadd(
                         transA, tempmm, tempnn,
                         alpha, A(m, n), ldam,
                         beta,  B(m, n), ldbm);
@@ -163,7 +163,7 @@ void plasma_pztradd(PLASMA_enum uplo, PLASMA_enum transA,
                     tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
                     ldan = BLKLDD(A, n);
 
-                    CORE_OMP_zgeadd(
+                    core_omp_zgeadd(
                         transA, tempmm, tempnn,
                         alpha, A(n, m), ldan,
                         beta,  B(m, n), ldbm);

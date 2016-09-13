@@ -57,7 +57,7 @@ void plasma_pzunglq(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
             for (m = k; m < Q.mt; m++) {
                 tempmm = m == Q.mt-1 ? Q.m-m*Q.mb : Q.mb;
                 ldqm = BLKLDD(Q, m);
-                CORE_OMP_ztsmlq(
+                core_omp_ztsmlq(
                     PlasmaRight, PlasmaNoTrans,
                     tempmm, Q.nb, tempmm, tempnn, tempAkm, ib, T.nb,
                     Q(m, k), ldqm,
@@ -71,7 +71,7 @@ void plasma_pzunglq(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
         for (m = k; m < Q.mt; m++) {
             tempmm = m == Q.mt-1 ? Q.m-m*Q.mb : Q.mb;
             ldqm = BLKLDD(Q, m);
-            CORE_OMP_zunmlq(
+            core_omp_zunmlq(
                 PlasmaRight, PlasmaNoTrans,
                 tempmm, tempkn, tempkmin, ib, T.nb,
                 A(k, k), ldak,

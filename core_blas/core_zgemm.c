@@ -101,7 +101,7 @@ void CORE_zgemm(PLASMA_enum transA, PLASMA_enum transB,
 }
 
 /******************************************************************************/
-void CORE_OMP_zgemm(
+void core_omp_zgemm(
     PLASMA_enum transA, PLASMA_enum transB,
     int m, int n, int k,
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,

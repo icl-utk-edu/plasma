@@ -188,129 +188,129 @@ int CORE_zunmqr(PLASMA_enum side, PLASMA_enum trans,
                       PLASMA_Complex64_t *WORK, int ldwork);
 
 /******************************************************************************/
-void CORE_OMP_zgeadd(
+void core_omp_zgeadd(
     PLASMA_enum transA, int m, int n,
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
     PLASMA_Complex64_t beta,        PLASMA_Complex64_t *B, int ldb);
 
-void CORE_OMP_zgelqt(int m, int n, int ib, int nb,
+void core_omp_zgelqt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A, int lda,
                      PLASMA_Complex64_t *T, int ldt,
                      PLASMA_workspace *work,
                      PLASMA_sequence *sequence, PLASMA_request *request);
 
-void CORE_OMP_zgemm(
+void core_omp_zgemm(
     PLASMA_enum transA, PLASMA_enum transB,
     int m, int n, int k,
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                               const PLASMA_Complex64_t *B, int ldb,
     PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc);
 
-void CORE_OMP_zgeqrt(int m, int n, int ib, int nb,
+void core_omp_zgeqrt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A, int lda,
                      PLASMA_Complex64_t *T, int ldt,
                      PLASMA_workspace *work,
                      PLASMA_sequence *sequence, PLASMA_request *request);
 
-void CORE_OMP_zhemm(
+void core_omp_zhemm(
     PLASMA_enum side, PLASMA_enum uplo,
     int m, int n,
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                               const PLASMA_Complex64_t *B, int ldb,
     PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc);
 
-void CORE_OMP_zher2k(
+void core_omp_zher2k(
     PLASMA_enum uplo, PLASMA_enum trans,
     int n, int k,
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                               const PLASMA_Complex64_t *B, int ldb,
     double beta,                    PLASMA_Complex64_t *C, int ldc);
 
-void CORE_OMP_zherk(PLASMA_enum uplo, PLASMA_enum trans,
+void core_omp_zherk(PLASMA_enum uplo, PLASMA_enum trans,
                     int n, int k,
                     double alpha, const PLASMA_Complex64_t *A, int lda,
                     double beta,        PLASMA_Complex64_t *C, int ldc);
 
-void CORE_OMP_zlacpy(PLASMA_enum uplo,
+void core_omp_zlacpy(PLASMA_enum uplo,
                      int m, int n, int nb,
                      const PLASMA_Complex64_t *A, int lda,
                            PLASMA_Complex64_t *B, int ldb);
 
-void CORE_OMP_zlacpy_lapack2tile_band(PLASMA_enum uplo,
+void core_omp_zlacpy_lapack2tile_band(PLASMA_enum uplo,
                                       int it, int jt,
                                       int m, int n, int nb, int kl, int ku,
                                       const PLASMA_Complex64_t *A, int lda,
                                             PLASMA_Complex64_t *B, int ldb);
 
-void CORE_OMP_zlacpy_tile2lapack_band(PLASMA_enum uplo,
+void core_omp_zlacpy_tile2lapack_band(PLASMA_enum uplo,
                                       int it, int jt,
                                       int m, int n, int nb, int kl, int ku,
                                       const PLASMA_Complex64_t *B, int ldb,
                                             PLASMA_Complex64_t *A, int lda);
 
-void CORE_OMP_zlaset(PLASMA_enum uplo,
+void core_omp_zlaset(PLASMA_enum uplo,
                      int mb, int nb,
                      int i, int j,
                      int m, int n,
                      PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
                      PLASMA_Complex64_t *A);
 
-//void CORE_OMP_zlaswp_ontile(PLASMA_desc A, int i_, int j_, int m, int n,
+//void core_omp_zlaswp_ontile(PLASMA_desc A, int i_, int j_, int m, int n,
 //                            int i1, int i2, const int *ipiv, int inc);
 
-void CORE_OMP_zpotrf(PLASMA_enum uplo,
+void core_omp_zpotrf(PLASMA_enum uplo,
                      int n,
                      PLASMA_Complex64_t *A, int lda,
                      PLASMA_sequence *sequence, PLASMA_request *request,
                      int iinfo);
 
-void CORE_OMP_zsymm(
+void core_omp_zsymm(
     PLASMA_enum side, PLASMA_enum uplo,
     int m, int n,
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                               const PLASMA_Complex64_t *B, int ldb,
     PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc);
 
-void CORE_OMP_zsyr2k(
+void core_omp_zsyr2k(
     PLASMA_enum uplo, PLASMA_enum trans,
     int n, int k,
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                               const PLASMA_Complex64_t *B, int ldb,
     PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc);
 
-void CORE_OMP_zsyrk(
+void core_omp_zsyrk(
     PLASMA_enum uplo, PLASMA_enum trans,
     int n, int k,
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
     PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc);
 
-void CORE_OMP_ztradd(
+void core_omp_ztradd(
     PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
     PLASMA_Complex64_t beta,        PLASMA_Complex64_t *B, int ldb);
 
-void CORE_OMP_ztrmm(
+void core_omp_ztrmm(
     PLASMA_enum side, PLASMA_enum uplo,
     PLASMA_enum transA, PLASMA_enum diag,
     int m, int n,
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                                     PLASMA_Complex64_t *B, int ldb);
 
-void CORE_OMP_ztrsm(
+void core_omp_ztrsm(
     PLASMA_enum side, PLASMA_enum uplo,
     PLASMA_enum transA, PLASMA_enum diag,
     int m, int n,
     PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
                                     PLASMA_Complex64_t *B, int ldb);
 
-void CORE_OMP_ztslqt(int m, int n, int ib, int nb,
+void core_omp_ztslqt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A1, int lda1,
                      PLASMA_Complex64_t *A2, int lda2,
                      PLASMA_Complex64_t *T,  int ldt,
                      PLASMA_workspace *work,
                      PLASMA_sequence *sequence, PLASMA_request *request);
 
-void CORE_OMP_ztsmlq(PLASMA_enum side, PLASMA_enum trans,
+void core_omp_ztsmlq(PLASMA_enum side, PLASMA_enum trans,
                      int m1, int n1, int m2, int n2, int k, int ib, int nb,
                            PLASMA_Complex64_t *A1, int lda1,
                            PLASMA_Complex64_t *A2, int lda2,
@@ -319,7 +319,7 @@ void CORE_OMP_ztsmlq(PLASMA_enum side, PLASMA_enum trans,
                      PLASMA_workspace *work,
                      PLASMA_sequence *sequence, PLASMA_request *request);
 
-void CORE_OMP_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
+void core_omp_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
                      int m1, int n1, int m2, int n2, int k, int ib, int nb,
                            PLASMA_Complex64_t *A1, int lda1,
                            PLASMA_Complex64_t *A2, int lda2,
@@ -328,14 +328,14 @@ void CORE_OMP_ztsmqr(PLASMA_enum side, PLASMA_enum trans,
                      PLASMA_workspace *work,
                      PLASMA_sequence *sequence, PLASMA_request *request);
 
-void CORE_OMP_ztsqrt(int m, int n, int ib, int nb,
+void core_omp_ztsqrt(int m, int n, int ib, int nb,
                      PLASMA_Complex64_t *A1, int lda1,
                      PLASMA_Complex64_t *A2, int lda2,
                      PLASMA_Complex64_t *T,  int ldt,
                      PLASMA_workspace *work,
                      PLASMA_sequence *sequence, PLASMA_request *request);
 
-void CORE_OMP_zunmlq(PLASMA_enum side, PLASMA_enum trans,
+void core_omp_zunmlq(PLASMA_enum side, PLASMA_enum trans,
                      int m, int n, int k, int ib, int nb,
                      const PLASMA_Complex64_t *A, int lda,
                      const PLASMA_Complex64_t *T, int ldt,
@@ -343,7 +343,7 @@ void CORE_OMP_zunmlq(PLASMA_enum side, PLASMA_enum trans,
                      PLASMA_workspace *work,
                      PLASMA_sequence *sequence, PLASMA_request *request);
 
-void CORE_OMP_zunmqr(PLASMA_enum side, PLASMA_enum trans,
+void core_omp_zunmqr(PLASMA_enum side, PLASMA_enum trans,
                      int m, int n, int k, int ib, int nb,
                      const PLASMA_Complex64_t *A, int lda,
                      const PLASMA_Complex64_t *T, int ldt,
