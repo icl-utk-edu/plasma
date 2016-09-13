@@ -103,8 +103,8 @@ int PLASMA_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
     int retval;
     int status;
 
-    PLASMA_desc descA;
-    PLASMA_desc descB;
+    plasma_desc_t descA;
+    plasma_desc_t descB;
 
     PLASMA_Complex64_t zzero = 0.0;
     PLASMA_Complex64_t zone  = 1.0;
@@ -309,8 +309,8 @@ int PLASMA_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
  *
  ******************************************************************************/
 void plasma_omp_ztradd(PLASMA_enum uplo, PLASMA_enum transA,
-                       PLASMA_Complex64_t alpha, PLASMA_desc *A,
-                       PLASMA_Complex64_t beta,  PLASMA_desc *B,
+                       PLASMA_Complex64_t alpha, plasma_desc_t *A,
+                       PLASMA_Complex64_t beta,  plasma_desc_t *B,
                        plasma_sequence_t *sequence, plasma_request_t  *request)
 {
     // Get PLASMA context

@@ -92,8 +92,8 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans,
     int retval;
     int status;
 
-    PLASMA_desc descA;
-    PLASMA_desc descC;
+    plasma_desc_t descA;
+    plasma_desc_t descC;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -266,8 +266,8 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans,
  *
  ******************************************************************************/
 void plasma_omp_zherk(PLASMA_enum uplo, PLASMA_enum trans,
-                      double alpha, PLASMA_desc *A,
-                      double beta,  PLASMA_desc *C,
+                      double alpha, plasma_desc_t *A,
+                      double beta,  plasma_desc_t *C,
                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.

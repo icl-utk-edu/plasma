@@ -66,7 +66,7 @@
  ******************************************************************************/
 int PLASMA_zgelqf(int m, int n,
                   PLASMA_Complex64_t *A, int lda,
-                  PLASMA_desc *descT)
+                  plasma_desc_t *descT)
 {
     int ib, nb;
     int retval;
@@ -105,7 +105,7 @@ int PLASMA_zgelqf(int m, int n,
     nb = plasma->nb;
 
     // Initialize tile matrix descriptor.
-    PLASMA_desc descA;
+    plasma_desc_t descA;
     descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
                              nb*nb, m, n, 0, 0, m, n);
 
@@ -216,7 +216,7 @@ int PLASMA_zgelqf(int m, int n,
  * @sa plasma_omp_zgelqs
  *
  ******************************************************************************/
-void plasma_omp_zgelqf(PLASMA_desc *A, PLASMA_desc *T,
+void plasma_omp_zgelqf(plasma_desc_t *A, plasma_desc_t *T,
                        PLASMA_workspace *work,
                        plasma_sequence_t *sequence,
                        plasma_request_t *request)

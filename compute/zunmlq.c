@@ -92,14 +92,14 @@
  ******************************************************************************/
 int PLASMA_zunmlq(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
                   PLASMA_Complex64_t *A, int lda,
-                  PLASMA_desc *descT,
+                  plasma_desc_t *descT,
                   PLASMA_Complex64_t *C, int ldc)
 {
     int ib, nb;
     int retval;
     int status;
 
-    PLASMA_desc descA, descC;
+    plasma_desc_t descA, descC;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -297,7 +297,7 @@ int PLASMA_zunmlq(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
  *
  ******************************************************************************/
 void plasma_omp_zunmlq(PLASMA_enum side, PLASMA_enum trans,
-                       PLASMA_desc *A, PLASMA_desc *T, PLASMA_desc *C,
+                       plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *C,
                        PLASMA_workspace *work,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {

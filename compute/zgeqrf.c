@@ -68,13 +68,13 @@
  ******************************************************************************/
 int PLASMA_zgeqrf(int m, int n,
                   PLASMA_Complex64_t *A, int lda,
-                  PLASMA_desc *descT)
+                  plasma_desc_t *descT)
 {
     int ib, nb;
     int retval;
     int status;
 
-    PLASMA_desc descA;
+    plasma_desc_t descA;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -219,7 +219,7 @@ int PLASMA_zgeqrf(int m, int n,
  * @sa plasma_omp_zgels
  *
  ******************************************************************************/
-void plasma_omp_zgeqrf(PLASMA_desc *A, PLASMA_desc *T,
+void plasma_omp_zgeqrf(plasma_desc_t *A, plasma_desc_t *T,
                        PLASMA_workspace *work,
                        plasma_sequence_t *sequence,
                        plasma_request_t *request)

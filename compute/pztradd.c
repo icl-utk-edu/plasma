@@ -24,8 +24,8 @@
  * @see plasma_omp_ztradd
  ******************************************************************************/
 void plasma_pztradd(PLASMA_enum uplo, PLASMA_enum transA,
-                    PLASMA_Complex64_t alpha,  PLASMA_desc A,
-                    PLASMA_Complex64_t beta,   PLASMA_desc B,
+                    PLASMA_Complex64_t alpha,  plasma_desc_t A,
+                    PLASMA_Complex64_t beta,   plasma_desc_t B,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int tempmm, tempnn, tempmn, tempnm;

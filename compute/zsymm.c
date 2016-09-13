@@ -101,9 +101,9 @@ int PLASMA_zsymm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
     int retval;
     int status;
 
-    PLASMA_desc descA;
-    PLASMA_desc descB;
-    PLASMA_desc descC;
+    plasma_desc_t descA;
+    plasma_desc_t descB;
+    plasma_desc_t descC;
 
     PLASMA_Complex64_t zzero = 0.0;
     PLASMA_Complex64_t zone  = 1.0;
@@ -298,9 +298,9 @@ int PLASMA_zsymm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
  *
  ******************************************************************************/
 void plasma_omp_zsymm(PLASMA_enum side, PLASMA_enum uplo,
-                      PLASMA_Complex64_t alpha, PLASMA_desc *A,
-                                                PLASMA_desc *B,
-                      PLASMA_Complex64_t beta,  PLASMA_desc *C,
+                      PLASMA_Complex64_t alpha, plasma_desc_t *A,
+                                                plasma_desc_t *B,
+                      PLASMA_Complex64_t beta,  plasma_desc_t *C,
                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.

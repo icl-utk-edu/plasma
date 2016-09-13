@@ -24,8 +24,8 @@
  * @see plasma_omp_zher2k
  ******************************************************************************/
 void plasma_pzher2k(PLASMA_enum uplo, PLASMA_enum trans,
-                    PLASMA_Complex64_t alpha, PLASMA_desc A,
-                    PLASMA_desc B, double beta,  PLASMA_desc C,
+                    PLASMA_Complex64_t alpha, plasma_desc_t A,
+                    plasma_desc_t B, double beta,  plasma_desc_t C,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int m, n, k;

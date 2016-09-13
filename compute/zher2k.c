@@ -109,9 +109,9 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
     int status;
     PLASMA_Complex64_t zzero = 0.0;
 
-    PLASMA_desc descA;
-    PLASMA_desc descB;
-    PLASMA_desc descC;
+    plasma_desc_t descA;
+    plasma_desc_t descB;
+    plasma_desc_t descC;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -312,9 +312,9 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
  *
  ******************************************************************************/
 void plasma_omp_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
-                       PLASMA_Complex64_t alpha, PLASMA_desc *A,
-                                                 PLASMA_desc *B,
-                       double beta,              PLASMA_desc *C,
+                       PLASMA_Complex64_t alpha, plasma_desc_t *A,
+                                                 plasma_desc_t *B,
+                       double beta,              plasma_desc_t *C,
                        plasma_sequence_t *sequence,
                        plasma_request_t *request)
 {

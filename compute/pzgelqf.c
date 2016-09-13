@@ -23,7 +23,7 @@
  *  Parallel tile LQ factorization - dynamic scheduling
  * @see plasma_omp_zgelqf
  **/
-void plasma_pzgelqf(PLASMA_desc A, PLASMA_desc T,
+void plasma_pzgelqf(plasma_desc_t A, plasma_desc_t T,
                     PLASMA_workspace *work,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {

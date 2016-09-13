@@ -25,7 +25,7 @@
  **/
 void plasma_pzlaset(PLASMA_enum uplo,
                     PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
-                    PLASMA_desc A,
+                    plasma_desc_t A,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int i, j;

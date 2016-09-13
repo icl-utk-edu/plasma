@@ -23,7 +23,7 @@
  *  Parallel tile QR factorization - dynamic scheduling
  * @see plasma_omp_zgeqrf
  **/
-void plasma_pzgeqrf(PLASMA_desc A, PLASMA_desc T,
+void plasma_pzgeqrf(plasma_desc_t A, plasma_desc_t T,
                     PLASMA_workspace *work,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {

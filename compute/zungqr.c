@@ -70,15 +70,15 @@
  ******************************************************************************/
 int PLASMA_zungqr(int m, int n, int k,
                   PLASMA_Complex64_t *A, int lda,
-                  PLASMA_desc *descT,
+                  plasma_desc_t *descT,
                   PLASMA_Complex64_t *Q, int ldq)
 {
     int ib, nb;
     int retval;
     int status;
 
-    PLASMA_desc descA;
-    PLASMA_desc descQ;
+    plasma_desc_t descA;
+    plasma_desc_t descQ;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -237,7 +237,7 @@ int PLASMA_zungqr(int m, int n, int k,
  * @sa plasma_omp_zgeqrf
  *
  ******************************************************************************/
-void plasma_omp_zungqr(PLASMA_desc *A, PLASMA_desc *T, PLASMA_desc *Q,
+void plasma_omp_zungqr(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *Q,
                        PLASMA_workspace *work,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {

@@ -93,8 +93,8 @@ int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
     int retval;
     int status;
 
-    PLASMA_desc descA;
-    PLASMA_desc descC;
+    plasma_desc_t descA;
+    plasma_desc_t descC;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -268,8 +268,8 @@ int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
  *
  ******************************************************************************/
 void plasma_omp_zsyrk(PLASMA_enum uplo, PLASMA_enum trans,
-                      PLASMA_Complex64_t alpha, PLASMA_desc *A,
-                      PLASMA_Complex64_t beta,  PLASMA_desc *C,
+                      PLASMA_Complex64_t alpha, plasma_desc_t *A,
+                      PLASMA_Complex64_t beta,  plasma_desc_t *C,
                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.

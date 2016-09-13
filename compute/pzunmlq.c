@@ -25,7 +25,7 @@
  * @see plasma_omp_zgelqs
  **/
 void plasma_pzunmlq(PLASMA_enum side, PLASMA_enum trans,
-                    PLASMA_desc A, PLASMA_desc B, PLASMA_desc T,
+                    plasma_desc_t A, plasma_desc_t B, plasma_desc_t T,
                     PLASMA_workspace *work,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {

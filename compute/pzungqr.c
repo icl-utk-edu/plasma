@@ -23,7 +23,7 @@
 /***************************************************************************//**
  *  Parallel construction of Q using tile V (application to identity)
  **/
-void plasma_pzungqr(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
+void plasma_pzungqr(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
                     PLASMA_workspace *work,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {

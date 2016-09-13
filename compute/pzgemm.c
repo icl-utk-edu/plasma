@@ -24,9 +24,9 @@
  * @see plasma_omp_zgemm
  ******************************************************************************/
 void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
-                   PLASMA_Complex64_t alpha, PLASMA_desc A,
-                                             PLASMA_desc B,
-                   PLASMA_Complex64_t beta,  PLASMA_desc C,
+                   PLASMA_Complex64_t alpha, plasma_desc_t A,
+                                             plasma_desc_t B,
+                   PLASMA_Complex64_t beta,  plasma_desc_t C,
                    plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int m, n, k;

@@ -84,7 +84,7 @@ int PLASMA_zpbtrs(PLASMA_enum uplo, int n, int kd, int nrhs,
     int retval;
     int status;
 
-    PLASMA_desc descAB, descB;
+    plasma_desc_t descAB, descB;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -255,8 +255,8 @@ int PLASMA_zpbtrs(PLASMA_enum uplo, int n, int kd, int nrhs,
  *
  ******************************************************************************/
 void plasma_omp_zpbtrs(PLASMA_enum uplo,
-                       PLASMA_desc *AB,
-                       PLASMA_desc *B,
+                       plasma_desc_t *AB,
+                       plasma_desc_t *B,
                        plasma_sequence_t *sequence,
                        plasma_request_t *request)
 {

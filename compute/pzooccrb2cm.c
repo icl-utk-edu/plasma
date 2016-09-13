@@ -17,7 +17,7 @@
 #include "core_blas_z.h"
 
 /******************************************************************************/
-void plasma_pzooccrb2cm(PLASMA_desc A, PLASMA_Complex64_t *Af77, int lda,
+void plasma_pzooccrb2cm(plasma_desc_t A, PLASMA_Complex64_t *Af77, int lda,
                         plasma_sequence_t *sequence, plasma_request_t *request)
 {
     PLASMA_Complex64_t *f77;

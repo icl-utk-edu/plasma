@@ -24,7 +24,7 @@
     Out-of-place.
 */
 void PLASMA_zcm2ccrb_band_Async(PLASMA_enum uplo,
-                                PLASMA_Complex64_t *Af77, int lda, PLASMA_desc *A,
+                                PLASMA_Complex64_t *Af77, int lda, plasma_desc_t *A,
                                 plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.

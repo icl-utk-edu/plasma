@@ -14,7 +14,7 @@
 #include "plasma_internal.h"
 
 /******************************************************************************/
-int PLASMA_Desc_Create(PLASMA_desc **desc, void *mat, PLASMA_enum dtyp,
+int PLASMA_Desc_Create(plasma_desc_t **desc, void *mat, PLASMA_enum dtyp,
                        int mb, int nb, int bsiz, int lm, int ln, int i,
                        int j, int m, int n)
 {
@@ -24,7 +24,7 @@ int PLASMA_Desc_Create(PLASMA_desc **desc, void *mat, PLASMA_enum dtyp,
         return PLASMA_ERR_NOT_INITIALIZED;
     }
     // Allocate the descriptor.
-    *desc = (PLASMA_desc*)malloc(sizeof(PLASMA_desc));
+    *desc = (plasma_desc_t*)malloc(sizeof(plasma_desc_t));
     if (*desc == NULL) {
         plasma_error("malloc() failed");
         return PLASMA_ERR_OUT_OF_RESOURCES;
@@ -41,7 +41,7 @@ int PLASMA_Desc_Create(PLASMA_desc **desc, void *mat, PLASMA_enum dtyp,
 }
 
 /******************************************************************************/
-int PLASMA_Desc_Destroy(PLASMA_desc **desc)
+int PLASMA_Desc_Destroy(plasma_desc_t **desc)
 {
     plasma_context_t *plasma;
 
@@ -60,10 +60,10 @@ int PLASMA_Desc_Destroy(PLASMA_desc **desc)
 }
 
 /******************************************************************************/
-PLASMA_desc plasma_desc_init(PLASMA_enum dtyp, int mb, int nb, int bsiz,
+plasma_desc_t plasma_desc_init(PLASMA_enum dtyp, int mb, int nb, int bsiz,
                              int lm, int ln, int i, int j, int m, int n)
 {
-    PLASMA_desc desc;
+    plasma_desc_t desc;
 
     size_t A21 = (size_t)(lm - lm%mb) * (size_t)(ln - ln%nb);
     size_t A12 = (size_t)(     lm%mb) * (size_t)(ln - ln%nb);
@@ -105,12 +105,12 @@ PLASMA_desc plasma_desc_init(PLASMA_enum dtyp, int mb, int nb, int bsiz,
 }
 
 /******************************************************************************/
-PLASMA_desc plasma_desc_band_init(PLASMA_enum dtyp, PLASMA_enum uplo,
+plasma_desc_t plasma_desc_band_init(PLASMA_enum dtyp, PLASMA_enum uplo,
                                   int mb, int nb, int bsiz,
                                   int lm, int ln, int i, int j, int m, int n,
                                   int kl, int ku)
 {
-    PLASMA_desc desc;
+    plasma_desc_t desc;
     // init params for a general matrix
     desc = plasma_desc_init(dtyp, mb, nb, bsiz, lm, ln, i, j, m, n);
 
@@ -137,7 +137,7 @@ PLASMA_desc plasma_desc_band_init(PLASMA_enum dtyp, PLASMA_enum uplo,
 }
 
 /******************************************************************************/
-PLASMA_desc plasma_desc_submatrix(PLASMA_desc descA, int i, int j, int m, int n)
+plasma_desc_t plasma_desc_submatrix(plasma_desc_t descA, int i, int j, int m, int n)
 {
     if ((descA.i+i+m) > descA.lm)
         plasma_error("rows out of bounds");
@@ -145,7 +145,7 @@ PLASMA_desc plasma_desc_submatrix(PLASMA_desc descA, int i, int j, int m, int n)
     if ((descA.j+j+n) > descA.ln)
         plasma_error("columns out of bounds");
 
-    PLASMA_desc descB = descA;
+    plasma_desc_t descB = descA;
     int mb = descA.mb;
     int nb = descA.nb;
 
@@ -163,7 +163,7 @@ PLASMA_desc plasma_desc_submatrix(PLASMA_desc descA, int i, int j, int m, int n)
 }
 
 /******************************************************************************/
-int plasma_desc_check(PLASMA_desc *desc)
+int plasma_desc_check(plasma_desc_t *desc)
 {
     if (desc == NULL) {
         plasma_error("NULL descriptor");
@@ -213,7 +213,7 @@ int plasma_desc_check(PLASMA_desc *desc)
 }
 
 /******************************************************************************/
-int plasma_desc_band_check(PLASMA_enum uplo, PLASMA_desc *desc)
+int plasma_desc_band_check(PLASMA_enum uplo, plasma_desc_t *desc)
 {
     if (desc == NULL) {
         plasma_error("NULL descriptor");
@@ -277,7 +277,7 @@ int plasma_desc_band_check(PLASMA_enum uplo, PLASMA_desc *desc)
 }
 
 /******************************************************************************/
-int plasma_desc_mat_alloc(PLASMA_desc *desc)
+int plasma_desc_mat_alloc(plasma_desc_t *desc)
 {
     size_t size = (size_t)desc->lm * desc->ln * plasma_element_size(desc->dtyp);
 
@@ -289,7 +289,7 @@ int plasma_desc_mat_alloc(PLASMA_desc *desc)
 }
 
 /******************************************************************************/
-int plasma_desc_mat_free(PLASMA_desc *desc)
+int plasma_desc_mat_free(plasma_desc_t *desc)
 {
     if (desc->mat != NULL) {
         free(desc->mat);

@@ -84,7 +84,7 @@ void core_zlaset(PLASMA_enum uplo,
                  PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
                  PLASMA_Complex64_t *A, int lda);
 
-//void core_zlaswp_ontile(PLASMA_desc A, int i_, int j_, int m, int n,
+//void core_zlaswp_ontile(plasma_desc_t A, int i_, int j_, int m, int n,
 //                        int i1, int i2, const int *ipiv, int inc);
 
 int core_zpamm(int op, PLASMA_enum side, PLASMA_enum storev,
@@ -255,7 +255,7 @@ void core_omp_zlaset(PLASMA_enum uplo,
                      PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
                      PLASMA_Complex64_t *A);
 
-//void core_omp_zlaswp_ontile(PLASMA_desc A, int i_, int j_, int m, int n,
+//void core_omp_zlaswp_ontile(plasma_desc_t A, int i_, int j_, int m, int n,
 //                            int i1, int i2, const int *ipiv, int inc);
 
 void core_omp_zpotrf(PLASMA_enum uplo,

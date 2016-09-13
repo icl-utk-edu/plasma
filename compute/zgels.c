@@ -98,14 +98,14 @@
  ******************************************************************************/
 int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
                  PLASMA_Complex64_t *A, int lda,
-                 PLASMA_desc *descT,
+                 plasma_desc_t *descT,
                  PLASMA_Complex64_t *B, int ldb)
 {
     int ib, nb;
     int retval;
     int status;
 
-    PLASMA_desc descA, descB;
+    plasma_desc_t descA, descB;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -288,8 +288,8 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
  * @sa plasma_omp_sgels
  *
  ******************************************************************************/
-void plasma_omp_zgels(PLASMA_enum trans, PLASMA_desc *A,
-                      PLASMA_desc *T, PLASMA_desc *B,
+void plasma_omp_zgels(PLASMA_enum trans, plasma_desc_t *A,
+                      plasma_desc_t *T, plasma_desc_t *B,
                       PLASMA_workspace *work,
                       plasma_sequence_t *sequence,
                       plasma_request_t *request)

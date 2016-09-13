@@ -22,7 +22,7 @@
  *  Parallel tile Cholesky factorization of a band matrix.
  * @see plasma_omp_zgbtrf
  ******************************************************************************/
-void plasma_pzpbtrf(PLASMA_enum uplo, PLASMA_desc A,
+void plasma_pzpbtrf(PLASMA_enum uplo, plasma_desc_t A,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int k, m, n;

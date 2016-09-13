@@ -23,8 +23,8 @@
  * @see plasma_omp_zherk
  ******************************************************************************/
 void plasma_pzherk(PLASMA_enum uplo, PLASMA_enum trans,
-                   double alpha, PLASMA_desc A,
-                   double beta,  PLASMA_desc C,
+                   double alpha, plasma_desc_t A,
+                   double beta,  plasma_desc_t C,
                    plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int m, n, k;
