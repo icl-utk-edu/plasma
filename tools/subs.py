@@ -366,6 +366,8 @@ subs = {
     # ----- header files
     (r'_ds\.h\b',           r'_zc\.h\b'            ),
     (r'_DS_H\b',            r'_ZC_H\b'             ),
+    (r'_d\.h\b',            r'_z\.h\b'             ),
+    (r'_s\.h\b',            r'_c\.h\b'             ),
 
     # ----- Prefixes
     # See note in "normal" section below

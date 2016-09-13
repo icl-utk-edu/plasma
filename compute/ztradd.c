@@ -117,16 +117,18 @@ int PLASMA_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
     }
 
     // Check input arguments
-    if ((uplo != PlasmaFull) &&
+    if ((uplo != PlasmaFull)  &&
         (uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
+
         plasma_error("illegal value of uplo");
         return -1;
     }
 
     if ((transA != PlasmaNoTrans) &&
-        (transA != PlasmaTrans) &&
+        (transA != PlasmaTrans)   &&
         (transA != PlasmaConjTrans)) {
+
         plasma_error("illegal value of transA");
         return -2;
     }
@@ -363,7 +365,7 @@ void PLASMA_ztradd_Tile_Async(PLASMA_enum uplo, PLASMA_enum transA,
         return;
     }
 
-    // quick return
+    // Quick return
     int Am = transA == PlasmaNoTrans ? A->m : A->n;
     PLASMA_Complex64_t zzero = (PLASMA_Complex64_t)0.0;
 
