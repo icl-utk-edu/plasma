@@ -78,7 +78,7 @@
  *
  *******************************************************************************
  *
- * @sa PLASMA_zsyrk_Tile_Async
+ * @sa plasma_omp_zsyrk
  * @sa PLASMA_csyrk
  * @sa PLASMA_dsyrk
  * @sa PLASMA_ssyrk
@@ -189,10 +189,10 @@ int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
         PLASMA_zcm2ccrb_Async(C, ldc, &descC, sequence, &request);
 
         // Call the tile async function.
-        PLASMA_zsyrk_Tile_Async(uplo, trans,
-                                alpha, &descA,
-                                beta,  &descC,
-                                sequence, &request);
+        plasma_omp_zsyrk(uplo, trans,
+                         alpha, &descA,
+                         beta,  &descC,
+                         sequence, &request);
 
         // Translate back to LAPACK layout.
         PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
@@ -261,16 +261,16 @@ int PLASMA_zsyrk(PLASMA_enum uplo, PLASMA_enum trans, int n, int k,
  *******************************************************************************
  *
  * @sa PLASMA_zsyrk
- * @sa PLASMA_zsyrk_Tile_Async
- * @sa PLASMA_csyrk_Tile_Async
- * @sa PLASMA_dsyrk_Tile_Async
- * @sa PLASMA_ssyrk_Tile_Async
+ * @sa plasma_omp_zsyrk
+ * @sa plasma_omp_csyrk
+ * @sa plasma_omp_dsyrk
+ * @sa plasma_omp_ssyrk
  *
  ******************************************************************************/
-void PLASMA_zsyrk_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
-                            PLASMA_Complex64_t alpha, PLASMA_desc *A,
-                            PLASMA_Complex64_t beta,  PLASMA_desc *C,
-                            PLASMA_sequence *sequence, PLASMA_request *request)
+void plasma_omp_zsyrk(PLASMA_enum uplo, PLASMA_enum trans,
+                      PLASMA_Complex64_t alpha, PLASMA_desc *A,
+                      PLASMA_Complex64_t beta,  PLASMA_desc *C,
+                      PLASMA_sequence *sequence, PLASMA_request *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

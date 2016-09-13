@@ -65,7 +65,7 @@
  *
  *******************************************************************************
  *
- * @sa PLASMA_zpotrs_Tile_Async
+ * @sa plasma_omp_zpotrs
  * @sa PLASMA_cpotrs
  * @sa PLASMA_dpotrs
  * @sa PLASMA_spotrs
@@ -165,7 +165,7 @@ int PLASMA_zpotrs(PLASMA_enum uplo,
         PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
 
         // Call the tile async function.
-        PLASMA_zpotrs_Tile_Async(uplo, &descA, &descB, sequence, &request);
+        plasma_omp_zpotrs(uplo, &descA, &descB, sequence, &request);
 
         // Translate back to LAPACK layout.
         PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
@@ -227,18 +227,18 @@ int PLASMA_zpotrs(PLASMA_enum uplo,
  *******************************************************************************
  *
  * @sa PLASMA_zpotrs
- * @sa PLASMA_zpotrs_Tile_Async
- * @sa PLASMA_cpotrs_Tile_Async
- * @sa PLASMA_dpotrs_Tile_Async
- * @sa PLASMA_spotrs_Tile_Async
- * @sa PLASMA_zpotrf_Tile_Async
+ * @sa plasma_omp_zpotrs
+ * @sa plasma_omp_cpotrs
+ * @sa plasma_omp_dpotrs
+ * @sa plasma_omp_spotrs
+ * @sa plasma_omp_zpotrf
  *
  ******************************************************************************/
-void PLASMA_zpotrs_Tile_Async(PLASMA_enum uplo,
-                              PLASMA_desc *A,
-                              PLASMA_desc *B,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request *request)
+void plasma_omp_zpotrs(PLASMA_enum uplo,
+                       PLASMA_desc *A,
+                       PLASMA_desc *B,
+                       PLASMA_sequence *sequence,
+                       PLASMA_request *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

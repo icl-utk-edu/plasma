@@ -85,7 +85,7 @@
  *
  *******************************************************************************
  *
- * @sa PLASMA_zhemm_Tile_Async
+ * @sa plasma_omp_zhemm
  * @sa PLASMA_chemm
  *
  ******************************************************************************/
@@ -218,11 +218,11 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
         PLASMA_zcm2ccrb_Async(C, ldc, &descC, sequence, &request);
 
         // Call the tile async function.
-        PLASMA_zhemm_Tile_Async(side, uplo,
-                                alpha, &descA,
-                                       &descB,
-                                beta,  &descC,
-                                sequence, &request);
+        plasma_omp_zhemm(side, uplo,
+                         alpha, &descA,
+                                &descB,
+                         beta,  &descC,
+                         sequence, &request);
 
         // Translate back to LAPACK layout.
         PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
@@ -289,14 +289,14 @@ int PLASMA_zhemm(PLASMA_enum side, PLASMA_enum uplo, int m, int n,
  *******************************************************************************
  *
  * @sa PLASMA_zhemm
- * @sa PLASMA_chemm_Tile_Async
+ * @sa plasma_omp_chemm
  *
  ******************************************************************************/
-void PLASMA_zhemm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
-                             PLASMA_Complex64_t alpha, PLASMA_desc *A,
-                                                       PLASMA_desc *B,
-                             PLASMA_Complex64_t beta,  PLASMA_desc *C,
-                             PLASMA_sequence *sequence, PLASMA_request *request)
+void plasma_omp_zhemm(PLASMA_enum side, PLASMA_enum uplo,
+                      PLASMA_Complex64_t alpha, PLASMA_desc *A,
+                                                PLASMA_desc *B,
+                      PLASMA_Complex64_t beta,  PLASMA_desc *C,
+                      PLASMA_sequence *sequence, PLASMA_request *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

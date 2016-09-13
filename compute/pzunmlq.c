@@ -22,7 +22,7 @@
 #define T(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(T, m, n))
 /***************************************************************************//**
  *  Parallel application of Q using tile V - LQ factorization
- * @see PLASMA_zgelqs_Tile_Async
+ * @see plasma_omp_zgelqs
  **/
 void plasma_pzunmlq(PLASMA_enum side, PLASMA_enum trans,
                     PLASMA_desc A, PLASMA_desc B, PLASMA_desc T,

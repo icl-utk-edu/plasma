@@ -21,7 +21,7 @@
 #define C(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(C, m, n))
 /***************************************************************************//**
  * Parallel tile matrix-matrix multiplication.
- * @see PLASMA_zgemm_Tile_Async
+ * @see plasma_omp_zgemm
  ******************************************************************************/
 void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                    PLASMA_Complex64_t alpha, PLASMA_desc A,

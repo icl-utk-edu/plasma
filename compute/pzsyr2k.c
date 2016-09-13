@@ -21,7 +21,7 @@
 #define C(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(C, m, n))
 /***************************************************************************//**
  * Parallel tile symmetric rank 2k update.
- * @see PLASMA_zsyr2k_Tile_Async
+ * @see plasma_omp_zsyr2k
  ******************************************************************************/
 void plasma_pzsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
                     PLASMA_Complex64_t alpha, PLASMA_desc A,

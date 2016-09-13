@@ -81,7 +81,7 @@
  *
  *******************************************************************************
  *
- * @sa PLASMA_zpbsv_Tile_Async
+ * @sa plasma_omp_zpbsv
  * @sa PLASMA_cpbsv
  * @sa PLASMA_dpbsv
  * @sa PLASMA_spbsv
@@ -183,10 +183,10 @@ int PLASMA_zpbsv(PLASMA_enum uplo, int n, int kd, int nrhs,
         PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
 
         // Call the tile async function.
-        PLASMA_zpbsv_Tile_Async(uplo,
-                                &descAB,
-                                &descB,
-                                sequence, &request);
+        plasma_omp_zpbsv(uplo,
+                         &descAB,
+                         &descB,
+                         sequence, &request);
 
         // Translate back to LAPACK layout.
         PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
@@ -246,16 +246,13 @@ int PLASMA_zpbsv(PLASMA_enum uplo, int n, int kd, int nrhs,
  *******************************************************************************
  *
  * @sa PLASMA_zpbsv
- * @sa PLASMA_cpbsv_Tile_Async
- * @sa PLASMA_dpbsv_Tile_Async
- * @sa PLASMA_spbsv_Tile_Async
+ * @sa plasma_omp_cpbsv
+ * @sa plasma_omp_dpbsv
+ * @sa plasma_omp_spbsv
  *
  ******************************************************************************/
-void PLASMA_zpbsv_Tile_Async(PLASMA_enum uplo,
-                             PLASMA_desc *AB,
-                             PLASMA_desc *B,
-                             PLASMA_sequence *sequence, 
-                             PLASMA_request *request)
+void plasma_omp_zpbsv(PLASMA_enum uplo, PLASMA_desc *AB, PLASMA_desc *B,
+                      PLASMA_sequence *sequence, PLASMA_request *request)
 {
     PLASMA_Complex64_t zone = 1.0;
 

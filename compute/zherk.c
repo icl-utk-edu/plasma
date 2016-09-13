@@ -78,7 +78,7 @@
  *
  *******************************************************************************
  *
- * @sa PLASMA_zherk_Tile_Async
+ * @sa plasma_omp_zherk
  * @sa PLASMA_cherk
  *
  ******************************************************************************/
@@ -187,10 +187,10 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans,
         PLASMA_zcm2ccrb_Async(C, ldc, &descC, sequence, &request);
 
         // Call the tile async function.
-        PLASMA_zherk_Tile_Async(uplo, trans,
-                                alpha, &descA,
-                                beta,  &descC,
-                                sequence, &request);
+        plasma_omp_zherk(uplo, trans,
+                         alpha, &descA,
+                         beta,  &descC,
+                         sequence, &request);
 
         // Translate back to LAPACK layout.
         PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
@@ -259,16 +259,16 @@ int PLASMA_zherk(PLASMA_enum uplo, PLASMA_enum trans,
  *******************************************************************************
  *
  * @sa PLASMA_zherk
- * @sa PLASMA_zherk_Tile_Async
- * @sa PLASMA_cherk_Tile_Async
- * @sa PLASMA_dherk_Tile_Async
- * @sa PLASMA_sherk_Tile_Async
+ * @sa plasma_omp_zherk
+ * @sa plasma_omp_cherk
+ * @sa plasma_omp_dherk
+ * @sa plasma_omp_sherk
  *
  ******************************************************************************/
-void PLASMA_zherk_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
-                            double alpha, PLASMA_desc *A,
-                            double beta,  PLASMA_desc *C,
-                            PLASMA_sequence *sequence, PLASMA_request *request)
+void plasma_omp_zherk(PLASMA_enum uplo, PLASMA_enum trans,
+                      double alpha, PLASMA_desc *A,
+                      double beta,  PLASMA_desc *C,
+                      PLASMA_sequence *sequence, PLASMA_request *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

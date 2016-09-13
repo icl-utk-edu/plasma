@@ -22,7 +22,7 @@
 
 /***************************************************************************//**
  *  Parallel tile Hermitian matrix-matrix multiplication.
- *  @see PLASMA_zhemm_Tile_Async
+ *  @see plasma_omp_zhemm
  ******************************************************************************/
 void plasma_pzhemm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_Complex64_t alpha, PLASMA_desc A,

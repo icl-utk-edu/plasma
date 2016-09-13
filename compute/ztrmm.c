@@ -100,7 +100,7 @@
  *
  *******************************************************************************
  *
- * @sa PLASMA_ztrmm_Tile_Async
+ * @sa plasma_omp_ztrmm
  * @sa PLASMA_ctrmm
  * @sa PLASMA_dtrmm
  * @sa PLASMA_strmm
@@ -226,8 +226,10 @@ int PLASMA_ztrmm(PLASMA_enum side, PLASMA_enum uplo,
 
         // Call tile async interface
         if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_ztrmm_Tile_Async(side, uplo, transA, diag, alpha,
-                                    &descA, &descB, sequence, &request);
+            plasma_omp_ztrmm(side, uplo, transA, diag,
+                             alpha, &descA,
+                                    &descB,
+                             sequence, &request);
         }
 
         // Revert matrices to LAPACK layout
@@ -287,17 +289,16 @@ int PLASMA_ztrmm(PLASMA_enum side, PLASMA_enum uplo,
  *******************************************************************************
  *
  * @sa PLASMA_ztrmm
- * @sa PLASMA_ctrmm_Tile_Async
- * @sa PLASMA_dtrmm_Tile_Async
- * @sa PLASMA_strmm_Tile_Async
+ * @sa plasma_omp_ctrmm
+ * @sa plasma_omp_dtrmm
+ * @sa plasma_omp_strmm
  *
  ******************************************************************************/
-void PLASMA_ztrmm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
+void plasma_omp_ztrmm(PLASMA_enum side, PLASMA_enum uplo,
                             PLASMA_enum transA, PLASMA_enum diag,
                             PLASMA_Complex64_t alpha, PLASMA_desc *A,
                                                       PLASMA_desc *B,
-                            PLASMA_sequence *sequence,
-                            PLASMA_request  *request)
+                            PLASMA_sequence *sequence, PLASMA_request  *request)
 {
     PLASMA_desc descA;
     PLASMA_desc descB;

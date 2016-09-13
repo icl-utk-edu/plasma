@@ -21,7 +21,7 @@
 #define T(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(T, m, n))
 /***************************************************************************//**
  *  Parallel tile QR factorization - dynamic scheduling
- * @see PLASMA_zgeqrf_Tile_Async
+ * @see plasma_omp_zgeqrf
  **/
 void plasma_pzgeqrf(PLASMA_desc A, PLASMA_desc T,
                     PLASMA_workspace *work,

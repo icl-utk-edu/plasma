@@ -92,7 +92,7 @@
  *
  *******************************************************************************
  *
- * @sa PLASMA_zher2k_Tile_Async
+ * @sa plasma_omp_zher2k
  * @sa PLASMA_cher2k
  *
  ******************************************************************************/
@@ -226,11 +226,11 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
         PLASMA_zcm2ccrb_Async(C, ldc, &descC, sequence, &request);
 
         // Call the tile async function.
-        PLASMA_zher2k_Tile_Async(uplo, trans,
-                                 alpha, &descA,
-                                        &descB,
-                                 beta,  &descC,
-                                 sequence, &request);
+        plasma_omp_zher2k(uplo, trans,
+                          alpha, &descA,
+                                 &descB,
+                          beta,  &descC,
+                          sequence, &request);
 
         // Translate back to LAPACK layout.
         PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
@@ -307,16 +307,16 @@ int PLASMA_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
  *******************************************************************************
  *
  * @sa PLASMA_zher2k
- * @sa PLASMA_zher2k_Tile_Async
- * @sa PLASMA_cher2k_Tile_Async
+ * @sa plasma_omp_zher2k
+ * @sa plasma_omp_cher2k
  *
  ******************************************************************************/
-void PLASMA_zher2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
-                              PLASMA_Complex64_t alpha, PLASMA_desc *A,
-                                                        PLASMA_desc *B,
-                              double beta,              PLASMA_desc *C,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request *request)
+void plasma_omp_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
+                       PLASMA_Complex64_t alpha, PLASMA_desc *A,
+                                                 PLASMA_desc *B,
+                       double beta,              PLASMA_desc *C,
+                       PLASMA_sequence *sequence,
+                       PLASMA_request *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

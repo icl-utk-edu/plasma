@@ -21,7 +21,7 @@
 
 /***************************************************************************//**
  *  Parallel tile triangular matrix-matrix multiplication.
- *  @see PLASMA_ztrmm_Tile_Async
+ *  @see plasma_omp_ztrmm
  ******************************************************************************/
 void plasma_pztrmm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_enum trans, PLASMA_enum diag,

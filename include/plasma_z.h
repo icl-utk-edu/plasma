@@ -172,163 +172,122 @@ void PLASMA_zcm2ccrb_band_Async(PLASMA_enum uplo,
                                 PLASMA_sequence *sequence,
                                 PLASMA_request *request);
 
-void PLASMA_zgelqf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
-                              PLASMA_workspace *work,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request *request);
+void plasma_omp_zgelqf(PLASMA_desc *descA, PLASMA_desc *descT,
+                       PLASMA_workspace *work,
+                       PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zgelqs_Tile_Async(PLASMA_desc *descA,
-                              PLASMA_desc *descT,
-                              PLASMA_desc *descB,
-                              PLASMA_workspace *work,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request *request);
+void plasma_omp_zgelqs(PLASMA_desc *descA, PLASMA_desc *descT,
+                       PLASMA_desc *descB, PLASMA_workspace *work,
+                       PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zgels_Tile_Async(PLASMA_enum trans,
-                             PLASMA_desc *descA, PLASMA_desc *descT,
-                             PLASMA_desc *descB,
-                             PLASMA_workspace *work,
-                             PLASMA_sequence *sequence,
-                             PLASMA_request *request);
+void plasma_omp_zgels(PLASMA_enum trans,
+                      PLASMA_desc *descA, PLASMA_desc *descT,
+                      PLASMA_desc *descB, PLASMA_workspace *work,
+                      PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
-                             PLASMA_Complex64_t alpha, PLASMA_desc *A,
-                                                       PLASMA_desc *B,
-                             PLASMA_Complex64_t beta,  PLASMA_desc *C,
-                             PLASMA_sequence *sequence,
-                             PLASMA_request *request);
+void plasma_omp_zgemm(PLASMA_enum transA, PLASMA_enum transB,
+                      PLASMA_Complex64_t alpha, PLASMA_desc *A,
+                                                PLASMA_desc *B,
+                      PLASMA_Complex64_t beta,  PLASMA_desc *C,
+                      PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zgeqrf_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
-                              PLASMA_workspace *work,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request *request);
+void plasma_omp_zgeqrf(PLASMA_desc *descA, PLASMA_desc *descT,
+                       PLASMA_workspace *work,
+                       PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zgeqrs_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
-                              PLASMA_desc *descB,
-                              PLASMA_workspace *work,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request *request);
+void plasma_omp_zgeqrs(PLASMA_desc *descA, PLASMA_desc *descT,
+                       PLASMA_desc *descB, PLASMA_workspace *work,
+                       PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zhemm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
-                             PLASMA_Complex64_t alpha, PLASMA_desc *A,
-                                                       PLASMA_desc *B,
-                             PLASMA_Complex64_t beta,  PLASMA_desc *C,
-                             PLASMA_sequence *sequence,
-                             PLASMA_request *request);
+void plasma_omp_zhemm(PLASMA_enum side, PLASMA_enum uplo,
+                      PLASMA_Complex64_t alpha, PLASMA_desc *A,
+                                                PLASMA_desc *B,
+                      PLASMA_Complex64_t beta,  PLASMA_desc *C,
+                      PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zher2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
-                              PLASMA_Complex64_t alpha, PLASMA_desc *A,
-                                                        PLASMA_desc *B,
-                              double beta,              PLASMA_desc *C,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request *request);
+void plasma_omp_zher2k(PLASMA_enum uplo, PLASMA_enum trans,
+                       PLASMA_Complex64_t alpha, PLASMA_desc *A,
+                                                 PLASMA_desc *B,
+                       double beta,              PLASMA_desc *C,
+                       PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zherk_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
-                             double alpha, PLASMA_desc *A,
-                             double beta,  PLASMA_desc *C,
-                             PLASMA_sequence *sequence,
-                             PLASMA_request *request);
+void plasma_omp_zherk(PLASMA_enum uplo, PLASMA_enum trans,
+                      double alpha, PLASMA_desc *A,
+                      double beta,  PLASMA_desc *C,
+                      PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zpbsv_Tile_Async(PLASMA_enum uplo,
-                             PLASMA_desc *AB,
-                             PLASMA_desc *B,
-                             PLASMA_sequence *sequence,
-                             PLASMA_request *request);
+void plasma_omp_zpbsv(PLASMA_enum uplo,
+                      PLASMA_desc *AB,
+                      PLASMA_desc *B,
+                      PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zpbtrf_Tile_Async(PLASMA_enum uplo,
-                              PLASMA_desc *AB,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request *request);
+void plasma_omp_zpbtrf(PLASMA_enum uplo, PLASMA_desc *AB,
+                      PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zpbtrs_Tile_Async(PLASMA_enum uplo,
-                              PLASMA_desc *AB,
-                              PLASMA_desc *B,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request *request);
+void plasma_omp_zpbtrs(PLASMA_enum uplo, PLASMA_desc *AB, PLASMA_desc *B,
+                       PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zposv_Tile_Async(PLASMA_enum uplo,
-                             PLASMA_desc *A,
-                             PLASMA_desc *B,
-                             PLASMA_sequence *sequence,
-                             PLASMA_request *request);
+void plasma_omp_zposv(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
+                      PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zpotrf_Tile_Async(PLASMA_enum uplo,
-                              PLASMA_desc *A,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request *request);
+void plasma_omp_zpotrf(PLASMA_enum uplo, PLASMA_desc *A,
+                       PLASMA_sequence *sequence,
+                       PLASMA_request *request);
 
-void PLASMA_zpotrs_Tile_Async(PLASMA_enum uplo,
-                              PLASMA_desc *A,
-                              PLASMA_desc *B,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request *request);
+void plasma_omp_zpotrs(PLASMA_enum uplo, PLASMA_desc *A, PLASMA_desc *B,
+                        PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zsymm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
-                             PLASMA_Complex64_t alpha, PLASMA_desc *A,
-                                                       PLASMA_desc *B,
-                             PLASMA_Complex64_t beta,  PLASMA_desc *C,
-                             PLASMA_sequence *sequence,
-                             PLASMA_request *request);
+void plasma_omp_zsymm(PLASMA_enum side, PLASMA_enum uplo,
+                      PLASMA_Complex64_t alpha, PLASMA_desc *A,
+                                                PLASMA_desc *B,
+                      PLASMA_Complex64_t beta,  PLASMA_desc *C,
+                      PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zsyr2k_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
-                              PLASMA_Complex64_t alpha, PLASMA_desc *A,
-                                                        PLASMA_desc *B,
-                              PLASMA_Complex64_t beta,  PLASMA_desc *C,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request *request);
+void plasma_omp_zsyr2k(PLASMA_enum uplo, PLASMA_enum trans,
+                       PLASMA_Complex64_t alpha, PLASMA_desc *A,
+                                                  PLASMA_desc *B,
+                       PLASMA_Complex64_t beta,  PLASMA_desc *C,
+                       PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zsyrk_Tile_Async(PLASMA_enum uplo, PLASMA_enum trans,
-                             PLASMA_Complex64_t alpha, PLASMA_desc *A,
-                             PLASMA_Complex64_t beta,  PLASMA_desc *C,
-                             PLASMA_sequence *sequence,
-                             PLASMA_request *request);
+void plasma_omp_zsyrk(PLASMA_enum uplo, PLASMA_enum trans,
+                      PLASMA_Complex64_t alpha, PLASMA_desc *A,
+                      PLASMA_Complex64_t beta,  PLASMA_desc *C,
+                      PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_ztradd_Tile_Async(PLASMA_enum uplo, PLASMA_enum transA,
-                              PLASMA_Complex64_t alpha, PLASMA_desc *A,
-                              PLASMA_Complex64_t beta,  PLASMA_desc *B,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request  *request);
+void plasma_omp_ztradd(PLASMA_enum uplo, PLASMA_enum transA,
+                       PLASMA_Complex64_t alpha, PLASMA_desc *A,
+                       PLASMA_Complex64_t beta,  PLASMA_desc *B,
+                       PLASMA_sequence *sequence, PLASMA_request  *request);
 
-void PLASMA_ztrmm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
-                             PLASMA_enum transA, PLASMA_enum diag,
-                             PLASMA_Complex64_t alpha, PLASMA_desc *A,
-                                                       PLASMA_desc *B,
-                             PLASMA_sequence *sequence,
-                             PLASMA_request  *request);
+void plasma_omp_ztrmm(PLASMA_enum side, PLASMA_enum uplo,
+                      PLASMA_enum transA, PLASMA_enum diag,
+                      PLASMA_Complex64_t alpha, PLASMA_desc *A,
+                                                PLASMA_desc *B,
+                      PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_ztrsm_Tile_Async(PLASMA_enum side, PLASMA_enum uplo,
-                             PLASMA_enum transA, PLASMA_enum diag,
-                             PLASMA_Complex64_t alpha, PLASMA_desc *A,
-                                                       PLASMA_desc *B,
-                             PLASMA_sequence *sequence,
-                             PLASMA_request *request);
+void plasma_omp_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
+                      PLASMA_enum transA, PLASMA_enum diag,
+                      PLASMA_Complex64_t alpha, PLASMA_desc *A,
+                                                PLASMA_desc *B,
+                      PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zunglq_Tile_Async(PLASMA_desc *descA,
-                              PLASMA_desc *descT,
-                              PLASMA_desc *descQ,
-                              PLASMA_workspace *work,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request *request);
+void plasma_omp_zunglq(PLASMA_desc *descA, PLASMA_desc *descT,
+                       PLASMA_desc *descQ, PLASMA_workspace *work,
+                       PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zungqr_Tile_Async(PLASMA_desc *descA, PLASMA_desc *descT,
-                              PLASMA_desc *descQ,
-                              PLASMA_workspace *work,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request *request);
+void plasma_omp_zungqr(PLASMA_desc *descA, PLASMA_desc *descT,
+                       PLASMA_desc *descQ, PLASMA_workspace *work,
+                       PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zunmlq_Tile_Async(PLASMA_enum side, PLASMA_enum trans,
-                              PLASMA_desc *descA, PLASMA_desc *descT,
-                              PLASMA_desc *descC,
-                              PLASMA_workspace *work,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request *request);
+void plasma_omp_zunmlq(PLASMA_enum side, PLASMA_enum trans,
+                       PLASMA_desc *descA, PLASMA_desc *descT,
+                       PLASMA_desc *descC, PLASMA_workspace *work,
+                       PLASMA_sequence *sequence, PLASMA_request *request);
 
-void PLASMA_zunmqr_Tile_Async(PLASMA_enum side, PLASMA_enum trans,
-                              PLASMA_desc *descA, PLASMA_desc *descT,
-                              PLASMA_desc *descC,
-                              PLASMA_workspace *work,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request *request);
+void plasma_omp_zunmqr(PLASMA_enum side, PLASMA_enum trans,
+                       PLASMA_desc *descA, PLASMA_desc *descT,
+                       PLASMA_desc *descC, PLASMA_workspace *work,
+                       PLASMA_sequence *sequence, PLASMA_request *request);
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -22,7 +22,7 @@
 
 /***************************************************************************//**
  *  Parallel tile symmetric matrix-matrix multiplication.
- *  @see PLASMA_zsymm_Tile_Async
+ *  @see plasma_omp_zsymm
  ******************************************************************************/
 void plasma_pzsymm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_Complex64_t alpha, PLASMA_desc A,

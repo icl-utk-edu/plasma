@@ -85,7 +85,7 @@
  *
  *******************************************************************************
  *
- * @sa PLASMA_zunmqr_Tile_Async
+ * @sa plasma_omp_zunmqr
  * @sa PLASMA_cunmqr
  * @sa PLASMA_dormqr
  * @sa PLASMA_sormqr
@@ -215,7 +215,7 @@ int PLASMA_zunmqr(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
         PLASMA_zcm2ccrb_Async(C, ldc, &descC, sequence, &request);
 
         // Call the tile async function.
-        PLASMA_zunmqr_Tile_Async(side, trans, &descA, descT, &descC,
+        plasma_omp_zunmqr(side, trans, &descA, descT, &descC,
                                  &work, sequence, &request);
 
         // Translate back to LAPACK layout.
@@ -292,18 +292,16 @@ int PLASMA_zunmqr(PLASMA_enum side, PLASMA_enum trans, int m, int n, int k,
  *******************************************************************************
  *
  * @sa PLASMA_zunmqr
- * @sa PLASMA_cunmqr_Tile_Async
- * @sa PLASMA_dormqr_Tile_Async
- * @sa PLASMA_sormqr_Tile_Async
- * @sa PLASMA_zgeqrf_Tile_Async
+ * @sa plasma_omp_cunmqr
+ * @sa plasma_omp_dormqr
+ * @sa plasma_omp_sormqr
+ * @sa plasma_omp_zgeqrf
  *
  ******************************************************************************/
-void PLASMA_zunmqr_Tile_Async(PLASMA_enum side, PLASMA_enum trans,
-                              PLASMA_desc *A, PLASMA_desc *T,
-                              PLASMA_desc *C,
-                              PLASMA_workspace *work,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request *request)
+void plasma_omp_zunmqr(PLASMA_enum side, PLASMA_enum trans,
+                       PLASMA_desc *A, PLASMA_desc *T, PLASMA_desc *C,
+                       PLASMA_workspace *work,
+                       PLASMA_sequence *sequence, PLASMA_request *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

@@ -20,7 +20,7 @@
 #define B(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(B, m, n))
 /***************************************************************************//**
  * Parallel tile triangular solve.
- * @see PLASMA_ztrsm_Tile_Async
+ * @see plasma_omp_ztrsm
  ******************************************************************************/
 void plasma_pztrsm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_enum trans, PLASMA_enum diag,

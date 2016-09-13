@@ -21,7 +21,7 @@
 
 /***************************************************************************//**
  * Parallel tile matrix-matrix addition.
- * @see PLASMA_ztradd_Tile_Async
+ * @see plasma_omp_ztradd
  ******************************************************************************/
 void plasma_pztradd(PLASMA_enum uplo, PLASMA_enum transA,
                     PLASMA_Complex64_t alpha,  PLASMA_desc A,

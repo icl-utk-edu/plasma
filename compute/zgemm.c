@@ -94,7 +94,7 @@
  *
  *******************************************************************************
  *
- * @sa PLASMA_zgemm_Tile_Async
+ * @sa plasma_omp_zgemm
  * @sa PLASMA_cgemm
  * @sa PLASMA_dgemm
  * @sa PLASMA_sgemm
@@ -256,11 +256,11 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
 
         // Call the tile async function.
         if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_zgemm_Tile_Async(transA, transB,
-                                    alpha, &descA,
-                                    &descB,
-                                    beta, &descC,
-                                    sequence, &request);
+            plasma_omp_zgemm(transA, transB,
+                             alpha, &descA,
+                             &descB,
+                             beta, &descC,
+                             sequence, &request);
         }
 
         // Translate back to LAPACK layout.
@@ -336,16 +336,16 @@ int PLASMA_zgemm(PLASMA_enum transA, PLASMA_enum transB,
  *******************************************************************************
  *
  * @sa PLASMA_zgemm
- * @sa PLASMA_cgemm_Tile_Async
- * @sa PLASMA_dgemm_Tile_Async
- * @sa PLASMA_sgemm_Tile_Async
+ * @sa plasma_omp_cgemm
+ * @sa plasma_omp_dgemm
+ * @sa plasma_omp_sgemm
  *
  ******************************************************************************/
-void PLASMA_zgemm_Tile_Async(PLASMA_enum transA, PLASMA_enum transB,
-                             PLASMA_Complex64_t alpha, PLASMA_desc *A,
-                                                       PLASMA_desc *B,
-                             PLASMA_Complex64_t beta,  PLASMA_desc *C,
-                             PLASMA_sequence *sequence, PLASMA_request *request)
+void plasma_omp_zgemm(PLASMA_enum transA, PLASMA_enum transB,
+                      PLASMA_Complex64_t alpha, PLASMA_desc *A,
+                                                PLASMA_desc *B,
+                      PLASMA_Complex64_t beta,  PLASMA_desc *C,
+                      PLASMA_sequence *sequence, PLASMA_request *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

@@ -19,7 +19,7 @@
 #define A(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(A, m, n))
 /***************************************************************************//**
  *  Parallel tile Cholesky factorization.
- * @see PLASMA_zpotrf_Tile_Async
+ * @see plasma_omp_zpotrf
  ******************************************************************************/
 void plasma_pzpotrf(PLASMA_enum uplo, PLASMA_desc A,
                     PLASMA_sequence *sequence, PLASMA_request *request)

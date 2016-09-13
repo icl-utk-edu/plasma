@@ -61,7 +61,7 @@
  *
  *******************************************************************************
  *
- * @sa PLASMA_zunglq_Tile_Async
+ * @sa plasma_omp_zunglq
  * @sa PLASMA_cunglq
  * @sa PLASMA_dorglq
  * @sa PLASMA_sorglq
@@ -176,8 +176,7 @@ int PLASMA_zunglq(int m, int n, int k,
         PLASMA_zcm2ccrb_Async(Q, ldq, &descQ, sequence, &request);
 
         // Call the tile async function.
-        PLASMA_zunglq_Tile_Async(&descA, descT, &descQ,
-                                 &work, sequence, &request);
+        plasma_omp_zunglq(&descA, descT, &descQ, &work, sequence, &request);
 
         // Translate Q back to LAPACK layout.
         PLASMA_zccrb2cm_Async(&descQ, Q, ldq, sequence, &request);
@@ -239,18 +238,15 @@ int PLASMA_zunglq(int m, int n, int k,
  *******************************************************************************
  *
  * @sa PLASMA_zunglq
- * @sa PLASMA_cunglq_Tile_Async
- * @sa PLASMA_dorglq_Tile_Async
- * @sa PLASMA_sorglq_Tile_Async
- * @sa PLASMA_zgelqf_Tile_Async
+ * @sa plasma_omp_cunglq
+ * @sa plasma_omp_dorglq
+ * @sa plasma_omp_sorglq
+ * @sa plasma_omp_zgelqf
  *
  ******************************************************************************/
-void PLASMA_zunglq_Tile_Async(PLASMA_desc *A,
-                              PLASMA_desc *T,
-                              PLASMA_desc *Q,
-                              PLASMA_workspace *work,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request *request)
+void plasma_omp_zunglq(PLASMA_desc *A, PLASMA_desc *T, PLASMA_desc *Q,
+                       PLASMA_workspace *work,
+                       PLASMA_sequence *sequence, PLASMA_request *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
