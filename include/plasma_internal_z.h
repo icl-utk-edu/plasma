@@ -100,6 +100,11 @@ void plasma_pztbsm(PLASMA_enum side, PLASMA_enum uplo, PLASMA_enum trans,
                    PLASMA_desc A, PLASMA_desc B, const int *IPIV,
                    PLASMA_sequence *sequence, PLASMA_request *request);
 
+void plasma_pztradd(PLASMA_enum uplo, PLASMA_enum transA,
+                    PLASMA_Complex64_t alpha,  PLASMA_desc A,
+                    PLASMA_Complex64_t beta,   PLASMA_desc B,
+                    PLASMA_sequence *sequence, PLASMA_request *request);
+
 void plasma_pztrmm(PLASMA_enum side, PLASMA_enum uplo,
                    PLASMA_enum trans, PLASMA_enum diag,
                    PLASMA_Complex64_t alpha, PLASMA_desc A, PLASMA_desc B,
