@@ -33,8 +33,8 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
     int ldam, ldan, ldbm, ldbn;
 
     // Check sequence status
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
     }
 

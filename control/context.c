@@ -35,13 +35,13 @@ int PLASMA_Init()
         if (context_map == NULL) {
             pthread_mutex_unlock(&context_map_lock);
             plasma_error("calloc() failed");
-            return PLASMA_ERR_OUT_OF_RESOURCES;
+            return PlasmaErrorOutOfMemory;
         }
     }
     pthread_mutex_unlock(&context_map_lock);
 
     plasma_context_attach();
-    return PLASMA_SUCCESS;
+    return PlasmaSuccess;
 }
 
 /***************************************************************************//**
@@ -51,7 +51,7 @@ int PLASMA_Init()
 int PLASMA_Finalize()
 {
     plasma_context_detach();
-    return PLASMA_SUCCESS;
+    return PlasmaSuccess;
 }
 
 /******************************************************************************/
@@ -62,28 +62,28 @@ int PLASMA_Set(plasma_enum_t param, int value)
     plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
-        return PLASMA_ERR_NOT_INITIALIZED;
+        return PlasmaErrorNotInitialized;
     }
     switch (param) {
     case PLASMA_TILE_SIZE:
         if (value <= 0) {
             plasma_error("invalid tile size");
-            return PLASMA_ERR_ILLEGAL_VALUE;
+            return PlasmaErrorIllegalValue;
         }
         plasma->nb = value;
         break;
     case PLASMA_INNER_BLOCK_SIZE:
         if (value <= 0) {
             plasma_error("invalid inner block size");
-            return PLASMA_ERR_ILLEGAL_VALUE;
+            return PlasmaErrorIllegalValue;
         }
         plasma->ib = value;
         break;
     default:
         plasma_error("Unknown parameter");
-        return PLASMA_ERR_ILLEGAL_VALUE;
+        return PlasmaErrorIllegalValue;
     }
-    return PLASMA_SUCCESS;
+    return PlasmaSuccess;
 }
 
 /******************************************************************************/
@@ -94,22 +94,22 @@ int PLASMA_Get(plasma_enum_t param, int *value)
     plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_fatal_error("PLASMA not initialized");
-        return PLASMA_ERR_NOT_INITIALIZED;
+        return PlasmaErrorNotInitialized;
     }
     switch (param) {
     case PLASMA_TILE_SIZE:
         *value = plasma->nb;
-        return PLASMA_SUCCESS;
+        return PlasmaSuccess;
         break;
     case PLASMA_INNER_BLOCK_SIZE:
         *value = plasma->ib;
-        return PLASMA_SUCCESS;
+        return PlasmaSuccess;
         break;
     default:
         plasma_error("Unknown parameter");
-        return PLASMA_ERR_ILLEGAL_VALUE;
+        return PlasmaErrorIllegalValue;
     }
-    return PLASMA_SUCCESS;
+    return PlasmaSuccess;
 }
 
 /******************************************************************************/
@@ -125,7 +125,7 @@ int plasma_context_attach()
         if (context_map == NULL) {
             pthread_mutex_unlock(&context_map_lock);
             plasma_error("realloc() failed");
-            return PLASMA_ERR_OUT_OF_RESOURCES;
+            return PlasmaErrorOutOfMemory;
         }
     }
     // Create the context.
@@ -134,7 +134,7 @@ int plasma_context_attach()
     if (context == NULL) {
         pthread_mutex_unlock(&context_map_lock);
         plasma_error("malloc() failed");
-        return PLASMA_ERR_OUT_OF_RESOURCES;
+        return PlasmaErrorOutOfMemory;
     }
     // Initialize the context.
     plasma_context_init(context);
@@ -146,13 +146,13 @@ int plasma_context_attach()
             context_map[i].thread_id = pthread_self();
             num_contexts++;
             pthread_mutex_unlock(&context_map_lock);
-            return PLASMA_SUCCESS;
+            return PlasmaSuccess;
         }
     }
     // This should never happen.
     pthread_mutex_unlock(&context_map_lock);
     plasma_error("empty slot not found");
-    return PLASMA_ERR_UNEXPECTED;
+    return PlasmaErrorInternal;
 }
 
 /******************************************************************************/
@@ -169,12 +169,12 @@ int plasma_context_detach()
             context_map[i].context = NULL;
             num_contexts--;
             pthread_mutex_unlock(&context_map_lock);
-            return PLASMA_SUCCESS;
+            return PlasmaSuccess;
         }
     }
     pthread_mutex_unlock(&context_map_lock);
     plasma_error("context not found");
-    return PLASMA_ERR_UNEXPECTED;
+    return PlasmaErrorInternal;
 }
 
 /******************************************************************************/

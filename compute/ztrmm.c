@@ -96,7 +96,7 @@
  *
  *******************************************************************************
  *
- * @retval PLASMA_SUCCESS successful exit
+ * @retval PlasmaSuccess successful exit
  *
  *******************************************************************************
  *
@@ -125,7 +125,7 @@ int PLASMA_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
 
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
-        return PLASMA_ERR_NOT_INITIALIZED;
+        return PlasmaErrorNotInitialized;
     }
 
     if (side == PlasmaLeft) {
@@ -174,10 +174,10 @@ int PLASMA_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
 
     // Quick return
     if (imin(m, n) == 0)
-        return PLASMA_SUCCESS;
+        return PlasmaSuccess;
 
     // Tune nb depending on m, n
-    // if (plasma_tune(PLASMA_FUNC_ZTRMM, m, n, 0) != PLASMA_SUCCESS) {
+    // if (plasma_tune(PLASMA_FUNC_ZTRMM, m, n, 0) != PlasmaSuccess) {
     //     plasma_error("plasma_tune() failed");
     //     return status;
     // }
@@ -193,14 +193,14 @@ int PLASMA_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
     // Allocate matrices in tile layout
     retval = plasma_desc_mat_alloc(&descA);
 
-    if (retval != PLASMA_SUCCESS) {
+    if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_mat_alloc() failed");
         return retval;
     }
 
     retval = plasma_desc_mat_alloc(&descB);
 
-    if (retval != PLASMA_SUCCESS) {
+    if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_mat_alloc() failed");
         plasma_desc_mat_free(&descA);
         return retval;
@@ -209,7 +209,7 @@ int PLASMA_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
     // Create sequence
     retval = plasma_sequence_create(&sequence);
 
-    if (retval != PLASMA_SUCCESS) {
+    if (retval != PlasmaSuccess) {
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
@@ -221,11 +221,11 @@ int PLASMA_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
         // Translate matrices to tile layout
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
 
-        if (sequence->status == PLASMA_SUCCESS)
+        if (sequence->status == PlasmaSuccess)
             PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
 
         // Call tile async interface
-        if (sequence->status == PLASMA_SUCCESS) {
+        if (sequence->status == PlasmaSuccess) {
             plasma_omp_ztrmm(side, uplo, transA, diag,
                              alpha, &descA,
                                     &descB,
@@ -233,10 +233,10 @@ int PLASMA_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
         }
 
         // Revert matrices to LAPACK layout
-        if (sequence->status == PLASMA_SUCCESS)
+        if (sequence->status == PlasmaSuccess)
             PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
 
-        if (sequence->status == PLASMA_SUCCESS)
+        if (sequence->status == PlasmaSuccess)
             PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
     } // pragma omp parallel block closed
     // implicit synchronization
@@ -282,7 +282,7 @@ int PLASMA_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
  * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
- *          request->status should never be set to PLASMA_SUCCESS (the
+ *          request->status should never be set to PlasmaSuccess (the
  *          initial values) since another async call may be setting a
  *          failure value at the same time.
  *
@@ -309,41 +309,41 @@ void plasma_omp_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
 
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
-        plasma_request_fail(sequence, request, PLASMA_ERR_NOT_INITIALIZED);
+        plasma_request_fail(sequence, request, PlasmaErrorNotInitialized);
         return;
     }
 
     if (sequence == NULL) {
         plasma_error("NULL sequence");
-        plasma_request_fail(sequence, request, PLASMA_ERR_UNALLOCATED);
+        plasma_request_fail(sequence, request, PlasmaErrorNullParameter);
         return;
     }
 
     if (request == NULL) {
         plasma_error("NULL request");
-        plasma_request_fail(sequence, request, PLASMA_ERR_UNALLOCATED);
+        plasma_request_fail(sequence, request, PlasmaErrorNullParameter);
         return;
     }
 
     // Check sequence status
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
     }
 
     // Check descriptors for correctness
-    if (plasma_desc_check(A) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(A) != PlasmaSuccess) {
         plasma_error("invalid first descriptor");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     else {
         descA = *A;
     }
 
-    if (plasma_desc_check(B) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(B) != PlasmaSuccess) {
         plasma_error("invalid second descriptor");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     else {
@@ -353,19 +353,19 @@ void plasma_omp_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
     // Check input arguments
     if (descA.nb != descA.mb || descB.nb != descB.mb) {
         plasma_error("only square tiles supported");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
 
     if (side != PlasmaLeft && side != PlasmaRight) {
         plasma_error("illegal value of side");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
 
     if (uplo != PlasmaUpper && uplo != PlasmaLower) {
         plasma_error("illegal value of uplo");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
 
@@ -374,13 +374,13 @@ void plasma_omp_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
         transA != PlasmaTrans) {
 
         plasma_error("illegal value of transA");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
 
     if (diag != PlasmaUnit && diag != PlasmaNonUnit) {
         plasma_error("illegal value of diag");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
 

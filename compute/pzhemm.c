@@ -38,8 +38,8 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
     plasma_complex64_t zone = 1.0;
 
     // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
     }
 

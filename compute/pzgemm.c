@@ -39,8 +39,8 @@ void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
     int innerK = (transA == PlasmaNoTrans ? A.n : A.m);
 
     // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
     }
 

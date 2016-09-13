@@ -75,18 +75,14 @@ enum {
 };
 
 enum {
-    PLASMA_SUCCESS              =    0,
-    PLASMA_ERR_NOT_INITIALIZED  = -101,
-    PLASMA_ERR_REINITIALIZED    = -102,
-    PLASMA_ERR_NOT_SUPPORTED    = -103,
-    PLASMA_ERR_ILLEGAL_VALUE    = -104,
-    PLASMA_ERR_NOT_FOUND        = -105,
-    PLASMA_ERR_OUT_OF_RESOURCES = -106,
-    PLASMA_ERR_INTERNAL_LIMIT   = -107,
-    PLASMA_ERR_UNALLOCATED      = -108,
-    PLASMA_ERR_FILESYSTEM       = -109,
-    PLASMA_ERR_UNEXPECTED       = -110,
-    PLASMA_ERR_SEQUENCE_FLUSHED = -111
+    PlasmaSuccess = 0,
+    PlasmaErrorNotInitialized,
+    PlasmaErrorNotSupported,
+    PlasmaErrorIllegalValue,
+    PlasmaErrorOutOfMemory,
+    PlasmaErrorNullParameter,
+    PlasmaErrorInternal,
+    PlasmaErrorSequence
 };
 
 enum {

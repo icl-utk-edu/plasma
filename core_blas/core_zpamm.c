@@ -167,7 +167,7 @@ static inline int core_zpamm_w(plasma_enum_t side, plasma_enum_t trans,
  *
  *******************************************************************************
  *
- * @retval PLASMA_SUCCESS successful exit
+ * @retval PlasmaSuccess successful exit
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
@@ -228,7 +228,7 @@ int core_zpamm(int op, plasma_enum_t side, plasma_enum_t storev,
 
     // quick return
     if ((m == 0) || (n == 0) || (k == 0))
-        return PLASMA_SUCCESS;
+        return PlasmaSuccess;
 
     // TRANS is set as:
     //
@@ -279,7 +279,7 @@ int core_zpamm(int op, plasma_enum_t side, plasma_enum_t storev,
                       A2, lda2, V, ldv, W, ldw);
     }
 
-    return PLASMA_SUCCESS;
+    return PlasmaSuccess;
 }
 
 /******************************************************************************/
@@ -351,7 +351,7 @@ static inline int core_zpamm_w(
         else {
             coreblas_error(
                 "Left Upper/NoTrans & Lower/[Conj]Trans not implemented");
-            return PLASMA_ERR_NOT_SUPPORTED;
+            return PlasmaErrorNotSupported;
         }
     }
     else { //side right
@@ -359,7 +359,7 @@ static inline int core_zpamm_w(
             ((trans == PlasmaNoTrans) && (uplo == CblasLower))) {
             coreblas_error(
                 "Right Upper/[Conj]Trans & Lower/NoTrans not implemented");
-            return PLASMA_ERR_NOT_SUPPORTED;
+            return PlasmaErrorNotSupported;
         }
         else {
             // W = A1 + A2 * V
@@ -409,7 +409,7 @@ static inline int core_zpamm_w(
         }
     }
 
-    return PLASMA_SUCCESS;
+    return PlasmaSuccess;
 }
 
 /******************************************************************************/
@@ -432,7 +432,7 @@ static inline int core_zpamm_a2(
             ((trans == PlasmaNoTrans) && (uplo == CblasLower))) {
             coreblas_error(
                 "Left Upper/[Conj]Trans & Lower/NoTrans not implemented");
-            return PLASMA_ERR_NOT_SUPPORTED;
+            return PlasmaErrorNotSupported;
         }
         else {  //trans
             // A2 = A2 - V * W
@@ -516,9 +516,9 @@ static inline int core_zpamm_a2(
         else {
             coreblas_error(
                 "Right Upper/NoTrans & Lower/[Conj]Trans not implemented");
-            return PLASMA_ERR_NOT_SUPPORTED;
+            return PlasmaErrorNotSupported;
         }
     }
 
-    return PLASMA_SUCCESS;
+    return PlasmaSuccess;
 }

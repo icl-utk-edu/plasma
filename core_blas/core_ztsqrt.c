@@ -78,7 +78,7 @@
  *
  *******************************************************************************
  *
- * @retval PLASMA_SUCCESS successful exit
+ * @retval PlasmaSuccess successful exit
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
@@ -115,7 +115,7 @@ int core_ztsqrt(int m, int n, int ib,
 
     // quick return
     if ((m == 0) || (n == 0) || (ib == 0))
-        return PLASMA_SUCCESS;
+        return PlasmaSuccess;
 
     for (ii = 0; ii < n; ii += ib) {
         sb = imin(n-ii, ib);
@@ -185,7 +185,7 @@ int core_ztsqrt(int m, int n, int ib,
         }
     }
 
-    return PLASMA_SUCCESS;
+    return PlasmaSuccess;
 }
 
 /******************************************************************************/
@@ -201,7 +201,7 @@ void core_omp_ztsqrt(int m, int n, int ib, int nb,
                      depend(inout:A2[0:nb*nb]) \
                      depend(out:T[0:ib*nb])
     {
-        if (sequence->status == PLASMA_SUCCESS) {
+        if (sequence->status == PlasmaSuccess) {
             int tid = omp_get_thread_num();
             // split spaces into TAU and WORK
             int ltau = n;
@@ -218,11 +218,11 @@ void core_omp_ztsqrt(int m, int n, int ib, int nb,
                                    TAU,
                                    W);
 
-            if (info != PLASMA_SUCCESS) {
+            if (info != PlasmaSuccess) {
                 plasma_error_with_code("Error in call to COREBLAS in argument",
                                        -info);
                 plasma_request_fail(sequence, request,
-                                    PLASMA_ERR_ILLEGAL_VALUE);
+                                    PlasmaErrorIllegalValue);
             }
         }
     }

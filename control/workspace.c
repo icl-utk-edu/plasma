@@ -27,20 +27,20 @@ int plasma_workspace_alloc(plasma_workspace_t *work, size_t lwork,
     if ((work->spaces = (void**)calloc(work->nthread, sizeof(void*))) == NULL) {
         free(work->spaces);
         plasma_error("malloc() failed");
-        return PLASMA_ERR_OUT_OF_RESOURCES;
+        return PlasmaErrorOutOfMemory;
     }
 
     // Each thread allocates its workspace.
     size_t size = (size_t)lwork * plasma_element_size(work->dtyp);
-    int info = PLASMA_SUCCESS;
+    int info = PlasmaSuccess;
     #pragma omp parallel
     {
         int tid = omp_get_thread_num();
         if ((work->spaces[tid] = (void*)malloc(size)) == NULL) {
-            info = PLASMA_ERR_OUT_OF_RESOURCES;
+            info = PlasmaErrorOutOfMemory;
         }
     }
-    if (info != PLASMA_SUCCESS) {
+    if (info != PlasmaSuccess) {
         plasma_workspace_free(work);
     }
     return info;
@@ -59,5 +59,5 @@ int plasma_workspace_free(plasma_workspace_t *work)
         work->nthread = 0;
         work->lwork   = 0;
     }
-    return PLASMA_SUCCESS;
+    return PlasmaSuccess;
 }

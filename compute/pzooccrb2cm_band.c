@@ -26,7 +26,7 @@ void plasma_pzooccrb2cm_band(plasma_enum_t uplo,
 {
     int n, m;
 
-    if (sequence->status != PLASMA_SUCCESS)
+    if (sequence->status != PlasmaSuccess)
         return;
 
     for (n = 0; n < A.nt; n++)

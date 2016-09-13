@@ -30,15 +30,15 @@ int plasma_sequence_create(plasma_sequence_t **sequence)
     *sequence = (plasma_sequence_t*)malloc(sizeof(plasma_sequence_t));
     if (*sequence == NULL) {
         plasma_error("malloc() failed");
-        return PLASMA_ERR_OUT_OF_RESOURCES;
+        return PlasmaErrorOutOfMemory;
     }
-    (*sequence)->status = PLASMA_SUCCESS;
-    return PLASMA_SUCCESS;
+    (*sequence)->status = PlasmaSuccess;
+    return PlasmaSuccess;
 }
 
 /******************************************************************************/
 int plasma_sequence_destroy(plasma_sequence_t *sequence)
 {
     free(sequence);
-    return PLASMA_SUCCESS;
+    return PlasmaSuccess;
 }

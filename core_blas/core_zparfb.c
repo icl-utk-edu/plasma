@@ -121,7 +121,7 @@
  *
  *******************************************************************************
  *
- * @retval PLASMA_SUCCESS successful exit
+ * @retval PlasmaSuccess successful exit
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
@@ -184,7 +184,7 @@ int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
 
     // quick return
     if ((m1 == 0) || (n1 == 0) || (m2 == 0) || (n2 == 0) || (k == 0))
-        return PLASMA_SUCCESS;
+        return PlasmaSuccess;
 
     if (direct == PlasmaForward) {
         if (side == PlasmaLeft) {
@@ -267,8 +267,8 @@ int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
     }
     else {
         coreblas_error("Not implemented (Backward / Left or Right)");
-        return PLASMA_ERR_NOT_SUPPORTED;
+        return PlasmaErrorNotSupported;
     }
 
-    return PLASMA_SUCCESS;
+    return PlasmaSuccess;
 }

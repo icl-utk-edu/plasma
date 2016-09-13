@@ -99,7 +99,7 @@
  *
  *******************************************************************************
  *
- * @retval PLASMA_SUCCESS successful exit
+ * @retval PlasmaSuccess successful exit
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
@@ -175,7 +175,7 @@ int core_zunmqr(plasma_enum_t side, plasma_enum_t trans,
 
     // quick return
     if ((m == 0) || (n == 0) || (k == 0))
-        return PLASMA_SUCCESS;
+        return PlasmaSuccess;
 
     if (((side == PlasmaLeft) && (trans != PlasmaNoTrans))
         || ((side == PlasmaRight) && (trans == PlasmaNoTrans))) {
@@ -213,7 +213,7 @@ int core_zunmqr(plasma_enum_t side, plasma_enum_t trans,
                             WORK, ldwork);
     }
 
-    return PLASMA_SUCCESS;
+    return PlasmaSuccess;
 }
 
 /******************************************************************************/
@@ -230,7 +230,7 @@ void core_omp_zunmqr(plasma_enum_t side, plasma_enum_t trans,
                      depend(in:T[0:ib*nb]) \
                      depend(inout:C[0:nb*nb])
     {
-        if (sequence->status == PLASMA_SUCCESS) {
+        if (sequence->status == PlasmaSuccess) {
             int tid = omp_get_thread_num();
             plasma_complex64_t *W   =
                 ((plasma_complex64_t*)work->spaces[tid]);
@@ -245,11 +245,11 @@ void core_omp_zunmqr(plasma_enum_t side, plasma_enum_t trans,
                                    C, ldc,
                                    W, ldwork);
 
-            if (info != PLASMA_SUCCESS) {
+            if (info != PlasmaSuccess) {
                 plasma_error_with_code("Error in call to COREBLAS in argument",
                                        -info);
                 plasma_request_fail(sequence, request,
-                                    PLASMA_ERR_ILLEGAL_VALUE);
+                                    PlasmaErrorIllegalValue);
             }
         }
     }

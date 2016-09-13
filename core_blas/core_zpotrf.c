@@ -71,7 +71,7 @@ void core_omp_zpotrf(plasma_enum_t uplo,
     // omp depends assume lda = n.
     #pragma omp task depend(inout:A[0:n*n])
     {
-        if (sequence->status == PLASMA_SUCCESS) {
+        if (sequence->status == PlasmaSuccess) {
             int info = core_zpotrf(uplo,
                                    n,
                                    A, lda);

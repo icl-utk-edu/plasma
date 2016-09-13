@@ -28,8 +28,8 @@ void plasma_pzooccrb2cm(plasma_desc_t A, plasma_complex64_t *Af77, int lda,
     int n, m, ldt;
 
     // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
     }
 

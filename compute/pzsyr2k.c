@@ -37,8 +37,8 @@ void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
     plasma_complex64_t zbeta;
 
     // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
     }
 

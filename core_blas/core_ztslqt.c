@@ -89,7 +89,7 @@
  *
  *******************************************************************************
  *
- * @retval PLASMA_SUCCESS successful exit
+ * @retval PlasmaSuccess successful exit
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
@@ -126,7 +126,7 @@ int core_ztslqt(int m, int n, int ib,
 
     // Quick return
     if ((m == 0) || (n == 0) || (ib == 0))
-        return PLASMA_SUCCESS;
+        return PlasmaSuccess;
 
     for (ii = 0; ii < m; ii += ib) {
         sb = imin(m-ii, ib);
@@ -199,7 +199,7 @@ int core_ztslqt(int m, int n, int ib,
         }
     }
 
-    return PLASMA_SUCCESS;
+    return PlasmaSuccess;
 }
 
 /******************************************************************************/
@@ -215,7 +215,7 @@ void core_omp_ztslqt(int m, int n, int ib, int nb,
                      depend(inout:A2[0:nb*nb]) \
                      depend(out:T[0:ib*nb])
     {
-        if (sequence->status == PLASMA_SUCCESS) {
+        if (sequence->status == PlasmaSuccess) {
             int tid = omp_get_thread_num();
             // split spaces into TAU and WORK
             int ltau = m;
@@ -232,11 +232,11 @@ void core_omp_ztslqt(int m, int n, int ib, int nb,
                                    TAU,
                                    W);
 
-            if (info != PLASMA_SUCCESS) {
+            if (info != PlasmaSuccess) {
                 plasma_error_with_code("Error in call to COREBLAS in argument",
                                        -info);
                 plasma_request_fail(sequence, request,
-                                    PLASMA_ERR_ILLEGAL_VALUE);
+                                    PlasmaErrorIllegalValue);
             }
         }
     }
