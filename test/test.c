@@ -272,6 +272,15 @@ void run_routine(const char *name, param_value_t pval[], char *info)
     else if (strcmp(name, "cherk") == 0)
         test_cherk(pval, info);
 
+    else if (strcmp(name, "zlacpy") == 0)
+        test_zlacpy(pval, info);
+    else if (strcmp(name, "dlacpy") == 0)
+        test_dlacpy(pval, info);
+    else if (strcmp(name, "clacpy") == 0)
+        test_clacpy(pval, info);
+    else if (strcmp(name, "slacpy") == 0)
+        test_slacpy(pval, info);
+
     else if (strcmp(name, "zpbsv") == 0)
         test_zpbsv(pval, info);
     else if (strcmp(name, "dpbsv") == 0)
@@ -370,11 +379,6 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_ctrsm(pval, info);
     else if (strcmp(name, "strsm") == 0)
         test_strsm(pval, info);
-
-    else if (strcmp(name, "zcposv") == 0)
-        test_zcposv(pval, info);
-//    else if (strcmp(name, "dsposv") == 0)
-//        test_dsposv(pval, info);
 
     else {
         printf("unknown routine: %s\n", name);

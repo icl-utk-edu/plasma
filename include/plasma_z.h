@@ -220,6 +220,9 @@ void plasma_omp_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                       double beta,  plasma_desc_t *C,
                       plasma_sequence_t *sequence, plasma_request_t *request);
 
+void plasma_omp_zlacpy(plasma_enum_t uplo, plasma_desc_t *A, plasma_desc_t *B,
+                       plasma_sequence_t *sequence, plasma_request_t *request);
+
 void plasma_omp_zpbsv(plasma_enum_t uplo,
                       plasma_desc_t *AB,
                       plasma_desc_t *B,

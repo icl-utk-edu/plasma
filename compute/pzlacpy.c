@@ -1,45 +1,45 @@
 /**
  *
- * @file pzlacpy.c
+ * @file
  *
- *  PLASMA auxiliary routines
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 2.8.0
- * @author Emmanuel Agullo
- * @author Mathieu Faverge
- * @date 2010-11-15
  * @precisions normal z -> s d c
  *
  **/
-#include "common.h"
 
-#define A(m,n) BLKADDR(A, PLASMA_Complex64_t, m, n)
-#define B(m,n) BLKADDR(B, PLASMA_Complex64_t, m, n)
+#include "plasma_async.h"
+#include "plasma_descriptor.h"
+#include "plasma_types.h"
+#include "plasma_internal.h"
+#include "core_blas_z.h"
+
+#define A(m,n) ((plasma_complex64_t*) plasma_getaddr(A, m, n))
+#define B(m,n) ((plasma_complex64_t*) plasma_getaddr(B, m, n))
+
 /***************************************************************************//**
- *
- **/
-void plasma_pzlacpy_quark(PLASMA_enum uplo, PLASMA_desc A, PLASMA_desc B,
-                          PLASMA_sequence *sequence, PLASMA_request *request)
+ * Parallel tile matrix copy.
+ * @see plasma_omp_zlacpy
+ ******************************************************************************/
+void plasma_pzlacpy(plasma_enum_t uplo, plasma_desc_t A, plasma_desc_t B,
+                    plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    plasma_context_t *plasma;
-    Quark_Task_Flags task_flags = Quark_Task_Flags_Initializer;
-
     int X, Y;
     int m, n;
     int ldam, ldbm;
 
-    plasma = plasma_context_self();
-    if (sequence->status != PLASMA_SUCCESS)
+    // Check sequence status
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
-    QUARK_Task_Flag_Set(&task_flags, TASK_SEQUENCE, (intptr_t)sequence->quark_sequence);
-    plasma_profile_by_function( &task_flags, LACPY );
+    }
 
     switch (uplo) {
-    /*
-     *  PlasmaUpper
-     */
+    //=============
+    // PlasmaUpper
+    //=============
     case PlasmaUpper:
         for (m = 0; m < A.mt; m++) {
             X = m == A.mt-1 ? A.m-m*A.mb : A.mb;
@@ -47,8 +47,7 @@ void plasma_pzlacpy_quark(PLASMA_enum uplo, PLASMA_desc A, PLASMA_desc B,
             ldbm = BLKLDD(B, m);
             if (m < A.nt) {
                 Y = m == A.nt-1 ? A.n-m*A.nb : A.nb;
-                QUARK_CORE_zlacpy(
-                    plasma->quark, &task_flags,
+                core_omp_zlacpy(
                     PlasmaUpper,
                     X, Y, A.mb,
                     A(m, m), ldam,
@@ -56,18 +55,17 @@ void plasma_pzlacpy_quark(PLASMA_enum uplo, PLASMA_desc A, PLASMA_desc B,
             }
             for (n = m+1; n < A.nt; n++) {
                 Y = n == A.nt-1 ? A.n-n*A.nb : A.nb;
-                QUARK_CORE_zlacpy(
-                    plasma->quark, &task_flags,
-                    PlasmaUpperLower,
+                core_omp_zlacpy(
+                    PlasmaFull,
                     X, Y, A.mb,
                     A(m, n), ldam,
                     B(m, n), ldbm);
             }
         }
         break;
-    /*
-     *  PlasmaLower
-     */
+    //=============
+    // PlasmaLower
+    //=============
     case PlasmaLower:
         for (m = 0; m < A.mt; m++) {
             X = m == A.mt-1 ? A.m-m*A.mb : A.mb;
@@ -75,28 +73,26 @@ void plasma_pzlacpy_quark(PLASMA_enum uplo, PLASMA_desc A, PLASMA_desc B,
             ldbm = BLKLDD(B, m);
             if (m < A.nt) {
                 Y = m == A.nt-1 ? A.n-m*A.nb : A.nb;
-                QUARK_CORE_zlacpy(
-                    plasma->quark, &task_flags,
+                core_omp_zlacpy(
                     PlasmaLower,
                     X, Y, A.mb,
                     A(m, m), ldam,
                     B(m, m), ldbm);
             }
-            for (n = 0; n < min(m, A.nt); n++) {
+            for (n = 0; n < imin(m, A.nt); n++) {
                 Y = n == A.nt-1 ? A.n-n*A.nb : A.nb;
-                QUARK_CORE_zlacpy(
-                    plasma->quark, &task_flags,
-                    PlasmaUpperLower,
+                core_omp_zlacpy(
+                    PlasmaFull,
                     X, Y, A.mb,
                     A(m, n), ldam,
                     B(m, n), ldbm);
             }
         }
         break;
-    /*
-     *  PlasmaUpperLower
-     */
-    case PlasmaUpperLower:
+    //============
+    // PlasmaFull
+    //============
+    case PlasmaFull:
     default:
         for (m = 0; m < A.mt; m++) {
             X = m == A.mt-1 ? A.m-m*A.mb : A.mb;
@@ -104,9 +100,8 @@ void plasma_pzlacpy_quark(PLASMA_enum uplo, PLASMA_desc A, PLASMA_desc B,
             ldbm = BLKLDD(B, m);
             for (n = 0; n < A.nt; n++) {
                 Y = n == A.nt-1 ? A.n-n*A.nb : A.nb;
-                QUARK_CORE_zlacpy(
-                    plasma->quark, &task_flags,
-                    PlasmaUpperLower,
+                core_omp_zlacpy(
+                    PlasmaFull,
                     X, Y, A.mb,
                     A(m, n), ldam,
                     B(m, n), ldbm);

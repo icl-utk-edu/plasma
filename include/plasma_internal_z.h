@@ -52,6 +52,9 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
                    double beta,  plasma_desc_t C,
                    plasma_sequence_t *sequence, plasma_request_t *request);
 
+void plasma_pzlacpy(plasma_enum_t uplo, plasma_desc_t A, plasma_desc_t B,
+                    plasma_sequence_t *sequence, plasma_request_t *request);
+
 void plasma_pzlaset(plasma_enum_t uplo,
                     plasma_complex64_t alpha, plasma_complex64_t beta,
                     plasma_desc_t A,
