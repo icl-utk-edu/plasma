@@ -19,7 +19,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup plasma_zlacpy
+ * @ingroup plasma_lacpy
  *
  *  Copies full or triangular part of a two-dimensional m-by-n matrix A to
  *  another m-by-n matrix B.
@@ -113,7 +113,7 @@ int PLASMA_zlacpy(plasma_enum_t uplo, int m, int n,
         return -7;
     }
 
-    /* Quick return */
+    // Quick return
     if (imin(n, m) == 0)
       return PlasmaSuccess;
 
@@ -168,7 +168,6 @@ int PLASMA_zlacpy(plasma_enum_t uplo, int m, int n,
         // Revert to LAPACK layout
         PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
         PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
-
     }
     // Implicit synchronization
 
@@ -186,7 +185,7 @@ int PLASMA_zlacpy(plasma_enum_t uplo, int m, int n,
 
 /***************************************************************************//**
  *
- * @ingroup plasma_zlacpy
+ * @ingroup plasma_lacpy
  *
  *  Copies full or triangular part of a two-dimensional m-by-n matrix A to
  *  another m-by-n matrix B. Non-blocking tile version of PLASMA_zlacpy(). May
