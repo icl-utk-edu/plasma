@@ -86,11 +86,11 @@
  *          The leading dimension of the array C. ldc >= max(1,m).
  *
  ******************************************************************************/
-void CORE_zgemm(PLASMA_enum transA, PLASMA_enum transB,
+void core_zgemm(plasma_enum_t transA, plasma_enum_t transB,
                 int m, int n, int k,
-                PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
-                                          const PLASMA_Complex64_t *B, int ldb,
-                PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc)
+                plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+                                          const plasma_complex64_t *B, int ldb,
+                plasma_complex64_t beta,        plasma_complex64_t *C, int ldc)
 {
     cblas_zgemm(CblasColMajor,
                 (CBLAS_TRANSPOSE)transA, (CBLAS_TRANSPOSE)transB,
@@ -101,19 +101,19 @@ void CORE_zgemm(PLASMA_enum transA, PLASMA_enum transB,
 }
 
 /******************************************************************************/
-void CORE_OMP_zgemm(
-    PLASMA_enum transA, PLASMA_enum transB,
+void core_omp_zgemm(
+    plasma_enum_t transA, plasma_enum_t transB,
     int m, int n, int k,
-    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
-                              const PLASMA_Complex64_t *B, int ldb,
-    PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc)
+    plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+                              const plasma_complex64_t *B, int ldb,
+    plasma_complex64_t beta,        plasma_complex64_t *C, int ldc)
 {
     // omp depends assume lda == m or k, ldb == k or n, ldc == m,
     // depending on transA and transB.
     #pragma omp task depend(in:A[0:m*k]) \
                      depend(in:B[0:k*n]) \
                      depend(inout:C[0:m*n])
-    CORE_zgemm(transA, transB,
+    core_zgemm(transA, transB,
                m, n, k,
                alpha, A, lda,
                       B, ldb,

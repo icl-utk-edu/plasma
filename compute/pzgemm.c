@@ -16,31 +16,31 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define A(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(A, m, n))
-#define B(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(B, m, n))
-#define C(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(C, m, n))
+#define A(m, n) ((plasma_complex64_t*) plasma_getaddr(A, m, n))
+#define B(m, n) ((plasma_complex64_t*) plasma_getaddr(B, m, n))
+#define C(m, n) ((plasma_complex64_t*) plasma_getaddr(C, m, n))
 /***************************************************************************//**
  * Parallel tile matrix-matrix multiplication.
- * @see PLASMA_zgemm_Tile_Async
+ * @see plasma_omp_zgemm
  ******************************************************************************/
-void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
-                   PLASMA_Complex64_t alpha, PLASMA_desc A,
-                                             PLASMA_desc B,
-                   PLASMA_Complex64_t beta,  PLASMA_desc C,
-                   PLASMA_sequence *sequence, PLASMA_request *request)
+void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
+                   plasma_complex64_t alpha, plasma_desc_t A,
+                                             plasma_desc_t B,
+                   plasma_complex64_t beta,  plasma_desc_t C,
+                   plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int m, n, k;
     int ldam, ldak, ldbn, ldbk, ldcm;
     int tempmm, tempnn, tempkn, tempkm;
 
-    PLASMA_Complex64_t zbeta;
-    PLASMA_Complex64_t zone = 1.0;
+    plasma_complex64_t zbeta;
+    plasma_complex64_t zone = 1.0;
 
     int innerK = (transA == PlasmaNoTrans ? A.n : A.m);
 
     // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
     }
 
@@ -55,7 +55,7 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                 //=======================================
                 ldam = imax( 1, BLKLDD(A, 0) );
                 ldbk = imax( 1, BLKLDD(B, 0) );
-                CORE_OMP_zgemm(
+                core_omp_zgemm(
                     transA, transB,
                     tempmm, tempnn, 0,
                     alpha, A(0, 0), ldam,
@@ -72,7 +72,7 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                         tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
                         ldbk = BLKLDD(B, k);
                         zbeta = k == 0 ? beta : zone;
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             transA, transB,
                             tempmm, tempnn, tempkn,
                             alpha, A(m, k), ldam,
@@ -88,7 +88,7 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                     for (k = 0; k < A.nt; k++) {
                         tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
                         zbeta = k == 0 ? beta : zone;
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             transA, transB,
                             tempmm, tempnn, tempkn,
                             alpha, A(m, k), ldam,
@@ -107,7 +107,7 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                         ldak = BLKLDD(A, k);
                         ldbk = BLKLDD(B, k);
                         zbeta = k == 0 ? beta : zone;
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             transA, transB,
                             tempmm, tempnn, tempkm,
                             alpha, A(k, m), ldak,
@@ -124,7 +124,7 @@ void plasma_pzgemm(PLASMA_enum transA, PLASMA_enum transB,
                         tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
                         ldak = BLKLDD(A, k);
                         zbeta = k == 0 ? beta : zone;
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             transA, transB,
                             tempmm, tempnn, tempkm,
                             alpha, A(k, m), ldak,

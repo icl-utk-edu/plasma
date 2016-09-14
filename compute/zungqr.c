@@ -56,12 +56,12 @@
  *
  *******************************************************************************
  *
- * @retval PLASMA_SUCCESS successful exit
+ * @retval PlasmaSuccess successful exit
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  *******************************************************************************
  *
- * @sa PLASMA_zungqr_Tile_Async
+ * @sa plasma_omp_zungqr
  * @sa PLASMA_cungqr
  * @sa PLASMA_dorgqr
  * @sa PLASMA_sorgqr
@@ -69,22 +69,22 @@
  *
  ******************************************************************************/
 int PLASMA_zungqr(int m, int n, int k,
-                  PLASMA_Complex64_t *A, int lda,
-                  PLASMA_desc *descT,
-                  PLASMA_Complex64_t *Q, int ldq)
+                  plasma_complex64_t *A, int lda,
+                  plasma_desc_t *descT,
+                  plasma_complex64_t *Q, int ldq)
 {
     int ib, nb;
     int retval;
     int status;
 
-    PLASMA_desc descA;
-    PLASMA_desc descQ;
+    plasma_desc_t descA;
+    plasma_desc_t descQ;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_fatal_error("PLASMA not initialized");
-        return PLASMA_ERR_NOT_INITIALIZED;
+        return PlasmaErrorNotInitialized;
     }
 
     // Check input arguments
@@ -110,11 +110,11 @@ int PLASMA_zungqr(int m, int n, int k,
     }
     // Quick return
     if (n <= 0)
-        return PLASMA_SUCCESS;
+        return PlasmaSuccess;
 
     // Tune NB & IB depending on M & N; Set NB
     //status = plasma_tune(PLASMA_FUNC_ZGELS, M, N, 0);
-    //if (status != PLASMA_SUCCESS) {
+    //if (status != PlasmaSuccess) {
     //    plasma_error("PLASMA_zungqr", "plasma_tune() failed");
     //    return status;
     //}
@@ -130,35 +130,35 @@ int PLASMA_zungqr(int m, int n, int k,
 
     // Allocate matrices in tile layout.
     retval = plasma_desc_mat_alloc(&descA);
-    if (retval != PLASMA_SUCCESS) {
+    if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_mat_alloc() failed");
         return retval;
     }
     retval = plasma_desc_mat_alloc(&descQ);
-    if (retval != PLASMA_SUCCESS) {
+    if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_mat_alloc() failed");
         plasma_desc_mat_free(&descA);
         return retval;
     }
 
     // Allocate workspace.
-    PLASMA_workspace work;
+    plasma_workspace_t work;
     size_t lwork = ib*nb;  // unmqr: work
     retval = plasma_workspace_alloc(&work, lwork, PlasmaComplexDouble);
-    if (retval != PLASMA_SUCCESS) {
+    if (retval != PlasmaSuccess) {
         plasma_error("plasma_workspace_alloc() failed");
         return retval;
     }
 
     // Create sequence.
-    PLASMA_sequence *sequence = NULL;
+    plasma_sequence_t *sequence = NULL;
     retval = plasma_sequence_create(&sequence);
-    if (retval != PLASMA_SUCCESS) {
+    if (retval != PlasmaSuccess) {
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
     // Initialize request.
-    PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
+    plasma_request_t request = PLASMA_REQUEST_INITIALIZER;
 
     // asynchronous block
     #pragma omp parallel
@@ -169,8 +169,7 @@ int PLASMA_zungqr(int m, int n, int k,
         PLASMA_zcm2ccrb_Async(Q, ldq, &descQ, sequence, &request);
 
         // Call the tile async function.
-        PLASMA_zungqr_Tile_Async(&descA, descT, &descQ,
-                                 &work, sequence, &request);
+        plasma_omp_zungqr(&descA, descT, &descQ, &work, sequence, &request);
 
         // Translate Q back to LAPACK layout.
         PLASMA_zccrb2cm_Async(&descQ, Q, ldq, sequence, &request);
@@ -225,57 +224,55 @@ int PLASMA_zungqr(int m, int n, int k,
  * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
- *          request->status should never be set to PLASMA_SUCCESS (the
+ *          request->status should never be set to PlasmaSuccess (the
  *          initial values) since another async call may be setting a
  *          failure value at the same time.
  *
  *******************************************************************************
  *
  * @sa PLASMA_zungqr
- * @sa PLASMA_cungqr_Tile_Async
- * @sa PLASMA_dorgqr_Tile_Async
- * @sa PLASMA_sorgqr_Tile_Async
- * @sa PLASMA_zgeqrf_Tile_Async
+ * @sa plasma_omp_cungqr
+ * @sa plasma_omp_dorgqr
+ * @sa plasma_omp_sorgqr
+ * @sa plasma_omp_zgeqrf
  *
  ******************************************************************************/
-void PLASMA_zungqr_Tile_Async(PLASMA_desc *A, PLASMA_desc *T,
-                              PLASMA_desc *Q,
-                              PLASMA_workspace *work,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request *request)
+void plasma_omp_zungqr(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *Q,
+                       plasma_workspace_t *work,
+                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
 
     // Check input arguments
-    if (plasma_desc_check(A) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(A) != PlasmaSuccess) {
         plasma_error("invalid descriptor A");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-    if (plasma_desc_check(T) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(T) != PlasmaSuccess) {
         plasma_error("invalid descriptor T");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-    if (plasma_desc_check(Q) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(Q) != PlasmaSuccess) {
         plasma_error("invalid descriptor Q");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if (sequence == NULL) {
         plasma_error("NULL sequence");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if (request == NULL) {
         plasma_error("NULL request");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
 
@@ -285,7 +282,7 @@ void PLASMA_zungqr_Tile_Async(PLASMA_desc *A, PLASMA_desc *T,
 
     // set ones to diagonal of Q
     plasma_pzlaset(PlasmaFull,
-                   (PLASMA_Complex64_t)0.0, (PLASMA_Complex64_t)1.0, *Q,
+                   (plasma_complex64_t)0.0, (plasma_complex64_t)1.0, *Q,
                    sequence, request);
 
     // construct Q

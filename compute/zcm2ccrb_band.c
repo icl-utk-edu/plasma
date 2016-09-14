@@ -23,43 +23,43 @@
     Convert column-major (CM) to tiled (CCRB) layout for a band matrix.
     Out-of-place.
 */
-void PLASMA_zcm2ccrb_band_Async(PLASMA_enum uplo,
-                                PLASMA_Complex64_t *Af77, int lda, PLASMA_desc *A,
-                                PLASMA_sequence *sequence, PLASMA_request *request)
+void PLASMA_zcm2ccrb_band_Async(plasma_enum_t uplo,
+                                plasma_complex64_t *Af77, int lda, plasma_desc_t *A,
+                                plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
 
     // Check input arguments.
     if (Af77 == NULL) {
         plasma_error("NULL A");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-    if (plasma_desc_band_check(uplo, A) != PLASMA_SUCCESS) {
+    if (plasma_desc_band_check(uplo, A) != PlasmaSuccess) {
         plasma_error("invalid A");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if (sequence == NULL) {
         plasma_error("NULL sequence");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if (request == NULL) {
         plasma_error("NULL request");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
 
     // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
     }
 

@@ -77,11 +77,11 @@
  *          The leading dimension of the array C. ldc >= max(1,m).
  *
  ******************************************************************************/
-void CORE_zhemm(PLASMA_enum side, PLASMA_enum uplo,
+void core_zhemm(plasma_enum_t side, plasma_enum_t uplo,
                 int m, int n,
-                PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
-                                          const PLASMA_Complex64_t *B, int ldb,
-                PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc)
+                plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+                                          const plasma_complex64_t *B, int ldb,
+                plasma_complex64_t beta,        plasma_complex64_t *C, int ldc)
 {
     cblas_zhemm(CblasColMajor,
                 (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
@@ -92,18 +92,18 @@ void CORE_zhemm(PLASMA_enum side, PLASMA_enum uplo,
 }
 
 /******************************************************************************/
-void CORE_OMP_zhemm(
-    PLASMA_enum side, PLASMA_enum uplo,
+void core_omp_zhemm(
+    plasma_enum_t side, plasma_enum_t uplo,
     int m, int n,
-    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
-                              const PLASMA_Complex64_t *B, int ldb,
-    PLASMA_Complex64_t beta,        PLASMA_Complex64_t *C, int ldc)
+    plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+                              const plasma_complex64_t *B, int ldb,
+    plasma_complex64_t beta,        plasma_complex64_t *C, int ldc)
 {
     if (side == PlasmaLeft) {
         #pragma omp task depend(in:A[0:m*m]) \
                          depend(in:B[0:m*n]) \
                          depend(inout:C[0:m*n])
-        CORE_zhemm(side, uplo,
+        core_zhemm(side, uplo,
                    m, n,
                    alpha, A, lda,
                           B, ldb,
@@ -113,7 +113,7 @@ void CORE_OMP_zhemm(
         #pragma omp task depend(in:A[0:n*n]) \
                          depend(in:B[0:m*n]) \
                          depend(inout:C[0:m*n])
-        CORE_zhemm(side, uplo,
+        core_zhemm(side, uplo,
                    m, n,
                    alpha, A, lda,
                    B, ldb,

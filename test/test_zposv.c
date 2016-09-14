@@ -80,7 +80,7 @@ void test_zposv(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    PLASMA_enum uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
+    plasma_enum_t uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
 
     int n = param[PARAM_N].i;
     int nrhs = param[PARAM_NRHS].i;
@@ -94,17 +94,17 @@ void test_zposv(param_value_t param[], char *info)
     //================================================================
     // Set tuning parameters.
     //================================================================
-    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_NB].i);
+    plasma_set(PlasmaNb, param[PARAM_NB].i);
 
     //================================================================
     // Allocate and initialize arrays.
     //================================================================
-    PLASMA_Complex64_t *A =
-        (PLASMA_Complex64_t*)malloc((size_t)lda*n*sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *A =
+        (plasma_complex64_t*)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
-    PLASMA_Complex64_t *B =
-        (PLASMA_Complex64_t*)malloc((size_t)ldb*nrhs*sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *B =
+        (plasma_complex64_t*)malloc((size_t)ldb*nrhs*sizeof(plasma_complex64_t));
     assert(B != NULL);
 
     int seed[] = {0, 0, 0, 1};
@@ -128,20 +128,20 @@ void test_zposv(param_value_t param[], char *info)
         }
     }
 
-    PLASMA_Complex64_t *Aref = NULL;
-    PLASMA_Complex64_t *Bref = NULL;
+    plasma_complex64_t *Aref = NULL;
+    plasma_complex64_t *Bref = NULL;
     double *work = NULL;
     if (test) {
-        Aref = (PLASMA_Complex64_t*)malloc(
-            (size_t)lda*n*sizeof(PLASMA_Complex64_t));
+        Aref = (plasma_complex64_t*)malloc(
+            (size_t)lda*n*sizeof(plasma_complex64_t));
         assert(Aref != NULL);
 
-        Bref = (PLASMA_Complex64_t*)malloc(
-            (size_t)ldb*nrhs*sizeof(PLASMA_Complex64_t));
+        Bref = (plasma_complex64_t*)malloc(
+            (size_t)ldb*nrhs*sizeof(plasma_complex64_t));
         assert(Bref != NULL);
 
-        memcpy(Aref, A, (size_t)lda*n*sizeof(PLASMA_Complex64_t));
-        memcpy(Bref, B, (size_t)ldb*nrhs*sizeof(PLASMA_Complex64_t));
+        memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
+        memcpy(Bref, B, (size_t)ldb*nrhs*sizeof(plasma_complex64_t));
     }
 
     //================================================================
@@ -164,8 +164,8 @@ void test_zposv(param_value_t param[], char *info)
     //
     //================================================================
     if (test) {
-        PLASMA_Complex64_t zone  =  1.0;
-        PLASMA_Complex64_t zmone = -1.0;
+        plasma_complex64_t zone  =  1.0;
+        plasma_complex64_t zmone = -1.0;
         work = (double*)malloc((size_t)n*sizeof(double));
         assert(work != NULL);
 

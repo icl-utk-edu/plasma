@@ -83,12 +83,12 @@
  *
  *******************************************************************************
  *
- * @retval PLASMA_SUCCESS successful exit
+ * @retval PlasmaSuccess successful exit
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  *******************************************************************************
  *
- * @sa PLASMA_zgels_Tile_Async
+ * @sa plasma_omp_zgels
  * @sa PLASMA_cgels
  * @sa PLASMA_dgels
  * @sa PLASMA_sgels
@@ -96,28 +96,28 @@
  * @sa PLASMA_zgeqrs
  *
  ******************************************************************************/
-int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
-                 PLASMA_Complex64_t *A, int lda,
-                 PLASMA_desc *descT,
-                 PLASMA_Complex64_t *B, int ldb)
+int PLASMA_zgels(plasma_enum_t trans, int m, int n, int nrhs,
+                 plasma_complex64_t *A, int lda,
+                 plasma_desc_t *descT,
+                 plasma_complex64_t *B, int ldb)
 {
     int ib, nb;
     int retval;
     int status;
 
-    PLASMA_desc descA, descB;
+    plasma_desc_t descA, descB;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_fatal_error("PLASMA not initialized");
-        return PLASMA_ERR_NOT_INITIALIZED;
+        return PlasmaErrorNotInitialized;
     }
 
     // Check input arguments
     if (trans != PlasmaNoTrans) {
         plasma_error("only PlasmaNoTrans supported");
-        return PLASMA_ERR_NOT_SUPPORTED;
+        return PlasmaErrorNotSupported;
     }
     if (m < 0) {
         plasma_error("illegal value of m");
@@ -144,12 +144,12 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
         for (int i = 0; i < imax(m, n); i++)
             for (int j = 0; j < nrhs; j++)
                 B[j*ldb+i] = 0.0;
-        return PLASMA_SUCCESS;
+        return PlasmaSuccess;
     }
 
     // Tune NB & IB depending on M, N & NRHS; Set NBNB
     //status = plasma_tune(PLASMA_FUNC_ZGELS, M, N, NRHS);
-    //if (status != PLASMA_SUCCESS) {
+    //if (status != PlasmaSuccess) {
     //    plasma_error("plasma_tune() failed");
     //    return status;
     //}
@@ -165,37 +165,37 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
 
     // Allocate matrices in tile layout.
     retval = plasma_desc_mat_alloc(&descA);
-    if (retval != PLASMA_SUCCESS) {
+    if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_mat_alloc() failed");
         return retval;
     }
 
     retval = plasma_desc_mat_alloc(&descB);
-    if (retval != PLASMA_SUCCESS) {
+    if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_mat_alloc() failed");
         plasma_desc_mat_free(&descA);
         return retval;
     }
 
     // Allocate workspace.
-    PLASMA_workspace work;
+    plasma_workspace_t work;
     size_t lwork = nb + ib*nb;  // geqrt/gelqt: tau + work
     retval = plasma_workspace_alloc(&work, lwork, PlasmaComplexDouble);
-    if (retval != PLASMA_SUCCESS) {
+    if (retval != PlasmaSuccess) {
         plasma_error("plasma_workspace_alloc() failed");
         return retval;
     }
 
     // Create sequence.
-    PLASMA_sequence *sequence = NULL;
+    plasma_sequence_t *sequence = NULL;
     retval = plasma_sequence_create(&sequence);
-    if (retval != PLASMA_SUCCESS) {
+    if (retval != PlasmaSuccess) {
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
 
     // Initialize request.
-    PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
+    plasma_request_t request = PLASMA_REQUEST_INITIALIZER;
 
     // asynchronous block
     #pragma omp parallel
@@ -206,8 +206,8 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
         PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
 
         // Call the tile async function.
-        PLASMA_zgels_Tile_Async(PlasmaNoTrans, &descA, descT, &descB,
-                                &work, sequence, &request);
+        plasma_omp_zgels(PlasmaNoTrans, &descA, descT, &descB,
+                         &work, sequence, &request);
 
         // Translate back to LAPACK layout.
         PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
@@ -276,67 +276,67 @@ int PLASMA_zgels(PLASMA_enum trans, int m, int n, int nrhs,
  * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
- *          request->status should never be set to PLASMA_SUCCESS (the
+ *          request->status should never be set to PlasmaSuccess (the
  *          initial values) since another async call may be setting a
  *          failure value at the same time.
  *
  *******************************************************************************
  *
  * @sa PLASMA_zgels
- * @sa PLASMA_cgels_Tile_Async
- * @sa PLASMA_dgels_Tile_Async
- * @sa PLASMA_sgels_Tile_Async
+ * @sa plasma_omp_cgels
+ * @sa plasma_omp_dgels
+ * @sa plasma_omp_sgels
  *
  ******************************************************************************/
-void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *A,
-                             PLASMA_desc *T, PLASMA_desc *B,
-                             PLASMA_workspace *work,
-                             PLASMA_sequence *sequence,
-                             PLASMA_request *request)
+void plasma_omp_zgels(plasma_enum_t trans, plasma_desc_t *A,
+                      plasma_desc_t *T, plasma_desc_t *B,
+                      plasma_workspace_t *work,
+                      plasma_sequence_t *sequence,
+                      plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
 
     // Check input arguments
     if (trans != PlasmaNoTrans) {
         plasma_error("only PlasmaNoTrans supported");
-        plasma_request_fail(sequence, request, PLASMA_ERR_NOT_SUPPORTED);
+        plasma_request_fail(sequence, request, PlasmaErrorNotSupported);
         return;
     }
-    if (plasma_desc_check(A) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(A) != PlasmaSuccess) {
         plasma_error("invalid descriptor A");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-    if (plasma_desc_check(T) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(T) != PlasmaSuccess) {
         plasma_error("invalid descriptor T");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-    if (plasma_desc_check(B) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(B) != PlasmaSuccess) {
         plasma_error("invalid descriptor B");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if (sequence == NULL) {
         plasma_error("NULL sequence");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if (request == NULL) {
         plasma_error("NULL request");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
 
     // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
     }
 
@@ -378,7 +378,7 @@ void PLASMA_zgels_Tile_Async(PLASMA_enum trans, PLASMA_desc *A,
                        sequence, request);
 
         // Solve L * Y = B
-        PLASMA_Complex64_t zone  =  1.0;
+        plasma_complex64_t zone  =  1.0;
         plasma_pztrsm(
             PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaNonUnit,
             zone, plasma_desc_submatrix(*A, 0, 0, A->m, A->m),

@@ -16,17 +16,17 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define A(m, n) ((PLASMA_Complex64_t*)plasma_getaddr(A, m, n))
+#define A(m, n) ((plasma_complex64_t*)plasma_getaddr(A, m, n))
 /***************************************************************************//**
  *  Initializes the matrix A to beta on the diagonal and alpha on the
  *  offdiagonals. Applies alpha correctly for any shape of the submatrix
  *  described by A, but applies beta correctly on for submatrices aligned
  *  with the diagonal of the main matrix (A.i = A.j).
  **/
-void plasma_pzlaset(PLASMA_enum uplo,
-                    PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
-                    PLASMA_desc A,
-                    PLASMA_sequence *sequence, PLASMA_request *request)
+void plasma_pzlaset(plasma_enum_t uplo,
+                    plasma_complex64_t alpha, plasma_complex64_t beta,
+                    plasma_desc_t A,
+                    plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int i, j;
     int m, n;
@@ -54,7 +54,7 @@ void plasma_pzlaset(PLASMA_enum uplo,
             if (uplo == PlasmaFull ||
                 (uplo == PlasmaLower && i >= j) ||
                 (uplo == PlasmaUpper && i <= j))
-                CORE_OMP_zlaset(i == j ? uplo : PlasmaFull,
+                core_omp_zlaset(i == j ? uplo : PlasmaFull,
                                 A.i/A.mb+i == A.lm1 ? A.lm-A.lm1*A.mb : A.mb,
                                 A.j/A.nb+j == A.ln1 ? A.ln-A.ln1*A.nb : A.nb,
                                 i == 0 ? A.i%A.mb : 0,

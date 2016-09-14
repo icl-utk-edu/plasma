@@ -55,7 +55,7 @@ int main(int argc, char **argv)
     // Print labels.
     test_routine(test, routine, NULL);
 
-    PLASMA_Init();
+    plasma_init();
     if (outer) {
         // outer product iteration
         do {
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
         }
         while (param_step_inner(param));
     }
-    PLASMA_Finalize();
+    plasma_finalize();
     printf("\n");
     return err;
 }
@@ -577,11 +577,11 @@ int param_read(int argc, char **argv, param_t param[])
     // Set complex parameters.
     //--------------------------------------------------
     if (param[PARAM_ALPHA].num == 0) {
-        PLASMA_Complex64_t z = 1.2345 + 2.3456*_Complex_I;
+        plasma_complex64_t z = 1.2345 + 2.3456*_Complex_I;
         param_add_complex(z, &param[PARAM_ALPHA]);
     }
     if (param[PARAM_BETA].num == 0) {
-        PLASMA_Complex64_t z = 6.7890 + 7.8901*_Complex_I;
+        plasma_complex64_t z = 6.7890 + 7.8901*_Complex_I;
         param_add_complex(z, &param[PARAM_BETA]);
     }
 
@@ -756,7 +756,7 @@ int param_scan_complex(const char *str, param_t *param)
             }
             endptr += 1;  // skip 'i'
         }
-        PLASMA_Complex64_t z = re + im*_Complex_I;
+        plasma_complex64_t z = re + im*_Complex_I;
         param_add_complex(z, param);
         str = endptr+1;
     }
@@ -832,7 +832,7 @@ void param_add_double(double dval, param_t *param)
  * @param[inout] param - parameter iterator
  *
  ******************************************************************************/
-void param_add_complex(PLASMA_Complex64_t zval, param_t *param)
+void param_add_complex(plasma_complex64_t zval, param_t *param)
 {
     param->val[param->num].z = zval;
     param->num++;

@@ -17,28 +17,28 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define A(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(A, m, n))
-#define T(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(T, m, n))
+#define A(m, n) ((plasma_complex64_t*) plasma_getaddr(A, m, n))
+#define T(m, n) ((plasma_complex64_t*) plasma_getaddr(T, m, n))
 /***************************************************************************//**
  *  Parallel tile LQ factorization - dynamic scheduling
- * @see PLASMA_zgelqf_Tile_Async
+ * @see plasma_omp_zgelqf
  **/
-void plasma_pzgelqf(PLASMA_desc A, PLASMA_desc T,
-                    PLASMA_workspace *work,
-                    PLASMA_sequence *sequence, PLASMA_request *request)
+void plasma_pzgelqf(plasma_desc_t A, plasma_desc_t T,
+                    plasma_workspace_t *work,
+                    plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int k, m, n;
     int ldak, ldam;
     int tempkm, tempkn, tempmm, tempnn;
 
-    if (sequence->status != PLASMA_SUCCESS)
+    if (sequence->status != PlasmaSuccess)
         return;
 
     // Set inner blocking from the plasma context
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     int ib = plasma->ib;
@@ -47,7 +47,7 @@ void plasma_pzgelqf(PLASMA_desc A, PLASMA_desc T,
         tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
         tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
         ldak = BLKLDD(A, k);
-        CORE_OMP_zgelqt(
+        core_omp_zgelqt(
             tempkm, tempkn, ib, T.nb,
             A(k, k), ldak,
             T(k, k), T.mb,
@@ -61,7 +61,7 @@ void plasma_pzgelqf(PLASMA_desc A, PLASMA_desc T,
             // automatic datatype conversion, which is what we
             // want here.
             // PlasmaConjTrans is protected from this conversion.
-            CORE_OMP_zunmlq(
+            core_omp_zunmlq(
                 PlasmaRight, Plasma_ConjTrans,
                 tempmm, tempkn, tempkn, ib, T.nb,
                 A(k, k), ldak,
@@ -72,7 +72,7 @@ void plasma_pzgelqf(PLASMA_desc A, PLASMA_desc T,
         }
         for (n = k+1; n < A.nt; n++) {
             tempnn = n == A.nt-1 ? A.n-n*A.nb : A.nb;
-            CORE_OMP_ztslqt(
+            core_omp_ztslqt(
                 tempkm, tempnn, ib, T.nb,
                 A(k, k), ldak,
                 A(k, n), ldak,
@@ -83,7 +83,7 @@ void plasma_pzgelqf(PLASMA_desc A, PLASMA_desc T,
             for (m = k+1; m < A.mt; m++) {
                 tempmm = m == A.mt-1 ? A.m-m*A.mb : A.mb;
                 ldam = BLKLDD(A, m);
-                CORE_OMP_ztsmlq(
+                core_omp_ztsmlq(
                     PlasmaRight, Plasma_ConjTrans,
                     tempmm, A.nb, tempmm, tempnn, A.mb, ib, T.nb,
                     A(m, k), ldam,

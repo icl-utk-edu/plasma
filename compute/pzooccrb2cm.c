@@ -17,19 +17,19 @@
 #include "core_blas_z.h"
 
 /******************************************************************************/
-void plasma_pzooccrb2cm(PLASMA_desc A, PLASMA_Complex64_t *Af77, int lda,
-                        PLASMA_sequence *sequence, PLASMA_request *request)
+void plasma_pzooccrb2cm(plasma_desc_t A, plasma_complex64_t *Af77, int lda,
+                        plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    PLASMA_Complex64_t *f77;
-    PLASMA_Complex64_t *bdl;
+    plasma_complex64_t *f77;
+    plasma_complex64_t *bdl;
 
     int x1, y1;
     int x2, y2;
     int n, m, ldt;
 
     // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
     }
 
@@ -42,9 +42,9 @@ void plasma_pzooccrb2cm(PLASMA_desc A, PLASMA_Complex64_t *Af77, int lda,
             y2 = m == A.mt-1 ? (A.i+A.m-1)%A.mb+1 : A.mb;
 
             f77 = &Af77[(size_t)A.nb*lda*n + (size_t)A.mb*m];
-            bdl = (PLASMA_Complex64_t*)plasma_getaddr(A, m, n);
+            bdl = (plasma_complex64_t*)plasma_getaddr(A, m, n);
 
-            CORE_OMP_zlacpy(PlasmaFull,
+            core_omp_zlacpy(PlasmaFull,
                             y2-y1, x2-x1, A.mb,
                             &(bdl[x1*A.nb+y1]), ldt,
                             &(f77[x1*lda+y1]), lda);

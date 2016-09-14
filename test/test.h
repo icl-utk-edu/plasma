@@ -109,7 +109,7 @@ typedef union {
     int i;                 // integer
     char c;                // character
     double d;              // double precision
-    PLASMA_Complex64_t z;  // double complex
+    plasma_complex64_t z;  // double complex
 } param_value_t;
 
 // parameter type
@@ -152,7 +152,7 @@ int  param_scan_complex(const char *str, param_t *param);
 void param_add_int(int val, param_t *param);
 void param_add_char(char cval, param_t *param);
 void param_add_double(double dval, param_t *param);
-void param_add_complex(PLASMA_Complex64_t zval, param_t *param);
+void param_add_complex(plasma_complex64_t zval, param_t *param);
 int  param_step_inner(param_t param[]);
 int  param_step_outer(param_t param[], int idx);
 int  param_snap(param_t param[], param_value_t value[]);

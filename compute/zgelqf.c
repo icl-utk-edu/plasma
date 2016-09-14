@@ -52,12 +52,12 @@
  *
  *******************************************************************************
  *
- * @retval PLASMA_SUCCESS successful exit
+ * @retval PlasmaSuccess successful exit
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  *******************************************************************************
  *
- * @sa PLASMA_zgelqf_Tile_Async
+ * @sa plasma_omp_zgelqf
  * @sa PLASMA_cgelqf
  * @sa PLASMA_dgelqf
  * @sa PLASMA_sgelqf
@@ -65,8 +65,8 @@
  *
  ******************************************************************************/
 int PLASMA_zgelqf(int m, int n,
-                  PLASMA_Complex64_t *A, int lda,
-                  PLASMA_desc *descT)
+                  plasma_complex64_t *A, int lda,
+                  plasma_desc_t *descT)
 {
     int ib, nb;
     int retval;
@@ -75,7 +75,7 @@ int PLASMA_zgelqf(int m, int n,
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_fatal_error("PLASMA not initialized");
-        return PLASMA_ERR_NOT_INITIALIZED;
+        return PlasmaErrorNotInitialized;
     }
 
     // Check input arguments
@@ -93,11 +93,11 @@ int PLASMA_zgelqf(int m, int n,
     }
     // Quick return
     if (imin(m, n) == 0)
-        return PLASMA_SUCCESS;
+        return PlasmaSuccess;
 
     // Tune NB & IB depending on M, N & NRHS; Set NBNBSIZE
     //status = plasma_tune(PLASMA_FUNC_ZGELS, M, N, 0);
-    //if (status != PLASMA_SUCCESS) {
+    //if (status != PlasmaSuccess) {
     //    plasma_error("PLASMA_zgelqf", "plasma_tune() failed");
     //    return status;
     //}
@@ -105,36 +105,36 @@ int PLASMA_zgelqf(int m, int n,
     nb = plasma->nb;
 
     // Initialize tile matrix descriptor.
-    PLASMA_desc descA;
+    plasma_desc_t descA;
     descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
                              nb*nb, m, n, 0, 0, m, n);
 
     // Allocate matrices in tile layout.
     retval = plasma_desc_mat_alloc(&descA);
-    if (retval != PLASMA_SUCCESS) {
+    if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_mat_alloc() failed");
         return retval;
     }
 
     // Allocate workspace.
-    PLASMA_workspace work;
+    plasma_workspace_t work;
     size_t lwork = nb + ib*nb;  // gelqt: tau + work
     retval = plasma_workspace_alloc(&work, lwork, PlasmaComplexDouble);
-    if (retval != PLASMA_SUCCESS) {
+    if (retval != PlasmaSuccess) {
         plasma_error("plasma_workspace_alloc() failed");
         return retval;
     }
 
     // Create sequence.
-    PLASMA_sequence *sequence = NULL;
+    plasma_sequence_t *sequence = NULL;
     retval = plasma_sequence_create(&sequence);
-    if (retval != PLASMA_SUCCESS) {
+    if (retval != PlasmaSuccess) {
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
 
     // Initialize request.
-    PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
+    plasma_request_t request = PLASMA_REQUEST_INITIALIZER;
 
     #pragma omp parallel
     #pragma omp master
@@ -150,7 +150,7 @@ int PLASMA_zgelqf(int m, int n,
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
 
         // Call the tile async function.
-        PLASMA_zgelqf_Tile_Async(&descA, descT, &work, sequence, &request);
+        plasma_omp_zgelqf(&descA, descT, &work, sequence, &request);
 
         // Translate back to LAPACK layout.
         PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
@@ -203,62 +203,62 @@ int PLASMA_zgelqf(int m, int n,
  * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
- *          request->status should never be set to PLASMA_SUCCESS (the
+ *          request->status should never be set to PlasmaSuccess (the
  *          initial values) since another async call may be setting a
  *          failure value at the same time.
  *
  *******************************************************************************
  *
  * @sa PLASMA_zgelqf
- * @sa PLASMA_cgelqf_Tile_Async
- * @sa PLASMA_dgelqf_Tile_Async
- * @sa PLASMA_sgelqf_Tile_Async
- * @sa PLASMA_zgelqs_Tile_Async
+ * @sa plasma_omp_cgelqf
+ * @sa plasma_omp_dgelqf
+ * @sa plasma_omp_sgelqf
+ * @sa plasma_omp_zgelqs
  *
  ******************************************************************************/
-void PLASMA_zgelqf_Tile_Async(PLASMA_desc *A, PLASMA_desc *T,
-                              PLASMA_workspace *work,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request *request)
+void plasma_omp_zgelqf(plasma_desc_t *A, plasma_desc_t *T,
+                       plasma_workspace_t *work,
+                       plasma_sequence_t *sequence,
+                       plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
 
     // Check input arguments.
-    if (plasma_desc_check(A) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(A) != PlasmaSuccess) {
         plasma_error("invalid A");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-    if (plasma_desc_check(T) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(T) != PlasmaSuccess) {
         plasma_error("invalid T");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if (sequence == NULL) {
         plasma_fatal_error("NULL sequence");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if (request == NULL) {
         plasma_fatal_error("NULL request");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if (A->nb != A->mb) {
         plasma_error("only square tiles supported");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
 
     // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
     }
 

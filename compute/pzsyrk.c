@@ -16,27 +16,27 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define A(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(A, m, n))
-#define C(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(C, m, n))
+#define A(m, n) ((plasma_complex64_t*) plasma_getaddr(A, m, n))
+#define C(m, n) ((plasma_complex64_t*) plasma_getaddr(C, m, n))
 /***************************************************************************//**
  * Parallel tile symetric rank k update.
- * @see PLASMA_zsyrk_Tile_Async
+ * @see plasma_omp_zsyrk
  ******************************************************************************/
-void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
-                   PLASMA_Complex64_t alpha, PLASMA_desc A,
-                   PLASMA_Complex64_t beta,  PLASMA_desc C,
-                   PLASMA_sequence *sequence, PLASMA_request *request)
+void plasma_pzsyrk(plasma_enum_t uplo, plasma_enum_t trans,
+                   plasma_complex64_t alpha, plasma_desc_t A,
+                   plasma_complex64_t beta,  plasma_desc_t C,
+                   plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int m, n, k;
     int ldak, ldam, ldan, ldcm, ldcn;
     int tempnn, tempmm, tempkn, tempkm;
 
-    PLASMA_Complex64_t zbeta;
-    PLASMA_Complex64_t zone = 1.0;
+    plasma_complex64_t zbeta;
+    plasma_complex64_t zone = 1.0;
 
     // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
     }
 
@@ -51,7 +51,7 @@ void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
             for (k = 0; k < A.nt; k++) {
                 tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
                 zbeta = k == 0 ? beta : zone;
-                CORE_OMP_zsyrk(
+                core_omp_zsyrk(
                     uplo, trans,
                     tempnn, tempkn,
                     alpha, A(n, k), ldan,
@@ -68,7 +68,7 @@ void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
                     for (k = 0; k < A.nt; k++) {
                         tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
                         zbeta = k == 0 ? beta : zone;
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             trans, PlasmaTrans,
                             tempmm, tempnn, tempkn,
                             alpha, A(m, k), ldam,
@@ -87,7 +87,7 @@ void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
                     for (k = 0; k < A.nt; k++) {
                         tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
                         zbeta = k == 0 ? beta : zone;
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             trans, PlasmaTrans,
                             tempnn, tempmm, tempkn,
                             alpha, A(n, k), ldan,
@@ -105,7 +105,7 @@ void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
                 tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
                 ldak = BLKLDD(A, k);
                 zbeta = k == 0 ? beta : zone;
-                CORE_OMP_zsyrk(
+                core_omp_zsyrk(
                     uplo, trans,
                     tempnn, tempkm,
                     alpha, A(k, n), ldak,
@@ -122,7 +122,7 @@ void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
                         tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
                         ldak = BLKLDD(A, k);
                         zbeta = k == 0 ? beta : zone;
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             trans, PlasmaNoTrans,
                             tempmm, tempnn, tempkm,
                             alpha, A(k, m), ldak,
@@ -141,7 +141,7 @@ void plasma_pzsyrk(PLASMA_enum uplo, PLASMA_enum trans,
                         tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
                         ldak = BLKLDD(A, k);
                         zbeta = k == 0 ? beta : zone;
-                        CORE_OMP_zgemm(
+                        core_omp_zgemm(
                             trans, PlasmaNoTrans,
                             tempnn, tempmm, tempkm,
                             alpha, A(k, n), ldak,

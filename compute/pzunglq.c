@@ -17,15 +17,15 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define A(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(A, m, n))
-#define Q(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(Q, m, n))
-#define T(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(T, m, n))
+#define A(m, n) ((plasma_complex64_t*) plasma_getaddr(A, m, n))
+#define Q(m, n) ((plasma_complex64_t*) plasma_getaddr(Q, m, n))
+#define T(m, n) ((plasma_complex64_t*) plasma_getaddr(T, m, n))
 /***************************************************************************//**
  *  Parallel construction of Q using tile V (application to identity)
  **/
-void plasma_pzunglq(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
-                    PLASMA_workspace *work,
-                    PLASMA_sequence *sequence, PLASMA_request *request)
+void plasma_pzunglq(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
+                    plasma_workspace_t *work,
+                    plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int k, m, n;
     int ldak, ldqm;
@@ -33,14 +33,14 @@ void plasma_pzunglq(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
     int tempAkm, tempAkn;
     int minmnt;
 
-    if (sequence->status != PLASMA_SUCCESS)
+    if (sequence->status != PlasmaSuccess)
         return;
 
     // Set inner blocking from the plasma context
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     int ib = plasma->ib;
@@ -57,7 +57,7 @@ void plasma_pzunglq(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
             for (m = k; m < Q.mt; m++) {
                 tempmm = m == Q.mt-1 ? Q.m-m*Q.mb : Q.mb;
                 ldqm = BLKLDD(Q, m);
-                CORE_OMP_ztsmlq(
+                core_omp_ztsmlq(
                     PlasmaRight, PlasmaNoTrans,
                     tempmm, Q.nb, tempmm, tempnn, tempAkm, ib, T.nb,
                     Q(m, k), ldqm,
@@ -71,7 +71,7 @@ void plasma_pzunglq(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
         for (m = k; m < Q.mt; m++) {
             tempmm = m == Q.mt-1 ? Q.m-m*Q.mb : Q.mb;
             ldqm = BLKLDD(Q, m);
-            CORE_OMP_zunmlq(
+            core_omp_zunmlq(
                 PlasmaRight, PlasmaNoTrans,
                 tempmm, tempkn, tempkmin, ib, T.nb,
                 A(k, k), ldak,

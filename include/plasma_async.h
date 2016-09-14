@@ -18,23 +18,23 @@ extern "C" {
 
 /******************************************************************************/
 typedef struct {
-    PLASMA_bool status; ///< error code
-} PLASMA_request;
+    plasma_enum_t status; ///< error code
+} plasma_request_t;
 
-static const PLASMA_request PLASMA_REQUEST_INITIALIZER = {PLASMA_SUCCESS};
+static const plasma_request_t PLASMA_REQUEST_INITIALIZER = {PlasmaSuccess};
 
 typedef struct {
-    PLASMA_bool status;      ///< error code
-    PLASMA_request *request; ///< failed request
-} PLASMA_sequence;
+    plasma_enum_t status;      ///< error code
+    plasma_request_t *request; ///< failed request
+} plasma_sequence_t;
 
 /******************************************************************************/
-int plasma_request_fail(PLASMA_sequence *sequence,
-                        PLASMA_request *request,
+int plasma_request_fail(plasma_sequence_t *sequence,
+                        plasma_request_t *request,
                         int status);
 
-int plasma_sequence_create(PLASMA_sequence **sequence);
-int plasma_sequence_destroy(PLASMA_sequence *sequence);
+int plasma_sequence_create(plasma_sequence_t **sequence);
+int plasma_sequence_destroy(plasma_sequence_t *sequence);
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -90,8 +90,8 @@ void test_ztradd(param_value_t param[], char *info)
     //================================================================
     // Set parameters
     //================================================================
-    PLASMA_enum uplo   = PLASMA_uplo_const(param[PARAM_UPLO].c);
-    PLASMA_enum transA = PLASMA_trans_const(param[PARAM_TRANSA].c);
+    plasma_enum_t uplo   = PLASMA_uplo_const(param[PARAM_UPLO].c);
+    plasma_enum_t transA = PLASMA_trans_const(param[PARAM_TRANSA].c);
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
@@ -120,17 +120,17 @@ void test_ztradd(param_value_t param[], char *info)
     //================================================================
     // Set tuning parameters
     //================================================================
-    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_NB].i);
+    plasma_set(PlasmaNb, param[PARAM_NB].i);
 
     //================================================================
     // Allocate and initialize arrays
     //================================================================
-    PLASMA_Complex64_t *A =
-        (PLASMA_Complex64_t*)malloc((size_t)lda*An*sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *A =
+        (plasma_complex64_t*)malloc((size_t)lda*An*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
-    PLASMA_Complex64_t *B =
-        (PLASMA_Complex64_t*)malloc((size_t)ldb*Bn*sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *B =
+        (plasma_complex64_t*)malloc((size_t)ldb*Bn*sizeof(plasma_complex64_t));
     assert(B != NULL);
 
     int seed[] = {0, 0, 0, 1};
@@ -141,18 +141,18 @@ void test_ztradd(param_value_t param[], char *info)
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*Bn, B);
     assert(retval == 0);
 
-    PLASMA_Complex64_t *Bref = NULL;
+    plasma_complex64_t *Bref = NULL;
     if (test) {
-        Bref = (PLASMA_Complex64_t*)malloc(
-            (size_t)ldb*Bn*sizeof(PLASMA_Complex64_t));
+        Bref = (plasma_complex64_t*)malloc(
+            (size_t)ldb*Bn*sizeof(plasma_complex64_t));
         assert(Bref != NULL);
 
-        memcpy(Bref, B, (size_t)ldb*Bn*sizeof(PLASMA_Complex64_t));
+        memcpy(Bref, B, (size_t)ldb*Bn*sizeof(plasma_complex64_t));
     }
 
 #ifdef COMPLEX
-    PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
-    PLASMA_Complex64_t beta  = param[PARAM_BETA].z;
+    plasma_complex64_t alpha = param[PARAM_ALPHA].z;
+    plasma_complex64_t beta  = param[PARAM_BETA].z;
 #else
     double alpha = creal(param[PARAM_ALPHA].z);
     double beta  = creal(param[PARAM_BETA].z);
@@ -172,13 +172,13 @@ void test_ztradd(param_value_t param[], char *info)
     param[PARAM_GFLOPS].d = flops_ztradd(m, n) / time / 1e9;
 
     //================================================================
-    // Test results by comparing to result of CORE_ztradd function
+    // Test results by comparing to result of core_ztradd function
     //================================================================
     if (test) {
         // Calculate relative error |B_ref - B|_F / |B_ref|_F < 3*eps
         // Using 3*eps covers complex arithmetic
 
-        CORE_ztradd(uplo, transA, m, n, alpha, A, lda, beta, Bref, ldb);
+        core_ztradd(uplo, transA, m, n, alpha, A, lda, beta, Bref, ldb);
 
         double work[1];
 
@@ -187,7 +187,7 @@ void test_ztradd(param_value_t param[], char *info)
                                LAPACK_COL_MAJOR, 'F', Bm, Bn, Bref, ldb, work);
 
         // Calculate difference B_ref-B
-        PLASMA_Complex64_t zmone = -1.0;
+        plasma_complex64_t zmone = -1.0;
         cblas_zaxpy((size_t)ldb*Bn, CBLAS_SADDR(zmone), B, 1, Bref, 1);
 
         // Calculate Frobenius norm of B_ref-B

@@ -87,14 +87,14 @@ void test_zgelqf(param_value_t param[], char *info)
     //================================================================
     // Set tuning parameters.
     //================================================================
-    PLASMA_Set(PLASMA_TILE_SIZE,        param[PARAM_NB].i);
-    PLASMA_Set(PLASMA_INNER_BLOCK_SIZE, param[PARAM_IB].i);
+    plasma_set(PlasmaNb, param[PARAM_NB].i);
+    plasma_set(PlasmaIb, param[PARAM_IB].i);
 
     //================================================================
     // Allocate and initialize arrays.
     //================================================================
-    PLASMA_Complex64_t *A =
-        (PLASMA_Complex64_t*)malloc((size_t)lda*n*sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *A =
+        (plasma_complex64_t*)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
     int seed[] = {0, 0, 0, 1};
@@ -102,13 +102,13 @@ void test_zgelqf(param_value_t param[], char *info)
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
 
-    PLASMA_Complex64_t *Aref = NULL;
+    plasma_complex64_t *Aref = NULL;
     if (test) {
-        Aref = (PLASMA_Complex64_t*)malloc(
-            (size_t)lda*n*sizeof(PLASMA_Complex64_t));
+        Aref = (plasma_complex64_t*)malloc(
+            (size_t)lda*n*sizeof(plasma_complex64_t));
         assert(Aref != NULL);
 
-        memcpy(Aref, A, (size_t)lda*n*sizeof(PLASMA_Complex64_t));
+        memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
     }
 
     // Get PLASMA context.
@@ -121,8 +121,8 @@ void test_zgelqf(param_value_t param[], char *info)
     int nt = (n%nb == 0) ? (n/nb) : (n/nb+1);
     // nt should be doubled if tree-reduction LQ is performed,
     // not implemented now
-    PLASMA_desc descT = plasma_desc_init(PlasmaComplexDouble, ib, nb, ib*nb,
-                                         mt*ib, nt*nb, 0, 0, mt*ib, nt*nb);
+    plasma_desc_t descT = plasma_desc_init(PlasmaComplexDouble, ib, nb, ib*nb,
+                                           mt*ib, nt*nb, 0, 0, mt*ib, nt*nb);
     // allocate memory for the matrix T
     retval = plasma_desc_mat_alloc(&descT);
     assert(retval == 0);
@@ -143,26 +143,26 @@ void test_zgelqf(param_value_t param[], char *info)
     //=================================================================
     if (test) {
         // Check the orthogonality of Q
-        PLASMA_Complex64_t zzero =  0.0;
-        PLASMA_Complex64_t zone  =  1.0;
+        plasma_complex64_t zzero =  0.0;
+        plasma_complex64_t zone  =  1.0;
         double one  =  1.0;
         double mone = -1.0;
         int minmn = imin(m, n);
 
         // Allocate space for Q.
         int ldq = minmn;
-        PLASMA_Complex64_t *Q =
-            (PLASMA_Complex64_t *)malloc((size_t)ldq*n*
-                                         sizeof(PLASMA_Complex64_t));
+        plasma_complex64_t *Q =
+            (plasma_complex64_t *)malloc((size_t)ldq*n*
+                                         sizeof(plasma_complex64_t));
         assert(Q != NULL);
 
         // Build Q.
         PLASMA_zunglq(minmn, n, minmn, A, lda, &descT, Q, ldq);
 
         // Build the identity matrix
-        PLASMA_Complex64_t *Id =
-            (PLASMA_Complex64_t *) malloc((size_t)minmn*minmn*
-                                          sizeof(PLASMA_Complex64_t));
+        plasma_complex64_t *Id =
+            (plasma_complex64_t *) malloc((size_t)minmn*minmn*
+                                          sizeof(plasma_complex64_t));
         assert(Id != NULL);
         LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'g', minmn, minmn,
                             zzero, zone, Id, minmn);
@@ -190,9 +190,9 @@ void test_zgelqf(param_value_t param[], char *info)
         // LAPACK version does not construct Q, it uses only application of it
 
         // Extract the L.
-        PLASMA_Complex64_t *L =
-            (PLASMA_Complex64_t *)malloc((size_t)m*n*
-                                         sizeof(PLASMA_Complex64_t));
+        plasma_complex64_t *L =
+            (plasma_complex64_t *)malloc((size_t)m*n*
+                                         sizeof(plasma_complex64_t));
         assert(L != NULL);
         LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'u', m, n,
                             zzero, zzero, L, m);

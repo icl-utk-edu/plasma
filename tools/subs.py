@@ -354,8 +354,8 @@ subs = {
     # ----- PLASMA / MAGMA data types
     ('double',               'magmaDoubleComplex'  ),
     ('float',                'magmaFloatComplex'   ),
-    ('double',               'PLASMA_Complex64_t'  ),
-    ('float',                'PLASMA_Complex32_t'  ),
+    ('double',               'plasma_complex64_t'  ),
+    ('float',                'plasma_complex32_t'  ),
 
     # ----- PLASMA / MAGMA functions, alphabetic order
     ('dccrb2cm',             'zccrb2cm'            ),
@@ -441,7 +441,7 @@ subs = {
 
     # ----- PLASMA / MAGMA data types
     ('float',                'double',               'magmaFloatComplex',    'magmaDoubleComplex'  ),
-    ('float',                'double',               'PLASMA_Complex32_t',   'PLASMA_Complex64_t'  ),
+    ('float',                'double',               'plasma_complex32_t',   'plasma_complex64_t'  ),
     ('float',                'double',               'float',                'double'              ),
 
     # ----- PLASMA / MAGMA functions, alphabetic order

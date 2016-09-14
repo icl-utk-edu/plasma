@@ -18,8 +18,8 @@ extern "C" {
 
 /******************************************************************************/
 #ifdef PLASMA_WITH_MKL
-#define lapack_complex_float PLASMA_Complex32_t
-#define lapack_complex_double PLASMA_Complex64_t
+#define lapack_complex_float plasma_complex32_t
+#define lapack_complex_double plasma_complex64_t
 #endif
 
 /******************************************************************************/
@@ -75,45 +75,40 @@ enum {
 };
 
 enum {
-    PLASMA_SUCCESS              =    0,
-    PLASMA_ERR_NOT_INITIALIZED  = -101,
-    PLASMA_ERR_REINITIALIZED    = -102,
-    PLASMA_ERR_NOT_SUPPORTED    = -103,
-    PLASMA_ERR_ILLEGAL_VALUE    = -104,
-    PLASMA_ERR_NOT_FOUND        = -105,
-    PLASMA_ERR_OUT_OF_RESOURCES = -106,
-    PLASMA_ERR_INTERNAL_LIMIT   = -107,
-    PLASMA_ERR_UNALLOCATED      = -108,
-    PLASMA_ERR_FILESYSTEM       = -109,
-    PLASMA_ERR_UNEXPECTED       = -110,
-    PLASMA_ERR_SEQUENCE_FLUSHED = -111
+    PlasmaSuccess = 0,
+    PlasmaErrorNotInitialized,
+    PlasmaErrorNotSupported,
+    PlasmaErrorIllegalValue,
+    PlasmaErrorOutOfMemory,
+    PlasmaErrorNullParameter,
+    PlasmaErrorInternal,
+    PlasmaErrorSequence
 };
 
 enum {
-    PLASMA_INPLACE,
-    PLASMA_OUTOFPLACE
+    PlasmaInplace,
+    PlasmaOutplace
 };
 
 enum {
-    PLASMA_TILE_SIZE,
-    PLASMA_INNER_BLOCK_SIZE,
-    PLASMA_TRANSLATION_MODE
+    PlasmaNb,
+    PlasmaIb,
+    PlasmaInplaceOutplace
 };
 
 /******************************************************************************/
-typedef int PLASMA_enum;
-typedef int PLASMA_bool;
+typedef int plasma_enum_t;
 
-typedef float  _Complex PLASMA_Complex32_t;
-typedef double _Complex PLASMA_Complex64_t;
+typedef float  _Complex plasma_complex32_t;
+typedef double _Complex plasma_complex64_t;
 
 /******************************************************************************/
-PLASMA_enum PLASMA_trans_const(char lapack_char);
-PLASMA_enum PLASMA_uplo_const(char lapack_char);
-PLASMA_enum PLASMA_diag_const(char lapack_char);
-PLASMA_enum PLASMA_side_const(char lapack_char);
-PLASMA_enum PLASMA_direct_const(char lapack_char);
-PLASMA_enum PLASMA_storev_const(char lapack_char);
+plasma_enum_t PLASMA_trans_const(char lapack_char);
+plasma_enum_t PLASMA_uplo_const(char lapack_char);
+plasma_enum_t PLASMA_diag_const(char lapack_char);
+plasma_enum_t PLASMA_side_const(char lapack_char);
+plasma_enum_t PLASMA_direct_const(char lapack_char);
+plasma_enum_t PLASMA_storev_const(char lapack_char);
 
 #ifdef __cplusplus
 }  // extern "C"

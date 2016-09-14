@@ -92,11 +92,11 @@
  *          The leading dimension of the array B. ldb >= max(1,m).
  *
  ******************************************************************************/
-void CORE_ztrmm(
-    PLASMA_enum side, PLASMA_enum uplo, PLASMA_enum transA, PLASMA_enum diag,
+void core_ztrmm(
+    plasma_enum_t side, plasma_enum_t uplo, plasma_enum_t transA, plasma_enum_t diag,
     int m, int n,
-    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
-                                    PLASMA_Complex64_t *B, int ldb)
+    plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+                                    plasma_complex64_t *B, int ldb)
 {
     cblas_ztrmm(
         CblasColMajor,
@@ -108,17 +108,17 @@ void CORE_ztrmm(
 }
 
 /******************************************************************************/
-void CORE_OMP_ztrmm(
-    PLASMA_enum side, PLASMA_enum uplo, PLASMA_enum transA, PLASMA_enum diag,
+void core_omp_ztrmm(
+    plasma_enum_t side, plasma_enum_t uplo, plasma_enum_t transA, plasma_enum_t diag,
     int m, int n,
-    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
-                                    PLASMA_Complex64_t *B, int ldb)
+    plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+                                    plasma_complex64_t *B, int ldb)
 {
     // OpenMP depends assume lda == m or n, ldb == n or m
     // depending on transpose parameter transA
     #pragma omp task depend(in:A[0:m*n]) \
                      depend(inout:B[0:n*m])
-    CORE_ztrmm(side, uplo,
+    core_ztrmm(side, uplo,
                transA, diag,
                m, n,
                alpha, A, lda,

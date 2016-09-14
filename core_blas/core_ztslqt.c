@@ -89,21 +89,21 @@
  *
  *******************************************************************************
  *
- * @retval PLASMA_SUCCESS successful exit
+ * @retval PlasmaSuccess successful exit
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int CORE_ztslqt(int m, int n, int ib,
-                PLASMA_Complex64_t *A1, int lda1,
-                PLASMA_Complex64_t *A2, int lda2,
-                PLASMA_Complex64_t *T, int ldt,
-                PLASMA_Complex64_t *TAU,
-                PLASMA_Complex64_t *WORK)
+int core_ztslqt(int m, int n, int ib,
+                plasma_complex64_t *A1, int lda1,
+                plasma_complex64_t *A2, int lda2,
+                plasma_complex64_t *T, int ldt,
+                plasma_complex64_t *TAU,
+                plasma_complex64_t *WORK)
 {
-    static PLASMA_Complex64_t zone  = 1.0;
-    static PLASMA_Complex64_t zzero = 0.0;
+    static plasma_complex64_t zone  = 1.0;
+    static plasma_complex64_t zzero = 0.0;
 
-    PLASMA_Complex64_t alpha;
+    plasma_complex64_t alpha;
     int i, ii, sb;
 
     // Check input arguments
@@ -126,7 +126,7 @@ int CORE_ztslqt(int m, int n, int ib,
 
     // Quick return
     if ((m == 0) || (n == 0) || (ib == 0))
-        return PLASMA_SUCCESS;
+        return PlasmaSuccess;
 
     for (ii = 0; ii < m; ii += ib) {
         sb = imin(m-ii, ib);
@@ -188,7 +188,7 @@ int CORE_ztslqt(int m, int n, int ib,
             // Plasma_ConjTrans will be converted to PlasmaTrans in
             // automatic datatype conversion, which is what we want here.
             // PlasmaConjTrans is protected from this conversion.
-            CORE_ztsmlq(
+            core_ztsmlq(
                 PlasmaRight, Plasma_ConjTrans,
                 m-(ii+sb), sb, m-(ii+sb), n, ib, ib,
                 &A1[lda1*ii+ii+sb], lda1,
@@ -199,44 +199,44 @@ int CORE_ztslqt(int m, int n, int ib,
         }
     }
 
-    return PLASMA_SUCCESS;
+    return PlasmaSuccess;
 }
 
 /******************************************************************************/
-void CORE_OMP_ztslqt(int m, int n, int ib, int nb,
-                     PLASMA_Complex64_t *A1, int lda1,
-                     PLASMA_Complex64_t *A2, int lda2,
-                     PLASMA_Complex64_t *T,  int ldt,
-                     PLASMA_workspace *work,
-                     PLASMA_sequence *sequence, PLASMA_request *request)
+void core_omp_ztslqt(int m, int n, int ib, int nb,
+                     plasma_complex64_t *A1, int lda1,
+                     plasma_complex64_t *A2, int lda2,
+                     plasma_complex64_t *T,  int ldt,
+                     plasma_workspace_t *work,
+                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // assuming m == nb, n == nb
     #pragma omp task depend(inout:A1[0:nb*nb]) \
                      depend(inout:A2[0:nb*nb]) \
                      depend(out:T[0:ib*nb])
     {
-        if (sequence->status == PLASMA_SUCCESS) {
+        if (sequence->status == PlasmaSuccess) {
             int tid = omp_get_thread_num();
             // split spaces into TAU and WORK
             int ltau = m;
             int lwork = work->lwork - ltau;
-            PLASMA_Complex64_t *TAU = ((PLASMA_Complex64_t*)work->spaces[tid]);
-            PLASMA_Complex64_t *W   =
-                ((PLASMA_Complex64_t*)work->spaces[tid]) + ltau;
+            plasma_complex64_t *TAU = ((plasma_complex64_t*)work->spaces[tid]);
+            plasma_complex64_t *W   =
+                ((plasma_complex64_t*)work->spaces[tid]) + ltau;
 
             // Call the kernel.
-            int info = CORE_ztslqt(m, n, ib,
+            int info = core_ztslqt(m, n, ib,
                                    A1, lda1,
                                    A2, lda2,
                                    T,  ldt,
                                    TAU,
                                    W);
 
-            if (info != PLASMA_SUCCESS) {
+            if (info != PlasmaSuccess) {
                 plasma_error_with_code("Error in call to COREBLAS in argument",
                                        -info);
                 plasma_request_fail(sequence, request,
-                                    PLASMA_ERR_ILLEGAL_VALUE);
+                                    PlasmaErrorIllegalValue);
             }
         }
     }

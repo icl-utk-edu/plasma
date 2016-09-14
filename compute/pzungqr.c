@@ -17,15 +17,15 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define A(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(A, m, n))
-#define Q(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(Q, m, n))
-#define T(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(T, m, n))
+#define A(m, n) ((plasma_complex64_t*) plasma_getaddr(A, m, n))
+#define Q(m, n) ((plasma_complex64_t*) plasma_getaddr(Q, m, n))
+#define T(m, n) ((plasma_complex64_t*) plasma_getaddr(T, m, n))
 /***************************************************************************//**
  *  Parallel construction of Q using tile V (application to identity)
  **/
-void plasma_pzungqr(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
-                    PLASMA_workspace *work,
-                    PLASMA_sequence *sequence, PLASMA_request *request)
+void plasma_pzungqr(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
+                    plasma_workspace_t *work,
+                    plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int k, m, n;
     int ldak, ldqk, ldam, ldqm;
@@ -34,8 +34,8 @@ void plasma_pzungqr(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
     int minmnt;
 
     // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
     }
 
@@ -43,7 +43,7 @@ void plasma_pzungqr(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     int ib = plasma->ib;
@@ -62,7 +62,7 @@ void plasma_pzungqr(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
             ldqm = BLKLDD(Q, m);
             for (n = k; n < Q.nt; n++) {
                 tempnn = n == Q.nt-1 ? Q.n-n*Q.nb : Q.nb;
-                CORE_OMP_ztsmqr(
+                core_omp_ztsmqr(
                     PlasmaLeft, PlasmaNoTrans,
                     Q.mb, tempnn, tempmm, tempnn, tempAkn, ib, T.nb,
                     Q(k, n), ldqk,
@@ -75,7 +75,7 @@ void plasma_pzungqr(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
         }
         for (n = k; n < Q.nt; n++) {
             tempnn = n == Q.nt-1 ? Q.n-n*Q.nb : Q.nb;
-            CORE_OMP_zunmqr(
+            core_omp_zunmqr(
                 PlasmaLeft, PlasmaNoTrans,
                 tempkm, tempnn, tempkmin, ib, T.nb,
                 A(k, k), ldak,

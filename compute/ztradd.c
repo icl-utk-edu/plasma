@@ -81,21 +81,21 @@
  *
  *******************************************************************************
  *
- * @retval PLASMA_SUCCESS successful exit
+ * @retval PlasmaSuccess successful exit
  *
  *******************************************************************************
  *
- * @sa PLASMA_ztradd_Tile_Async
+ * @sa plasma_omp_ztradd
  * @sa PLASMA_ctradd
  * @sa PLASMA_dtradd
  * @sa PLASMA_stradd
  *
  ******************************************************************************/
-int PLASMA_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
-                  PLASMA_Complex64_t  alpha,
-                  PLASMA_Complex64_t *A, int lda,
-                  PLASMA_Complex64_t  beta,
-                  PLASMA_Complex64_t *B, int ldb)
+int PLASMA_ztradd(plasma_enum_t uplo, plasma_enum_t transA, int m, int n,
+                  plasma_complex64_t  alpha,
+                  plasma_complex64_t *A, int lda,
+                  plasma_complex64_t  beta,
+                  plasma_complex64_t *B, int ldb)
 {
     int Am, An;
     int Bm, Bn;
@@ -103,17 +103,17 @@ int PLASMA_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
     int retval;
     int status;
 
-    PLASMA_desc descA;
-    PLASMA_desc descB;
+    plasma_desc_t descA;
+    plasma_desc_t descB;
 
-    PLASMA_Complex64_t zzero = 0.0;
-    PLASMA_Complex64_t zone  = 1.0;
+    plasma_complex64_t zzero = 0.0;
+    plasma_complex64_t zone  = 1.0;
 
     // Get PLASMA context
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
-        return PLASMA_ERR_NOT_INITIALIZED;
+        return PlasmaErrorNotInitialized;
     }
 
     // Check input arguments
@@ -176,10 +176,10 @@ int PLASMA_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
 
     // quick return
     if (m == 0 || n == 0 || (alpha == zzero && beta == zone))
-        return PLASMA_SUCCESS;
+        return PlasmaSuccess;
 
     // Tune
-    // if (plasma_tune(PLASMA_FUNC_ZTRADD, m, n, 0) != PLASMA_SUCCESS) {
+    // if (plasma_tune(PLASMA_FUNC_ZTRADD, m, n, 0) != PlasmaSuccess) {
     //     plasma_error("plasma_tune() failed");
     //     return status;
     // }
@@ -194,28 +194,28 @@ int PLASMA_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
 
     // Allocate matrices in tile layout
     retval = plasma_desc_mat_alloc(&descA);
-    if (retval != PLASMA_SUCCESS) {
+    if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_mat_alloc() failed");
         return retval;
     }
 
     retval = plasma_desc_mat_alloc(&descB);
-    if (retval != PLASMA_SUCCESS) {
+    if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_mat_alloc() failed");
         plasma_desc_mat_free(&descA);
         return retval;
     }
 
     // Create sequence
-    PLASMA_sequence *sequence = NULL;
+    plasma_sequence_t *sequence = NULL;
     retval = plasma_sequence_create(&sequence);
-    if (retval != PLASMA_SUCCESS) {
+    if (retval != PlasmaSuccess) {
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
 
     // Initialize request
-    PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
+    plasma_request_t request = PLASMA_REQUEST_INITIALIZER;
 
     // Asynchronous block
     #pragma omp parallel
@@ -226,9 +226,11 @@ int PLASMA_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
         PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
 
         // Call tile async function
-        if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_ztradd_Tile_Async(uplo, transA, alpha, &descA, beta, &descB,
-                                     sequence, &request);
+        if (sequence->status == PlasmaSuccess) {
+            plasma_omp_ztradd(uplo, transA,
+                              alpha, &descA,
+                              beta, &descB,
+                              sequence, &request);
         }
 
         // Revert to LAPACK layout
@@ -298,29 +300,28 @@ int PLASMA_ztradd(PLASMA_enum uplo, PLASMA_enum transA, int m, int n,
  * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values. The sequence->status and
- *          request->status should never be set to PLASMA_SUCCESS (the
+ *          request->status should never be set to PlasmaSuccess (the
  *          initial values) since another async call may be setting a
  *          failure value at the same time.
  *
  *******************************************************************************
  *
  * @sa PLASMA_ztradd
- * @sa PLASMA_ctradd_Tile_Async
- * @sa PLASMA_dtradd_Tile_Async
- * @sa PLASMA_stradd_Tile_Async
+ * @sa plasma_omp_ctradd
+ * @sa plasma_omp_dtradd
+ * @sa plasma_omp_stradd
  *
  ******************************************************************************/
-void PLASMA_ztradd_Tile_Async(PLASMA_enum uplo, PLASMA_enum transA,
-                              PLASMA_Complex64_t alpha, PLASMA_desc *A,
-                              PLASMA_Complex64_t beta,  PLASMA_desc *B,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request  *request)
+void plasma_omp_ztradd(plasma_enum_t uplo, plasma_enum_t transA,
+                       plasma_complex64_t alpha, plasma_desc_t *A,
+                       plasma_complex64_t beta,  plasma_desc_t *B,
+                       plasma_sequence_t *sequence, plasma_request_t  *request)
 {
     // Get PLASMA context
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
 
@@ -329,7 +330,7 @@ void PLASMA_ztradd_Tile_Async(PLASMA_enum uplo, PLASMA_enum transA,
         (uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
 
@@ -337,37 +338,37 @@ void PLASMA_ztradd_Tile_Async(PLASMA_enum uplo, PLASMA_enum transA,
         (transA != PlasmaTrans) &&
         (transA != PlasmaConjTrans)) {
         plasma_error("illegal value of transA");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
 
-    if (plasma_desc_check(A) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(A) != PlasmaSuccess) {
         plasma_error("invalid A");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
 
-    if (plasma_desc_check(B) != PLASMA_SUCCESS) {
+    if (plasma_desc_check(B) != PlasmaSuccess) {
         plasma_error("invalid B");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
 
     if (sequence == NULL) {
         plasma_error("NULL sequence");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
 
     if (request == NULL) {
         plasma_error("NULL request");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
 
     // Quick return
     int Am = transA == PlasmaNoTrans ? A->m : A->n;
-    PLASMA_Complex64_t zzero = (PLASMA_Complex64_t)0.0;
+    plasma_complex64_t zzero = (plasma_complex64_t)0.0;
 
     if ((alpha == zzero || Am == 0) && beta == 1.0)
         return;
