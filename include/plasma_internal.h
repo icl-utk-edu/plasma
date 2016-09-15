@@ -94,5 +94,6 @@ static inline void plasma_fatal_error_func_line_file(
 #include "plasma_internal_d.h"
 #include "plasma_internal_c.h"
 #include "plasma_internal_z.h"
+#include "plasma_internal_zc.h"
 
 #endif // ICL_PLASMA_INTERNAL_H
