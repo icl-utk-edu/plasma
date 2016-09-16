@@ -18,5 +18,6 @@
 // test routines
 //==============================================================================
 void test_zlag2c(param_value_t param[], char *info);
+void test_clag2z(param_value_t param[], char *info);
 
 #endif // TEST_ZC_H

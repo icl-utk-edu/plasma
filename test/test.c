@@ -285,10 +285,10 @@ void run_routine(const char *name, param_value_t pval[], char *info)
         test_zlag2c(pval, info);
     else if (strcmp(name, "dlag2s") == 0)
         test_dlag2s(pval, info);
-//    else if (strcmp(name, "clag2z") == 0)
-//        test_clag2z(pval, info);
-//    else if (strcmp(name, "slag2d") == 0)
-//        test_slag2d(pval, info);
+    else if (strcmp(name, "clag2z") == 0)
+        test_clag2z(pval, info);
+    else if (strcmp(name, "slag2d") == 0)
+        test_slag2d(pval, info);
 
     else if (strcmp(name, "zpbsv") == 0)
         test_zpbsv(pval, info);
