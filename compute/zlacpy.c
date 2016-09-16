@@ -59,7 +59,7 @@
  *
  *******************************************************************************
  *
- * @sa PLASMA_zlacpy_Tile_Async
+ * @sa plasma_omp_zlacpy
  * @sa PLASMA_clacpy
  * @sa PLASMA_dlacpy
  * @sa PLASMA_slacpy
@@ -99,17 +99,17 @@ int PLASMA_zlacpy(plasma_enum_t uplo, int m, int n,
     }
 
     if (n < 0) {
-        plasma_error("illegal value of N");
+        plasma_error("illegal value of n");
         return -3;
     }
 
     if (lda < imax(1, m)) {
-        plasma_error("illegal value of LDA");
+        plasma_error("illegal value of lda");
         return -5;
     }
 
     if (ldb < imax(1, m)) {
-        plasma_error("illegal value of LDB");
+        plasma_error("illegal value of ldb");
         return -7;
     }
 
@@ -118,7 +118,7 @@ int PLASMA_zlacpy(plasma_enum_t uplo, int m, int n,
       return PlasmaSuccess;
 
     // Tune
-    // if (plasma_tune(PLASMA_FUNC_ZGEMM, m, n, 0) != PlasmaSuccess) {
+    // if (plasma_tune(PLASMA_FUNC_ZLACPY, m, n, 0) != PlasmaSuccess) {
     //     plasma_error("plasma_tune() failed");
     //     return status;
     // }
@@ -225,9 +225,9 @@ int PLASMA_zlacpy(plasma_enum_t uplo, int m, int n,
  *******************************************************************************
  *
  * @sa PLASMA_zlacpy
- * @sa PLASMA_clacpy_Tile_Async
- * @sa PLASMA_dlacpy_Tile_Async
- * @sa PLASMA_slacpy_Tile_Async
+ * @sa PLASMA_omp_clacpy
+ * @sa PLASMA_omp_dlacpy
+ * @sa PLASMA_omp_slacpy
  *
  ******************************************************************************/
 void plasma_omp_zlacpy(plasma_enum_t uplo, plasma_desc_t *A, plasma_desc_t *B,
