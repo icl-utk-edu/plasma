@@ -205,7 +205,6 @@ void core_omp_ztsqrt(int m, int n, int ib, int nb,
             int tid = omp_get_thread_num();
             // split spaces into TAU and WORK
             int ltau = n;
-            int lwork = work->lwork - ltau;
             plasma_complex64_t *TAU = ((plasma_complex64_t*)work->spaces[tid]);
             plasma_complex64_t *W   =
                 ((plasma_complex64_t*)work->spaces[tid]) + ltau;
