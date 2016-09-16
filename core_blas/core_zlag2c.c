@@ -47,8 +47,7 @@
  ******************************************************************************/
 void core_zlag2c(int m, int n,
                  plasma_complex64_t *A,  int lda,
-                 plasma_complex32_t *As, int ldas,
-                 plasma_sequence_t *sequence, plasma_request_t *request)
+                 plasma_complex32_t *As, int ldas)
 {
     LAPACKE_zlag2c_work(LAPACK_COL_MAJOR, m, n, A, lda, As, ldas);
 }
@@ -56,10 +55,9 @@ void core_zlag2c(int m, int n,
 /******************************************************************************/
 void core_omp_zlag2c(int m, int n,
                      plasma_complex64_t *A,  int lda,
-                     plasma_complex32_t *As, int ldas,
-                     plasma_sequence_t *sequence, plasma_request_t *request)
+                     plasma_complex32_t *As, int ldas)
 {
     // omp depend assumes lda == ldas == m
     #pragma omp task depend(in:A[0:m*n]) depend(out:As[0:m*n])
-    core_zlag2c(m, n, A, lda, As, ldas, sequence, request);
+    core_zlag2c(m, n, A, lda, As, ldas);
 }

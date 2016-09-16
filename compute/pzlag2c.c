@@ -46,8 +46,7 @@ void plasma_pzlag2c(plasma_desc_t A, plasma_desc_t As,
             core_omp_zlag2c(
                 X, Y,
                 A(m, n),  ldam,
-                As(m, n), ldbm,
-                sequence, request);
+                As(m, n), ldbm);
         }
     }
 }

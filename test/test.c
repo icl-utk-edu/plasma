@@ -281,6 +281,15 @@ void run_routine(const char *name, param_value_t pval[], char *info)
     else if (strcmp(name, "slacpy") == 0)
         test_slacpy(pval, info);
 
+    else if (strcmp(name, "zlag2c") == 0)
+        test_zlag2c(pval, info);
+    else if (strcmp(name, "dlag2s") == 0)
+        test_dlag2s(pval, info);
+//    else if (strcmp(name, "clag2z") == 0)
+//        test_clag2z(pval, info);
+//    else if (strcmp(name, "slag2d") == 0)
+//        test_slag2d(pval, info);
+
     else if (strcmp(name, "zpbsv") == 0)
         test_zpbsv(pval, info);
     else if (strcmp(name, "dpbsv") == 0)
