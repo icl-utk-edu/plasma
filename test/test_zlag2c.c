@@ -137,16 +137,16 @@ void test_zlag2c(param_value_t param[], char *info)
         float work[1];
 
         // Calculate Frobenius norm of reference result As_ref
-        double AsNormRef = LAPACKE_clange_work(
-                               LAPACK_COL_MAJOR, 'F', ldas, n, AsRef, ldas, work);
+        double AsNormRef = LAPACKE_clange_work(LAPACK_COL_MAJOR, 'F',
+                                               ldas, n, AsRef, ldas, work);
 
         // Calculate difference As_ref-As
         plasma_complex32_t cmone = -1.0;
         cblas_caxpy((size_t)ldas*n, CBLAS_SADDR(cmone), As, 1, AsRef, 1);
 
         // Calculate Frobenius norm of As_ref-As
-        double AsNormDiff = LAPACKE_clange_work(
-                               LAPACK_COL_MAJOR, 'F', ldas, n, AsRef, ldas, work);
+        double AsNormDiff = LAPACKE_clange_work(LAPACK_COL_MAJOR, 'F',
+                                                ldas, n, AsRef, ldas, work);
 
         // Calculate relative error |As_ref-As|_F / |As_ref|_F
         double error = AsNormDiff/AsNormRef;
