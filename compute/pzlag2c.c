@@ -17,7 +17,7 @@
 #include "core_blas_zc.h"
 
 #define  A(m,n) ((plasma_complex64_t*) plasma_getaddr( A, m, n))
-#define As(m,n) ((plasma_complex64_t*) plasma_getaddr(As, m, n))
+#define As(m,n) ((plasma_complex32_t*) plasma_getaddr(As, m, n))
 
 /***************************************************************************//**
  * Parallel tile conversion of matrix precision from double complex to
@@ -44,8 +44,8 @@ void plasma_pzlag2c(plasma_desc_t A, plasma_desc_t As,
         for (n = 0; n < A.nt; n++) {
             Y = n == A.nt-1 ? A.n-n*A.nb : A.nb;
             core_omp_zlag2c(
-                X, Y, A.mb,
-                A(m, n), ldam,
+                X, Y,
+                A(m, n),  ldam,
                 As(m, n), ldbm,
                 sequence, request);
         }

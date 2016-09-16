@@ -35,16 +35,16 @@ void core_clag2z(int m, int n,
 
 /******************************************************************************/
 void core_omp_zlag2c(int m, int n,
-                     const plasma_complex64_t *A,  int lda,
-                           plasma_complex32_t *As, int ldas,
-                           plasma_sequence_t *sequence,
-                           plasma_request_t  *request);
+                     plasma_complex64_t *A,  int lda,
+                     plasma_complex32_t *As, int ldas,
+                     plasma_sequence_t *sequence,
+                     plasma_request_t  *request);
 
 void core_omp_clag2z(int m, int n,
-                     const plasma_complex32_t *As, int ldas,
-                           plasma_complex64_t *A,  int lda,
-                           plasma_sequence_t *sequence,
-                           plasma_request_t  *request);
+                     plasma_complex32_t *As, int ldas,
+                     plasma_complex64_t *A,  int lda,
+                     plasma_sequence_t *sequence,
+                     plasma_request_t  *request);
 
 #ifdef __cplusplus
 }  // extern "C"

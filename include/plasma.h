@@ -17,6 +17,7 @@
 
 #include "plasma_s.h"
 #include "plasma_d.h"
+#include "plasma_ds.h"
 #include "plasma_c.h"
 #include "plasma_z.h"
 #include "plasma_zc.h"

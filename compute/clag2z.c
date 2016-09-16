@@ -15,7 +15,7 @@
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
-#include "plasma_zc.h"
+#include "plasma.h"
 
 /***************************************************************************//**
  *
@@ -65,7 +65,7 @@ int PLASMA_clag2z(int m, int n,
     plasma_context_t  *plasma;
     plasma_sequence_t *sequence = NULL;
     plasma_request_t   request  = PLASMA_REQUEST_INITIALIZER;
-    plasma_desc_t descA, descB;
+    plasma_desc_t descAs, descA;
 
     // Get PLASMA context
     plasma = plasma_context_self();
@@ -107,7 +107,7 @@ int PLASMA_clag2z(int m, int n,
     nb = plasma->nb;
 
     // Initialize tile matrix descriptors
-    descAs = plasma_desc_init(PlasmaComplexReal,   nb, nb, nb*nb,
+    descAs = plasma_desc_init(PlasmaComplexFloat,  nb, nb, nb*nb,
                               m, n, 0, 0, m, n);
 
     descA  = plasma_desc_init(PlasmaComplexDouble, nb, nb, nb*nb,
@@ -139,7 +139,7 @@ int PLASMA_clag2z(int m, int n,
     #pragma omp master
     {
         // Translate to tile layout
-        PLASMA_zcm2ccrb_Async(As, ldas, &descAs, sequence, &request);
+        PLASMA_ccm2ccrb_Async(As, ldas, &descAs, sequence, &request);
         PLASMA_zcm2ccrb_Async(A,  lda,  &descA,  sequence, &request);
 
         // Call tile async function
@@ -148,7 +148,7 @@ int PLASMA_clag2z(int m, int n,
         }
 
         // Revert to LAPACK layout
-        PLASMA_zccrb2cm_Async(&descAs, As, ldas, sequence, &request);
+        PLASMA_cccrb2cm_Async(&descAs, As, ldas, sequence, &request);
         PLASMA_zccrb2cm_Async(&descA,  A,  lda,  sequence, &request);
     }
     // Implicit synchronization

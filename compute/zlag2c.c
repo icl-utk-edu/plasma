@@ -15,7 +15,7 @@
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
-#include "plasma_zc.h"
+#include "plasma.h"
 
 /***************************************************************************//**
  *
@@ -110,7 +110,7 @@ int PLASMA_zlag2c(int m, int n,
     descA  = plasma_desc_init(PlasmaComplexDouble, nb, nb, nb*nb,
                              m, n, 0, 0, m, n);
 
-    descAs = plasma_desc_init(PlasmaComplexReal, nb, nb, nb*nb,
+    descAs = plasma_desc_init(PlasmaComplexFloat,  nb, nb, nb*nb,
                               m, n, 0, 0, m, n);
 
     // Allocate matrices in tile layout
@@ -140,7 +140,7 @@ int PLASMA_zlag2c(int m, int n,
     {
         // Translate to tile layout
         PLASMA_zcm2ccrb_Async(A,  lda,  &descA,  sequence, &request);
-        PLASMA_zcm2ccrb_Async(As, ldas, &descAs, sequence, &request);
+        PLASMA_ccm2ccrb_Async(As, ldas, &descAs, sequence, &request);
 
         // Call tile async function
         if (sequence->status == PlasmaSuccess) {
@@ -149,7 +149,7 @@ int PLASMA_zlag2c(int m, int n,
 
         // Revert to LAPACK layout
         PLASMA_zccrb2cm_Async(&descA,  A,  lda,  sequence, &request);
-        PLASMA_zccrb2cm_Async(&descAs, As, ldas, sequence, &request);
+        PLASMA_cccrb2cm_Async(&descAs, As, ldas, sequence, &request);
     }
     // Implicit synchronization
 

@@ -55,9 +55,9 @@ void core_zlag2c(int m, int n,
 
 /******************************************************************************/
 void core_omp_zlag2c(int m, int n,
-                     const plasma_complex64_t *A,  int lda,
-                           plasma_complex32_t *As, int ldas,
-                           plasma_sequence_t *sequence, plasma_request_t *request)
+                     plasma_complex64_t *A,  int lda,
+                     plasma_complex32_t *As, int ldas,
+                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // omp depend assumes lda == ldas == m
     #pragma omp task depend(in:A[0:m*n]) depend(out:As[0:m*n])
