@@ -272,15 +272,6 @@ void run_routine(const char *name, param_value_t pval[], char *info)
     else if (strcmp(name, "cherk") == 0)
         test_cherk(pval, info);
 
-    else if (strcmp(name, "zlacpy") == 0)
-        test_zlacpy(pval, info);
-    else if (strcmp(name, "dlacpy") == 0)
-        test_dlacpy(pval, info);
-    else if (strcmp(name, "clacpy") == 0)
-        test_clacpy(pval, info);
-    else if (strcmp(name, "slacpy") == 0)
-        test_slacpy(pval, info);
-
     else if (strcmp(name, "zlag2c") == 0)
         test_zlag2c(pval, info);
     else if (strcmp(name, "dlag2s") == 0)
