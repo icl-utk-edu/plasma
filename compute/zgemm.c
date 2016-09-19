@@ -205,33 +205,26 @@ int PLASMA_zgemm(plasma_enum_t transA, plasma_enum_t transB,
     // }
     nb = plasma->nb;
 
-    // Initialize tile matrix descriptors.
-    descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, Am, An, 0, 0, Am, An);
-
-    descB = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, Bm, Bn, 0, 0, Bm, Bn);
-
-    descC = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, m, n, 0, 0, m, n);
-
-    // Allocate matrices in tile layout.
-    retval = plasma_desc_mat_alloc(&descA);
+    // Create tile matrices.
+    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
+                                Am, An, 0, 0, Am, An, &descA);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_mat_alloc() failed");
+        plasma_error("plasma_desc_create() failed");
         return retval;
     }
-    retval = plasma_desc_mat_alloc(&descB);
+    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
+                                Bm, Bn, 0, 0, Bm, Bn, &descB);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_mat_alloc() failed");
-        plasma_desc_mat_free(&descA);
+        plasma_error("plasma_desc_create() failed");
+        plasma_desc_destroy(&descA);
         return retval;
     }
-    retval = plasma_desc_mat_alloc(&descC);
-    if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_mat_alloc() failed");
-        plasma_desc_mat_free(&descA);
-        plasma_desc_mat_free(&descB);
+    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
+                                m, n, 0, 0, m, n, &descB);
+    if (descC.status != PlasmaSuccess) {
+        plasma_error("plasma_desc_create() failed");
+        plasma_desc_destroy(&descA);
+        plasma_desc_destroy(&descB);
         return retval;
     }
 
@@ -269,9 +262,9 @@ int PLASMA_zgemm(plasma_enum_t transA, plasma_enum_t transB,
     // implicit synchronization
 
     // Free matrices in tile layout.
-    plasma_desc_mat_free(&descA);
-    plasma_desc_mat_free(&descB);
-    plasma_desc_mat_free(&descC);
+    plasma_desc_destroy(&descA);
+    plasma_desc_destroy(&descB);
+    plasma_desc_destroy(&descC);
 
     // Return status.
     status = sequence->status;

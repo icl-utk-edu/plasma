@@ -72,6 +72,8 @@ int PLASMA_zgelqf(int m, int n,
     int retval;
     int status;
 
+    plasma_desc_t descA;
+
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_fatal_error("PLASMA not initialized");
@@ -104,15 +106,11 @@ int PLASMA_zgelqf(int m, int n,
     ib = plasma->ib;
     nb = plasma->nb;
 
-    // Initialize tile matrix descriptor.
-    plasma_desc_t descA;
-    descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, m, n, 0, 0, m, n);
-
-    // Allocate matrices in tile layout.
-    retval = plasma_desc_mat_alloc(&descA);
+    // Create tile matrix.
+    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
+                                m, n, 0, 0, m, n, &descA);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_mat_alloc() failed");
+        plasma_error("plasma_desc_create() failed");
         return retval;
     }
 
@@ -132,7 +130,6 @@ int PLASMA_zgelqf(int m, int n,
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
-
     // Initialize request.
     plasma_request_t request = PLASMA_REQUEST_INITIALIZER;
 
@@ -160,7 +157,7 @@ int PLASMA_zgelqf(int m, int n,
     plasma_workspace_free(&work);
 
     // Free matrix A in tile layout.
-    plasma_desc_mat_free(&descA);
+    plasma_desc_destroy(&descA);
 
     // Return status.
     status = sequence->status;

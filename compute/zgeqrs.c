@@ -76,7 +76,8 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
     int retval;
     int status;
 
-    plasma_desc_t descA, descB;
+    plasma_desc_t descA;
+    plasma_desc_t descB;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -119,27 +120,21 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
     ib = plasma->ib;
     nb = plasma->nb;
 
-    // Initialize tile matrix descriptors.
-    descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, lda, n, 0, 0, m, n);
-
-    descB = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, ldb, nrhs, 0, 0, m, nrhs);
-
-    // Allocate matrices in tile layout.
-    retval = plasma_desc_mat_alloc(&descA);
+    // Create tile matrices.
+    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
+                                lda, n, 0, 0, m, n, &descA);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_mat_alloc() failed");
+        plasma_error("plasma_desc_create() failed");
         return retval;
     }
-
-    retval = plasma_desc_mat_alloc(&descB);
+    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
+                                ldb, nrhs, 0, 0, m, nrhs, &descB);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_mat_alloc() failed");
-        plasma_desc_mat_free(&descA);
+        plasma_error("plasma_desc_create() failed");
+        plasma_desc_destroy(&descA);
         return retval;
     }
-
+    
     // Allocate workspace.
     plasma_workspace_t work;
     size_t lwork = ib*nb;  // unmqr: work
@@ -189,8 +184,8 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
     plasma_workspace_free(&work);
 
     // Free matrices in tile layout.
-    plasma_desc_mat_free(&descA);
-    plasma_desc_mat_free(&descB);
+    plasma_desc_destroy(&descA);
+    plasma_desc_destroy(&descB);
 
     // Return status.
     status = sequence->status;
@@ -315,7 +310,7 @@ void plasma_omp_zgeqrs(plasma_desc_t *A, plasma_desc_t *T,
     plasma_complex64_t zone  =  1.0;
     plasma_pztrsm(PlasmaLeft, PlasmaUpper,
                   PlasmaNoTrans, PlasmaNonUnit,
-                  zone, plasma_desc_submatrix(*A, 0, 0, A->n, A->n),
-                  plasma_desc_submatrix(*B, 0, 0, A->n, B->n),
+                  zone, plasma_desc_view(*A, 0, 0, A->n, A->n),
+                        plasma_desc_view(*B, 0, 0, A->n, B->n),
                   sequence, request);
 }

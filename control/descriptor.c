@@ -14,54 +14,74 @@
 #include "plasma_internal.h"
 
 /******************************************************************************/
-int PLASMA_Desc_Create(plasma_desc_t **desc, void *mat, plasma_enum_t dtyp,
-                       int mb, int nb, int bsiz, int lm, int ln, int i,
-                       int j, int m, int n)
+int plasma_desc_create(plasma_enum_t dtyp, int mb, int nb, int lm, int ln,
+                       int i, int j, int m, int n, plasma_desc_t *desc)
 {
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
         return PlasmaErrorNotInitialized;
     }
-    // Allocate the descriptor.
-    *desc = (plasma_desc_t*)malloc(sizeof(plasma_desc_t));
-    if (*desc == NULL) {
+    // Initialize and check the descriptor.
+    *desc = plasma_desc_init(dtyp, mb, nb, mb*nb, lm, ln, i, j, m, n);
+    int retval = plasma_desc_check(desc);
+    if (retval != PlasmaSuccess) {
+        plasma_error("invalid parameter");
+        return PlasmaErrorIllegalValue;
+    }
+    // Allocate the matrix.
+    size_t size = (size_t)desc->lm * desc->ln * plasma_element_size(desc->dtyp);
+    desc->mat = malloc(size);
+    if (desc->mat == NULL) {
         plasma_error("malloc() failed");
         return PlasmaErrorOutOfMemory;
-    }
-    // Initialize the descriptor.
-    **desc = plasma_desc_init(dtyp, mb, nb, bsiz, lm, ln, i, j, m, n);
-    (**desc).mat = mat;
-    int status = plasma_desc_check(*desc);
-    if (status != PlasmaSuccess) {
-        plasma_error("invalid descriptor");
-        return status;
     }
     return PlasmaSuccess;
 }
 
 /******************************************************************************/
-int PLASMA_Desc_Destroy(plasma_desc_t **desc)
+int plasma_desc_band_create(plasma_enum_t dtyp, plasma_enum_t uplo,
+                            int mb, int nb, int lm, int ln, int i, int j,
+                            int m, int n, int kl, int ku, plasma_desc_t *desc)
 {
-    plasma_context_t *plasma;
-
-    plasma = plasma_context_self();
+    plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
         return PlasmaErrorNotInitialized;
     }
-    if (*desc == NULL) {
-        plasma_error("NULL descriptor");
-        return PlasmaErrorNullParameter;
+    // Initialize and check the descriptor.
+    *desc = plasma_desc_band_init(dtyp, uplo, mb, nb, mb*nb,
+                                  lm, ln, i, j, m, n, kl, ku);
+    int retval = plasma_desc_band_check(uplo, desc);
+    if (retval != PlasmaSuccess) {
+        plasma_error("invalid parameter");
+        return PlasmaErrorIllegalValue;
     }
-    free(*desc);
-    *desc = NULL;
+    // Allocate the matrix.
+    size_t size = (size_t)desc->lm * desc->ln * plasma_element_size(desc->dtyp);
+    desc->mat = malloc(size);
+    if (desc->mat == NULL) {
+        plasma_error("malloc() failed");
+        return PlasmaErrorOutOfMemory;
+    }
+    return PlasmaSuccess;
+}
+
+/******************************************************************************/
+int plasma_desc_destroy(plasma_desc_t *desc)
+{
+    plasma_context_t *plasma = plasma_context_self();
+    if (plasma == NULL) {
+        plasma_error("PLASMA not initialized");
+        return PlasmaErrorNotInitialized;
+    }
+    free(desc->mat);
     return PlasmaSuccess;
 }
 
 /******************************************************************************/
 plasma_desc_t plasma_desc_init(plasma_enum_t dtyp, int mb, int nb, int bsiz,
-                             int lm, int ln, int i, int j, int m, int n)
+                               int lm, int ln, int i, int j, int m, int n)
 {
     plasma_desc_t desc;
 
@@ -106,9 +126,9 @@ plasma_desc_t plasma_desc_init(plasma_enum_t dtyp, int mb, int nb, int bsiz,
 
 /******************************************************************************/
 plasma_desc_t plasma_desc_band_init(plasma_enum_t dtyp, plasma_enum_t uplo,
-                                  int mb, int nb, int bsiz,
-                                  int lm, int ln, int i, int j, int m, int n,
-                                  int kl, int ku)
+                                    int mb, int nb, int bsiz,
+                                    int lm, int ln, int i, int j, int m, int n,
+                                    int kl, int ku)
 {
     plasma_desc_t desc;
     // init params for a general matrix
@@ -134,32 +154,6 @@ plasma_desc_t plasma_desc_band_init(plasma_enum_t dtyp, plasma_enum_t uplo,
     }
 
     return desc;
-}
-
-/******************************************************************************/
-plasma_desc_t plasma_desc_submatrix(plasma_desc_t descA, int i, int j, int m, int n)
-{
-    if ((descA.i+i+m) > descA.lm)
-        plasma_error("rows out of bounds");
-
-    if ((descA.j+j+n) > descA.ln)
-        plasma_error("columns out of bounds");
-
-    plasma_desc_t descB = descA;
-    int mb = descA.mb;
-    int nb = descA.nb;
-
-    // submatrix parameters
-    descB.i = descA.i + i;
-    descB.j = descA.j + j;
-    descB.m = m;
-    descB.n = n;
-
-    // submatrix derived parameters
-    descB.mt = (m == 0) ? 0 : (descB.i+m-1)/mb - descB.i/mb + 1;
-    descB.nt = (n == 0) ? 0 : (descB.j+n-1)/nb - descB.j/nb + 1;
-
-    return descB;
 }
 
 /******************************************************************************/
@@ -277,23 +271,27 @@ int plasma_desc_band_check(plasma_enum_t uplo, plasma_desc_t *desc)
 }
 
 /******************************************************************************/
-int plasma_desc_mat_alloc(plasma_desc_t *desc)
+plasma_desc_t plasma_desc_view(plasma_desc_t descA, int i, int j, int m, int n)
 {
-    size_t size = (size_t)desc->lm * desc->ln * plasma_element_size(desc->dtyp);
+    if ((descA.i+i+m) > descA.lm)
+        plasma_error("rows out of bounds");
 
-    if ((desc->mat = malloc(size)) == NULL) {
-        plasma_error("malloc() failed");
-        return PlasmaErrorOutOfMemory;
-    }
-    return PlasmaSuccess;
-}
+    if ((descA.j+j+n) > descA.ln)
+        plasma_error("columns out of bounds");
 
-/******************************************************************************/
-int plasma_desc_mat_free(plasma_desc_t *desc)
-{
-    if (desc->mat != NULL) {
-        free(desc->mat);
-        desc->mat = NULL;
-    }
-    return PlasmaSuccess;
+    plasma_desc_t descB = descA;
+    int mb = descA.mb;
+    int nb = descA.nb;
+
+    // submatrix parameters
+    descB.i = descA.i + i;
+    descB.j = descA.j + j;
+    descB.m = m;
+    descB.n = n;
+
+    // submatrix derived parameters
+    descB.mt = (m == 0) ? 0 : (descB.i+m-1)/mb - descB.i/mb + 1;
+    descB.nt = (n == 0) ? 0 : (descB.j+n-1)/nb - descB.j/nb + 1;
+
+    return descB;
 }

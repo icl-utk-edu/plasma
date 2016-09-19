@@ -139,23 +139,18 @@ int PLASMA_zposv(plasma_enum_t uplo, int n, int nrhs,
     // }
     nb    = plasma->nb;
 
-    // Initialize tile matrix descriptors.
-    descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, lda, n, 0, 0, n, n);
-
-    descB = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, ldb, nrhs, 0, 0, n, nrhs);
-
-    // Allocate matrices in tile layout.
-    retval = plasma_desc_mat_alloc(&descA);
+    // Create tile matrices.
+    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
+                                lda, n, 0, 0, n, n, &descA);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_mat_alloc() failed");
+        plasma_error("plasma_desc_create() failed");
         return retval;
     }
-    retval = plasma_desc_mat_alloc(&descB);
+    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
+                                ldb, nrhs, 0, 0, n, nrhs, &descB);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_mat_alloc() failed");
-        plasma_desc_mat_free(&descA);
+        plasma_error("plasma_desc_create() failed");
+        plasma_desc_destroy(&descA);
         return retval;
     }
 
@@ -188,8 +183,8 @@ int PLASMA_zposv(plasma_enum_t uplo, int n, int nrhs,
     // implicit synchronization
 
     // Free matrices in tile layout.
-    plasma_desc_mat_free(&descA);
-    plasma_desc_mat_free(&descB);
+    plasma_desc_destroy(&descA);
+    plasma_desc_destroy(&descB);
 
     // Return status.
     status = sequence->status;

@@ -183,47 +183,40 @@ int PLASMA_ztradd(plasma_enum_t uplo, plasma_enum_t transA, int m, int n,
     // }
     nb = plasma->nb;
 
-    // Initialize tile matrix descriptors
-    descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, Am, An, 0, 0, Am, An);
-
-    descB = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, Bm, Bn, 0, 0, Bm, Bn);
-
-    // Allocate matrices in tile layout
-    retval = plasma_desc_mat_alloc(&descA);
+    // Create tile matrices.
+    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
+                                Am, An, 0, 0, Am, An, &descA);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_mat_alloc() failed");
+        plasma_error("plasma_desc_create() failed");
+        return retval;
+    }
+    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
+                                Bm, Bn, 0, 0, Bm, Bn, &descB);
+    if (retval != PlasmaSuccess) {
+        plasma_error("plasma_desc_create() failed");
+        plasma_desc_destroy(&descA);
         return retval;
     }
 
-    retval = plasma_desc_mat_alloc(&descB);
-    if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_mat_alloc() failed");
-        plasma_desc_mat_free(&descA);
-        return retval;
-    }
-
-    // Create sequence
+    // Create sequence.
     plasma_sequence_t *sequence = NULL;
     retval = plasma_sequence_create(&sequence);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
-
-    // Initialize request
+    // Initialize request.
     plasma_request_t request = PLASMA_REQUEST_INITIALIZER;
 
-    // Asynchronous block
+    // asynchronous block
     #pragma omp parallel
     #pragma omp master
     {
-        // Translate to tile layout
+        // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
         PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
 
-        // Call tile async function
+        // Call tile async function.
         if (sequence->status == PlasmaSuccess) {
             plasma_omp_ztradd(uplo, transA,
                               alpha, &descA,
@@ -231,17 +224,17 @@ int PLASMA_ztradd(plasma_enum_t uplo, plasma_enum_t transA, int m, int n,
                               sequence, &request);
         }
 
-        // Revert to LAPACK layout
+        // Translate back to LAPACK layout.
         PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
         PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
     }
     // Implicit synchronization
 
-    // Deallocate memory in tile layout
-    plasma_desc_mat_free(&descA);
-    plasma_desc_mat_free(&descB);
+    // Free matrices in tile layout.
+    plasma_desc_destroy(&descA);
+    plasma_desc_destroy(&descB);
 
-    // Return status
+    // Return status.
     status = sequence->status;
     plasma_sequence_destroy(sequence);
     return status;

@@ -141,11 +141,10 @@ void test_zgeqrs(param_value_t param[], char *info)
     int ib = nb;
     int mt = (m%nb == 0) ? (m/nb) : (m/nb+1);
     int nt = (n%nb == 0) ? (n/nb) : (n/nb+1);
-    plasma_desc_t descT = plasma_desc_init(PlasmaComplexDouble, ib, nb, ib*nb,
-                                           mt*ib, nt*nb, 0, 0, mt*ib, nt*nb);
-    // allocate memory for the matrix T
-    retval = plasma_desc_mat_alloc(&descT);
-    assert(retval == 0);
+    plasma_desc_t descT;
+    retval = plasma_desc_create(PlasmaComplexDouble, ib, nb,
+                                mt*ib, nt*nb, 0, 0, mt*ib, nt*nb, &descT);
+    assert(retval == PlasmaSuccess);
 
     //================================================================
     // Run and time PLASMA.
@@ -210,7 +209,7 @@ void test_zgeqrs(param_value_t param[], char *info)
     //================================================================
     // Free arrays.
     //================================================================
-    plasma_desc_mat_free(&descT);
+    plasma_desc_destroy(&descT);
     free(A);
     free(B);
     if (test) {

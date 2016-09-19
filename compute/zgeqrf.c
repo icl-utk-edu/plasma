@@ -109,14 +109,11 @@ int PLASMA_zgeqrf(int m, int n,
     ib = plasma->ib;
     nb = plasma->nb;
 
-    // Initialize tile matrix descriptor.
-    descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, m, n, 0, 0, m, n);
-
-    // Allocate matrices in tile layout.
-    retval = plasma_desc_mat_alloc(&descA);
+    // Create tile matrix.
+    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
+                                m, n, 0, 0, m, n, &descA);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_mat_alloc() failed");
+        plasma_error("plasma_desc_create() failed");
         return retval;
     }
 
@@ -158,7 +155,7 @@ int PLASMA_zgeqrf(int m, int n,
     plasma_workspace_free(&work);
 
     // Free matrix A in tile layout.
-    plasma_desc_mat_free(&descA);
+    plasma_desc_destroy(&descA);
 
     // Return status.
     status = sequence->status;

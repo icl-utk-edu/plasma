@@ -84,7 +84,8 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
     int retval;
     int status;
 
-    plasma_desc_t descAB, descB;
+    plasma_desc_t descAB;
+    plasma_desc_t descB;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -140,20 +141,19 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
     int ldab_desc = (tku+tkl+1)*nb;  // since we use zgetrf on panel, we pivot back within panel.
                                      // this could fill the last tile of the panel,
                                      // and we need extra NB space on the bottom
-    descAB = plasma_desc_band_init(PlasmaComplexDouble, uplo, nb, nb,
-                                   nb*nb, ldab_desc, n, 0, 0, n, n, kd, kd);
-    descB = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, n, nrhs, 0, 0, n, nrhs);
 
-    // Allocate matrices in tile layout.
-    retval = plasma_desc_mat_alloc(&descAB);
+    // Create tile matrices.
+    retval = plasma_desc_band_create(PlasmaComplexDouble, uplo, nb, nb,
+                                     ldab_desc, n, 0, 0, n, n, kd, kd, &descAB);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_mat_alloc() failed");
+        plasma_error("plasma_desc_create() failed");
         return retval;
     }
-    retval = plasma_desc_mat_alloc(&descB);
+    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
+                                n, nrhs, 0, 0, n, nrhs, &descB);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_mat_alloc() failed");
+        plasma_error("plasma_desc_create() failed");
+        plasma_desc_destroy(&descAB);
         return retval;
     }
 
@@ -193,8 +193,8 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
     }
 
     // Free matrix A in tile layout.
-    plasma_desc_mat_free(&descAB);
-    plasma_desc_mat_free(&descB);
+    plasma_desc_destroy(&descAB);
+    plasma_desc_destroy(&descB);
 
     // Return status.
     status = sequence->status;

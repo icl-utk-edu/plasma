@@ -62,6 +62,7 @@ typedef struct {
     int klt;          ///< number of tile rows below the diagonal tile
     int kut;          ///< number of tile rows above the diagonal tile
                       ///  includes the space for potential fills, i.e., kl+ku
+    plasma_enum_t status;
 } plasma_desc_t;
 
 /******************************************************************************/
@@ -144,11 +145,14 @@ static inline void *plasma_getaddr_band(plasma_enum_t uplo,
 }
 
 /******************************************************************************/
-int PLASMA_Desc_Create(plasma_desc_t **desc, void *mat, plasma_enum_t dtyp,
-                       int mb, int nb, int bsiz, int lm, int ln, int i,
-                       int j, int m, int n);
+int plasma_desc_create(plasma_enum_t dtyp, int mb, int nb, int lm, int ln,
+                       int i, int j, int m, int n, plasma_desc_t *desc);
 
-int PLASMA_Desc_Destroy(plasma_desc_t **desc);
+int plasma_desc_band_create(plasma_enum_t dtyp, plasma_enum_t uplo,
+                            int mb, int nb, int lm, int ln, int i, int j,
+                            int m, int n, int kl, int ku, plasma_desc_t *desc);
+
+int plasma_desc_destroy(plasma_desc_t *desc);
 
 plasma_desc_t plasma_desc_init(plasma_enum_t dtyp, int mb, int nb, int bsiz,
                              int lm, int ln, int i, int j, int m, int n);
@@ -159,12 +163,10 @@ plasma_desc_t plasma_desc_band_init(plasma_enum_t dtyp, plasma_enum_t uplo,
                                   int lm, int ln, int i, int j, int m, int n,
                                   int kl, int ku);
 
-plasma_desc_t plasma_desc_submatrix(plasma_desc_t descA, int i, int j, int m, int n);
-
 int plasma_desc_check(plasma_desc_t *desc);
 int plasma_desc_band_check(plasma_enum_t uplo, plasma_desc_t *desc);
-int plasma_desc_mat_alloc(plasma_desc_t *desc);
-int plasma_desc_mat_free(plasma_desc_t *desc);
+
+plasma_desc_t plasma_desc_view(plasma_desc_t descA, int i, int j, int m, int n);
 
 #ifdef __cplusplus
 }  // extern "C"

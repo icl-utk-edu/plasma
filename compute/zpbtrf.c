@@ -123,13 +123,10 @@ int PLASMA_zpbtrf(plasma_enum_t uplo,
     nb = plasma->nb;
     // Initialize tile matrix descriptors.
     int lda = nb*(1+(kd+nb-1)/nb);
-    descAB = plasma_desc_band_init(PlasmaComplexDouble, uplo, nb, nb,
-                                   nb*nb, lda, n, 0, 0, n, n, kd, kd);
-
-    // Allocate matrices in tile layout.
-    retval = plasma_desc_mat_alloc(&descAB);
+    retval = plasma_desc_band_create(PlasmaComplexDouble, uplo, nb, nb,
+                                     lda, n, 0, 0, n, n, kd, kd, &descAB);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_mat_alloc() failed");
+        plasma_error("plasma_desc_create() failed");
         return retval;
     }
 
@@ -170,7 +167,7 @@ int PLASMA_zpbtrf(plasma_enum_t uplo,
     } // pragma omp parallel block closed
 
     // Free matrix A in tile layout.
-    plasma_desc_mat_free(&descAB);
+    plasma_desc_destroy(&descAB);
 
     // Return status.
     status = sequence->status;

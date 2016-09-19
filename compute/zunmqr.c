@@ -97,11 +97,13 @@ int PLASMA_zunmqr(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
                   plasma_desc_t *descT,
                   plasma_complex64_t *C, int ldc)
 {
+    int am;
     int ib, nb;
     int retval;
     int status;
 
-    plasma_desc_t descA, descC;
+    plasma_desc_t descA;
+    plasma_desc_t descC;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -110,15 +112,7 @@ int PLASMA_zunmqr(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
         return PlasmaErrorNotInitialized;
     }
 
-    int am;
-    if (side == PlasmaLeft) {
-        am = m;
-    }
-    else {
-        am = n;
-    }
-
-    // Check input arguments
+    // Check input arguments.
     if ((side != PlasmaLeft) && (side != PlasmaRight)) {
         plasma_error("illegal value of side");
         return -1;
@@ -135,6 +129,14 @@ int PLASMA_zunmqr(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
         plasma_error("illegal value of n");
         return -4;
     }
+
+    if (side == PlasmaLeft) {
+        am = m;
+    }
+    else {
+        am = n;
+    }
+
     if ((k < 0) || (k > am)) {
         plasma_error("illegal value of k");
         return -5;
@@ -160,23 +162,18 @@ int PLASMA_zunmqr(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
     ib = plasma->ib;
     nb = plasma->nb;
 
-    // Initialize tile matrix descriptors.
-    descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, lda, k, 0, 0, am, k);
-
-    descC = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, ldc, n, 0, 0, m, n);
-
-    // Allocate matrices in tile layout.
-    retval = plasma_desc_mat_alloc(&descA);
+    // Create tile matrices.
+    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
+                                lda, k, 0, 0, am, k, &descA);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_mat_alloc() failed");
+        plasma_error("plasma_desc_create() failed");
         return retval;
     }
-    retval = plasma_desc_mat_alloc(&descC);
+    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
+                                ldc, n, 0, 0, m, n, &descC);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_mat_alloc() failed");
-        plasma_desc_mat_free(&descA);
+        plasma_error("plasma_desc_create() failed");
+        plasma_desc_destroy(&descA);
         return retval;
     }
 
@@ -196,31 +193,21 @@ int PLASMA_zunmqr(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
-
     // Initialize request.
     plasma_request_t request = PLASMA_REQUEST_INITIALIZER;
 
     #pragma omp parallel
     #pragma omp master
     {
-        // the Async functions are submitted here.  If an error occurs
-        // (at submission time or at run time) the sequence->status
-        // will be marked with an error.  After an error, the next
-        // Async will not _insert_ more tasks into the runtime.  The
-        // sequence->status can be checked after each call to _Async
-        // or at the end of the parallel region.
-
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
         PLASMA_zcm2ccrb_Async(C, ldc, &descC, sequence, &request);
 
         // Call the tile async function.
         plasma_omp_zunmqr(side, trans, &descA, descT, &descC,
-                                 &work, sequence, &request);
+                          &work, sequence, &request);
 
         // Translate back to LAPACK layout.
-        // this does not seem needed for A
-        //PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
         PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
     }
     // implicit synchronization
@@ -228,8 +215,8 @@ int PLASMA_zunmqr(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
     plasma_workspace_free(&work);
 
     // Free matrices in tile layout.
-    plasma_desc_mat_free(&descA);
-    plasma_desc_mat_free(&descC);
+    plasma_desc_destroy(&descA);
+    plasma_desc_destroy(&descC);
 
     // Return status.
     status = sequence->status;

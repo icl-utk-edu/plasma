@@ -77,7 +77,8 @@ int PLASMA_zunglq(int m, int n, int k,
     int retval;
     int status;
 
-    plasma_desc_t descA, descQ;
+    plasma_desc_t descA;
+    plasma_desc_t descQ;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -107,7 +108,8 @@ int PLASMA_zunglq(int m, int n, int k,
         plasma_error("illegal value of ldq");
         return -8;
     }
-    // Quick return
+
+    // quick return
     if (m <= 0)
         return PlasmaSuccess;
 
@@ -120,24 +122,18 @@ int PLASMA_zunglq(int m, int n, int k,
     ib = plasma->ib;
     nb = plasma->nb;
 
-    // Initialize tile matrix descriptors.
-    descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, lda, n, 0, 0, k, n);
-
-    descQ = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, ldq, n, 0, 0, m, n);
-
-    // Allocate matrices in tile layout.
-    retval = plasma_desc_mat_alloc(&descA);
+    // Create tile matrices.
+    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
+                                lda, n, 0, 0, k, n, &descA);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_mat_alloc() failed");
+        plasma_error("plasma_desc_create() failed");
         return retval;
     }
-
-    retval = plasma_desc_mat_alloc(&descQ);
+    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
+                                ldq, n, 0, 0, m, n, &descQ);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_mat_alloc() failed");
-        plasma_desc_mat_free(&descA);
+        plasma_error("plasma_desc_create() failed");
+        plasma_desc_destroy(&descA);
         return retval;
     }
 
@@ -157,20 +153,12 @@ int PLASMA_zunglq(int m, int n, int k,
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
-
     // Initialize request.
     plasma_request_t request = PLASMA_REQUEST_INITIALIZER;
 
     #pragma omp parallel
     #pragma omp master
     {
-        // the Async functions are submitted here.  If an error occurs
-        // (at submission time or at run time) the sequence->status
-        // will be marked with an error.  After an error, the next
-        // Async will not _insert_ more tasks into the runtime.  The
-        // sequence->status can be checked after each call to _Async
-        // or at the end of the parallel region.
-
         // Translate to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
         PLASMA_zcm2ccrb_Async(Q, ldq, &descQ, sequence, &request);
@@ -186,8 +174,8 @@ int PLASMA_zunglq(int m, int n, int k,
     plasma_workspace_free(&work);
 
     // Free matrices in tile layout.
-    plasma_desc_mat_free(&descA);
-    plasma_desc_mat_free(&descQ);
+    plasma_desc_destroy(&descA);
+    plasma_desc_destroy(&descQ);
 
     // Return status.
     status = sequence->status;
