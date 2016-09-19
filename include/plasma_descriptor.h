@@ -37,32 +37,28 @@ extern "C" {
  *
  **/
 typedef struct {
-    void *mat;        ///< pointer to the beginning of the matrix
-    size_t A21;       ///< pointer to the beginning of A21
-    size_t A12;       ///< pointer to the beginning of A12
-    size_t A22;       ///< pointer to the beginning of A22
-    plasma_enum_t dtyp; ///< precision of the matrix
-    int mb;           ///< number of rows in a tile
-    int nb;           ///< number of columns in a tile
-    int bsiz;         ///< size in elements
-    int lm;           ///< number of rows of the entire matrix
-    int ln;           ///< number of columns of the entire matrix
-    int lm1;          ///< number of tile rows of A11
-    int ln1;          ///< number of tile columns of A11
-    int lmt;          ///< number of tile rows of the entire matrix
-    int lnt;          ///< number of tile columns of the entire matrix
-    int i;            ///< row index to the beginning of the submatrix
-    int j;            ///< column index to the beginning of the submatrix
-    int m;            ///< number of rows of the submatrix
-    int n;            ///< number of columns of the submatrix
-    int mt;           ///< number of tile rows of the submatrix
-    int nt;           ///< number of tile columns of the submatrix
-    int kl;           ///< number of rows below the diagonal
-    int ku;           ///< number of rows above the diagonal
-    int klt;          ///< number of tile rows below the diagonal tile
-    int kut;          ///< number of tile rows above the diagonal tile
-                      ///  includes the space for potential fills, i.e., kl+ku
-    plasma_enum_t status;
+    plasma_enum_t datatype; ///< precision of the matrix
+    void *matrix;           ///< pointer to the beginning of the matrix
+    size_t A21;             ///< pointer to the beginning of A21
+    size_t A12;             ///< pointer to the beginning of A12
+    size_t A22;             ///< pointer to the beginning of A22
+    int mb;                 ///< number of rows in a tile
+    int nb;                 ///< number of columns in a tile
+    int lm;                 ///< number of rows of the entire matrix
+    int ln;                 ///< number of columns of the entire matrix
+    int lmt;                ///< number of tile rows of the entire matrix
+    int lnt;                ///< number of tile columns of the entire matrix
+    int i;                  ///< row index to the beginning of the submatrix
+    int j;                  ///< column index to the beginning of the submatrix
+    int m;                  ///< number of rows of the submatrix
+    int n;                  ///< number of columns of the submatrix
+    int mt;                 ///< number of tile rows of the submatrix
+    int nt;                 ///< number of tile columns of the submatrix
+    int kl;                 ///< number of rows below the diagonal
+    int ku;                 ///< number of rows above the diagonal
+    int klt;                ///< number of tile rows below the diagonal tile
+    int kut;                ///< number of tile rows above the diagonal tile
+                            ///  includes the space for potential fills, i.e., kl+ku
 } plasma_desc_t;
 
 /******************************************************************************/
@@ -82,7 +78,9 @@ static inline int plasma_element_size(int type)
 /******************************************************************************/
 static inline int BLKLDD(plasma_desc_t A, int k)
 {
-    if (k+A.i/A.mb < A.lm1)
+    int lm1 = A.lm/A.mb;
+
+    if (k+A.i/A.mb < lm1)
         return A.mb;
     else
         return A.lm%A.mb;
@@ -93,21 +91,24 @@ static inline void *plasma_getaddr(plasma_desc_t A, int m, int n)
 {
     int mm = m + A.i/A.mb;
     int nn = n + A.j/A.nb;
-    size_t eltsize = plasma_element_size(A.dtyp);
+    size_t eltsize = plasma_element_size(A.datatype);
     size_t offset = 0;
 
-    if (mm < A.lm1)
-        if (nn < A.ln1)
-            offset = A.bsiz*(mm + (size_t)A.lm1 * nn);
+    int lm1 = A.lm/A.mb;
+    int ln1 = A.ln/A.nb;
+
+    if (mm < lm1)
+        if (nn < ln1)
+            offset = A.mb*A.nb*(mm + (size_t)lm1 * nn);
         else
             offset = A.A12 + ((size_t)A.mb * (A.ln%A.nb) * mm);
     else
-        if (nn < A.ln1)
+        if (nn < ln1)
             offset = A.A21 + ((size_t)A.nb * (A.lm%A.mb) * nn);
         else
             offset = A.A22;
 
-    return (void*)((char*)A.mat + (offset*eltsize));
+    return (void*)((char*)A.matrix + (offset*eltsize));
 }
 
 /******************************************************************************/

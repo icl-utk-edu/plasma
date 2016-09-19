@@ -220,8 +220,8 @@ int PLASMA_zgemm(plasma_enum_t transA, plasma_enum_t transB,
         return retval;
     }
     retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
-                                m, n, 0, 0, m, n, &descB);
-    if (descC.status != PlasmaSuccess) {
+                                m, n, 0, 0, m, n, &descC);
+    if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_create() failed");
         plasma_desc_destroy(&descA);
         plasma_desc_destroy(&descB);

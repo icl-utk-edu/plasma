@@ -14,7 +14,7 @@
 #include "plasma_internal.h"
 
 /******************************************************************************/
-int plasma_desc_create(plasma_enum_t dtyp, int mb, int nb, int lm, int ln,
+int plasma_desc_create(plasma_enum_t datatype, int mb, int nb, int lm, int ln,
                        int i, int j, int m, int n, plasma_desc_t *desc)
 {
     plasma_context_t *plasma = plasma_context_self();
@@ -23,16 +23,16 @@ int plasma_desc_create(plasma_enum_t dtyp, int mb, int nb, int lm, int ln,
         return PlasmaErrorNotInitialized;
     }
     // Initialize and check the descriptor.
-    *desc = plasma_desc_init(dtyp, mb, nb, mb*nb, lm, ln, i, j, m, n);
+    *desc = plasma_desc_init(datatype, mb, nb, mb*nb, lm, ln, i, j, m, n);
     int retval = plasma_desc_check(desc);
     if (retval != PlasmaSuccess) {
         plasma_error("invalid parameter");
         return PlasmaErrorIllegalValue;
     }
     // Allocate the matrix.
-    size_t size = (size_t)desc->lm * desc->ln * plasma_element_size(desc->dtyp);
-    desc->mat = malloc(size);
-    if (desc->mat == NULL) {
+    size_t size = (size_t)desc->lm*desc->ln*plasma_element_size(desc->datatype);
+    desc->matrix = malloc(size);
+    if (desc->matrix == NULL) {
         plasma_error("malloc() failed");
         return PlasmaErrorOutOfMemory;
     }
@@ -40,7 +40,7 @@ int plasma_desc_create(plasma_enum_t dtyp, int mb, int nb, int lm, int ln,
 }
 
 /******************************************************************************/
-int plasma_desc_band_create(plasma_enum_t dtyp, plasma_enum_t uplo,
+int plasma_desc_band_create(plasma_enum_t datatype, plasma_enum_t uplo,
                             int mb, int nb, int lm, int ln, int i, int j,
                             int m, int n, int kl, int ku, plasma_desc_t *desc)
 {
@@ -50,7 +50,7 @@ int plasma_desc_band_create(plasma_enum_t dtyp, plasma_enum_t uplo,
         return PlasmaErrorNotInitialized;
     }
     // Initialize and check the descriptor.
-    *desc = plasma_desc_band_init(dtyp, uplo, mb, nb, mb*nb,
+    *desc = plasma_desc_band_init(datatype, uplo, mb, nb, mb*nb,
                                   lm, ln, i, j, m, n, kl, ku);
     int retval = plasma_desc_band_check(uplo, desc);
     if (retval != PlasmaSuccess) {
@@ -58,9 +58,9 @@ int plasma_desc_band_create(plasma_enum_t dtyp, plasma_enum_t uplo,
         return PlasmaErrorIllegalValue;
     }
     // Allocate the matrix.
-    size_t size = (size_t)desc->lm * desc->ln * plasma_element_size(desc->dtyp);
-    desc->mat = malloc(size);
-    if (desc->mat == NULL) {
+    size_t size = (size_t)desc->lm*desc->ln*plasma_element_size(desc->datatype);
+    desc->matrix = malloc(size);
+    if (desc->matrix == NULL) {
         plasma_error("malloc() failed");
         return PlasmaErrorOutOfMemory;
     }
@@ -75,12 +75,12 @@ int plasma_desc_destroy(plasma_desc_t *desc)
         plasma_error("PLASMA not initialized");
         return PlasmaErrorNotInitialized;
     }
-    free(desc->mat);
+    free(desc->matrix);
     return PlasmaSuccess;
 }
 
 /******************************************************************************/
-plasma_desc_t plasma_desc_init(plasma_enum_t dtyp, int mb, int nb, int bsiz,
+plasma_desc_t plasma_desc_init(plasma_enum_t datatype, int mb, int nb, int bsiz,
                                int lm, int ln, int i, int j, int m, int n)
 {
     plasma_desc_t desc;
@@ -90,24 +90,21 @@ plasma_desc_t plasma_desc_init(plasma_enum_t dtyp, int mb, int nb, int bsiz,
     size_t A22 = (size_t)(lm - lm%mb) * (size_t)(     ln%nb);
 
     // matrix address
-    desc.mat = NULL;
+    desc.matrix = NULL;
     desc.A21 = A21;
     desc.A12 = A12 + desc.A21;
     desc.A22 = A22 + desc.A12;
 
     // matrix properties
-    desc.dtyp = dtyp;
+    desc.datatype = datatype;
     desc.mb = mb;
     desc.nb = nb;
-    desc.bsiz = bsiz;
 
     // large matrix parameters
     desc.lm = lm;
     desc.ln = ln;
 
     // large matrix derived parameters
-    desc.lm1 = (lm/mb);
-    desc.ln1 = (ln/nb);
     desc.lmt = (lm%mb == 0) ? (lm/mb) : (lm/mb+1);
     desc.lnt = (ln%nb == 0) ? (ln/nb) : (ln/nb+1);
 
@@ -125,14 +122,14 @@ plasma_desc_t plasma_desc_init(plasma_enum_t dtyp, int mb, int nb, int bsiz,
 }
 
 /******************************************************************************/
-plasma_desc_t plasma_desc_band_init(plasma_enum_t dtyp, plasma_enum_t uplo,
+plasma_desc_t plasma_desc_band_init(plasma_enum_t datatype, plasma_enum_t uplo,
                                     int mb, int nb, int bsiz,
                                     int lm, int ln, int i, int j, int m, int n,
                                     int kl, int ku)
 {
     plasma_desc_t desc;
     // init params for a general matrix
-    desc = plasma_desc_init(dtyp, mb, nb, bsiz, lm, ln, i, j, m, n);
+    desc = plasma_desc_init(datatype, mb, nb, bsiz, lm, ln, i, j, m, n);
 
     // init params for band matrix
     // * band width
@@ -163,23 +160,15 @@ int plasma_desc_check(plasma_desc_t *desc)
         plasma_error("NULL descriptor");
         return PlasmaErrorIllegalValue;
     }
-    if (desc->mat == NULL) {
-        plasma_error("NULL matrix pointer");
-        return PlasmaErrorNullParameter;
-    }
-    if (desc->dtyp != PlasmaRealFloat &&
-        desc->dtyp != PlasmaRealDouble &&
-        desc->dtyp != PlasmaComplexFloat &&
-        desc->dtyp != PlasmaComplexDouble  ) {
+    if (desc->datatype != PlasmaRealFloat &&
+        desc->datatype != PlasmaRealDouble &&
+        desc->datatype != PlasmaComplexFloat &&
+        desc->datatype != PlasmaComplexDouble  ) {
         plasma_error("invalid matrix type");
         return PlasmaErrorIllegalValue;
     }
     if (desc->mb <= 0 || desc->nb <= 0) {
         plasma_error("negative tile dimension");
-        return PlasmaErrorIllegalValue;
-    }
-    if (desc->bsiz < desc->mb*desc->nb) {
-        plasma_error("invalid tile memory size");
         return PlasmaErrorIllegalValue;
     }
     if ((desc->m < 0) || (desc->n < 0)) {
@@ -213,23 +202,15 @@ int plasma_desc_band_check(plasma_enum_t uplo, plasma_desc_t *desc)
         plasma_error("NULL descriptor");
         return PlasmaErrorIllegalValue;
     }
-    if (desc->mat == NULL) {
-        plasma_error("NULL matrix pointer");
-        return PlasmaErrorNullParameter;
-    }
-    if (desc->dtyp != PlasmaRealFloat &&
-        desc->dtyp != PlasmaRealDouble &&
-        desc->dtyp != PlasmaComplexFloat &&
-        desc->dtyp != PlasmaComplexDouble  ) {
+    if (desc->datatype != PlasmaRealFloat &&
+        desc->datatype != PlasmaRealDouble &&
+        desc->datatype != PlasmaComplexFloat &&
+        desc->datatype != PlasmaComplexDouble  ) {
         plasma_error("invalid matrix type");
         return PlasmaErrorIllegalValue;
     }
     if (desc->mb <= 0 || desc->nb <= 0) {
         plasma_error("negative tile dimension");
-        return PlasmaErrorIllegalValue;
-    }
-    if (desc->bsiz < desc->mb*desc->nb) {
-        plasma_error("invalid tile memory size");
         return PlasmaErrorIllegalValue;
     }
     if ((desc->m < 0) || (desc->n < 0)) {
