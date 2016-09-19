@@ -155,14 +155,13 @@ int plasma_desc_band_create(plasma_enum_t dtyp, plasma_enum_t uplo,
 
 int plasma_desc_destroy(plasma_desc_t *desc);
 
-plasma_desc_t plasma_desc_init(plasma_enum_t dtyp, int mb, int nb, int bsiz,
-                             int lm, int ln, int i, int j, int m, int n);
+plasma_desc_t plasma_desc_init(plasma_enum_t dtyp, int mb, int nb,
+                               int lm, int ln, int i, int j, int m, int n);
 
 
 plasma_desc_t plasma_desc_band_init(plasma_enum_t dtyp, plasma_enum_t uplo,
-                                  int mb, int nb, int bsiz,
-                                  int lm, int ln, int i, int j, int m, int n,
-                                  int kl, int ku);
+                                    int mb, int nb, int lm, int ln,
+                                    int i, int j, int m, int n, int kl, int ku);
 
 int plasma_desc_check(plasma_desc_t *desc);
 int plasma_desc_band_check(plasma_enum_t uplo, plasma_desc_t *desc);

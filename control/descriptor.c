@@ -23,7 +23,7 @@ int plasma_desc_create(plasma_enum_t datatype, int mb, int nb, int lm, int ln,
         return PlasmaErrorNotInitialized;
     }
     // Initialize and check the descriptor.
-    *desc = plasma_desc_init(datatype, mb, nb, mb*nb, lm, ln, i, j, m, n);
+    *desc = plasma_desc_init(datatype, mb, nb, lm, ln, i, j, m, n);
     int retval = plasma_desc_check(desc);
     if (retval != PlasmaSuccess) {
         plasma_error("invalid parameter");
@@ -50,7 +50,7 @@ int plasma_desc_band_create(plasma_enum_t datatype, plasma_enum_t uplo,
         return PlasmaErrorNotInitialized;
     }
     // Initialize and check the descriptor.
-    *desc = plasma_desc_band_init(datatype, uplo, mb, nb, mb*nb,
+    *desc = plasma_desc_band_init(datatype, uplo, mb, nb,
                                   lm, ln, i, j, m, n, kl, ku);
     int retval = plasma_desc_band_check(uplo, desc);
     if (retval != PlasmaSuccess) {
@@ -80,7 +80,7 @@ int plasma_desc_destroy(plasma_desc_t *desc)
 }
 
 /******************************************************************************/
-plasma_desc_t plasma_desc_init(plasma_enum_t datatype, int mb, int nb, int bsiz,
+plasma_desc_t plasma_desc_init(plasma_enum_t datatype, int mb, int nb,
                                int lm, int ln, int i, int j, int m, int n)
 {
     plasma_desc_t desc;
@@ -123,13 +123,12 @@ plasma_desc_t plasma_desc_init(plasma_enum_t datatype, int mb, int nb, int bsiz,
 
 /******************************************************************************/
 plasma_desc_t plasma_desc_band_init(plasma_enum_t datatype, plasma_enum_t uplo,
-                                    int mb, int nb, int bsiz,
-                                    int lm, int ln, int i, int j, int m, int n,
-                                    int kl, int ku)
+                                    int mb, int nb, int lm, int ln,
+                                    int i, int j, int m, int n, int kl, int ku)
 {
     plasma_desc_t desc;
     // init params for a general matrix
-    desc = plasma_desc_init(datatype, mb, nb, bsiz, lm, ln, i, j, m, n);
+    desc = plasma_desc_init(datatype, mb, nb, lm, ln, i, j, m, n);
 
     // init params for band matrix
     // * band width
