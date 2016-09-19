@@ -90,10 +90,10 @@ void test_ztrmm(param_value_t param[], char *info)
     //================================================================
     // Set parameters
     //================================================================
-    plasma_enum_t side = PLASMA_side_const(param[PARAM_SIDE].c);
-    plasma_enum_t uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
-    plasma_enum_t transa = PLASMA_trans_const(param[PARAM_TRANSA].c);
-    plasma_enum_t diag = PLASMA_diag_const(param[PARAM_DIAG].c);
+    plasma_enum_t side = plasma_side_cons_t(param[PARAM_SIDE].c);
+    plasma_enum_t uplo = plasma_uplo_const_t(param[PARAM_UPLO].c);
+    plasma_enum_t transa = plasma_trans_const_t(param[PARAM_TRANSA].c);
+    plasma_enum_t diag = plasma_diag_const_t(param[PARAM_DIAG].c);
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;

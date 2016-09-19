@@ -103,12 +103,12 @@ typedef float  _Complex plasma_complex32_t;
 typedef double _Complex plasma_complex64_t;
 
 /******************************************************************************/
-plasma_enum_t PLASMA_trans_const(char lapack_char);
-plasma_enum_t PLASMA_uplo_const(char lapack_char);
-plasma_enum_t PLASMA_diag_const(char lapack_char);
-plasma_enum_t PLASMA_side_const(char lapack_char);
-plasma_enum_t PLASMA_direct_const(char lapack_char);
-plasma_enum_t PLASMA_storev_const(char lapack_char);
+plasma_enum_t plasma_trans_const_t(char lapack_char);
+plasma_enum_t plasma_uplo_const_t(char lapack_char);
+plasma_enum_t plasma_diag_const_t(char lapack_char);
+plasma_enum_t plasma_side_cons_t(char lapack_char);
+plasma_enum_t plasma_direct_const_t(char lapack_char);
+plasma_enum_t plasma_storev_const_t(char lapack_char);
 
 #ifdef __cplusplus
 }  // extern "C"
