@@ -162,31 +162,31 @@ int test_routine(int test, const char *name, param_value_t pval[])
 
     if (pval == NULL) {
         printf("\n");
-        printf("%*s %*s %s %*s %*s\n",
+        printf("%*s %*s %*s %*s %s\n",
+            InfoSpacing, "Status",
+            InfoSpacing, "Error",
             InfoSpacing, "Seconds",
             InfoSpacing, "GFLOPS",
-                         info,
-            InfoSpacing, "Error",
-            InfoSpacing, "Status");
+                         info);
         printf("\n");
         return 0;
     }
     else if (test) {
-        printf("%*.4lf %*.4lf %s %*.2le %*s\n",
+        printf("%*s %*.2le %*.4lf %*.4lf %s\n",
+            InfoSpacing, pval[PARAM_SUCCESS].i ? "pass" : "FAILED",
+            InfoSpacing, pval[PARAM_ERROR].d,
             InfoSpacing, pval[PARAM_TIME].d,
             InfoSpacing, pval[PARAM_GFLOPS].d,
-                         info,
-            InfoSpacing, pval[PARAM_ERROR].d,
-            InfoSpacing, pval[PARAM_SUCCESS].i ? "pass" : "FAILED");
+                         info);
         return (pval[PARAM_SUCCESS].i == 0);
     }
     else {
-        printf("%*.4lf %*.4lf %s %*s %*s\n",
+        printf("%*s %*s %*.4lf %*.4lf %s\n",
+            InfoSpacing, "---",
+            InfoSpacing, "---",
             InfoSpacing, pval[PARAM_TIME].d,
             InfoSpacing, pval[PARAM_GFLOPS].d,
-                         info,
-            InfoSpacing, "---",
-            InfoSpacing, "---");
+                         info);
         return 0;
     }
 }
