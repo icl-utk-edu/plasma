@@ -135,7 +135,7 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
             }
         }
         break;
-    case PlasmaFull:
+    case PlasmaGeneral:
     default:
         if (transA == PlasmaNoTrans) {
             for (m = 0; m < B.mt; m++) {

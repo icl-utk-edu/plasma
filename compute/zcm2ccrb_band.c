@@ -41,7 +41,7 @@ void PLASMA_zcm2ccrb_band_Async(plasma_enum_t uplo,
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-    if (plasma_desc_band_check(uplo, A) != PlasmaSuccess) {
+    if (plasma_desc_band_check(A) != PlasmaSuccess) {
         plasma_error("invalid A");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;

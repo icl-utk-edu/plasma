@@ -32,7 +32,7 @@ void plasma_pzoocm2ccrb_band(plasma_enum_t uplo,
     for (n = 0; n < A.nt; n++)
     {
         int m_start, m_end;
-        if (uplo == PlasmaFull) {
+        if (uplo == PlasmaGeneral) {
             m_start = (imax(0, n*A.nb-A.ku-A.kl)) / A.nb;
             m_end = (imin(A.m-1, (n+1)*A.nb+A.kl-1)) / A.nb;
         }

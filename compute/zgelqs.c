@@ -300,7 +300,7 @@ void plasma_omp_zgelqs(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *B,
 
     // zero the trailing block of the right-hand side matrix
     // (B has less rows than X)
-    plasma_pzlaset(PlasmaFull, 0., 0.,
+    plasma_pzlaset(PlasmaGeneral, 0., 0.,
                    plasma_desc_view(*B, A->m, 0,
                                     A->n - A->m, B->n),
                    sequence, request);

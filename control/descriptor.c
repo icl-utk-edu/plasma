@@ -14,7 +14,7 @@
 #include "plasma_internal.h"
 
 /******************************************************************************/
-int plasma_desc_create(plasma_enum_t datatype, int mb, int nb, int lm, int ln,
+int plasma_desc_create(plasma_enum_t precision, int mb, int nb, int lm, int ln,
                        int i, int j, int m, int n, plasma_desc_t *desc)
 {
     plasma_context_t *plasma = plasma_context_self();
@@ -23,7 +23,7 @@ int plasma_desc_create(plasma_enum_t datatype, int mb, int nb, int lm, int ln,
         return PlasmaErrorNotInitialized;
     }
     // Initialize and check the descriptor.
-    int retval = plasma_desc_init(datatype, mb, nb, lm, ln, i, j, m, n, desc);
+    int retval = plasma_desc_init(precision, mb, nb, lm, ln, i, j, m, n, desc);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_init() failed");
         return retval;
@@ -34,7 +34,7 @@ int plasma_desc_create(plasma_enum_t datatype, int mb, int nb, int lm, int ln,
         return PlasmaErrorIllegalValue;
     }
     // Allocate the matrix.
-    size_t size = (size_t)desc->lm*desc->ln*plasma_element_size(desc->datatype);
+    size_t size = (size_t)desc->lm*desc->ln*plasma_element_size(desc->precision);
     desc->matrix = malloc(size);
     if (desc->matrix == NULL) {
         plasma_error("malloc() failed");
@@ -44,7 +44,7 @@ int plasma_desc_create(plasma_enum_t datatype, int mb, int nb, int lm, int ln,
 }
 
 /******************************************************************************/
-int plasma_desc_band_create(plasma_enum_t datatype, plasma_enum_t uplo,
+int plasma_desc_band_create(plasma_enum_t precision, plasma_enum_t uplo,
                             int mb, int nb, int lm, int ln, int i, int j,
                             int m, int n, int kl, int ku, plasma_desc_t *desc)
 {
@@ -54,19 +54,19 @@ int plasma_desc_band_create(plasma_enum_t datatype, plasma_enum_t uplo,
         return PlasmaErrorNotInitialized;
     }
     // Initialize and check the descriptor.
-    int retval = plasma_desc_band_init(datatype, uplo, mb, nb,
+    int retval = plasma_desc_band_init(precision, uplo, mb, nb,
                                        lm, ln, i, j, m, n, kl, ku, desc);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_band_init() failed");
         return retval;
     }
-    retval = plasma_desc_band_check(uplo, desc);
+    retval = plasma_desc_band_check(desc);
     if (retval != PlasmaSuccess) {
-        plasma_error("iplasma_desc_band_check() failed");
+        plasma_error("plasma_desc_band_check() failed");
         return PlasmaErrorIllegalValue;
     }
     // Allocate the matrix.
-    size_t size = (size_t)desc->lm*desc->ln*plasma_element_size(desc->datatype);
+    size_t size = (size_t)desc->lm*desc->ln*plasma_element_size(desc->precision);
     desc->matrix = malloc(size);
     if (desc->matrix == NULL) {
         plasma_error("malloc() failed");
@@ -88,7 +88,7 @@ int plasma_desc_destroy(plasma_desc_t *desc)
 }
 
 /******************************************************************************/
-int plasma_desc_init(plasma_enum_t datatype, int mb, int nb, int lm, int ln,
+int plasma_desc_init(plasma_enum_t precision, int mb, int nb, int lm, int ln,
                      int i, int j, int m, int n, plasma_desc_t *desc)
 {
     size_t A21 = (size_t)(lm - lm%mb) * (size_t)(ln - ln%nb);
@@ -102,7 +102,8 @@ int plasma_desc_init(plasma_enum_t datatype, int mb, int nb, int lm, int ln,
     desc->A22 = A22 + desc->A12;
 
     // matrix properties
-    desc->datatype = datatype;
+    desc->type = PlasmaGeneral;
+    desc->precision = precision;
     desc->mb = mb;
     desc->nb = nb;
 
@@ -128,23 +129,27 @@ int plasma_desc_init(plasma_enum_t datatype, int mb, int nb, int lm, int ln,
 }
 
 /******************************************************************************/
-int plasma_desc_band_init(plasma_enum_t datatype, plasma_enum_t uplo,
+int plasma_desc_band_init(plasma_enum_t precision, plasma_enum_t uplo,
                           int mb, int nb, int lm, int ln, int i, int j,
                           int m, int n, int kl, int ku, plasma_desc_t *desc)
 {
-    // init params for a general matrix
-    int retval = plasma_desc_init(datatype, mb, nb, lm, ln, i, j, m, n, desc);
+    // Init parameters for a general matrix.
+    int retval = plasma_desc_init(precision, mb, nb, lm, ln, i, j, m, n, desc);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_init() failed");
         return retval;
     }
+    // Change matrix type to band.
+    desc->type = PlasmaGeneralBand;
+    desc->uplo = uplo;
+
     // init params for band matrix
     // * band width
     desc->kl = kl;
     desc->ku = ku;
 
     // * number of tiles within band, 1+ for diagonal
-    if (uplo == PlasmaFull) {
+    if (uplo == PlasmaGeneral) {
         desc->klt = 1+(i+kl + mb-1)/mb - i/mb;
         desc->kut = 1+(i+ku+kl + nb-1)/nb - i/nb;
     }
@@ -164,12 +169,31 @@ int plasma_desc_check(plasma_desc_t *desc)
 {
     if (desc == NULL) {
         plasma_error("NULL descriptor");
+        return PlasmaErrorNullParameter;
+    }
+    else if (desc->type == PlasmaGeneral) {
+        return plasma_desc_full_check(desc);
+    }
+    else if (desc->type == PlasmaGeneralBand) {
+        return plasma_desc_band_check(desc);
+    }
+    else {
+        plasma_error("invalid matrix type");
         return PlasmaErrorIllegalValue;
     }
-    if (desc->datatype != PlasmaRealFloat &&
-        desc->datatype != PlasmaRealDouble &&
-        desc->datatype != PlasmaComplexFloat &&
-        desc->datatype != PlasmaComplexDouble  ) {
+}
+
+/******************************************************************************/
+int plasma_desc_full_check(plasma_desc_t *desc)
+{
+    if (desc == NULL) {
+        plasma_error("NULL descriptor");
+        return PlasmaErrorIllegalValue;
+    }
+    if (desc->precision != PlasmaRealFloat &&
+        desc->precision != PlasmaRealDouble &&
+        desc->precision != PlasmaComplexFloat &&
+        desc->precision != PlasmaComplexDouble  ) {
         plasma_error("invalid matrix type");
         return PlasmaErrorIllegalValue;
     }
@@ -202,16 +226,16 @@ int plasma_desc_check(plasma_desc_t *desc)
 }
 
 /******************************************************************************/
-int plasma_desc_band_check(plasma_enum_t uplo, plasma_desc_t *desc)
+int plasma_desc_band_check(plasma_desc_t *desc)
 {
     if (desc == NULL) {
         plasma_error("NULL descriptor");
         return PlasmaErrorIllegalValue;
     }
-    if (desc->datatype != PlasmaRealFloat &&
-        desc->datatype != PlasmaRealDouble &&
-        desc->datatype != PlasmaComplexFloat &&
-        desc->datatype != PlasmaComplexDouble  ) {
+    if (desc->precision != PlasmaRealFloat &&
+        desc->precision != PlasmaRealDouble &&
+        desc->precision != PlasmaComplexFloat &&
+        desc->precision != PlasmaComplexDouble  ) {
         plasma_error("invalid matrix type");
         return PlasmaErrorIllegalValue;
     }
@@ -227,11 +251,11 @@ int plasma_desc_band_check(plasma_enum_t uplo, plasma_desc_t *desc)
         plasma_error("invalid leading column dimensions");
         return PlasmaErrorIllegalValue;
     }
-    if ((uplo == PlasmaFull &&
+    if ((desc->uplo == PlasmaGeneral &&
          desc->lm < desc->mb*((2*desc->kl+desc->ku+desc->mb)/desc->mb)) ||
-        (uplo == PlasmaUpper &&
+        (desc->uplo == PlasmaUpper &&
          desc->lm < desc->mb*((desc->ku + desc->mb)/desc->mb)) ||
-        (uplo == PlasmaUpper &&
+        (desc->uplo == PlasmaUpper &&
          desc->lm < desc->mb*((desc->kl + desc->mb)/desc->mb))) {
         plasma_error("invalid leading row dimensions");
         return PlasmaErrorIllegalValue;

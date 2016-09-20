@@ -276,7 +276,7 @@ void plasma_omp_zungqr(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *Q,
         return;
 
     // set ones to diagonal of Q
-    plasma_pzlaset(PlasmaFull,
+    plasma_pzlaset(PlasmaGeneral,
                    (plasma_complex64_t)0.0, (plasma_complex64_t)1.0, *Q,
                    sequence, request);
 

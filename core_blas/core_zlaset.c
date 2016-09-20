@@ -59,7 +59,7 @@ void core_zlaset(plasma_enum_t uplo, int m, int n,
 {
     if (alpha == (plasma_complex64_t)0.0 &&
         beta == (plasma_complex64_t)0.0 &&
-        uplo == PlasmaFull &&
+        uplo == PlasmaGeneral &&
         m == lda) {
         // Use memset to zero continuous memory.
         memset((void*)A, 0, (size_t)m*n*sizeof(plasma_complex64_t));

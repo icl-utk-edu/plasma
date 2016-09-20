@@ -339,7 +339,7 @@ void plasma_omp_zgels(plasma_enum_t trans, plasma_desc_t *A,
     // (imin(m, imin(n, nrhs)) == 0)
     if (imin(A->m, imin(A->n, B->n)) == 0) {
         // zero matrix B
-        plasma_pzlaset(PlasmaFull, 0., 0., *B, sequence, request);
+        plasma_pzlaset(PlasmaGeneral, 0., 0., *B, sequence, request);
         return;
     }
 
@@ -367,7 +367,7 @@ void plasma_omp_zgels(plasma_enum_t trans, plasma_desc_t *A,
 
         // zero the trailing block of the right-hand side matrix
         // (B has less rows than X)
-        plasma_pzlaset(PlasmaFull, 0., 0.,
+        plasma_pzlaset(PlasmaGeneral, 0., 0.,
                        plasma_desc_view(*B, A->m, 0,
                                         A->n - A->m, B->n),
                        sequence, request);

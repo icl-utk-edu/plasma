@@ -37,28 +37,32 @@ extern "C" {
  *
  **/
 typedef struct {
-    plasma_enum_t datatype; ///< precision of the matrix
-    void *matrix;           ///< pointer to the beginning of the matrix
-    size_t A21;             ///< pointer to the beginning of A21
-    size_t A12;             ///< pointer to the beginning of A12
-    size_t A22;             ///< pointer to the beginning of A22
-    int mb;                 ///< number of rows in a tile
-    int nb;                 ///< number of columns in a tile
-    int lm;                 ///< number of rows of the entire matrix
-    int ln;                 ///< number of columns of the entire matrix
-    int lmt;                ///< number of tile rows of the entire matrix
-    int lnt;                ///< number of tile columns of the entire matrix
-    int i;                  ///< row index to the beginning of the submatrix
-    int j;                  ///< column index to the beginning of the submatrix
-    int m;                  ///< number of rows of the submatrix
-    int n;                  ///< number of columns of the submatrix
-    int mt;                 ///< number of tile rows of the submatrix
-    int nt;                 ///< number of tile columns of the submatrix
-    int kl;                 ///< number of rows below the diagonal
-    int ku;                 ///< number of rows above the diagonal
-    int klt;                ///< number of tile rows below the diagonal tile
-    int kut;                ///< number of tile rows above the diagonal tile
-                            ///  includes the space for potential fills, i.e., kl+ku
+    plasma_enum_t type;      ///< general, general band, etc.
+    plasma_enum_t uplo;      ///< upper, lower, etc.
+    plasma_enum_t precision; ///< precision of the matrix
+
+    void *matrix; ///< pointer to the beginning of the matrix
+    size_t A21;   ///< pointer to the beginning of A21
+    size_t A12;   ///< pointer to the beginning of A12
+    size_t A22;   ///< pointer to the beginning of A22
+
+    int mb;  //< number of rows in a tile
+    int nb;  ///< number of columns in a tile
+    int lm;  ///< number of rows of the entire matrix
+    int ln;  ///< number of columns of the entire matrix
+    int lmt; ///< number of tile rows of the entire matrix
+    int lnt; ///< number of tile columns of the entire matrix
+    int i;   ///< row index to the beginning of the submatrix
+    int j;   ///< column index to the beginning of the submatrix
+    int m;   ///< number of rows of the submatrix
+    int n;   ///< number of columns of the submatrix
+    int mt;  ///< number of tile rows of the submatrix
+    int nt;  ///< number of tile columns of the submatrix
+    int kl;  ///< number of rows below the diagonal
+    int ku;  ///< number of rows above the diagonal
+    int klt; ///< number of tile rows below the diagonal tile
+    int kut; ///< number of tile rows above the diagonal tile
+             ///  includes the space for potential fills, i.e., kl+ku
 } plasma_desc_t;
 
 /******************************************************************************/
@@ -91,7 +95,7 @@ static inline void *plasma_getaddr(plasma_desc_t A, int m, int n)
 {
     int mm = m + A.i/A.mb;
     int nn = n + A.j/A.nb;
-    size_t eltsize = plasma_element_size(A.datatype);
+    size_t eltsize = plasma_element_size(A.precision);
     size_t offset = 0;
 
     int lm1 = A.lm/A.mb;
@@ -116,7 +120,7 @@ static inline int BLKLDD_BAND(plasma_enum_t uplo,
                               plasma_desc_t A, int m, int n)
 {
     int kut;
-    if (uplo == PlasmaFull) {
+    if (uplo == PlasmaGeneral) {
         kut = (A.kl+A.kl+A.nb-1)/A.nb;
     }
     else if (uplo == PlasmaUpper) {
@@ -133,7 +137,7 @@ static inline void *plasma_getaddr_band(plasma_enum_t uplo,
                                         plasma_desc_t A, int m, int n)
 {
     int kut;
-    if (uplo == PlasmaFull) {
+    if (uplo == PlasmaGeneral) {
         kut = (A.kl+A.kl+A.nb-1)/A.nb;
     }
     else if (uplo == PlasmaUpper) {
@@ -155,15 +159,16 @@ int plasma_desc_band_create(plasma_enum_t dtyp, plasma_enum_t uplo,
 
 int plasma_desc_destroy(plasma_desc_t *desc);
 
-int plasma_desc_init(plasma_enum_t datatype, int mb, int nb, int lm, int ln,
+int plasma_desc_init(plasma_enum_t precision, int mb, int nb, int lm, int ln,
                      int i, int j, int m, int n, plasma_desc_t *desc);
 
-int plasma_desc_band_init(plasma_enum_t datatype, plasma_enum_t uplo,
+int plasma_desc_band_init(plasma_enum_t precision, plasma_enum_t uplo,
                           int mb, int nb, int lm, int ln, int i, int j,
                           int m, int n, int kl, int ku, plasma_desc_t *desc);
 
 int plasma_desc_check(plasma_desc_t *desc);
-int plasma_desc_band_check(plasma_enum_t uplo, plasma_desc_t *desc);
+int plasma_desc_full_check(plasma_desc_t *desc);
+int plasma_desc_band_check(plasma_desc_t *desc);
 
 plasma_desc_t plasma_desc_view(plasma_desc_t descA, int i, int j, int m, int n);
 

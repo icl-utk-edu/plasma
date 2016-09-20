@@ -36,9 +36,9 @@
  *
  * @param[in] uplo
  *          Specifies the shape of A and B matrices:
- *          - PlasmaFull: A and B are general matrices.
- *          - PlasmaUpper: op( A ) and B are upper trapezoidal matrices.
- *          - PlasmaLower: op( A ) and B are lower trapezoidal matrices.
+ *          - PlasmaGeneral: A and B are general matrices.
+ *          - PlasmaUpper:   op( A ) and B are upper trapezoidal matrices.
+ *          - PlasmaLower:   op( A ) and B are lower trapezoidal matrices.
  *
  * @param[in] transA
  *          Specifies whether the matrix A is non-transposed, transposed, or
@@ -86,7 +86,7 @@ void core_ztradd(plasma_enum_t uplo, plasma_enum_t transA, int m, int n,
 {
     int i, j;
 
-    if (uplo == PlasmaFull) {
+    if (uplo == PlasmaGeneral) {
         core_zgeadd(transA, m, n, alpha, A, lda, beta, B, ldb);
         return;
     }

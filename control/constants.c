@@ -41,16 +41,16 @@ plasma_enum_t plasma_trans_const_t(char lapack_char)
 }
 
 /***************************************************************************//**
- * @retval PlasmaUpper if lapack_char = 'U'
- * @retval PlasmaLower if lapack_char = 'L'
- * @retval PlasmaFull  otherwise
+ * @retval PlasmaUpper   if lapack_char = 'U'
+ * @retval PlasmaLower   if lapack_char = 'L'
+ * @retval PlasmaGeneral otherwise
  ******************************************************************************/
 plasma_enum_t plasma_uplo_const_t(char lapack_char)
 {
     switch (lapack_char) {
     case 'U': case 'u': return PlasmaUpper;
     case 'L': case 'l': return PlasmaLower;
-    default:            return PlasmaFull;
+    default:            return PlasmaGeneral;
     }
 }
 

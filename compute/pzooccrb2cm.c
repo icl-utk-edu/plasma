@@ -44,7 +44,7 @@ void plasma_pzooccrb2cm(plasma_desc_t A, plasma_complex64_t *Af77, int lda,
             f77 = &Af77[(size_t)A.nb*lda*n + (size_t)A.mb*m];
             bdl = (plasma_complex64_t*)plasma_getaddr(A, m, n);
 
-            core_omp_zlacpy(PlasmaFull,
+            core_omp_zlacpy(PlasmaGeneral,
                             y2-y1, x2-x1, A.mb,
                             &(bdl[x1*A.nb+y1]), ldt,
                             &(f77[x1*lda+y1]), lda);

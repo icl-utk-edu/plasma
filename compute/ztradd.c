@@ -38,9 +38,9 @@
  *
  * @param[in] uplo
  *          Specifies the shape of op( A ) and B matrices:
- *          - PlasmaFull:  op( A ) and B are general matrices.
- *          - PlasmaUpper: op( A ) and B are upper trapezoidal matrices.
- *          - PlasmaLower: op( A ) and B are lower trapezoidal matrices.
+ *          - PlasmaGeneral: op( A ) and B are general matrices.
+ *          - PlasmaUpper:   op( A ) and B are upper trapezoidal matrices.
+ *          - PlasmaLower:   op( A ) and B are lower trapezoidal matrices.
  *
  * @param[in] transA
  *          Specifies whether the matrix A is non-transposed, transposed, or
@@ -117,7 +117,7 @@ int PLASMA_ztradd(plasma_enum_t uplo, plasma_enum_t transA, int m, int n,
     }
 
     // Check input arguments
-    if ((uplo != PlasmaFull) &&
+    if ((uplo != PlasmaGeneral) &&
         (uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
@@ -255,9 +255,9 @@ int PLASMA_ztradd(plasma_enum_t uplo, plasma_enum_t transA, int m, int n,
  *
  * @param[in] uplo
  *          Specifies the shape of op( A ) and B matrices:
- *          - PlasmaFull:  op( A ) and B are general matrices.
- *          - PlasmaUpper: op( A ) and B are upper trapezoidal matrices.
- *          - PlasmaLower: op( A ) and B are lower trapezoidal matrices.
+ *          - PlasmaGeneral: op( A ) and B are general matrices.
+ *          - PlasmaUpper:   op( A ) and B are upper trapezoidal matrices.
+ *          - PlasmaLower:   op( A ) and B are lower trapezoidal matrices.
  *
  * @param[in] transA
  *          Specifies whether the matrix A is non-transposed, transposed, or
@@ -315,7 +315,7 @@ void plasma_omp_ztradd(plasma_enum_t uplo, plasma_enum_t transA,
     }
 
     // Check input arguments
-    if ((uplo != PlasmaFull) &&
+    if ((uplo != PlasmaGeneral) &&
         (uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");

@@ -47,31 +47,32 @@ enum {
  *
  **/
 enum {
-    PlasmaInvalid    = -1,
+    PlasmaInvalid     = -1,
 
-    PlasmaNoTrans    = 111,
-    PlasmaTrans      = 112,
-    PlasmaConjTrans  = 113,
-    Plasma_ConjTrans = PlasmaConjTrans,
+    PlasmaNoTrans     = 111,
+    PlasmaTrans       = 112,
+    PlasmaConjTrans   = 113,
+    Plasma_ConjTrans  = PlasmaConjTrans,
 
-    PlasmaUpper      = 121,
-    PlasmaLower      = 122,
-    PlasmaFull       = 123,  // formerly PlasmaUpperLower
+    PlasmaUpper       = 121,
+    PlasmaLower       = 122,
+    PlasmaGeneral     = 123,
+    PlasmaGeneralBand = 124,
 
-    PlasmaNonUnit    = 131,
-    PlasmaUnit       = 132,
+    PlasmaNonUnit     = 131,
+    PlasmaUnit        = 132,
 
-    PlasmaLeft       = 141,
-    PlasmaRight      = 142,
+    PlasmaLeft        = 141,
+    PlasmaRight       = 142,
 
-    PlasmaForward    = 391,
-    PlasmaBackward   = 392,
+    PlasmaForward     = 391,
+    PlasmaBackward    = 392,
 
-    PlasmaColumnwise = 401,
-    PlasmaRowwise    = 402,
+    PlasmaColumnwise  = 401,
+    PlasmaRowwise     = 402,
 
-    PlasmaW          = 501,
-    PlasmaA2         = 502
+    PlasmaW           = 501,
+    PlasmaA2          = 502
 };
 
 enum {
