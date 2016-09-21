@@ -11,6 +11,7 @@
 #define ICL_PLASMA_DESCRIPTOR_H
 
 #include "plasma_types.h"
+#include "plasma_error.h"
 
 #include <stdlib.h>
 #include <assert.h>
