@@ -44,10 +44,10 @@ void plasma_pzsymm(plasma_enum_t side, plasma_enum_t uplo,
     }
 
     for (m = 0; m < C.mt; m++) {
-        tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
+        tempmm = plasma_tile_mdim(C, m);
         ldcm = plasma_tile_mdim(C, m);
         for (n = 0; n < C.nt; n++) {
-            tempnn = n == C.nt-1 ? C.n-n*C.nb : C.nb;
+            tempnn = plasma_tile_ndim(C, n);
             if (side == PlasmaLeft) {
                 ldam = plasma_tile_mdim(A, m);
                 //=======================================
@@ -55,7 +55,7 @@ void plasma_pzsymm(plasma_enum_t side, plasma_enum_t uplo,
                 //=======================================
                 if (uplo == PlasmaLower) {
                     for (k = 0; k < C.mt; k++) {
-                        tempkm = k == C.mt-1 ? C.m-k*C.mb : C.mb;
+                        tempkm = plasma_tile_mdim(C, k);
                         ldak = plasma_tile_mdim(A, k);
                         ldbk = plasma_tile_mdim(B, k);
                         zbeta = k == 0 ? beta : zone;
@@ -92,7 +92,7 @@ void plasma_pzsymm(plasma_enum_t side, plasma_enum_t uplo,
                 //=======================================
                 else {
                     for (k = 0; k < C.mt; k++) {
-                        tempkm = k == C.mt-1 ? C.m-k*C.mb : C.mb;
+                        tempkm = plasma_tile_mdim(C, k);
                         ldak = plasma_tile_mdim(A, k);
                         ldbk = plasma_tile_mdim(B, k);
                         zbeta = k == 0 ? beta : zone;
@@ -133,7 +133,7 @@ void plasma_pzsymm(plasma_enum_t side, plasma_enum_t uplo,
                 //=======================================
                 if (uplo == PlasmaLower) {
                     for (k = 0; k < C.nt; k++) {
-                        tempkn = k == C.nt-1 ? C.n-k*C.nb : C.nb;
+                        tempkn = plasma_tile_ndim(C, k);
                         ldak = plasma_tile_mdim(A, k);
                         zbeta = k == 0 ? beta : zone;
                         if (k < n) {
@@ -169,7 +169,7 @@ void plasma_pzsymm(plasma_enum_t side, plasma_enum_t uplo,
                 //=======================================
                 else {
                     for (k = 0; k < C.nt; k++) {
-                        tempkn = k == C.nt-1 ? C.n-k*C.nb : C.nb;
+                        tempkn = plasma_tile_ndim(C, k);
                         ldak = plasma_tile_mdim(A, k);
                         zbeta = k == 0 ? beta : zone;
                         if (k < n) {

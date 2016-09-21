@@ -42,23 +42,23 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
     case PlasmaLower:
         if (transA == PlasmaNoTrans) {
             for (n = 0; n < imin(B.mt,B.nt); n++) {
-                tempnm = n == B.mt-1 ? B.m-n*B.mb : B.mb;
-                tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
+                tempnm = plasma_tile_mdim(B, n);
+                tempnn = plasma_tile_ndim(B, n);
                 ldan = plasma_tile_mdim(A, n);
                 ldbn = plasma_tile_mdim(B, n);
-
                 core_omp_ztradd(
-                    uplo, transA, tempnm, tempnn,
+                    uplo, transA,
+                    tempnm, tempnn,
                     alpha, A(n, n), ldan,
                     beta,  B(n, n), ldbn);
 
                 for (m = n+1; m < B.mt; m++) {
-                    tempmm = m == B.mt-1 ? B.m-B.mb*m : B.nb;
+                    tempmm = plasma_tile_mdim(B, m);
                     ldam = plasma_tile_mdim(A, m);
                     ldbm = plasma_tile_mdim(B, m);
-
                     core_omp_zgeadd(
-                        transA, tempmm, tempnn,
+                        transA, 
+                        tempmm, tempnn,
                         alpha, A(m, n), ldam,
                         beta,  B(m, n), ldbm);
                 }
@@ -66,22 +66,22 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
         }
         else {
             for (n = 0; n < imin(B.mt,B.nt); n++) {
-                tempnm = n == B.mt-1 ? B.m-n*B.mb : B.mb;
-                tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
+                tempnm = plasma_tile_mdim(B, n);
+                tempnn = plasma_tile_ndim(B, n);
                 ldan = plasma_tile_mdim(A, n);
                 ldbn = plasma_tile_mdim(B, n);
-
                 core_omp_ztradd(
-                    uplo, transA, tempnm, tempnn,
+                    uplo, transA,
+                    tempnm, tempnn,
                     alpha, A(n, n), ldan,
                     beta,  B(n, n), ldbn);
 
                 for (m = n+1; m < B.mt; m++) {
-                    tempmm = m == B.mt-1 ? B.m-B.mb*m : B.nb;
+                    tempmm = plasma_tile_mdim(B, m);
                     ldbm = plasma_tile_mdim(B, m);
-
                     core_omp_zgeadd(
-                        transA, tempmm, tempnn,
+                        transA,
+                        tempmm, tempnn,
                         alpha, A(n, m), ldan,
                         beta,  B(m, n), ldbm);
                 }
@@ -91,21 +91,21 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
     case PlasmaUpper:
         if (transA == PlasmaNoTrans) {
             for (m = 0; m < imin(B.mt,B.nt); m++) {
-                tempmm = m == B.mt-1 ? B.m-B.mb*m : B.nb;
-                tempmn = m == B.nt-1 ? B.n-m*B.nb : B.nb;
+                tempmm = plasma_tile_mdim(B, m);
+                tempmn = plasma_tile_ndim(B, m);
                 ldam = plasma_tile_mdim(A, m);
                 ldbm = plasma_tile_mdim(B, m);
-
                 core_omp_ztradd(
-                    uplo, transA, tempmm, tempmn,
+                    uplo, transA,
+                    tempmm, tempmn,
                     alpha, A(m, m), ldam,
                     beta,  B(m, m), ldbm);
 
                 for (n = m+1; n < B.nt; n++) {
-                    tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
-
+                    tempnn = plasma_tile_ndim(B, n);
                     core_omp_zgeadd(
-                        transA, tempmm, tempnn,
+                        transA,
+                        tempmm, tempnn,
                         alpha, A(m, n), ldam,
                         beta,  B(m, n), ldbm);
                 }
@@ -113,22 +113,22 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
         }
         else {
             for (m = 0; m < imin(B.mt,B.nt); m++) {
-                tempmm = m == B.mt-1 ? B.m-B.mb*m : B.nb;
-                tempmn = m == B.nt-1 ? B.n-m*B.nb : B.nb;
+                tempmm = plasma_tile_mdim(B, m);
+                tempmn = plasma_tile_ndim(B, m);
                 ldam = plasma_tile_mdim(A, m);
                 ldbm = plasma_tile_mdim(B, m);
-
                 core_omp_ztradd(
-                    uplo, transA, tempmm, tempmn,
+                    uplo, transA,
+                    tempmm, tempmn,
                     alpha, A(m, m), ldam,
                     beta,  B(m, m), ldbm);
 
                 for (n = m+1; n < B.nt; n++) {
-                    tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
+                    tempnn = plasma_tile_ndim(B, n);
                     ldan = plasma_tile_mdim(A, n);
-
                     core_omp_zgeadd(
-                        transA, tempmm, tempnn,
+                        transA,
+                        tempmm, tempnn,
                         alpha, A(n, m), ldan,
                         beta,  B(m, n), ldbm);
                 }
@@ -142,10 +142,8 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
                 tempmm = m == B.mt-1 ? B.m-B.mb*m : B.nb;
                 ldam = plasma_tile_mdim(A, m);
                 ldbm = plasma_tile_mdim(B, m);
-
                 for (n = 0; n < B.nt; n++) {
                     tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
-
                     core_omp_zgeadd(
                         transA, tempmm, tempnn,
                         alpha, A(m, n), ldam,
@@ -155,14 +153,12 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
         }
         else {
             for (m = 0; m < B.mt; m++) {
-                tempmm = m == B.mt-1 ? B.m-B.mb*m : B.nb;
+                tempmm = plasma_tile_mdim(B, m);
                 ldam = plasma_tile_mdim(A, m);
                 ldbm = plasma_tile_mdim(B, m);
-
                 for (n = 0; n < B.nt; n++) {
                     tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
                     ldan = plasma_tile_mdim(A, n);
-
                     core_omp_zgeadd(
                         transA, tempmm, tempnn,
                         alpha, A(n, m), ldan,

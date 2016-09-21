@@ -48,15 +48,15 @@ void plasma_pzunglq(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
 
     minmnt = imin(A.mt, A.nt);
     for (k = minmnt-1; k >= 0; k--) {
-        tempAkm  = k == A.mt-1 ? A.m-k*A.mb : A.mb;
-        tempAkn  = k == A.nt-1 ? A.n-k*A.nb : A.nb;
-        tempkmin = imin( tempAkn, tempAkm );
-        tempkn   = k == Q.nt-1 ? Q.n-k*Q.nb : Q.nb;
+        tempAkm  = plasma_tile_mdim(A, k);
+        tempAkn  = plasma_tile_ndim(A, k);
+        tempkmin = imin(tempAkn, tempAkm);
+        tempkn   = plasma_tile_ndim(Q, k);
         ldak = plasma_tile_mdim(A, k);
         for (n = Q.nt-1; n > k; n--) {
-            tempnn = n == Q.nt-1 ? Q.n-n*Q.nb : Q.nb;
+            tempnn = plasma_tile_ndim(Q, n);
             for (m = k; m < Q.mt; m++) {
-                tempmm = m == Q.mt-1 ? Q.m-m*Q.mb : Q.mb;
+                tempmm = plasma_tile_mdim(Q, m);
                 ldqm = plasma_tile_mdim(Q, m);
                 core_omp_ztsmlq(
                     PlasmaRight, PlasmaNoTrans,
@@ -70,7 +70,7 @@ void plasma_pzunglq(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
             }
         }
         for (m = k; m < Q.mt; m++) {
-            tempmm = m == Q.mt-1 ? Q.m-m*Q.mb : Q.mb;
+            tempmm = plasma_tile_mdim(Q, m);
             ldqm = plasma_tile_mdim(Q, m);
             core_omp_zunmlq(
                 PlasmaRight, PlasmaNoTrans,

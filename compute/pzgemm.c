@@ -46,10 +46,10 @@ void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
     }
 
     for (m = 0; m < C.mt; m++) {
-        tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
+        tempmm = plasma_tile_mdim(A, m);
         ldcm = plasma_tile_mdim(C, m);
         for (n = 0; n < C.nt; n++) {
-            tempnn = n == C.nt-1 ? C.n-n*C.nb : C.nb;
+            tempnn = plasma_tile_ndim(A, n);
             if (alpha == 0.0 || innerK == 0) {
                 //=======================================
                 // alpha*A*B does not contribute; scale C
@@ -70,7 +70,7 @@ void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
                 //=======================================
                 if (transB == PlasmaNoTrans) {
                     for (k = 0; k < A.nt; k++) {
-                        tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
+                        tempkn = plasma_tile_ndim(A, k);
                         ldbk = plasma_tile_mdim(B, k);
                         zbeta = k == 0 ? beta : zone;
                         core_omp_zgemm(
@@ -87,7 +87,7 @@ void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
                 else {
                     ldbn = plasma_tile_mdim(B, n);
                     for (k = 0; k < A.nt; k++) {
-                        tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
+                        tempkn = plasma_tile_ndim(A, k);
                         zbeta = k == 0 ? beta : zone;
                         core_omp_zgemm(
                             transA, transB,
@@ -104,7 +104,7 @@ void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
                 //==========================================
                 if (transB == PlasmaNoTrans) {
                     for (k = 0; k < A.mt; k++) {
-                        tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
+                        tempkm = plasma_tile_mdim(A, k);
                         ldak = plasma_tile_mdim(A, k);
                         ldbk = plasma_tile_mdim(B, k);
                         zbeta = k == 0 ? beta : zone;
@@ -122,7 +122,7 @@ void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
                 else {
                     ldbn = plasma_tile_mdim(B, n);
                     for (k = 0; k < A.mt; k++) {
-                        tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
+                        tempkm = plasma_tile_mdim(A, k);
                         ldak = plasma_tile_mdim(A, k);
                         zbeta = k == 0 ? beta : zone;
                         core_omp_zgemm(

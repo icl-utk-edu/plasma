@@ -144,17 +144,23 @@ static inline void *plasma_tile_addr(plasma_desc_t A, int m, int n)
 /******************************************************************************/
 static inline int plasma_tile_mdim(plasma_desc_t A, int k)
 {
-    int lm1 = A.lm/A.mb;
-
-    if (k+A.i/A.mb < lm1)
+    if (A.i/A.mb+k < A.lm/A.mb)
         return A.mb;
     else
         return A.lm%A.mb;
 }
 
 /******************************************************************************/
-static inline int BLKLDD_BAND(plasma_enum_t uplo,
-                              plasma_desc_t A, int m, int n)
+static inline int plasma_tile_ndim(plasma_desc_t A, int k)
+{
+    if (A.j/A.nb+k < A.ln/A.nb)
+        return A.nb;
+    else
+        return A.ln%A.nb;
+}
+
+/******************************************************************************/
+static inline int BLKLDD_BAND(plasma_enum_t uplo, plasma_desc_t A, int m, int n)
 {
     int kut;
     if (uplo == PlasmaGeneral) {
