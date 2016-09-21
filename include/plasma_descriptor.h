@@ -37,27 +37,36 @@ extern "C" {
  *
  **/
 typedef struct {
+    // matrix properties
     plasma_enum_t type;      ///< general, general band, etc.
     plasma_enum_t uplo;      ///< upper, lower, etc.
     plasma_enum_t precision; ///< precision of the matrix
 
+    // pointer and offsets
     void *matrix; ///< pointer to the beginning of the matrix
     size_t A21;   ///< pointer to the beginning of A21
     size_t A12;   ///< pointer to the beginning of A12
     size_t A22;   ///< pointer to the beginning of A22
 
-    int mb;  //< number of rows in a tile
-    int nb;  ///< number of columns in a tile
+    // tile parameters
+    int mb; //< number of rows in a tile
+    int nb; ///< number of columns in a tile
+
+    // main matrix parameters
     int lm;  ///< number of rows of the entire matrix
     int ln;  ///< number of columns of the entire matrix
     int lmt; ///< number of tile rows of the entire matrix
     int lnt; ///< number of tile columns of the entire matrix
-    int i;   ///< row index to the beginning of the submatrix
-    int j;   ///< column index to the beginning of the submatrix
-    int m;   ///< number of rows of the submatrix
-    int n;   ///< number of columns of the submatrix
-    int mt;  ///< number of tile rows of the submatrix
-    int nt;  ///< number of tile columns of the submatrix
+
+    // submatrix parameters
+    int i;  ///< row index to the beginning of the submatrix
+    int j;  ///< column index to the beginning of the submatrix
+    int m;  ///< number of rows of the submatrix
+    int n;  ///< number of columns of the submatrix
+    int mt; ///< number of tile rows of the submatrix
+    int nt; ///< number of tile columns of the submatrix
+
+    // submatrix parameters for a band matrix
     int kl;  ///< number of rows below the diagonal
     int ku;  ///< number of rows above the diagonal
     int klt; ///< number of tile rows below the diagonal tile
@@ -66,7 +75,7 @@ typedef struct {
 } plasma_desc_t;
 
 /******************************************************************************/
-static inline int plasma_element_size(int type)
+static inline size_t plasma_element_size(int type)
 {
     switch (type) {
     case PlasmaByte:          return          1;
@@ -171,8 +180,8 @@ int plasma_desc_general_band_init(plasma_enum_t precision, plasma_enum_t uplo,
                                   plasma_desc_t *desc);
 
 int plasma_desc_check(plasma_desc_t *desc);
-int plasma_desc_full_check(plasma_desc_t *desc);
-int plasma_desc_band_check(plasma_desc_t *desc);
+int plasma_desc_general_check(plasma_desc_t *desc);
+int plasma_desc_general_band_check(plasma_desc_t *desc);
 
 plasma_desc_t plasma_desc_view(plasma_desc_t descA, int i, int j, int m, int n);
 

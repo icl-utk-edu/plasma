@@ -267,7 +267,7 @@ void plasma_omp_zpbsv(plasma_enum_t uplo, plasma_desc_t *AB, plasma_desc_t *B,
         plasma_error("illegal value of uplo");
         return;
     }
-    if (plasma_desc_band_check(AB) != PlasmaSuccess) {
+    if (plasma_desc_check(AB) != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         plasma_error("invalid A");
         return;

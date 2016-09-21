@@ -275,7 +275,7 @@ void plasma_omp_zpbtrs(plasma_enum_t uplo,
         plasma_error("illegal value of uplo");
         return;
     }
-    if (plasma_desc_band_check(AB) != PlasmaSuccess) {
+    if (plasma_desc_check(AB) != PlasmaSuccess) {
         plasma_error("invalid A");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;

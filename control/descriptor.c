@@ -12,7 +12,6 @@
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
 
-
 /******************************************************************************/
 int plasma_desc_general_create(plasma_enum_t precision, int mb, int nb,
                                int lm, int ln, int i, int j, int m, int n,
@@ -23,20 +22,22 @@ int plasma_desc_general_create(plasma_enum_t precision, int mb, int nb,
         plasma_error("PLASMA not initialized");
         return PlasmaErrorNotInitialized;
     }
-    // Initialize and check the descriptor.
+    // Initialize the descriptor.
     int retval = plasma_desc_general_init(precision, NULL, mb, nb,
                                           lm, ln, i, j, m, n, desc);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_init() failed");
         return retval;
     }
+    // Check the descriptor.
     retval = plasma_desc_check(desc);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_check() failed");
         return PlasmaErrorIllegalValue;
     }
     // Allocate the matrix.
-    size_t size = (size_t)desc->lm*desc->ln*plasma_element_size(desc->precision);
+    size_t size = (size_t)desc->lm*desc->ln*
+                  plasma_element_size(desc->precision);
     desc->matrix = malloc(size);
     if (desc->matrix == NULL) {
         plasma_error("malloc() failed");
@@ -56,7 +57,7 @@ int plasma_desc_general_band_create(plasma_enum_t precision, plasma_enum_t uplo,
         plasma_error("PLASMA not initialized");
         return PlasmaErrorNotInitialized;
     }
-    // Initialize and check the descriptor.
+    // Initialize the descriptor.
     int retval = plasma_desc_general_band_init(precision, uplo, NULL, mb, nb,
                                                lm, ln, i, j, m, n, kl, ku,
                                                desc);
@@ -64,13 +65,15 @@ int plasma_desc_general_band_create(plasma_enum_t precision, plasma_enum_t uplo,
         plasma_error("plasma_desc_general_band_init() failed");
         return retval;
     }
-    retval = plasma_desc_band_check(desc);
+    // Check the descriptor.
+    retval = plasma_desc_check(desc);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_band_check() failed");
+        plasma_error("plasma_desc_check() failed");
         return PlasmaErrorIllegalValue;
     }
     // Allocate the matrix.
-    size_t size = (size_t)desc->lm*desc->ln*plasma_element_size(desc->precision);
+    size_t size = (size_t)desc->lm*desc->ln*
+                  plasma_element_size(desc->precision);
     desc->matrix = malloc(size);
     if (desc->matrix == NULL) {
         plasma_error("malloc() failed");
@@ -146,12 +149,12 @@ int plasma_desc_general_band_init(plasma_enum_t precision, plasma_enum_t uplo,
     desc->type = PlasmaGeneralBand;
     desc->uplo = uplo;
 
-    // init params for band matrix
-    // * band width
+    // Initialize band matrix parameters.
+    // bandwidth
     desc->kl = kl;
     desc->ku = ku;
 
-    // * number of tiles within band, 1+ for diagonal
+    // number of tiles within band, 1+ for diagonal
     if (uplo == PlasmaGeneral) {
         desc->klt = 1+(i+kl + mb-1)/mb - i/mb;
         desc->kut = 1+(i+ku+kl + nb-1)/nb - i/nb;
@@ -175,10 +178,10 @@ int plasma_desc_check(plasma_desc_t *desc)
         return PlasmaErrorNullParameter;
     }
     else if (desc->type == PlasmaGeneral) {
-        return plasma_desc_full_check(desc);
+        return plasma_desc_general_check(desc);
     }
     else if (desc->type == PlasmaGeneralBand) {
-        return plasma_desc_band_check(desc);
+        return plasma_desc_general_band_check(desc);
     }
     else {
         plasma_error("invalid matrix type");
@@ -187,7 +190,7 @@ int plasma_desc_check(plasma_desc_t *desc)
 }
 
 /******************************************************************************/
-int plasma_desc_full_check(plasma_desc_t *desc)
+int plasma_desc_general_check(plasma_desc_t *desc)
 {
     if (desc == NULL) {
         plasma_error("NULL descriptor");
@@ -229,7 +232,7 @@ int plasma_desc_full_check(plasma_desc_t *desc)
 }
 
 /******************************************************************************/
-int plasma_desc_band_check(plasma_desc_t *desc)
+int plasma_desc_general_band_check(plasma_desc_t *desc)
 {
     if (desc == NULL) {
         plasma_error("NULL descriptor");
