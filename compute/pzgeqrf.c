@@ -49,7 +49,7 @@ void plasma_pzgeqrf(plasma_desc_t A, plasma_desc_t T,
     for (k = 0; k < imin(A.mt, A.nt); k++) {
         tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
         tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
-        ldak = BLKLDD(A, k);
+        ldak = plasma_tile_mdim(A, k);
         core_omp_zgeqrt(
             tempkm, tempkn, ib, T.nb,
             A(k, k), ldak,
@@ -74,7 +74,7 @@ void plasma_pzgeqrf(plasma_desc_t A, plasma_desc_t T,
         }
         for (m = k+1; m < A.mt; m++) {
             tempmm = m == A.mt-1 ? A.m-m*A.mb : A.mb;
-            ldam = BLKLDD(A, m);
+            ldam = plasma_tile_mdim(A, m);
             core_omp_ztsqrt(
                 tempmm, tempkn, ib, T.nb,
                 A(k, k), ldak,

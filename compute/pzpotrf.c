@@ -43,14 +43,14 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
     if (uplo == PlasmaLower) {
         for (k = 0; k < A.mt; k++) {
             tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
-            ldak = BLKLDD(A, k);
+            ldak = plasma_tile_mdim(A, k);
             core_omp_zpotrf(
                 PlasmaLower, tempkm,
                 A(k, k), ldak,
                 sequence, request, A.nb*k);
             for (m = k+1; m < A.mt; m++) {
                 tempmm = m == A.mt-1 ? A.m-m*A.mb : A.mb;
-                ldam = BLKLDD(A, m);
+                ldam = plasma_tile_mdim(A, m);
                 core_omp_ztrsm(
                     PlasmaRight, PlasmaLower,
                     PlasmaConjTrans, PlasmaNonUnit,
@@ -60,14 +60,14 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
             }
             for (m = k+1; m < A.mt; m++) {
                 tempmm = m == A.mt-1 ? A.m-m*A.mb : A.mb;
-                ldam = BLKLDD(A, m);
+                ldam = plasma_tile_mdim(A, m);
                 core_omp_zherk(
                     PlasmaLower, PlasmaNoTrans,
                     tempmm, A.mb,
                     -1.0, A(m, k), ldam,
                      1.0, A(m, m), ldam);
                 for (n = k+1; n < m; n++) {
-                    ldan = BLKLDD(A, n);
+                    ldan = plasma_tile_mdim(A, n);
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaConjTrans,
                         tempmm, A.mb, A.mb,
@@ -84,7 +84,7 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
     else {
         for (k = 0; k < A.nt; k++) {
             tempkm = k == A.nt-1 ? A.n-k*A.nb : A.nb;
-            ldak = BLKLDD(A, k);
+            ldak = plasma_tile_mdim(A, k);
             core_omp_zpotrf(
                 PlasmaUpper, tempkm,
                 A(k, k), ldak,
@@ -100,14 +100,14 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
             }
             for (m = k+1; m < A.nt; m++) {
                 tempmm = m == A.nt-1 ? A.n-m*A.nb : A.nb;
-                ldam = BLKLDD(A, m);
+                ldam = plasma_tile_mdim(A, m);
                 core_omp_zherk(
                     PlasmaUpper, PlasmaConjTrans,
                     tempmm, A.mb,
                     -1.0, A(k, m), ldak,
                      1.0, A(m, m), ldam);
                 for (n = k+1; n < m; n++) {
-                    ldan = BLKLDD(A, n);
+                    ldan = plasma_tile_mdim(A, n);
                     core_omp_zgemm(
                         PlasmaConjTrans, PlasmaNoTrans,
                         A.mb, tempmm, A.mb,

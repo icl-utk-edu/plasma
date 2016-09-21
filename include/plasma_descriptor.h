@@ -90,17 +90,6 @@ static inline size_t plasma_element_size(int type)
 }
 
 /******************************************************************************/
-static inline int BLKLDD(plasma_desc_t A, int k)
-{
-    int lm1 = A.lm/A.mb;
-
-    if (k+A.i/A.mb < lm1)
-        return A.mb;
-    else
-        return A.lm%A.mb;
-}
-
-/******************************************************************************/
 static inline void *plasma_tile_addr_general(plasma_desc_t A, int m, int n)
 {
     int mm = m + A.i/A.mb;
@@ -149,7 +138,18 @@ static inline void *plasma_tile_addr(plasma_desc_t A, int m, int n)
     else if (A.type == PlasmaGeneralBand)
         return plasma_tile_addr_general_band(A, m, n);
     else
-        return NULL;
+        plasma_fatal_error("invalid matrix type");
+}
+
+/******************************************************************************/
+static inline int plasma_tile_mdim(plasma_desc_t A, int k)
+{
+    int lm1 = A.lm/A.mb;
+
+    if (k+A.i/A.mb < lm1)
+        return A.mb;
+    else
+        return A.lm%A.mb;
 }
 
 /******************************************************************************/
@@ -166,7 +166,7 @@ static inline int BLKLDD_BAND(plasma_enum_t uplo,
     else {
         kut = 0;
     }
-    return BLKLDD(A, kut+m-n);
+    return plasma_tile_mdim(A, kut+m-n);
 }
 
 /******************************************************************************/

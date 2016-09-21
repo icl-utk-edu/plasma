@@ -55,7 +55,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                             side, uplo, trans, diag,
                             tempkm, tempnn,
                             lalpha, A(B.mt-1-k, B.mt-1-k), BLKLDD_BAND(uplo, A, B.mt-1-k, B.mt-1-k),
-                                    B(B.mt-1-k,        n), BLKLDD(B, B.mt-1-k));
+                                    B(B.mt-1-k,        n), plasma_tile_mdim(B, B.mt-1-k));
                     }
                     for (m = imax(0, (B.mt-1-k)-A.kut+1); m < B.mt-1-k; m++) {
                         for (n = 0; n < B.nt; n++) {
@@ -64,8 +64,8 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                                 PlasmaNoTrans, PlasmaNoTrans,
                                 B.mb, tempnn, tempkm,
                                 mzone,  A(m, B.mt-1-k), BLKLDD_BAND(uplo, A, m, B.mt-1-k),
-                                        B(B.mt-1-k, n), BLKLDD(B, B.mt-1-k),
-                                lalpha, B(m, n       ), BLKLDD(B, m));
+                                        B(B.mt-1-k, n), plasma_tile_mdim(B, B.mt-1-k),
+                                lalpha, B(m, n       ), plasma_tile_mdim(B, m));
                         }
                     }
                 }
@@ -83,7 +83,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                             side, uplo, trans, diag,
                             tempkm, tempnn,
                             lalpha, A(k, k), BLKLDD_BAND(uplo, A, k, k),
-                                    B(k, n), BLKLDD(B, k));
+                                    B(k, n), plasma_tile_mdim(B, k));
                     }
                     for (m = k+1; m < imin(A.mt, k+A.kut); m++) {
                         tempmm = m == B.mt-1 ? B.m-m*B.mb : B.mb;
@@ -93,8 +93,8 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                                 trans, PlasmaNoTrans,
                                 tempmm, tempnn, B.mb,
                                 mzone,  A(k, m), BLKLDD_BAND(uplo, A, k, m),
-                                        B(k, n), BLKLDD(B, k),
-                                lalpha, B(m, n), BLKLDD(B, m));
+                                        B(k, n), plasma_tile_mdim(B, k),
+                                lalpha, B(m, n), plasma_tile_mdim(B, m));
                         }
                     }
                 }
@@ -124,7 +124,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                             side, uplo, trans, diag,
                             tempkm, tempnn,
                             lalpha, A(k, k), BLKLDD_BAND(uplo, A, B.mt-1-k, B.mt-1-k),
-                                    B(k, n), BLKLDD(B, k));
+                                    B(k, n), plasma_tile_mdim(B, k));
                     }
                     for (m = k+1; m < imin(k+A.klt, A.mt); m++) {
                         tempmm = m == B.mt-1 ? B.m-m*B.mb : B.mb;
@@ -134,8 +134,8 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                                 PlasmaNoTrans, PlasmaNoTrans,
                                 tempmm, tempnn, B.mb,
                                 mzone,  A(m, k), BLKLDD_BAND(uplo, A, m, k),
-                                        B(k, n), BLKLDD(B, k),
-                                lalpha, B(m, n), BLKLDD(B, m));
+                                        B(k, n), plasma_tile_mdim(B, k),
+                                lalpha, B(m, n), plasma_tile_mdim(B, m));
                         }
                     }
                 }
@@ -155,8 +155,8 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                                 trans, PlasmaNoTrans,
                                 tempkm, tempnn, tempmm,
                                 mzone,  A(m, B.mt-1-k), BLKLDD_BAND(uplo, A, m, B.mt-1-k),
-                                        B(m, n       ), BLKLDD(B, m),
-                                lalpha, B(B.mt-1-k, n), BLKLDD(B, B.mt-1-k));
+                                        B(m, n       ), plasma_tile_mdim(B, m),
+                                lalpha, B(B.mt-1-k, n), plasma_tile_mdim(B, B.mt-1-k));
                         }
                     }
                     for (n = 0; n < B.nt; n++) {
@@ -165,7 +165,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                             side, uplo, trans, diag,
                             tempkm, tempnn,
                             lalpha, A(B.mt-1-k, B.mt-1-k), BLKLDD_BAND(uplo, A, B.mt-1-k, B.mt-1-k),
-                                    B(B.mt-1-k,        n), BLKLDD(B, B.mt-1-k));
+                                    B(B.mt-1-k,        n), plasma_tile_mdim(B, B.mt-1-k));
                         if (IPIV != NULL) {
                             #ifdef ZLASWP_ONTILE
                             // commented out because it takes descriptor
@@ -189,11 +189,11 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
             if (trans == PlasmaNoTrans) {
                 for (k = 0; k < B.nt; k++) {
                     tempkn = k == B.nt-1 ? B.n-k*B.nb : B.nb;
-                    ldak = BLKLDD(A, k);
+                    ldak = plasma_tile_mdim(A, k);
                     lalpha = k == 0 ? alpha : zone;
                     for (m = 0; m < B.mt; m++) {
                         tempmm = m == B.mt-1 ? B.m-m*B.mb : B.mb;
-                        ldbm = BLKLDD(B, m);
+                        ldbm = plasma_tile_mdim(B, m);
                         QUARK_core_ztrsm(
                             plasma->quark, &task_flags,
                             side, uplo, trans, diag,
@@ -203,7 +203,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                     }
                     for (m = 0; m < B.mt; m++) {
                         tempmm = m == B.mt-1 ? B.m-m*B.mb : B.mb;
-                        ldbm = BLKLDD(B, m);
+                        ldbm = plasma_tile_mdim(B, m);
                         for (n = k+1; n < B.nt; n++) {
                             tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
                             QUARK_core_zgemm(
@@ -223,10 +223,10 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
             else {
                 for (k = 0; k < B.nt; k++) {
                     tempkn = k == 0 ? B.n-(B.nt-1)*B.nb : B.nb;
-                    ldak = BLKLDD(A, B.nt-1-k);
+                    ldak = plasma_tile_mdim(A, B.nt-1-k);
                     for (m = 0; m < B.mt; m++) {
                         tempmm = m == B.mt-1 ? B.m-m*B.mb : B.mb;
-                        ldbm = BLKLDD(B, m);
+                        ldbm = plasma_tile_mdim(B, m);
                         QUARK_core_ztrsm(
                             plasma->quark, &task_flags,
                             side, uplo, trans, diag,
@@ -235,7 +235,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                                    B(       m, B.nt-1-k), ldbm);
 
                         for (n = k+1; n < B.nt; n++) {
-                            ldan = BLKLDD(A, B.nt-1-n);
+                            ldan = plasma_tile_mdim(A, B.nt-1-n);
                             QUARK_core_zgemm(
                                 plasma->quark, &task_flags,
                                 PlasmaNoTrans, trans,
@@ -255,11 +255,11 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
             if (trans == PlasmaNoTrans) {
                 for (k = 0; k < B.nt; k++) {
                     tempkn = k == 0 ? B.n-(B.nt-1)*B.nb : B.nb;
-                    ldak = BLKLDD(A, B.nt-1-k);
+                    ldak = plasma_tile_mdim(A, B.nt-1-k);
                     lalpha = k == 0 ? alpha : zone;
                     for (m = 0; m < B.mt; m++) {
                         tempmm = m == B.mt-1 ? B.m-m*B.mb : B.mb;
-                        ldbm = BLKLDD(B, m);
+                        ldbm = plasma_tile_mdim(B, m);
                         QUARK_core_ztrsm(
                             plasma->quark, &task_flags,
                             side, uplo, trans, diag,
@@ -285,10 +285,10 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
             else {
                 for (k = 0; k < B.nt; k++) {
                     tempkn = k == B.nt-1 ? B.n-k*B.nb : B.nb;
-                    ldak = BLKLDD(A, k);
+                    ldak = plasma_tile_mdim(A, k);
                     for (m = 0; m < B.mt; m++) {
                         tempmm = m == B.mt-1 ? B.m-m*B.mb : B.mb;
-                        ldbm = BLKLDD(B, m);
+                        ldbm = plasma_tile_mdim(B, m);
                         QUARK_core_ztrsm(
                             plasma->quark, &task_flags,
                             side, uplo, trans, diag,
@@ -298,7 +298,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
 
                         for (n = k+1; n < B.nt; n++) {
                             tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
-                            ldan = BLKLDD(A, n);
+                            ldan = plasma_tile_mdim(A, n);
                             QUARK_core_zgemm(
                                 plasma->quark, &task_flags,
                                 PlasmaNoTrans, trans,

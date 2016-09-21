@@ -54,12 +54,12 @@ void plasma_pzungqr(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
         tempAkn  = k == A.nt-1 ? A.n-k*A.nb : A.nb;
         tempkmin = imin(tempAkn, tempAkm);
         tempkm   = k == Q.mt-1 ? Q.m-k*Q.mb : Q.mb;
-        ldak = BLKLDD(A, k);
-        ldqk = BLKLDD(Q, k);
+        ldak = plasma_tile_mdim(A, k);
+        ldqk = plasma_tile_mdim(Q, k);
         for (m = Q.mt - 1; m > k; m--) {
             tempmm = m == Q.mt-1 ? Q.m-m*Q.mb : Q.mb;
-            ldam = BLKLDD(A, m);
-            ldqm = BLKLDD(Q, m);
+            ldam = plasma_tile_mdim(A, m);
+            ldqm = plasma_tile_mdim(Q, m);
             for (n = k; n < Q.nt; n++) {
                 tempnn = n == Q.nt-1 ? Q.n-n*Q.nb : Q.nb;
                 core_omp_ztsmqr(

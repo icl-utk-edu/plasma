@@ -67,8 +67,8 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
             for (k = 0; k < minMT; k++) {
                 tempkm   = k == B.mt-1 ? B.m-k*B.mb : B.mb;
                 tempkmin = k == minMT-1 ? minM-k*A.nb : A.nb;
-                ldak = BLKLDD(A, k);
-                ldbk = BLKLDD(B, k);
+                ldak = plasma_tile_mdim(A, k);
+                ldbk = plasma_tile_mdim(B, k);
                 for (n = 0; n < B.nt; n++) {
                     tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
                     core_omp_zunmqr(
@@ -82,8 +82,8 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
                 }
                 for (m = k+1; m < B.mt; m++) {
                     tempmm = m == B.mt-1 ? B.m-m*B.mb : B.mb;
-                    ldam = BLKLDD(A, m);
-                    ldbm = BLKLDD(B, m);
+                    ldam = plasma_tile_mdim(A, m);
+                    ldbm = plasma_tile_mdim(B, m);
                     for (n = 0; n < B.nt; n++) {
                         tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
                         core_omp_ztsmqr(
@@ -104,12 +104,12 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
             for (k = minMT-1; k >= 0; k--) {
                 tempkm = k == B.mt-1 ? B.m-k*B.mb : B.mb;
                 tempkmin = k == minMT-1 ? minM-k*A.nb : A.nb;
-                ldak = BLKLDD(A, k);
-                ldbk = BLKLDD(B, k);
+                ldak = plasma_tile_mdim(A, k);
+                ldbk = plasma_tile_mdim(B, k);
                 for (m = B.mt-1; m > k; m--) {
                     tempmm = m == B.mt-1 ? B.m-m*B.mb : B.mb;
-                    ldam = BLKLDD(A, m);
-                    ldbm = BLKLDD(B, m);
+                    ldam = plasma_tile_mdim(A, m);
+                    ldbm = plasma_tile_mdim(B, m);
                     for (n = 0; n < B.nt; n++) {
                         tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
                         core_omp_ztsmqr(
@@ -146,14 +146,14 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
             for (k = minMT-1; k >= 0; k--) {
                 tempkn = k == B.nt-1 ? B.n-k*B.nb : B.nb;
                 tempkmin = k == minMT-1 ? minM-k*A.nb : A.nb;
-                ldak = BLKLDD(A, k);
-                ldbk = BLKLDD(B, k);
+                ldak = plasma_tile_mdim(A, k);
+                ldbk = plasma_tile_mdim(B, k);
                 for (n = B.nt-1; n > k; n--) {
                     tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
-                    ldan = BLKLDD(A, n);
+                    ldan = plasma_tile_mdim(A, n);
                     for (m = 0; m < B.mt; m++) {
                         tempmm = m == B.mt-1 ? B.m-m*B.mb : B.mb;
-                        ldbm = BLKLDD(B, m);
+                        ldbm = plasma_tile_mdim(B, m);
                         core_omp_ztsmqr(
                             side, trans,
                             tempmm, B.nb, tempmm, tempnn, tempkmin, ib, T.nb,
@@ -167,7 +167,7 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
                 }
                 for (m = 0; m < B.mt; m++) {
                     tempmm = m == B.mt-1 ? B.m-m*B.mb : B.mb;
-                    ldbm = BLKLDD(B, m);
+                    ldbm = plasma_tile_mdim(B, m);
                     core_omp_zunmqr(
                         side, trans,
                         tempmm, tempkn, tempkmin, ib, T.nb,
@@ -184,10 +184,10 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
             for (k = 0; k < minMT; k++) {
                 tempkn   = k == B.nt-1 ? B.n-k*B.nb : B.nb;
                 tempkmin = k == minMT-1 ? minM-k*A.nb : A.nb;
-                ldak = BLKLDD(A, k);
+                ldak = plasma_tile_mdim(A, k);
                 for (m = 0; m < B.mt; m++) {
                     tempmm = m == B.mt-1 ? B.m-m*B.mb : B.mb;
-                    ldbm = BLKLDD(B, m);
+                    ldbm = plasma_tile_mdim(B, m);
                     core_omp_zunmqr(
                         side, trans,
                         tempmm, tempkn, tempkmin, ib, T.nb,
@@ -199,10 +199,10 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
                 }
                 for (n = k+1; n < B.nt; n++) {
                     tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
-                    ldan = BLKLDD(A, n);
+                    ldan = plasma_tile_mdim(A, n);
                     for (m = 0; m < B.mt; m++) {
                         tempmm = m == B.mt-1 ? B.m-m*B.mb : B.mb;
-                        ldbm = BLKLDD(B, m);
+                        ldbm = plasma_tile_mdim(B, m);
                         core_omp_ztsmqr(
                             side, trans,
                             tempmm, B.nb, tempmm, tempnn, tempkmin, ib, T.nb,

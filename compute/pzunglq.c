@@ -51,12 +51,12 @@ void plasma_pzunglq(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
         tempAkn  = k == A.nt-1 ? A.n-k*A.nb : A.nb;
         tempkmin = imin( tempAkn, tempAkm );
         tempkn   = k == Q.nt-1 ? Q.n-k*Q.nb : Q.nb;
-        ldak = BLKLDD(A, k);
+        ldak = plasma_tile_mdim(A, k);
         for (n = Q.nt-1; n > k; n--) {
             tempnn = n == Q.nt-1 ? Q.n-n*Q.nb : Q.nb;
             for (m = k; m < Q.mt; m++) {
                 tempmm = m == Q.mt-1 ? Q.m-m*Q.mb : Q.mb;
-                ldqm = BLKLDD(Q, m);
+                ldqm = plasma_tile_mdim(Q, m);
                 core_omp_ztsmlq(
                     PlasmaRight, PlasmaNoTrans,
                     tempmm, Q.nb, tempmm, tempnn, tempAkm, ib, T.nb,
@@ -70,7 +70,7 @@ void plasma_pzunglq(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
         }
         for (m = k; m < Q.mt; m++) {
             tempmm = m == Q.mt-1 ? Q.m-m*Q.mb : Q.mb;
-            ldqm = BLKLDD(Q, m);
+            ldqm = plasma_tile_mdim(Q, m);
             core_omp_zunmlq(
                 PlasmaRight, PlasmaNoTrans,
                 tempmm, tempkn, tempkmin, ib, T.nb,

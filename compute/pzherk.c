@@ -43,8 +43,8 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
 
     for (n = 0; n < C.nt; n++) {
         tempnn = n == C.nt-1 ? C.n-n*C.nb : C.nb;
-        ldan = BLKLDD(A, n);
-        ldcn = BLKLDD(C, n);
+        ldan = plasma_tile_mdim(A, n);
+        ldcn = plasma_tile_mdim(C, n);
         //=======================================
         // PlasmaNoTrans
         //=======================================
@@ -64,8 +64,8 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
             if (uplo == PlasmaLower) {
                 for (m = n+1; m < C.mt; m++) {
                     tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
-                    ldam = BLKLDD(A, m);
-                    ldcm = BLKLDD(C, m);
+                    ldam = plasma_tile_mdim(A, m);
+                    ldcm = plasma_tile_mdim(C, m);
                     for (k = 0; k < A.nt; k++) {
                         tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
                         zbeta = k == 0 ? beta : zone;
@@ -84,7 +84,7 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
             else {
                 for (m = n+1; m < C.mt; m++) {
                     tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
-                    ldam = BLKLDD(A, m);
+                    ldam = plasma_tile_mdim(A, m);
                     for (k = 0; k < A.nt; k++) {
                         tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
                         zbeta = k == 0 ? beta : zone;
@@ -104,7 +104,7 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
         else {
             for (k = 0; k < A.mt; k++) {
                 tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
-                ldak = BLKLDD(A, k);
+                ldak = plasma_tile_mdim(A, k);
                 dbeta = k == 0 ? beta : 1.0;
                 core_omp_zherk(
                     uplo, trans,
@@ -118,10 +118,10 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
             if (uplo == PlasmaLower) {
                 for (m = n+1; m < C.mt; m++) {
                     tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
-                    ldcm = BLKLDD(C, m);
+                    ldcm = plasma_tile_mdim(C, m);
                     for (k = 0; k < A.mt; k++) {
                         tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
-                        ldak = BLKLDD(A, k);
+                        ldak = plasma_tile_mdim(A, k);
                         zbeta = k == 0 ? beta : zone;
                         core_omp_zgemm(
                             trans, PlasmaNoTrans,
@@ -140,7 +140,7 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
                     tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
                     for (k = 0; k < A.mt; k++) {
                         tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
-                        ldak = BLKLDD(A, k);
+                        ldak = plasma_tile_mdim(A, k);
                         zbeta = k == 0 ? beta : zone;
                         core_omp_zgemm(
                             trans, PlasmaNoTrans,
