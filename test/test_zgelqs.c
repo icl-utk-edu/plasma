@@ -133,18 +133,11 @@ void test_zgelqs(param_value_t param[], char *info)
         memcpy(Bref, B, (size_t)ldb*nrhs*sizeof(plasma_complex64_t));
     }
 
-    // Get PLASMA context.
-    plasma_context_t *plasma = plasma_context_self();
-
-    // Initialize tile matrix descriptor for matrix T
-    // using multiples of tile size.
-    int nb = plasma->nb;
-    int ib = nb;
-    int mt = (m%nb == 0) ? (m/nb) : (m/nb+1);
-    int nt = (n%nb == 0) ? (n/nb) : (n/nb+1);
+    //================================================================
+    // Prepare the descriptor for matrix T.
+    //================================================================
     plasma_desc_t descT;
-    retval = plasma_desc_create(PlasmaComplexDouble, ib, nb,
-                                mt*ib, nt*nb, 0, 0, mt*ib, nt*nb, &descT);
+    retval = plasma_desc_create_for_function("zgelqf", m, n, &descT);
     assert(retval == PlasmaSuccess);
 
     //================================================================

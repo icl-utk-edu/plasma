@@ -157,6 +157,9 @@ int plasma_desc_band_create(plasma_enum_t dtyp, plasma_enum_t uplo,
                             int mb, int nb, int lm, int ln, int i, int j,
                             int m, int n, int kl, int ku, plasma_desc_t *desc);
 
+int plasma_desc_create_for_function(const char *function_name, int m, int n,
+                                    plasma_desc_t *desc);
+
 int plasma_desc_destroy(plasma_desc_t *desc);
 
 int plasma_desc_init(plasma_enum_t precision, int mb, int nb, int lm, int ln,

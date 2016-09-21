@@ -111,19 +111,11 @@ void test_zgelqf(param_value_t param[], char *info)
         memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
     }
 
-    // Get PLASMA context.
-    plasma_context_t *plasma = plasma_context_self();
-    // Initialize tile matrix descriptor for matrix T
-    // using multiples of tile size.
-    int nb = plasma->nb;
-    int ib = plasma->ib;
-    int mt = (m%nb == 0) ? (m/nb) : (m/nb+1);
-    int nt = (n%nb == 0) ? (n/nb) : (n/nb+1);
-    // nt should be doubled if tree-reduction LQ is performed,
-    // not implemented now
+    //================================================================
+    // Prepare the descriptor for matrix T.
+    //================================================================
     plasma_desc_t descT;
-    retval = plasma_desc_create(PlasmaComplexDouble, ib, nb,
-                                mt*ib, nt*nb, 0, 0, mt*ib, nt*nb, &descT);
+    retval = plasma_desc_create_for_function("zgelqf", m, n, &descT);
     assert(retval == PlasmaSuccess);
 
     //================================================================
