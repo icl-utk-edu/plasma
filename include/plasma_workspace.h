@@ -36,4 +36,4 @@ int plasma_workspace_free(plasma_workspace_t *work);
 }  // extern "C"
 #endif
 
-#endif // ICL_PLASMA_DESCRIPTOR_H
+#endif // ICL_PLASMA_WORKSPACE_H

@@ -115,7 +115,7 @@ void test_zgeqrf(param_value_t param[], char *info)
     // Prepare the descriptor for matrix T.
     //================================================================
     plasma_desc_t descT;
-    retval = plasma_desc_create_for_function("zgeqrf", m, n, &descT);
+    retval = plasma_descT_create(PlasmaComplexDouble, m, n, &descT);
     assert(retval == PlasmaSuccess);
 
     //================================================================

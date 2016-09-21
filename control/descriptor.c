@@ -7,8 +7,6 @@
  *  University of Manchester, UK.
  *
  **/
-#include <string.h>
-
 #include "plasma_types.h"
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
@@ -77,66 +75,6 @@ int plasma_desc_general_band_create(plasma_enum_t precision, plasma_enum_t uplo,
         return PlasmaErrorOutOfMemory;
     }
     return PlasmaSuccess;
-}
-
-/******************************************************************************/
-int plasma_desc_create_for_function(const char *function_name, int m, int n,
-                                    plasma_desc_t *desc)
-{
-    plasma_context_t *plasma = plasma_context_self();
-    if (plasma == NULL) {
-        plasma_error("PLASMA not initialized");
-        return PlasmaErrorNotInitialized;
-    }
-
-    // Compute the parameters of the descriptor.
-    int nb = plasma->nb;
-    int ib = plasma->ib;
-    int mt = (m%nb == 0) ? (m/nb) : (m/nb+1);
-    int nt = (n%nb == 0) ? (n/nb) : (n/nb+1);
-    // nt should be doubled if tree-reduction QR is performed,
-    // not implemented now
-
-    // Set function-dependent variables.
-    int mb;
-    plasma_enum_t precision;
-    if      (strcmp(function_name, "zgeqrf") == 0 ||
-             strcmp(function_name, "zgelqf") == 0 ||
-             strcmp(function_name, "zgels")  == 0) {
-
-        mb = ib;
-        precision = PlasmaComplexDouble;
-    }
-    else if (strcmp(function_name, "cgeqrf") == 0 ||
-             strcmp(function_name, "cgelqf") == 0 ||
-             strcmp(function_name, "cgels")  == 0) {
-
-        mb = ib;
-        precision = PlasmaComplexFloat;
-    }
-    else if (strcmp(function_name, "dgeqrf") == 0 ||
-             strcmp(function_name, "dgelqf") == 0 ||
-             strcmp(function_name, "dgels")  == 0) {
-
-        mb = ib;
-        precision = PlasmaRealDouble;
-    }
-    else if (strcmp(function_name, "sgeqrf") == 0 ||
-             strcmp(function_name, "sgelqf") == 0 ||
-             strcmp(function_name, "sgels")  == 0) {
-
-        mb = ib;
-        precision = PlasmaRealFloat;
-    }
-    else {
-        plasma_error(strcat("Unknown routine ",function_name));
-        return PlasmaErrorIllegalValue;
-    }
-
-    // Create the descriptor using the standard function.
-    int retval = plasma_desc_general_create(precision, mb, nb, mt*mb, nt*nb,
-                                            0, 0, mt*mb, nt*nb, desc);
-    return retval;
 }
 
 /******************************************************************************/
@@ -369,4 +307,30 @@ plasma_desc_t plasma_desc_view(plasma_desc_t descA, int i, int j, int m, int n)
     descB.nt = (n == 0) ? 0 : (descB.j+n-1)/nb - descB.j/nb + 1;
 
     return descB;
+}
+
+/******************************************************************************/
+int plasma_descT_create(plasma_enum_t precision, int m, int n,
+                        plasma_desc_t *desc)
+{
+    plasma_context_t *plasma = plasma_context_self();
+    if (plasma == NULL) {
+        plasma_error("PLASMA not initialized");
+        return PlasmaErrorNotInitialized;
+    }
+
+    // Compute the parameters of the descriptor.
+    int nb = plasma->nb;
+    int ib = plasma->ib;
+
+    int mb = ib;
+    int mt = (m%nb == 0) ? (m/nb) : (m/nb+1);
+    int nt = (n%nb == 0) ? (n/nb) : (n/nb+1);
+    // nt should be doubled if tree-reduction QR is performed,
+    // not implemented now
+
+    // Create the descriptor using the standard function.
+    int retval = plasma_desc_general_create(precision, mb, nb, mt*mb, nt*nb,
+                                            0, 0, mt*mb, nt*nb, desc);
+    return retval;
 }

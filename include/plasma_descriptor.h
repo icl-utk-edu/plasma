@@ -159,9 +159,6 @@ int plasma_desc_general_band_create(plasma_enum_t dtyp, plasma_enum_t uplo,
                                     int i, int j, int m, int n, int kl, int ku,
                                     plasma_desc_t *desc);
 
-int plasma_desc_create_for_function(const char *function_name, int m, int n,
-                                    plasma_desc_t *desc);
-
 int plasma_desc_destroy(plasma_desc_t *desc);
 
 int plasma_desc_init(plasma_enum_t precision, int mb, int nb, int lm, int ln,
@@ -176,6 +173,9 @@ int plasma_desc_full_check(plasma_desc_t *desc);
 int plasma_desc_band_check(plasma_desc_t *desc);
 
 plasma_desc_t plasma_desc_view(plasma_desc_t descA, int i, int j, int m, int n);
+
+int plasma_descT_create(plasma_enum_t precision, int m, int n,
+                        plasma_desc_t *desc);
 
 #ifdef __cplusplus
 }  // extern "C"
