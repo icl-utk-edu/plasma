@@ -16,8 +16,9 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define A(m, n) ((plasma_complex64_t*) plasma_tile_addr(A, m, n))
-#define B(m, n) ((plasma_complex64_t*) plasma_tile_addr(B, m, n))
+#define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
+#define B(m, n) (plasma_complex64_t*)plasma_tile_addr(B, m, n)
+
 /***************************************************************************//**
  * Parallel tile triangular solve.
  * @see plasma_omp_ztrsm

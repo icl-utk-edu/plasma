@@ -17,8 +17,9 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define A(m, n) ((plasma_complex64_t*) plasma_tile_addr(A, m, n))
-#define T(m, n) ((plasma_complex64_t*) plasma_tile_addr(T, m, n))
+#define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
+#define T(m, n) (plasma_complex64_t*)plasma_tile_addr(T, m, n)
+
 /***************************************************************************//**
  *  Parallel tile QR factorization - dynamic scheduling
  * @see plasma_omp_zgeqrf

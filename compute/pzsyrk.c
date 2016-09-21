@@ -16,8 +16,9 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define A(m, n) ((plasma_complex64_t*) plasma_tile_addr(A, m, n))
-#define C(m, n) ((plasma_complex64_t*) plasma_tile_addr(C, m, n))
+#define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
+#define C(m, n) (plasma_complex64_t*)plasma_tile_addr(C, m, n)
+
 /***************************************************************************//**
  * Parallel tile symetric rank k update.
  * @see plasma_omp_zsyrk
