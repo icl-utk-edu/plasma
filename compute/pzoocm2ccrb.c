@@ -42,7 +42,7 @@ void plasma_pzoocm2ccrb(plasma_complex64_t *Af77, int lda, plasma_desc_t A,
             y2 = m == A.mt-1 ? (A.i+A.m-1)%A.mb+1 : A.mb;
 
             f77 = &Af77[(size_t)A.nb*lda*n + (size_t)A.mb*m];
-            bdl = (plasma_complex64_t*)plasma_getaddr(A, m, n);
+            bdl = (plasma_complex64_t*)plasma_tile_addr(A, m, n);
 
             core_omp_zlacpy(PlasmaGeneral,
                             y2-y1, x2-x1, A.mb,

@@ -100,7 +100,7 @@ static inline int BLKLDD(plasma_desc_t A, int k)
 }
 
 /******************************************************************************/
-static inline void *plasma_getaddr(plasma_desc_t A, int m, int n)
+static inline void *plasma_tile_addr_general(plasma_desc_t A, int m, int n)
 {
     int mm = m + A.i/A.mb;
     int nn = n + A.j/A.nb;
@@ -125,6 +125,33 @@ static inline void *plasma_getaddr(plasma_desc_t A, int m, int n)
 }
 
 /******************************************************************************/
+static inline void *plasma_tile_addr_general_band(plasma_desc_t A, int m, int n)
+{
+    int kut;
+    if (A.uplo == PlasmaGeneral) {
+        kut = (A.kl+A.kl+A.nb-1)/A.nb;
+    }
+    else if (A.uplo == PlasmaUpper) {
+        kut = (A.ku+A.nb-1)/A.nb;
+    }
+    else {
+        kut = 0;
+    }
+    return plasma_tile_addr_general(A, kut+m-n, n);
+}
+
+/******************************************************************************/
+static inline void *plasma_tile_addr(plasma_desc_t A, int m, int n)
+{
+    if (A.type == PlasmaGeneral)
+        return plasma_tile_addr_general(A, m, n);
+    else if (A.type == PlasmaGeneralBand)
+        return plasma_tile_addr_general_band(A, m, n);
+    else
+        return NULL;
+}
+
+/******************************************************************************/
 static inline int BLKLDD_BAND(plasma_enum_t uplo,
                               plasma_desc_t A, int m, int n)
 {
@@ -139,23 +166,6 @@ static inline int BLKLDD_BAND(plasma_enum_t uplo,
         kut = 0;
     }
     return BLKLDD(A, kut+m-n);
-}
-
-/******************************************************************************/
-static inline void *plasma_getaddr_band(plasma_enum_t uplo,
-                                        plasma_desc_t A, int m, int n)
-{
-    int kut;
-    if (uplo == PlasmaGeneral) {
-        kut = (A.kl+A.kl+A.nb-1)/A.nb;
-    }
-    else if (uplo == PlasmaUpper) {
-        kut = (A.ku+A.nb-1)/A.nb;
-    }
-    else {
-        kut = 0;
-    }
-    return plasma_getaddr(A, kut+m-n, n);
 }
 
 /******************************************************************************/

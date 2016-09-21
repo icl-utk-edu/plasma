@@ -16,9 +16,9 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define A(m, n) ((plasma_complex64_t*) plasma_getaddr(A, m, n))
-#define B(m, n) ((plasma_complex64_t*) plasma_getaddr(B, m, n))
-#define C(m, n) ((plasma_complex64_t*) plasma_getaddr(C, m, n))
+#define A(m, n) ((plasma_complex64_t*) plasma_tile_addr(A, m, n))
+#define B(m, n) ((plasma_complex64_t*) plasma_tile_addr(B, m, n))
+#define C(m, n) ((plasma_complex64_t*) plasma_tile_addr(C, m, n))
 /***************************************************************************//**
  * Parallel tile matrix-matrix multiplication.
  * @see plasma_omp_zgemm

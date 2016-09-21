@@ -16,7 +16,7 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define tileA(m, n) ((plasma_complex64_t*)plasma_getaddr_band(uplo, A, (m), (n)))
+#define tileA(m, n) ((plasma_complex64_t*)plasma_tile_addr(A, (m), (n)))
 #define bandA(m, n) (&(Af77[lda*(A.nb*(n)) + (uplo == PlasmaUpper ? A.ku : 0)+A.mb*((m)-(n))]))
 
 /******************************************************************************/
