@@ -110,10 +110,10 @@ int PLASMA_zgeqrf(int m, int n,
     nb = plasma->nb;
 
     // Create tile matrix.
-    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
-                                m, n, 0, 0, m, n, &descA);
+    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
+                                        m, n, 0, 0, m, n, &descA);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_create() failed");
+        plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
 

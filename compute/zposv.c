@@ -140,16 +140,16 @@ int PLASMA_zposv(plasma_enum_t uplo, int n, int nrhs,
     nb    = plasma->nb;
 
     // Create tile matrices.
-    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
-                                lda, n, 0, 0, n, n, &descA);
+    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
+                                        lda, n, 0, 0, n, n, &descA);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_create() failed");
+        plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
-    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
-                                ldb, nrhs, 0, 0, n, nrhs, &descB);
+    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
+                                        ldb, nrhs, 0, 0, n, nrhs, &descB);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_create() failed");
+        plasma_error("plasma_desc_general_create() failed");
         plasma_desc_destroy(&descA);
         return retval;
     }

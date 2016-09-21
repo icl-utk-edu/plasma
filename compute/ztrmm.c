@@ -183,16 +183,16 @@ int PLASMA_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
     nb = plasma->nb;
 
     // Create tile matrices.
-    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
-                                na, na, 0, 0, na, na, &descA);
+    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
+                                        na, na, 0, 0, na, na, &descA);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_create() failed");
+        plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
-    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
-                                m,  n,  0, 0, m,  n, &descB);
+    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
+                                        m,  n,  0, 0, m,  n, &descB);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_create() failed");
+        plasma_error("plasma_desc_general_create() failed");
         plasma_desc_destroy(&descA);
         return retval;
     }

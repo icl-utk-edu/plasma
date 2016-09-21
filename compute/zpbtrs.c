@@ -143,16 +143,17 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
                                      // and we need extra NB space on the bottom
 
     // Create tile matrices.
-    retval = plasma_desc_band_create(PlasmaComplexDouble, uplo, nb, nb,
-                                     ldab_desc, n, 0, 0, n, n, kd, kd, &descAB);
+    retval = plasma_desc_general_band_create(PlasmaComplexDouble, uplo, nb, nb,
+                                             ldab_desc, n, 0, 0, n, n, kd, kd,
+                                             &descAB);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_create() failed");
+        plasma_error("plasma_desc_general_band_create() failed");
         return retval;
     }
-    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
-                                n, nrhs, 0, 0, n, nrhs, &descB);
+    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
+                                        n, nrhs, 0, 0, n, nrhs, &descB);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_create() failed");
+        plasma_error("plasma_desc_general_create() failed");
         plasma_desc_destroy(&descAB);
         return retval;
     }
