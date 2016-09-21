@@ -26,9 +26,10 @@ int plasma_desc_general_create(plasma_enum_t precision, int mb, int nb,
         return PlasmaErrorNotInitialized;
     }
     // Initialize and check the descriptor.
-    int retval = plasma_desc_init(precision, mb, nb, lm, ln, i, j, m, n, desc);
+    int retval = plasma_desc_general_init(precision, NULL, mb, nb,
+                                          lm, ln, i, j, m, n, desc);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_init() failed");
+        plasma_error("plasma_desc_general_init() failed");
         return retval;
     }
     retval = plasma_desc_check(desc);
@@ -58,10 +59,11 @@ int plasma_desc_general_band_create(plasma_enum_t precision, plasma_enum_t uplo,
         return PlasmaErrorNotInitialized;
     }
     // Initialize and check the descriptor.
-    int retval = plasma_desc_band_init(precision, uplo, mb, nb,
-                                       lm, ln, i, j, m, n, kl, ku, desc);
+    int retval = plasma_desc_general_band_init(precision, uplo, NULL, mb, nb,
+                                               lm, ln, i, j, m, n, kl, ku,
+                                               desc);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_band_init() failed");
+        plasma_error("plasma_desc_general_band_init() failed");
         return retval;
     }
     retval = plasma_desc_band_check(desc);
@@ -152,30 +154,28 @@ int plasma_desc_destroy(plasma_desc_t *desc)
 }
 
 /******************************************************************************/
-int plasma_desc_init(plasma_enum_t precision, int mb, int nb, int lm, int ln,
-                     int i, int j, int m, int n, plasma_desc_t *desc)
+int plasma_desc_general_init(plasma_enum_t precision, void *matrix,
+                             int mb, int nb, int lm, int ln, int i, int j,
+                             int m, int n, plasma_desc_t *desc)
 {
-    size_t A21 = (size_t)(lm - lm%mb) * (size_t)(ln - ln%nb);
-    size_t A12 = (size_t)(     lm%mb) * (size_t)(ln - ln%nb);
-    size_t A22 = (size_t)(lm - lm%mb) * (size_t)(     ln%nb);
-
-    // matrix address
-    desc->matrix = NULL;
-    desc->A21 = A21;
-    desc->A12 = A12 + desc->A21;
-    desc->A22 = A22 + desc->A12;
-
-    // matrix properties
+    // type and precision
     desc->type = PlasmaGeneral;
     desc->precision = precision;
+
+    // pointer and offsets
+    desc->matrix = matrix;
+    desc->A21 = (size_t)(lm - lm%mb) * (ln - ln%nb);
+    desc->A12 = (size_t)(     lm%mb) * (ln - ln%nb) + desc->A21;
+    desc->A22 = (size_t)(lm - lm%mb) * (     ln%nb) + desc->A12;
+
+    // tile parameters
     desc->mb = mb;
     desc->nb = nb;
 
-    // large matrix parameters
+    // main matrix parameters
     desc->lm = lm;
     desc->ln = ln;
 
-    // large matrix derived parameters
     desc->lmt = (lm%mb == 0) ? (lm/mb) : (lm/mb+1);
     desc->lnt = (ln%nb == 0) ? (ln/nb) : (ln/nb+1);
 
@@ -185,7 +185,6 @@ int plasma_desc_init(plasma_enum_t precision, int mb, int nb, int lm, int ln,
     desc->m = m;
     desc->n = n;
 
-    // submatrix derived parameters
     desc->mt = (m == 0) ? 0 : (i+m-1)/mb - i/mb + 1;
     desc->nt = (n == 0) ? 0 : (j+n-1)/nb - j/nb + 1;
 
@@ -193,14 +192,16 @@ int plasma_desc_init(plasma_enum_t precision, int mb, int nb, int lm, int ln,
 }
 
 /******************************************************************************/
-int plasma_desc_band_init(plasma_enum_t precision, plasma_enum_t uplo,
-                          int mb, int nb, int lm, int ln, int i, int j,
-                          int m, int n, int kl, int ku, plasma_desc_t *desc)
+int plasma_desc_general_band_init(plasma_enum_t precision, plasma_enum_t uplo,
+                                  void *matrix, int mb, int nb, int lm, int ln,
+                                  int i, int j, int m, int n, int kl, int ku,
+                                  plasma_desc_t *desc)
 {
     // Init parameters for a general matrix.
-    int retval = plasma_desc_init(precision, mb, nb, lm, ln, i, j, m, n, desc);
+    int retval = plasma_desc_general_init(precision, matrix, mb, nb,
+                                          lm, ln, i, j, m, n, desc);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_init() failed");
+        plasma_error("plasma_desc_general_init() failed");
         return retval;
     }
     // Change matrix type to band.
