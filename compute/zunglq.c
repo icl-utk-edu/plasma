@@ -123,16 +123,16 @@ int PLASMA_zunglq(int m, int n, int k,
     nb = plasma->nb;
 
     // Create tile matrices.
-    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
-                                lda, n, 0, 0, k, n, &descA);
+    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
+                                        lda, n, 0, 0, k, n, &descA);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_create() failed");
+        plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
-    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
-                                ldq, n, 0, 0, m, n, &descQ);
+    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
+                                        ldq, n, 0, 0, m, n, &descQ);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_create() failed");
+        plasma_error("plasma_desc_general_create() failed");
         plasma_desc_destroy(&descA);
         return retval;
     }

@@ -178,23 +178,23 @@ int PLASMA_zsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
     nb = plasma->nb;
 
     // Create tile matrices.
-    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
-                                Am, An, 0, 0, Am, An, &descA);
+    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
+                                        Am, An, 0, 0, Am, An, &descA);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_create() failed");
+        plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
-    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
-                                Bm, Bn, 0, 0, Bm, Bn, &descB);
+    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
+                                        Bm, Bn, 0, 0, Bm, Bn, &descB);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_create() failed");
+        plasma_error("plasma_desc_general_create() failed");
         plasma_desc_destroy(&descA);
         return retval;
     }
-    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
-                                n, n, 0, 0, n, n, &descC);
+    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
+                                        n, n, 0, 0, n, n, &descC);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_create() failed");
+        plasma_error("plasma_desc_general_create() failed");
         plasma_desc_destroy(&descA);
         plasma_desc_destroy(&descB);
         return retval;

@@ -16,8 +16,9 @@
 
 
 /******************************************************************************/
-int plasma_desc_create(plasma_enum_t precision, int mb, int nb, int lm, int ln,
-                       int i, int j, int m, int n, plasma_desc_t *desc)
+int plasma_desc_general_create(plasma_enum_t precision, int mb, int nb,
+                               int lm, int ln, int i, int j, int m, int n,
+                               plasma_desc_t *desc)
 {
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -46,9 +47,10 @@ int plasma_desc_create(plasma_enum_t precision, int mb, int nb, int lm, int ln,
 }
 
 /******************************************************************************/
-int plasma_desc_band_create(plasma_enum_t precision, plasma_enum_t uplo,
-                            int mb, int nb, int lm, int ln, int i, int j,
-                            int m, int n, int kl, int ku, plasma_desc_t *desc)
+int plasma_desc_general_band_create(plasma_enum_t precision, plasma_enum_t uplo,
+                                    int mb, int nb, int lm, int ln,
+                                    int i, int j, int m, int n, int kl, int ku,
+                                    plasma_desc_t *desc)
 {
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -132,8 +134,8 @@ int plasma_desc_create_for_function(const char *function_name, int m, int n,
     }
 
     // Create the descriptor using the standard function. 
-    int retval = plasma_desc_create(precision, mb, nb, mt*mb, nt*nb, 0, 0,
-                                    mt*mb, nt*nb, desc);
+    int retval = plasma_desc_general_create(precision, mb, nb, mt*mb, nt*nb,
+                                            0, 0, mt*mb, nt*nb, desc);
     return retval;
 }
 

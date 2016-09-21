@@ -114,10 +114,10 @@ int PLASMA_zpotrf(plasma_enum_t uplo,
     nb = plasma->nb;
 
     // Create tile matrix.
-    retval = plasma_desc_create(PlasmaComplexDouble, nb, nb,
-                                n, n, 0, 0, n, n, &descA);
+    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
+                                        n, n, 0, 0, n, n, &descA);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_create() failed");
+        plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
 
