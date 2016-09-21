@@ -164,9 +164,9 @@ void core_omp_zgeqrt(int m, int n, int ib, int nb,
                      plasma_workspace_t *work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // assuming lda == m and nb == n
-    #pragma omp task depend(inout:A[0:lda*nb]) \
-                     depend(out:T[0:ldt*nb])
+    // OpenMP depends assume lda == m == n == nb, ldt == ib.
+    #pragma omp task depend(inout:A[0:nb*nb]) \
+                     depend(out:T[0:ib*nb])
     {
         if (sequence->status == PlasmaSuccess) {
             int tid = omp_get_thread_num();

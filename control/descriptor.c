@@ -98,32 +98,32 @@ int plasma_desc_create_for_function(const char *function_name, int m, int n,
     // Set function-dependent variables.
     int mb;
     plasma_enum_t precision;
-    if      (strcmp(function_name, "zgeqrf") == 0 || 
+    if      (strcmp(function_name, "zgeqrf") == 0 ||
              strcmp(function_name, "zgelqf") == 0 ||
              strcmp(function_name, "zgels")  == 0) {
 
-        mb = ib; 
+        mb = ib;
         precision = PlasmaComplexDouble;
     }
-    else if (strcmp(function_name, "cgeqrf") == 0 || 
+    else if (strcmp(function_name, "cgeqrf") == 0 ||
              strcmp(function_name, "cgelqf") == 0 ||
              strcmp(function_name, "cgels")  == 0) {
 
-        mb = ib; 
+        mb = ib;
         precision = PlasmaComplexFloat;
     }
-    else if (strcmp(function_name, "dgeqrf") == 0 || 
+    else if (strcmp(function_name, "dgeqrf") == 0 ||
              strcmp(function_name, "dgelqf") == 0 ||
              strcmp(function_name, "dgels")  == 0) {
 
-        mb = ib; 
+        mb = ib;
         precision = PlasmaRealDouble;
     }
-    else if (strcmp(function_name, "sgeqrf") == 0 || 
+    else if (strcmp(function_name, "sgeqrf") == 0 ||
              strcmp(function_name, "sgelqf") == 0 ||
              strcmp(function_name, "sgels")  == 0) {
 
-        mb = ib; 
+        mb = ib;
         precision = PlasmaRealFloat;
     }
     else {
@@ -131,7 +131,7 @@ int plasma_desc_create_for_function(const char *function_name, int m, int n,
         return PlasmaErrorIllegalValue;
     }
 
-    // Create the descriptor using the standard function. 
+    // Create the descriptor using the standard function.
     int retval = plasma_desc_create(precision, mb, nb, mt*mb, nt*nb, 0, 0,
                                     mt*mb, nt*nb, desc);
     return retval;

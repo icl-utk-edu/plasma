@@ -261,7 +261,8 @@ void core_omp_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
                      plasma_workspace_t *work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // assuming m1 == nb, n1 == nb, m2 == nb, n2 == nb
+    // OpenMP depends assume m1 == n1 == m2 == n2 == lda1 == lda2 == ldv == nb,
+    //                       ldt == ib.
     #pragma omp task depend(inout:A1[0:nb*nb]) \
                      depend(inout:A2[0:nb*nb]) \
                      depend(in:V[0:nb*nb]) \

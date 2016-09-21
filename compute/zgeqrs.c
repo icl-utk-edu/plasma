@@ -134,7 +134,7 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
         plasma_desc_destroy(&descA);
         return retval;
     }
-    
+
     // Allocate workspace.
     plasma_workspace_t work;
     size_t lwork = ib*nb;  // unmqr: work

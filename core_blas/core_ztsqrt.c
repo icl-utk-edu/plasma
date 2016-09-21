@@ -196,7 +196,7 @@ void core_omp_ztsqrt(int m, int n, int ib, int nb,
                      plasma_workspace_t *work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // omp depends assume m == nb, n == nb.
+    // OpenMP depends assume m == n == lda1 == lda2 == nb, ldt == ib.
     #pragma omp task depend(inout:A1[0:nb*nb]) \
                      depend(inout:A2[0:nb*nb]) \
                      depend(out:T[0:ib*nb])

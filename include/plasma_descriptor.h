@@ -68,7 +68,7 @@ typedef struct {
 /******************************************************************************/
 static inline int plasma_element_size(int type)
 {
-    switch(type) {
+    switch (type) {
     case PlasmaByte:          return          1;
     case PlasmaInteger:       return   sizeof(int);
     case PlasmaRealFloat:     return   sizeof(float);
