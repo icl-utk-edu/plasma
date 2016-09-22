@@ -235,8 +235,18 @@ void plasma_omp_zgeqrf(plasma_desc_t *A, plasma_desc_t *T,
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
+    if (A->mb != plasma->nb || A->nb != plasma->nb) {
+        plasma_error("wrong tile dimensions of A");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
     if (plasma_desc_check(T) != PlasmaSuccess) {
         plasma_error("invalid T");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+    if (T->mb != plasma->ib || T->nb != plasma->nb) {
+        plasma_error("wrong tile dimensions of T");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }

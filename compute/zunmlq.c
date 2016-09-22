@@ -313,13 +313,28 @@ void plasma_omp_zunmlq(plasma_enum_t side, plasma_enum_t trans,
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
+    if (A->mb != plasma->nb || A->nb != plasma->nb) {
+        plasma_error("wrong tile dimensions of A");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
     if (plasma_desc_check(T) != PlasmaSuccess) {
         plasma_error("invalid descriptor T");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
+    if (T->mb != plasma->ib || T->nb != plasma->nb) {
+        plasma_error("wrong tile dimensions of T");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
     if (plasma_desc_check(C) != PlasmaSuccess) {
         plasma_error("invalid descriptor C");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+    if (C->mb != plasma->nb || C->nb != plasma->nb) {
+        plasma_error("wrong tile dimensions of C");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
@@ -330,11 +345,6 @@ void plasma_omp_zunmlq(plasma_enum_t side, plasma_enum_t trans,
     }
     if (request == NULL) {
         plasma_error("NULL request");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    if (A->nb != A->mb || C->nb != C->mb) {
-        plasma_error("only square tiles supported");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }

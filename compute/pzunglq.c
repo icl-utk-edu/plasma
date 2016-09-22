@@ -40,6 +40,9 @@ void plasma_pzunglq(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
         return;
     }
 
+    // Set inner blocking from the T tile row-dimension.
+    int ib = T.mb;
+
     minmnt = imin(A.mt, A.nt);
     for (k = minmnt-1; k >= 0; k--) {
         tempAkm  = plasma_tile_mdim(A, k);
@@ -54,7 +57,7 @@ void plasma_pzunglq(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
                 ldqm = plasma_tile_mdim(Q, m);
                 core_omp_ztsmlq(
                     PlasmaRight, PlasmaNoTrans,
-                    tempmm, Q.nb, tempmm, tempnn, tempAkm, T.mb, T.nb,
+                    tempmm, Q.nb, tempmm, tempnn, tempAkm, ib, T.nb,
                     Q(m, k), ldqm,
                     Q(m, n), ldqm,
                     A(k, n), ldak,
@@ -68,7 +71,7 @@ void plasma_pzunglq(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
             ldqm = plasma_tile_mdim(Q, m);
             core_omp_zunmlq(
                 PlasmaRight, PlasmaNoTrans,
-                tempmm, tempkn, tempkmin, T.mb, T.nb,
+                tempmm, tempkn, tempkmin, ib, T.nb,
                 A(k, k), ldak,
                 T(k, k), T.mb,
                 Q(m, k), ldqm,

@@ -38,12 +38,15 @@ void plasma_pzgelqf(plasma_desc_t A, plasma_desc_t T,
         return;
     }
 
+    // Set inner blocking from the T tile row-dimension.
+    int ib = T.mb;
+
     for (k = 0; k < imin(A.mt, A.nt); k++) {
         tempkm = plasma_tile_mdim(A, k);
         tempkn = plasma_tile_mdim(A, k);
         ldak = plasma_tile_mdim(A, k);
         core_omp_zgelqt(
-            tempkm, tempkn, T.mb, T.nb,
+            tempkm, tempkn, ib, T.nb,
             A(k, k), ldak,
             T(k, k), T.mb,
             work,
@@ -58,7 +61,7 @@ void plasma_pzgelqf(plasma_desc_t A, plasma_desc_t T,
             // PlasmaConjTrans is protected from this conversion.
             core_omp_zunmlq(
                 PlasmaRight, Plasma_ConjTrans,
-                tempmm, tempkn, tempkn, T.mb, T.nb,
+                tempmm, tempkn, tempkn, ib, T.nb,
                 A(k, k), ldak,
                 T(k, k), T.mb,
                 A(m, k), ldam,
@@ -68,7 +71,7 @@ void plasma_pzgelqf(plasma_desc_t A, plasma_desc_t T,
         for (n = k+1; n < A.nt; n++) {
             tempnn = plasma_tile_ndim(A, n);
             core_omp_ztslqt(
-                tempkm, tempnn, T.mb, T.nb,
+                tempkm, tempnn, ib, T.nb,
                 A(k, k), ldak,
                 A(k, n), ldak,
                 T(k, n), T.mb,
@@ -80,7 +83,7 @@ void plasma_pzgelqf(plasma_desc_t A, plasma_desc_t T,
                 ldam = plasma_tile_mdim(A, m);
                 core_omp_ztsmlq(
                     PlasmaRight, Plasma_ConjTrans,
-                    tempmm, A.nb, tempmm, tempnn, A.mb, T.mb, T.nb,
+                    tempmm, A.nb, tempmm, tempnn, A.mb, ib, T.nb,
                     A(m, k), ldam,
                     A(m, n), ldam,
                     A(k, n), ldak,
