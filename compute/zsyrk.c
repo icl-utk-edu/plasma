@@ -10,12 +10,13 @@
  *
  **/
 
-#include "plasma_types.h"
+#include "plasma.h"
 #include "plasma_async.h"
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
-#include "plasma_z.h"
+#include "plasma_types.h"
+#include "plasma_workspace.h"
 
 /***************************************************************************//**
  *
@@ -147,8 +148,6 @@ int PLASMA_zsyrk(plasma_enum_t uplo, plasma_enum_t trans, int n, int k,
     //     plasma_error("PLASMA_zsyrk", "plasma_tune() failed");
     //     return status;
     // }
-
-    // Set NT & KT
     nb = plasma->nb;
 
     // Create tile matrices.

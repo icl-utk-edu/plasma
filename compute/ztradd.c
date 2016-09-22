@@ -10,12 +10,13 @@
  *
  **/
 
-#include "plasma_types.h"
+#include "plasma.h"
 #include "plasma_async.h"
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
-#include "plasma_z.h"
+#include "plasma_types.h"
+#include "plasma_workspace.h"
 
 /***************************************************************************//**
  *
@@ -109,38 +110,34 @@ int PLASMA_ztradd(plasma_enum_t uplo, plasma_enum_t transA, int m, int n,
     plasma_complex64_t zzero = 0.0;
     plasma_complex64_t zone  = 1.0;
 
-    // Get PLASMA context
+    // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
         return PlasmaErrorNotInitialized;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if ((uplo != PlasmaGeneral) &&
         (uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
         return -1;
     }
-
     if ((transA != PlasmaNoTrans) &&
         (transA != PlasmaTrans) &&
         (transA != PlasmaConjTrans)) {
         plasma_error("illegal value of transA");
         return -2;
     }
-
     if (m < 0) {
         plasma_error("illegal value of m");
         return -3;
     }
-
     if (n < 0) {
         plasma_error("illegal value of n");
         return -4;
     }
-
     if (A == NULL) {
         plasma_error("NULL A");
         return -6;
@@ -154,19 +151,16 @@ int PLASMA_ztradd(plasma_enum_t uplo, plasma_enum_t transA, int m, int n,
         Am = n;
         An = m;
     }
-
     Bm = m;  Bn = n;
 
     if (lda < imax(1, Am)) {
         plasma_error("illegal value of lda");
         return -7;
     }
-
     if (B == NULL) {
         plasma_error("NULL B");
         return -9;
     }
-
     if (ldb < imax(1, Bm)) {
         plasma_error("illegal value of ldb");
         return -10;
@@ -228,7 +222,7 @@ int PLASMA_ztradd(plasma_enum_t uplo, plasma_enum_t transA, int m, int n,
         PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
         PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
     }
-    // Implicit synchronization
+    // implicit synchronization
 
     // Free matrices in tile layout.
     plasma_desc_destroy(&descA);
@@ -306,7 +300,7 @@ void plasma_omp_ztradd(plasma_enum_t uplo, plasma_enum_t transA,
                        plasma_complex64_t beta,  plasma_desc_t *B,
                        plasma_sequence_t *sequence, plasma_request_t  *request)
 {
-    // Get PLASMA context
+    // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
@@ -314,7 +308,7 @@ void plasma_omp_ztradd(plasma_enum_t uplo, plasma_enum_t transA,
         return;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if ((uplo != PlasmaGeneral) &&
         (uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
@@ -322,7 +316,6 @@ void plasma_omp_ztradd(plasma_enum_t uplo, plasma_enum_t transA,
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-
     if ((transA != PlasmaNoTrans) &&
         (transA != PlasmaTrans) &&
         (transA != PlasmaConjTrans)) {
@@ -330,25 +323,21 @@ void plasma_omp_ztradd(plasma_enum_t uplo, plasma_enum_t transA,
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-
     if (plasma_desc_check(A) != PlasmaSuccess) {
         plasma_error("invalid A");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-
     if (plasma_desc_check(B) != PlasmaSuccess) {
         plasma_error("invalid B");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-
     if (sequence == NULL) {
         plasma_error("NULL sequence");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-
     if (request == NULL) {
         plasma_error("NULL request");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
@@ -360,6 +349,6 @@ void plasma_omp_ztradd(plasma_enum_t uplo, plasma_enum_t transA,
     if ((alpha == 0.0 || Am == 0) && beta == 1.0)
         return;
 
-    // Call parallel function
+    // Call parallel function.
     plasma_pztradd(uplo, transA, alpha, *A, beta, *B, sequence, request);
 }

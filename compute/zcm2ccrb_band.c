@@ -10,12 +10,12 @@
  *
  **/
 
-#include "plasma_types.h"
 #include "plasma_async.h"
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
-#include "plasma_z.h"
+#include "plasma_types.h"
+#include "plasma_workspace.h"
 
 /***************************************************************************//**
     @ingroup plasma_cm2ccrb
@@ -57,18 +57,10 @@ void PLASMA_zcm2ccrb_band_Async(plasma_enum_t uplo,
         return;
     }
 
-    // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
-        return;
-    }
-
-    // quick return with success
+    // quick return
     if (A->m == 0 || A->n == 0)
         return;
 
     // Call the parallel function.
     plasma_pzoocm2ccrb_band(uplo, Af77, lda, *A, sequence, request);
-
-    return;
 }

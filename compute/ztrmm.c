@@ -10,12 +10,13 @@
  *
  **/
 
-#include "plasma_types.h"
+#include "plasma.h"
 #include "plasma_async.h"
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
-#include "plasma_z.h"
+#include "plasma_types.h"
+#include "plasma_workspace.h"
 
 /***************************************************************************//**
  *
@@ -119,7 +120,7 @@ int PLASMA_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
     plasma_desc_t descA;
     plasma_desc_t descB;
 
-    // Get PLASMA context
+    // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
@@ -211,11 +212,11 @@ int PLASMA_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
     #pragma omp parallel
     #pragma omp master
     {
-        // Translate matrices to tile layout
+        // Translate matrices to tile layout.
         PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
         PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
 
-        // Call tile async interface
+        // Call tile async interface.
         plasma_omp_ztrmm(side, uplo, transA, diag,
                          alpha, &descA,
                                 &descB,
@@ -278,102 +279,68 @@ int PLASMA_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
  *
  ******************************************************************************/
 void plasma_omp_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
-                            plasma_enum_t transA, plasma_enum_t diag,
-                            plasma_complex64_t alpha, plasma_desc_t *A,
-                                                      plasma_desc_t *B,
-                            plasma_sequence_t *sequence, plasma_request_t  *request)
+                      plasma_enum_t transA, plasma_enum_t diag,
+                      plasma_complex64_t alpha, plasma_desc_t *A,
+                                                plasma_desc_t *B,
+                      plasma_sequence_t *sequence, plasma_request_t  *request)
 {
-    plasma_desc_t descA;
-    plasma_desc_t descB;
-    plasma_context_t *plasma;
-
-    // Get PLASMA context
-    plasma = plasma_context_self();
-
+    // Get PLASMA context.
+    plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
         plasma_request_fail(sequence, request, PlasmaErrorNotInitialized);
         return;
     }
 
-    if (sequence == NULL) {
-        plasma_error("NULL sequence");
-        plasma_request_fail(sequence, request, PlasmaErrorNullParameter);
-        return;
-    }
-
-    if (request == NULL) {
-        plasma_error("NULL request");
-        plasma_request_fail(sequence, request, PlasmaErrorNullParameter);
-        return;
-    }
-
-    // Check sequence status
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
-        return;
-    }
-
-    // Check descriptors for correctness
-    if (plasma_desc_check(A) != PlasmaSuccess) {
-        plasma_error("invalid first descriptor");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    else {
-        descA = *A;
-    }
-
-    if (plasma_desc_check(B) != PlasmaSuccess) {
-        plasma_error("invalid second descriptor");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    else {
-        descB = *B;
-    }
-
-    // Check input arguments
-    if (descA.nb != descA.mb || descB.nb != descB.mb) {
-        plasma_error("only square tiles supported");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-
+    // Check input arguments.
     if (side != PlasmaLeft && side != PlasmaRight) {
         plasma_error("illegal value of side");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-
     if (uplo != PlasmaUpper && uplo != PlasmaLower) {
         plasma_error("illegal value of uplo");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-
     if (transA != PlasmaConjTrans &&
         transA != PlasmaNoTrans &&
         transA != PlasmaTrans) {
-
         plasma_error("illegal value of transA");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-
     if (diag != PlasmaUnit && diag != PlasmaNonUnit) {
         plasma_error("illegal value of diag");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
+    if (plasma_desc_check(A) != PlasmaSuccess) {
+        plasma_error("invalid A");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+    if (plasma_desc_check(B) != PlasmaSuccess) {
+        plasma_error("invalid B");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+    if (sequence == NULL) {
+        plasma_error("NULL sequence");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+    if (request == NULL) {
+        plasma_error("NULL request");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
 
-    // Quick return
+    // quick return
     if (A->m == 0 || A->n == 0 || alpha == 0.0 || B->m == 0 || B->n == 0)
         return;
 
-    // Call parallel function
+    // Call parallel function.
     plasma_pztrmm(side, uplo, transA, diag, alpha,
-                  descA, descB, sequence, request);
-
-    return;
+                  *A, *B, sequence, request);
 }

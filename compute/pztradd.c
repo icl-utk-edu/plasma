@@ -11,10 +11,12 @@
  **/
 
 #include "plasma_async.h"
+#include "plasma_context.h"
 #include "plasma_descriptor.h"
-#include "plasma_types.h"
 #include "plasma_internal.h"
-#include "core_blas_z.h"
+#include "plasma_types.h"
+#include "plasma_workspace.h"
+#include "core_blas.h"
 
 #define A(m,n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
 #define B(m,n) (plasma_complex64_t*)plasma_tile_addr(B, m, n)
@@ -28,9 +30,9 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
                     plasma_complex64_t beta,   plasma_desc_t B,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    int tempmm, tempnn, tempmn, tempnm;
     int m, n;
     int ldam, ldan, ldbm, ldbn;
+    int tempmm, tempnn, tempmn, tempnm;
 
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {

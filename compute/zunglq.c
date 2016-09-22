@@ -10,12 +10,13 @@
  *
  **/
 
-#include "plasma_types.h"
+#include "plasma.h"
 #include "plasma_async.h"
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
-#include "plasma_z.h"
+#include "plasma_types.h"
+#include "plasma_workspace.h"
 
 /***************************************************************************//**
  *
@@ -156,6 +157,7 @@ int PLASMA_zunglq(int m, int n, int k,
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
 
+    // asynchronous block
     #pragma omp parallel
     #pragma omp master
     {
@@ -244,7 +246,7 @@ void plasma_omp_zunglq(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *Q,
         return;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if (plasma_desc_check(A) != PlasmaSuccess) {
         plasma_error("invalid descriptor A");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
@@ -286,19 +288,13 @@ void plasma_omp_zunglq(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *Q,
         return;
     }
 
-    // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
-        return;
-    }
-
-    // Quick return
+    // quick return
     if (Q->m <= 0)
         return;
 
-    // set ones to diagonal of Q
-    plasma_pzlaset(PlasmaGeneral, 0., 1., *Q, sequence, request);
+    // Set Q to identity.
+    plasma_pzlaset(PlasmaGeneral, 0.0, 1.0, *Q, sequence, request);
 
-    // construct Q
+    // Construct Q.
     plasma_pzunglq(*A, *Q, *T, work, sequence, request);
 }

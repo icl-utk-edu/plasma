@@ -10,12 +10,13 @@
  *
  **/
 
-#include "plasma_types.h"
+#include "plasma.h"
 #include "plasma_async.h"
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
-#include "plasma_z.h"
+#include "plasma_types.h"
+#include "plasma_workspace.h"
 
 /***************************************************************************//**
  *
@@ -94,7 +95,7 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
         return PlasmaErrorNotInitialized;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
@@ -132,9 +133,8 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
     //     plasma_error("plasma_tune() failed");
     //     return status;
     // }
-
-    // Set NT & NHRS
     nb = plasma->nb;
+
     // Initialize tile matrix descriptors.
     int tku  = (kd+kd+nb-1)/nb; // number of tiles in upper band (not including diagonal)
     int tkl  = (kd+nb-1)/nb;    // number of tiles in lower band (not including diagonal)
@@ -168,12 +168,7 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
 
-    // The Async functions are submitted here.  If an error occurs
-    // (at submission time or at run time) the sequence->status
-    // will be marked with an error.  After an error, the next
-    // Async will not _insert_ more tasks into the runtime.  The
-    // sequence->status can be checked after each call to _Async
-    // or at the end of the parallel region.
+    // asynchronous block
     #pragma omp parallel
     #pragma omp master
     {
@@ -192,6 +187,7 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
         if (sequence->status == PlasmaSuccess)
             PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
     }
+    // implicit synchronization
 
     // Free matrix A in tile layout.
     plasma_desc_destroy(&descAB);
@@ -348,6 +344,4 @@ void plasma_omp_zpbtrs(plasma_enum_t uplo,
         NULL,
         sequence,
         request);
-
-    return;
 }

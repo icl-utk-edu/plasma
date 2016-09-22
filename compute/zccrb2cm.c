@@ -14,8 +14,8 @@
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
-#include "plasma_z.h"
 #include "plasma_types.h"
+#include "plasma_workspace.h"
 
 /***************************************************************************//**
     @ingroup plasma_ccrb2cm

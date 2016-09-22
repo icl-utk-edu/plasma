@@ -11,13 +11,15 @@
  **/
 
 #include "plasma_async.h"
+#include "plasma_context.h"
 #include "plasma_descriptor.h"
-#include "plasma_types.h"
 #include "plasma_internal.h"
-#include "core_blas_z.h"
+#include "plasma_types.h"
+#include "plasma_workspace.h"
+#include "core_blas.h"
 
-#define A(m,n) (plasma_complex64_t*)plasma_tile_addr(A, (m), (n))
-#define B(m,n) (plasma_complex64_t*)plasma_tile_addr(B, (m), (n))
+#define A(m,n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
+#define B(m,n) (plasma_complex64_t*)plasma_tile_addr(B, m, n)
 #define IPIV(k) &(IPIV[B.mb*(k)])
 
 /***************************************************************************//**

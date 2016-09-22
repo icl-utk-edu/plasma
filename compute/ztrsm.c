@@ -10,12 +10,13 @@
  *
  **/
 
-#include "plasma_types.h"
+#include "plasma.h"
 #include "plasma_async.h"
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
-#include "plasma_z.h"
+#include "plasma_types.h"
+#include "plasma_workspace.h"
 
 /***************************************************************************//**
  *
@@ -111,7 +112,7 @@ int PLASMA_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
     int status;
 
     plasma_desc_t descA;
-    plasma_desc_t  descB;
+    plasma_desc_t descB;
 
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -120,14 +121,14 @@ int PLASMA_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
         return PlasmaErrorNotInitialized;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if ((side != PlasmaLeft) &&
         (side != PlasmaRight)) {
         plasma_error("illegal value of side");
         return -1;
     }
     if ((uplo != PlasmaUpper) &&
-            (uplo != PlasmaLower)) {
+        (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
         return -2;
     }
@@ -138,7 +139,7 @@ int PLASMA_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
         return -3;
     }
     if ((diag != PlasmaUnit) &&
-            (diag != PlasmaNonUnit)) {
+        (diag != PlasmaNonUnit)) {
         plasma_error("illegal value of diag");
         return -4;
     }

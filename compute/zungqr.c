@@ -10,12 +10,13 @@
  *
  **/
 
-#include "plasma_types.h"
+#include "plasma.h"
 #include "plasma_async.h"
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
-#include "plasma_z.h"
+#include "plasma_types.h"
+#include "plasma_workspace.h"
 
 /***************************************************************************//**
  *
@@ -87,7 +88,7 @@ int PLASMA_zungqr(int m, int n, int k,
         return PlasmaErrorNotInitialized;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if (m < 0) {
         plasma_error("illegal value of m");
         return -1;
@@ -108,7 +109,8 @@ int PLASMA_zungqr(int m, int n, int k,
         plasma_error("illegal value of ldq");
         return -8;
     }
-    // Quick return
+
+    // quick return
     if (n <= 0)
         return PlasmaSuccess;
 
@@ -244,7 +246,7 @@ void plasma_omp_zungqr(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *Q,
         return;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if (plasma_desc_check(A) != PlasmaSuccess) {
         plasma_error("invalid descriptor A");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
@@ -286,13 +288,13 @@ void plasma_omp_zungqr(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *Q,
         return;
     }
 
-    // Quick return
+    // quick return
     if (Q->n <= 0)
         return;
 
-    // set ones to diagonal of Q
+    // Set Q to identity.
     plasma_pzlaset(PlasmaGeneral, 0.0, 1.0, *Q, sequence, request);
 
-    // construct Q
+    // Construct Q.
     plasma_pzungqr(*A, *Q, *T, work, sequence, request);
 }

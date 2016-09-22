@@ -10,13 +10,13 @@
  *
  **/
 
-#include "plasma_types.h"
+#include "plasma.h"
 #include "plasma_async.h"
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
-#include "plasma_z.h"
-
+#include "plasma_types.h"
+#include "plasma_workspace.h"
 
 /***************************************************************************//**
  *
@@ -119,8 +119,8 @@ int PLASMA_zpbtrf(plasma_enum_t uplo,
     //     plasma_error("plasma_tune() failed");
     //     return status;
     // }
-
     nb = plasma->nb;
+
     // Initialize tile matrix descriptors.
     int lda = nb*(1+(kd+nb-1)/nb);
     retval = plasma_desc_general_band_create(PlasmaComplexDouble, uplo, nb, nb,
@@ -141,16 +141,7 @@ int PLASMA_zpbtrf(plasma_enum_t uplo,
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
 
-    // The Async functions are submitted here.  If an error occurs
-    // (at submission time or at run time) the sequence->status
-    // will be marked with an error.  After an error, the next
-    // Async will not _insert_ more tasks into the runtime.  The
-    // sequence->status can be checked after each call to _Async
-    // or at the end of the parallel region.
-    //
-    // Storage translation and factorization are split because
-    // LU panel/pivot need synch on tiles in each column from/to
-    // translation
+    // asynchronous block
     #pragma omp parallel
     #pragma omp master
     {
@@ -165,7 +156,8 @@ int PLASMA_zpbtrf(plasma_enum_t uplo,
         // Translate back to LAPACK layout.
         if (sequence->status == PlasmaSuccess)
             PLASMA_zccrb2cm_band_Async(uplo, &descAB, AB, ldab, sequence, &request);
-    } // pragma omp parallel block closed
+    }
+    // implicit synchronization
 
     // Free matrix A in tile layout.
     plasma_desc_destroy(&descAB);
@@ -266,6 +258,4 @@ void plasma_omp_zpbtrf(plasma_enum_t uplo,
 
     // Call the parallel function.
     plasma_pzpbtrf(uplo, *AB, sequence, request);
-
-    return;
 }

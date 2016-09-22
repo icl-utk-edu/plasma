@@ -10,12 +10,13 @@
  *
  **/
 
-#include "plasma_types.h"
+#include "plasma.h"
 #include "plasma_async.h"
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
-#include "plasma_z.h"
+#include "plasma_types.h"
+#include "plasma_workspace.h"
 
 /***************************************************************************//**
  *
@@ -97,7 +98,7 @@ int PLASMA_zunmqr(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
                   plasma_desc_t *descT,
                   plasma_complex64_t *C, int ldc)
 {
-    int am;
+    int Am;
     int ib, nb;
     int retval;
     int status;
@@ -131,17 +132,17 @@ int PLASMA_zunmqr(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
     }
 
     if (side == PlasmaLeft) {
-        am = m;
+        Am = m;
     }
     else {
-        am = n;
+        Am = n;
     }
 
-    if ((k < 0) || (k > am)) {
+    if ((k < 0) || (k > Am)) {
         plasma_error("illegal value of k");
         return -5;
     }
-    if (lda < imax(1, am)) {
+    if (lda < imax(1, Am)) {
         plasma_error("illegal value of lda");
         return -7;
     }
@@ -164,7 +165,7 @@ int PLASMA_zunmqr(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
 
     // Create tile matrices.
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        lda, k, 0, 0, am, k, &descA);
+                                        lda, k, 0, 0, Am, k, &descA);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
@@ -196,6 +197,7 @@ int PLASMA_zunmqr(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
 
+    // asynchronous block
     #pragma omp parallel
     #pragma omp master
     {
@@ -298,15 +300,14 @@ void plasma_omp_zunmqr(plasma_enum_t side, plasma_enum_t trans,
         return;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if ((side != PlasmaLeft) && (side != PlasmaRight)) {
-        plasma_error("strange side - neither PlasmaLeft nor PlasmaRight");
+        plasma_error("invalid value of side");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if ((trans != Plasma_ConjTrans) && (trans != PlasmaNoTrans)) {
-        plasma_error(
-            "strange trans - neither Plasma_ConjTrans nor PlasmaTrans");
+        plasma_error("invalid value of trans");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
@@ -351,17 +352,12 @@ void plasma_omp_zunmqr(plasma_enum_t side, plasma_enum_t trans,
         return;
     }
 
-    // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
-        return;
-    }
-
-    // Quick return
+    // quick return
     // (m == 0 || n == 0 || k == 0)
     if (C->m == 0 || C->n == 0 || imin(A->m, A->n) == 0)
         return;
 
+    // Call the parallel function.
     plasma_pzunmqr(side, trans,
                    *A, *C, *T,
                    work, sequence, request);

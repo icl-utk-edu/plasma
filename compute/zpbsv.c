@@ -10,12 +10,13 @@
  *
  **/
 
-#include "plasma_types.h"
+#include "plasma.h"
 #include "plasma_async.h"
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
-#include "plasma_z.h"
+#include "plasma_types.h"
+#include "plasma_workspace.h"
 
 /***************************************************************************//**
  *
@@ -143,7 +144,7 @@ int PLASMA_zpbsv(plasma_enum_t uplo, int n, int kd, int nrhs,
     //   plasma_error("PLASMA_zposv", "plasma_tune() failed");
     //    return status;
     // }
-    nb    = plasma->nb;
+    nb = plasma->nb;
 
     // Initialize tile matrix descriptors.
     int lda = nb*(1+(kd+nb-1)/nb);
@@ -172,6 +173,7 @@ int PLASMA_zpbsv(plasma_enum_t uplo, int n, int kd, int nrhs,
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
 
+    // asynchronous block
     #pragma omp parallel
     #pragma omp master
     {

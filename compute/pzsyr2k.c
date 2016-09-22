@@ -11,10 +11,12 @@
  **/
 
 #include "plasma_async.h"
+#include "plasma_context.h"
 #include "plasma_descriptor.h"
-#include "plasma_types.h"
 #include "plasma_internal.h"
-#include "core_blas_z.h"
+#include "plasma_types.h"
+#include "plasma_workspace.h"
+#include "core_blas.h"
 
 #define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
 #define B(m, n) (plasma_complex64_t*)plasma_tile_addr(B, m, n)
@@ -30,8 +32,7 @@ void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int m, n, k;
-    int ldak, ldam, ldan, ldcm, ldcn;
-    int ldbk, ldbm, ldbn;
+    int ldak, ldam, ldan, ldcm, ldcn, ldbk, ldbm, ldbn;
     int tempnn, tempmm, tempkn, tempkm;
 
     plasma_complex64_t zone = 1.0;

@@ -11,10 +11,12 @@
  **/
 
 #include "plasma_async.h"
+#include "plasma_context.h"
 #include "plasma_descriptor.h"
-#include "plasma_types.h"
 #include "plasma_internal.h"
-#include "core_blas_z.h"
+#include "plasma_types.h"
+#include "plasma_workspace.h"
+#include "core_blas.h"
 
 /******************************************************************************/
 void plasma_pzooccrb2cm(plasma_desc_t A, plasma_complex64_t *Af77, int lda,
