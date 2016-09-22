@@ -34,14 +34,8 @@ void plasma_pzgelqf(plasma_desc_t A, plasma_desc_t T,
     if (sequence->status != PlasmaSuccess)
         return;
 
-    // Set inner blocking from the plasma context
-    plasma_context_t *plasma = plasma_context_self();
-    if (plasma == NULL) {
-        plasma_error("PLASMA not initialized");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    int ib = plasma->ib;
+    // Set inner blocking from the T tile row-dimension.
+    int ib = T.mb;
 
     for (k = 0; k < imin(A.mt, A.nt); k++) {
         tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;

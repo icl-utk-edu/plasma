@@ -261,8 +261,18 @@ void plasma_omp_zgelqs(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *B,
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
+    if (A->mb != plasma->nb || A->nb != plasma->nb) {
+        plasma_error("wrong tile dimensions of A");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
     if (plasma_desc_check(T) != PlasmaSuccess) {
         plasma_error("invalid descriptor T");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+    if (T->mb != plasma->ib || T->nb != plasma->nb) {
+        plasma_error("wrong tile dimensions of T");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
@@ -271,8 +281,8 @@ void plasma_omp_zgelqs(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *B,
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-    if (A->nb != A->mb || B->nb != B->mb) {
-        plasma_error("only square tiles supported");
+    if (B->mb != plasma->nb || B->nb != plasma->nb) {
+        plasma_error("wrong tile dimensions of B");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }

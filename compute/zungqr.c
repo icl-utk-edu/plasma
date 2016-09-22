@@ -250,13 +250,28 @@ void plasma_omp_zungqr(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *Q,
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
+    if (A->mb != plasma->nb || A->nb != plasma->nb) {
+        plasma_error("wrong tile dimensions of A");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
     if (plasma_desc_check(T) != PlasmaSuccess) {
         plasma_error("invalid descriptor T");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
+    if (T->mb != plasma->ib || T->nb != plasma->nb) {
+        plasma_error("wrong tile dimensions of T");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
     if (plasma_desc_check(Q) != PlasmaSuccess) {
         plasma_error("invalid descriptor Q");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+    if (Q->mb != plasma->nb || Q->nb != plasma->nb) {
+        plasma_error("wrong tile dimensions of Q");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }

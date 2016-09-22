@@ -37,14 +37,8 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
     if (sequence->status != PlasmaSuccess)
         return;
 
-    // Set inner blocking from the plasma context
-    plasma_context_t *plasma = plasma_context_self();
-    if (plasma == NULL) {
-        plasma_error("PLASMA not initialized");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    int ib = plasma->ib;
+    // Set inner blocking from the T tile row-dimension.
+    int ib = T.mb;
 
     if (A.m > A.n) {
         minM  = A.n;
