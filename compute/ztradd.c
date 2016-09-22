@@ -357,9 +357,7 @@ void plasma_omp_ztradd(plasma_enum_t uplo, plasma_enum_t transA,
 
     // quick return
     int Am = transA == PlasmaNoTrans ? A->m : A->n;
-    plasma_complex64_t zzero = (plasma_complex64_t)0.0;
-
-    if ((alpha == zzero || Am == 0) && beta == 1.0)
+    if ((alpha == 0.0 || Am == 0) && beta == 1.0)
         return;
 
     // Call parallel function

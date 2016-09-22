@@ -391,9 +391,7 @@ void plasma_omp_zgemm(plasma_enum_t transA, plasma_enum_t transB,
 
     // quick return
     int k = transA == PlasmaNoTrans ? A->n : A->m;
-    plasma_complex64_t zzero = (plasma_complex64_t)0.0;
-
-    if (C->m == 0 || C->n == 0 || ((alpha == zzero || k == 0) && beta == 1.0))
+    if (C->m == 0 || C->n == 0 || ((alpha == 0.0 || k == 0) && beta == 1.0))
         return;
 
     // Call the parallel function.

@@ -34,7 +34,7 @@ void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
     int ldbk, ldbm, ldbn;
     int tempnn, tempmm, tempkn, tempkm;
 
-    plasma_complex64_t zone   = (plasma_complex64_t)1.0;
+    plasma_complex64_t zone = 1.0;
     plasma_complex64_t zbeta;
 
     // Check sequence status.

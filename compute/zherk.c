@@ -309,10 +309,7 @@ void plasma_omp_zherk(plasma_enum_t uplo, plasma_enum_t trans,
 
     // quick return
     int k = trans == PlasmaNoTrans ? A->n : A->m;
-    plasma_complex64_t zzero = (plasma_complex64_t)0.0;
-    plasma_complex64_t zone  = (plasma_complex64_t)1.0;
-
-    if (C->m == 0 || ((alpha == zzero || k == 0) && beta == zone))
+    if (C->m == 0 || ((alpha == 0.0 || k == 0) && beta == 1.0))
         return;
 
     // Call the parallel function.

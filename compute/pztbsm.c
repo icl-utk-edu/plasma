@@ -33,8 +33,8 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
     int k, m, n;
     int tempkm, tempmm, tempnn;
 
-    plasma_complex64_t zone       = (plasma_complex64_t) 1.0;
-    plasma_complex64_t mzone      = (plasma_complex64_t)-1.0;
+    plasma_complex64_t zone  =  1.0;
+    plasma_complex64_t mzone = -1.0;
     plasma_complex64_t lalpha;
 
     if (sequence->status != PlasmaSuccess)

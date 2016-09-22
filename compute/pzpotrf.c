@@ -29,8 +29,8 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
     int ldak, ldam, ldan;
     int tempkm, tempmm;
 
-    plasma_complex64_t zone  = (plasma_complex64_t) 1.0;
-    plasma_complex64_t mzone = (plasma_complex64_t)-1.0;
+    plasma_complex64_t zone  =  1.0;
+    plasma_complex64_t mzone = -1.0;
 
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {

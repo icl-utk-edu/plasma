@@ -33,9 +33,9 @@ void plasma_pztrsm(plasma_enum_t side, plasma_enum_t uplo,
     int ldak, ldam, ldan, ldbk, ldbm;
     int tempkm, tempkn, tempmm, tempnn;
 
-    plasma_complex64_t zone       = (plasma_complex64_t) 1.0;
-    plasma_complex64_t mzone      = (plasma_complex64_t)-1.0;
-    plasma_complex64_t minvalpha  = (plasma_complex64_t)-1.0 / alpha;
+    plasma_complex64_t zone      =  1.0;
+    plasma_complex64_t mzone     = -1.0;
+    plasma_complex64_t minvalpha = -1.0 / alpha;
     plasma_complex64_t lalpha;
 
     // Check sequence status.

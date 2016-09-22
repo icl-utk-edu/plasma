@@ -341,11 +341,7 @@ void plasma_omp_zhemm(plasma_enum_t side, plasma_enum_t uplo,
     }
 
     // quick return
-    plasma_complex64_t zzero = (plasma_complex64_t)0.0;
-    plasma_complex64_t zone  = (plasma_complex64_t)1.0;
-
-    if (C->m == 0 || C->n == 0 ||
-        ((alpha == zzero || A->n == 0) && beta == zone))
+    if (C->m == 0 || C->n == 0 || ((alpha == 0.0 || A->n == 0) && beta == 1.0))
         return;
 
     // Call the parallel function.
