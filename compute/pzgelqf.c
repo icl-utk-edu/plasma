@@ -32,8 +32,11 @@ void plasma_pzgelqf(plasma_desc_t A, plasma_desc_t T,
     int ldak, ldam;
     int tempkm, tempkn, tempmm, tempnn;
 
-    if (sequence->status != PlasmaSuccess)
+    // Check sequence status.
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
+    }
 
     for (k = 0; k < imin(A.mt, A.nt); k++) {
         tempkm = plasma_tile_mdim(A, k);

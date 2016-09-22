@@ -31,6 +31,12 @@ void plasma_pzlaset(plasma_enum_t uplo,
     int i, j;
     int m, n;
 
+    // Check sequence status.
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
+        return;
+    }
+
     int lm1 = A.lm/A.mb;
     int ln1 = A.ln/A.nb;
 

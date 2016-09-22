@@ -34,7 +34,7 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
 
     plasma_complex64_t zone = (plasma_complex64_t)1.0;
 
-    // Check sequence status
+    // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;

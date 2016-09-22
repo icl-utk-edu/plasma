@@ -35,8 +35,11 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
     int tempmm, tempnn, tempkn, tempkm, tempkmin;
     int minMT, minM;
 
-    if (sequence->status != PlasmaSuccess)
+    // Check sequence status.
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
+    }
 
     if (A.m > A.n) {
         minM  = A.n;

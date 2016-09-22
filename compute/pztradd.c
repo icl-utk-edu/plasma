@@ -32,7 +32,7 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
     int m, n;
     int ldam, ldan, ldbm, ldbn;
 
-    // Check sequence status
+    // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;

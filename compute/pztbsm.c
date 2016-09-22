@@ -37,8 +37,11 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
     plasma_complex64_t mzone      = (plasma_complex64_t)-1.0;
     plasma_complex64_t lalpha;
 
-    if (sequence->status != PlasmaSuccess)
+    // Check sequence status.
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
+    }
 
     /*
      *  PlasmaLeft / PlasmaUpper / PlasmaNoTrans

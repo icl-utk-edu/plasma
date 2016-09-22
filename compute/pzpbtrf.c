@@ -31,9 +31,11 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
     plasma_complex64_t zone  = (plasma_complex64_t)1.0;
     plasma_complex64_t mzone = (plasma_complex64_t)-1.0;
 
-    if (sequence->status != PlasmaSuccess)
+    // Check sequence status.
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
-
+    }
 
     //=======================================
     // PlasmaLower
