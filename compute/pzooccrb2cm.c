@@ -34,7 +34,7 @@ void plasma_pzooccrb2cm(plasma_desc_t A, plasma_complex64_t *Af77, int lda,
     }
 
     for (m = 0; m < A.mt; m++) {
-        ldt = BLKLDD(A, m);
+        ldt = plasma_tile_mdim(A, m);
         for (n = 0; n < A.nt; n++) {
             x1 = n == 0 ? A.j%A.nb : 0;
             y1 = m == 0 ? A.i%A.mb : 0;
@@ -42,7 +42,7 @@ void plasma_pzooccrb2cm(plasma_desc_t A, plasma_complex64_t *Af77, int lda,
             y2 = m == A.mt-1 ? (A.i+A.m-1)%A.mb+1 : A.mb;
 
             f77 = &Af77[(size_t)A.nb*lda*n + (size_t)A.mb*m];
-            bdl = (plasma_complex64_t*)plasma_getaddr(A, m, n);
+            bdl = (plasma_complex64_t*)plasma_tile_addr(A, m, n);
 
             core_omp_zlacpy(PlasmaGeneral,
                             y2-y1, x2-x1, A.mb,

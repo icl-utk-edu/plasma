@@ -16,9 +16,9 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define A(m, n) ((plasma_complex64_t*) plasma_getaddr(A, m, n))
-#define B(m, n) ((plasma_complex64_t*) plasma_getaddr(B, m, n))
-#define C(m, n) ((plasma_complex64_t*) plasma_getaddr(C, m, n))
+#define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
+#define B(m, n) (plasma_complex64_t*)plasma_tile_addr(B, m, n)
+#define C(m, n) (plasma_complex64_t*)plasma_tile_addr(C, m, n)
 
 /***************************************************************************//**
  *  Parallel tile symmetric matrix-matrix multiplication.
@@ -44,20 +44,20 @@ void plasma_pzsymm(plasma_enum_t side, plasma_enum_t uplo,
     }
 
     for (m = 0; m < C.mt; m++) {
-        tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
-        ldcm = BLKLDD(C, m);
+        tempmm = plasma_tile_mdim(C, m);
+        ldcm = plasma_tile_mdim(C, m);
         for (n = 0; n < C.nt; n++) {
-            tempnn = n == C.nt-1 ? C.n-n*C.nb : C.nb;
+            tempnn = plasma_tile_ndim(C, n);
             if (side == PlasmaLeft) {
-                ldam = BLKLDD(A, m);
+                ldam = plasma_tile_mdim(A, m);
                 //=======================================
                 // SIDE: PlasmaLeft / UPLO: PlasmaLower
                 //=======================================
                 if (uplo == PlasmaLower) {
                     for (k = 0; k < C.mt; k++) {
-                        tempkm = k == C.mt-1 ? C.m-k*C.mb : C.mb;
-                        ldak = BLKLDD(A, k);
-                        ldbk = BLKLDD(B, k);
+                        tempkm = plasma_tile_mdim(C, k);
+                        ldak = plasma_tile_mdim(A, k);
+                        ldbk = plasma_tile_mdim(B, k);
                         zbeta = k == 0 ? beta : zone;
                         if (k < m) {
                             core_omp_zgemm(
@@ -92,9 +92,9 @@ void plasma_pzsymm(plasma_enum_t side, plasma_enum_t uplo,
                 //=======================================
                 else {
                     for (k = 0; k < C.mt; k++) {
-                        tempkm = k == C.mt-1 ? C.m-k*C.mb : C.mb;
-                        ldak = BLKLDD(A, k);
-                        ldbk = BLKLDD(B, k);
+                        tempkm = plasma_tile_mdim(C, k);
+                        ldak = plasma_tile_mdim(A, k);
+                        ldbk = plasma_tile_mdim(B, k);
                         zbeta = k == 0 ? beta : zone;
                         if (k < m) {
                             core_omp_zgemm(
@@ -126,15 +126,15 @@ void plasma_pzsymm(plasma_enum_t side, plasma_enum_t uplo,
                 }
             }
             else {
-                ldan = BLKLDD(A, n);
-                ldbm = BLKLDD(B, m);
+                ldan = plasma_tile_mdim(A, n);
+                ldbm = plasma_tile_mdim(B, m);
                 //=======================================
                 // SIDE: PlasmaRight / UPLO: PlasmaLower
                 //=======================================
                 if (uplo == PlasmaLower) {
                     for (k = 0; k < C.nt; k++) {
-                        tempkn = k == C.nt-1 ? C.n-k*C.nb : C.nb;
-                        ldak = BLKLDD(A, k);
+                        tempkn = plasma_tile_ndim(C, k);
+                        ldak = plasma_tile_mdim(A, k);
                         zbeta = k == 0 ? beta : zone;
                         if (k < n) {
                             core_omp_zgemm(
@@ -169,8 +169,8 @@ void plasma_pzsymm(plasma_enum_t side, plasma_enum_t uplo,
                 //=======================================
                 else {
                     for (k = 0; k < C.nt; k++) {
-                        tempkn = k == C.nt-1 ? C.n-k*C.nb : C.nb;
-                        ldak = BLKLDD(A, k);
+                        tempkn = plasma_tile_ndim(C, k);
+                        ldak = plasma_tile_mdim(A, k);
                         zbeta = k == 0 ? beta : zone;
                         if (k < n) {
                             core_omp_zgemm(

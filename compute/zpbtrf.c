@@ -232,7 +232,7 @@ void plasma_omp_zpbtrf(plasma_enum_t uplo,
     }
 
     // Check input arguments.
-    if (plasma_desc_band_check(AB) != PlasmaSuccess) {
+    if (plasma_desc_check(AB) != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         plasma_error("invalid A");
         return;

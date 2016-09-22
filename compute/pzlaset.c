@@ -16,11 +16,11 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define A(m, n) ((plasma_complex64_t*)plasma_getaddr(A, m, n))
+#define A(m, n) ((plasma_complex64_t*)plasma_tile_addr(A, m, n))
 /***************************************************************************//**
  *  Initializes the matrix A to beta on the diagonal and alpha on the
  *  offdiagonals. Applies alpha correctly for any shape of the submatrix
- *  described by A, but applies beta correctly on for submatrices aligned
+ *  described by A, but applies beta correctly only for submatrices aligned
  *  with the diagonal of the main matrix (A.i = A.j).
  **/
 void plasma_pzlaset(plasma_enum_t uplo,

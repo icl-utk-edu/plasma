@@ -17,9 +17,10 @@
 #include "plasma_internal.h"
 #include "core_blas_z.h"
 
-#define A(m, n) ((plasma_complex64_t*) plasma_getaddr(A, m, n))
-#define Q(m, n) ((plasma_complex64_t*) plasma_getaddr(Q, m, n))
-#define T(m, n) ((plasma_complex64_t*) plasma_getaddr(T, m, n))
+#define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
+#define Q(m, n) (plasma_complex64_t*)plasma_tile_addr(Q, m, n)
+#define T(m, n) (plasma_complex64_t*)plasma_tile_addr(T, m, n)
+
 /***************************************************************************//**
  *  Parallel construction of Q using tile V (application to identity)
  **/
@@ -44,18 +45,18 @@ void plasma_pzungqr(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
 
     minmnt = imin(A.mt, A.nt);
     for (k = minmnt-1; k >= 0; k--) {
-        tempAkm  = k == A.mt-1 ? A.m-k*A.mb : A.mb;
-        tempAkn  = k == A.nt-1 ? A.n-k*A.nb : A.nb;
+        tempAkm  = plasma_tile_mdim(A, k);
+        tempAkn  = plasma_tile_ndim(A, k);
         tempkmin = imin(tempAkn, tempAkm);
-        tempkm   = k == Q.mt-1 ? Q.m-k*Q.mb : Q.mb;
-        ldak = BLKLDD(A, k);
-        ldqk = BLKLDD(Q, k);
+        tempkm   = plasma_tile_mdim(Q, k);
+        ldak = plasma_tile_mdim(A, k);
+        ldqk = plasma_tile_mdim(Q, k);
         for (m = Q.mt - 1; m > k; m--) {
-            tempmm = m == Q.mt-1 ? Q.m-m*Q.mb : Q.mb;
-            ldam = BLKLDD(A, m);
-            ldqm = BLKLDD(Q, m);
+            tempmm = plasma_tile_mdim(Q, m);
+            ldam = plasma_tile_mdim(A, m);
+            ldqm = plasma_tile_mdim(Q, m);
             for (n = k; n < Q.nt; n++) {
-                tempnn = n == Q.nt-1 ? Q.n-n*Q.nb : Q.nb;
+                tempnn = plasma_tile_ndim(Q, n);
                 core_omp_ztsmqr(
                     PlasmaLeft, PlasmaNoTrans,
                     Q.mb, tempnn, tempmm, tempnn, tempAkn, ib, T.nb,
@@ -68,7 +69,7 @@ void plasma_pzungqr(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
             }
         }
         for (n = k; n < Q.nt; n++) {
-            tempnn = n == Q.nt-1 ? Q.n-n*Q.nb : Q.nb;
+            tempnn = plasma_tile_ndim(Q, n);
             core_omp_zunmqr(
                 PlasmaLeft, PlasmaNoTrans,
                 tempkm, tempnn, tempkmin, ib, T.nb,

@@ -11,6 +11,7 @@
 #define ICL_PLASMA_DESCRIPTOR_H
 
 #include "plasma_types.h"
+#include "plasma_error.h"
 
 #include <stdlib.h>
 #include <assert.h>
@@ -37,27 +38,36 @@ extern "C" {
  *
  **/
 typedef struct {
+    // matrix properties
     plasma_enum_t type;      ///< general, general band, etc.
     plasma_enum_t uplo;      ///< upper, lower, etc.
     plasma_enum_t precision; ///< precision of the matrix
 
+    // pointer and offsets
     void *matrix; ///< pointer to the beginning of the matrix
     size_t A21;   ///< pointer to the beginning of A21
     size_t A12;   ///< pointer to the beginning of A12
     size_t A22;   ///< pointer to the beginning of A22
 
-    int mb;  //< number of rows in a tile
-    int nb;  ///< number of columns in a tile
+    // tile parameters
+    int mb; //< number of rows in a tile
+    int nb; ///< number of columns in a tile
+
+    // main matrix parameters
     int lm;  ///< number of rows of the entire matrix
     int ln;  ///< number of columns of the entire matrix
     int lmt; ///< number of tile rows of the entire matrix
     int lnt; ///< number of tile columns of the entire matrix
-    int i;   ///< row index to the beginning of the submatrix
-    int j;   ///< column index to the beginning of the submatrix
-    int m;   ///< number of rows of the submatrix
-    int n;   ///< number of columns of the submatrix
-    int mt;  ///< number of tile rows of the submatrix
-    int nt;  ///< number of tile columns of the submatrix
+
+    // submatrix parameters
+    int i;  ///< row index to the beginning of the submatrix
+    int j;  ///< column index to the beginning of the submatrix
+    int m;  ///< number of rows of the submatrix
+    int n;  ///< number of columns of the submatrix
+    int mt; ///< number of tile rows of the submatrix
+    int nt; ///< number of tile columns of the submatrix
+
+    // submatrix parameters for a band matrix
     int kl;  ///< number of rows below the diagonal
     int ku;  ///< number of rows above the diagonal
     int klt; ///< number of tile rows below the diagonal tile
@@ -66,7 +76,7 @@ typedef struct {
 } plasma_desc_t;
 
 /******************************************************************************/
-static inline int plasma_element_size(int type)
+static inline size_t plasma_element_size(int type)
 {
     switch (type) {
     case PlasmaByte:          return          1;
@@ -80,18 +90,7 @@ static inline int plasma_element_size(int type)
 }
 
 /******************************************************************************/
-static inline int BLKLDD(plasma_desc_t A, int k)
-{
-    int lm1 = A.lm/A.mb;
-
-    if (k+A.i/A.mb < lm1)
-        return A.mb;
-    else
-        return A.lm%A.mb;
-}
-
-/******************************************************************************/
-static inline void *plasma_getaddr(plasma_desc_t A, int m, int n)
+static inline void *plasma_tile_addr_general(plasma_desc_t A, int m, int n)
 {
     int mm = m + A.i/A.mb;
     int nn = n + A.j/A.nb;
@@ -116,25 +115,52 @@ static inline void *plasma_getaddr(plasma_desc_t A, int m, int n)
 }
 
 /******************************************************************************/
-static inline int BLKLDD_BAND(plasma_enum_t uplo,
-                              plasma_desc_t A, int m, int n)
+static inline void *plasma_tile_addr_general_band(plasma_desc_t A, int m, int n)
 {
     int kut;
-    if (uplo == PlasmaGeneral) {
+    if (A.uplo == PlasmaGeneral) {
         kut = (A.kl+A.kl+A.nb-1)/A.nb;
     }
-    else if (uplo == PlasmaUpper) {
+    else if (A.uplo == PlasmaUpper) {
         kut = (A.ku+A.nb-1)/A.nb;
     }
     else {
         kut = 0;
     }
-    return BLKLDD(A, kut+m-n);
+    return plasma_tile_addr_general(A, kut+m-n, n);
 }
 
 /******************************************************************************/
-static inline void *plasma_getaddr_band(plasma_enum_t uplo,
-                                        plasma_desc_t A, int m, int n)
+static inline void *plasma_tile_addr(plasma_desc_t A, int m, int n)
+{
+    if (A.type == PlasmaGeneral)
+        return plasma_tile_addr_general(A, m, n);
+    else if (A.type == PlasmaGeneralBand)
+        return plasma_tile_addr_general_band(A, m, n);
+    else
+        plasma_fatal_error("invalid matrix type");
+}
+
+/******************************************************************************/
+static inline int plasma_tile_mdim(plasma_desc_t A, int k)
+{
+    if (A.i/A.mb+k < A.lm/A.mb)
+        return A.mb;
+    else
+        return A.lm%A.mb;
+}
+
+/******************************************************************************/
+static inline int plasma_tile_ndim(plasma_desc_t A, int k)
+{
+    if (A.j/A.nb+k < A.ln/A.nb)
+        return A.nb;
+    else
+        return A.ln%A.nb;
+}
+
+/******************************************************************************/
+static inline int BLKLDD_BAND(plasma_enum_t uplo, plasma_desc_t A, int m, int n)
 {
     int kut;
     if (uplo == PlasmaGeneral) {
@@ -146,7 +172,7 @@ static inline void *plasma_getaddr_band(plasma_enum_t uplo,
     else {
         kut = 0;
     }
-    return plasma_getaddr(A, kut+m-n, n);
+    return plasma_tile_mdim(A, kut+m-n);
 }
 
 /******************************************************************************/
@@ -171,8 +197,8 @@ int plasma_desc_general_band_init(plasma_enum_t precision, plasma_enum_t uplo,
                                   plasma_desc_t *desc);
 
 int plasma_desc_check(plasma_desc_t *desc);
-int plasma_desc_full_check(plasma_desc_t *desc);
-int plasma_desc_band_check(plasma_desc_t *desc);
+int plasma_desc_general_check(plasma_desc_t *desc);
+int plasma_desc_general_band_check(plasma_desc_t *desc);
 
 plasma_desc_t plasma_desc_view(plasma_desc_t descA, int i, int j, int m, int n);
 
