@@ -40,6 +40,9 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
 
     switch (uplo) {
     case PlasmaLower:
+        //==============================
+        // PlasmaLower / PlasmaNoTrans
+        //==============================
         if (transA == PlasmaNoTrans) {
             for (n = 0; n < imin(B.mt,B.nt); n++) {
                 tempnm = plasma_tile_mdim(B, n);
@@ -64,6 +67,9 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
                 }
             }
         }
+        //===================================
+        // PlasmaLower / Plasma[_Conj]Trans
+        //===================================
         else {
             for (n = 0; n < imin(B.mt,B.nt); n++) {
                 tempnm = plasma_tile_mdim(B, n);
@@ -89,6 +95,9 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
         }
         break;
     case PlasmaUpper:
+        //==============================
+        // PlasmaUpper / PlasmaNoTrans
+        //==============================
         if (transA == PlasmaNoTrans) {
             for (m = 0; m < imin(B.mt,B.nt); m++) {
                 tempmm = plasma_tile_mdim(B, m);
@@ -111,6 +120,9 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
                 }
             }
         }
+        //===================================
+        // PlasmaUpper / Plasma[_Conj]Trans
+        //===================================
         else {
             for (m = 0; m < imin(B.mt,B.nt); m++) {
                 tempmm = plasma_tile_mdim(B, m);
@@ -137,6 +149,9 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
         break;
     case PlasmaGeneral:
     default:
+        //================================
+        // PlasmaGeneral / PlasmaNoTrans
+        //================================
         if (transA == PlasmaNoTrans) {
             for (m = 0; m < B.mt; m++) {
                 tempmm = m == B.mt-1 ? B.m-B.mb*m : B.nb;
@@ -151,6 +166,9 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
                 }
             }
         }
+        //=====================================
+        // PlasmaGeneral / Plasma[_Conj]Trans
+        //=====================================
         else {
             for (m = 0; m < B.mt; m++) {
                 tempmm = plasma_tile_mdim(B, m);

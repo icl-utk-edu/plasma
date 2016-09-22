@@ -38,9 +38,9 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
         return;
     }
 
-    //=======================================
+    //==============
     // PlasmaLower
-    //=======================================
+    //==============
     if (uplo == PlasmaLower) {
         for (k = 0; k < A.mt; k++) {
             tempkm = plasma_tile_mdim(A, k);
@@ -49,6 +49,7 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
                 PlasmaLower, tempkm,
                 A(k, k), ldak,
                 sequence, request, A.nb*k);
+
             for (m = k+1; m < A.mt; m++) {
                 tempmm = plasma_tile_mdim(A, m);
                 ldam = plasma_tile_mdim(A, m);
@@ -67,6 +68,7 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
                     tempmm, A.mb,
                     -1.0, A(m, k), ldam,
                      1.0, A(m, m), ldam);
+
                 for (n = k+1; n < m; n++) {
                     ldan = plasma_tile_mdim(A, n);
                     core_omp_zgemm(
@@ -79,9 +81,9 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
             }
         }
     }
-    //=======================================
+    //==============
     // PlasmaUpper
-    //=======================================
+    //==============
     else {
         for (k = 0; k < A.nt; k++) {
             tempkm = plasma_tile_ndim(A, k);
@@ -90,6 +92,7 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
                 PlasmaUpper, tempkm,
                 A(k, k), ldak,
                 sequence, request, A.nb*k);
+
             for (m = k+1; m < A.nt; m++) {
                 tempmm = plasma_tile_ndim(A, m);
                 core_omp_ztrsm(
@@ -107,6 +110,7 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
                     tempmm, A.mb,
                     -1.0, A(k, m), ldak,
                      1.0, A(m, m), ldam);
+
                 for (n = k+1; n < m; n++) {
                     ldan = plasma_tile_mdim(A, n);
                     core_omp_zgemm(

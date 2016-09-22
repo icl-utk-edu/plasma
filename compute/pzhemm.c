@@ -50,9 +50,9 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
             tempnn = plasma_tile_ndim(C, n);
             if (side == PlasmaLeft) {
                 ldam = plasma_tile_mdim(A, m);
-                //=======================================
-                // SIDE: PlasmaLeft / UPLO: PlasmaLower
-                //=======================================
+                //===========================
+                // PlasmaLeft / PlasmaLower
+                //===========================
                 if (uplo == PlasmaLower) {
                     for (k = 0; k < C.mt; k++) {
                         tempkm = plasma_tile_mdim(C, k);
@@ -87,9 +87,9 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                         }
                     }
                 }
-                //=======================================
-                // SIDE: PlasmaLeft / UPLO: PlasmaUpper
-                //=======================================
+                //===========================
+                // PlasmaLeft / PlasmaUpper
+                //===========================
                 else {
                     for (k = 0; k < C.mt; k++) {
                         tempkm = plasma_tile_mdim(C, k);
@@ -128,9 +128,9 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
             else {
                 ldan = plasma_tile_mdim(A, n);
                 ldbm = plasma_tile_mdim(B, m);
-                //=======================================
-                // SIDE: PlasmaRight / UPLO: PlasmaLower
-                //=======================================
+                //============================
+                // PlasmaRight / PlasmaLower
+                //============================
                 if (uplo == PlasmaLower) {
                     for (k = 0; k < C.nt; k++) {
                         tempkn = plasma_tile_ndim(C, k);
@@ -164,9 +164,9 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                         }
                     }
                 }
-                //=======================================
-                // SIDE: PlasmaRight / UPLO: PlasmaUpper
-                //=======================================
+                //============================
+                // PlasmaRight / PlasmaUpper
+                //============================
                 else {
                     for (k = 0; k < C.nt; k++) {
                         tempkn = plasma_tile_ndim(C, k);

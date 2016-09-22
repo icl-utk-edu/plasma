@@ -46,9 +46,9 @@ void plasma_pztrsm(plasma_enum_t side, plasma_enum_t uplo,
 
     if (side == PlasmaLeft) {
         if (uplo == PlasmaUpper) {
-            //============================================
-            //  PlasmaLeft / PlasmaUpper / PlasmaNoTrans
-            //============================================
+            //===========================================
+            // PlasmaLeft / PlasmaUpper / PlasmaNoTrans
+            //===========================================
             if (trans == PlasmaNoTrans) {
                 for (k = 0; k < B.mt; k++) {
                     tempkm = plasma_tile_mdim(B, B.mt-k-1);
@@ -78,9 +78,9 @@ void plasma_pztrsm(plasma_enum_t side, plasma_enum_t uplo,
                     }
                 }
             }
-            //===============================================
-            //  PlasmaLeft / PlasmaUpper / Plasma[Conj]Trans
-            //===============================================
+            //================================================
+            // PlasmaLeft / PlasmaUpper / Plasma[_Conj]Trans
+            //================================================
             else {
                 for (k = 0; k < B.mt; k++) {
                     tempkm = plasma_tile_mdim(B, k);
@@ -113,7 +113,7 @@ void plasma_pztrsm(plasma_enum_t side, plasma_enum_t uplo,
         }
         else {
             //===========================================
-            //  PlasmaLeft / PlasmaLower / PlasmaNoTrans
+            // PlasmaLeft / PlasmaLower / PlasmaNoTrans
             //===========================================
             if (trans == PlasmaNoTrans) {
                 for (k = 0; k < B.mt; k++) {
@@ -145,9 +145,9 @@ void plasma_pztrsm(plasma_enum_t side, plasma_enum_t uplo,
                     }
                 }
             }
-            //===============================================
-            //  PlasmaLeft / PlasmaLower / Plasma[Conj]Trans
-            //===============================================
+            //================================================
+            // PlasmaLeft / PlasmaLower / Plasma[_Conj]Trans
+            //================================================
             else {
                 for (k = 0; k < B.mt; k++) {
                     tempkm = plasma_tile_mdim(B, B.mt-k-1);
@@ -181,9 +181,9 @@ void plasma_pztrsm(plasma_enum_t side, plasma_enum_t uplo,
     }
     else {
         if (uplo == PlasmaUpper) {
-            //===========================================
-            //  PlasmaRight / PlasmaUpper / PlasmaNoTrans
-            //===========================================
+            //============================================
+            // PlasmaRight / PlasmaUpper / PlasmaNoTrans
+            //============================================
             if (trans == PlasmaNoTrans) {
                 for (k = 0; k < B.nt; k++) {
                     tempkn = plasma_tile_ndim(B, k);
@@ -213,9 +213,9 @@ void plasma_pztrsm(plasma_enum_t side, plasma_enum_t uplo,
                     }
                 }
             }
-            //===============================================
-            //  PlasmaRight / PlasmaUpper / Plasma[Conj]Trans
-            //===============================================
+            //=================================================
+            // PlasmaRight / PlasmaUpper / Plasma[_Conj]Trans
+            //=================================================
             else {
                 for (k = 0; k < B.nt; k++) {
                     tempkn = plasma_tile_ndim(B, B.nt-k-1);
@@ -244,7 +244,7 @@ void plasma_pztrsm(plasma_enum_t side, plasma_enum_t uplo,
         }
         else {
             //============================================
-            //  PlasmaRight / PlasmaLower / PlasmaNoTrans
+            // PlasmaRight / PlasmaLower / PlasmaNoTrans
             //============================================
             if (trans == PlasmaNoTrans) {
                 for (k = 0; k < B.nt; k++) {
@@ -271,9 +271,9 @@ void plasma_pztrsm(plasma_enum_t side, plasma_enum_t uplo,
                     }
                 }
             }
-            //================================================
-            //  PlasmaRight / PlasmaLower / Plasma[Conj]Trans
-            //===============================================
+            //==================================================
+            //  PlasmaRight / PlasmaLower / Plasma[_Conj]Trans
+            //==================================================
             else {
                 for (k = 0; k < B.nt; k++) {
                     tempkn = plasma_tile_ndim(B, k);

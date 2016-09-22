@@ -37,7 +37,7 @@ void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
     plasma_complex64_t zbeta;
     plasma_complex64_t zone = 1.0;
 
-    int innerK = (transA == PlasmaNoTrans ? A.n : A.m);
+    int innerK = transA == PlasmaNoTrans ? A.n : A.m;
 
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
@@ -50,10 +50,10 @@ void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
         ldcm = plasma_tile_mdim(C, m);
         for (n = 0; n < C.nt; n++) {
             tempnn = plasma_tile_ndim(A, n);
+            //=========================================
+            // alpha*A*B does not contribute; scale C
+            //=========================================
             if (alpha == 0.0 || innerK == 0) {
-                //=======================================
-                // alpha*A*B does not contribute; scale C
-                //=======================================
                 ldam = imax(1, plasma_tile_mdim(A, 0));
                 ldbk = imax(1, plasma_tile_mdim(B, 0));
                 core_omp_zgemm(
@@ -65,9 +65,9 @@ void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
             }
             else if (transA == PlasmaNoTrans) {
                 ldam = plasma_tile_mdim(A, m);
-                //=======================================
-                // A: PlasmaNoTrans / B: PlasmaNoTrans
-                //=======================================
+                //================================
+                // PlasmaNoTrans / PlasmaNoTrans
+                //================================
                 if (transB == PlasmaNoTrans) {
                     for (k = 0; k < A.nt; k++) {
                         tempkn = plasma_tile_ndim(A, k);
@@ -81,9 +81,9 @@ void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
                             zbeta, C(m, n), ldcm);
                     }
                 }
-                //==========================================
-                // A: PlasmaNoTrans / B: Plasma[Conj]Trans
-                //==========================================
+                //=====================================
+                // PlasmaNoTrans / Plasma[_Conj]Trans
+                //=====================================
                 else {
                     ldbn = plasma_tile_mdim(B, n);
                     for (k = 0; k < A.nt; k++) {
@@ -99,9 +99,9 @@ void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
                 }
             }
             else {
-                //==========================================
-                // A: Plasma[Conj]Trans / B: PlasmaNoTrans
-                //==========================================
+                //=====================================
+                // Plasma[_Conj]Trans / PlasmaNoTrans
+                //=====================================
                 if (transB == PlasmaNoTrans) {
                     for (k = 0; k < A.mt; k++) {
                         tempkm = plasma_tile_mdim(A, k);
@@ -116,9 +116,9 @@ void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
                             zbeta, C(m, n), ldcm);
                     }
                 }
-                //==============================================
-                // A: Plasma[Conj]Trans / B: Plasma[Conj]Trans
-                //==============================================
+                //==========================================
+                // Plasma[_Conj]Trans / Plasma[_Conj]Trans
+                //==========================================
                 else {
                     ldbn = plasma_tile_mdim(B, n);
                     for (k = 0; k < A.mt; k++) {

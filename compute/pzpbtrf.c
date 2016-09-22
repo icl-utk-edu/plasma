@@ -37,19 +37,18 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
         return;
     }
 
-    //=======================================
+    //==============
     // PlasmaLower
-    //=======================================
+    //==============
     if (uplo == PlasmaLower) {
-        for (k = 0; k < A.mt; k++)
-        {
+        for (k = 0; k < A.mt; k++) {
             tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
             core_omp_zpotrf(
                 PlasmaLower, tempkm,
                 A(k, k), BLKLDD_BAND(uplo, A, k, k),
                 sequence, request, A.nb*k);
-            for (m = k+1; m < imin(A.nt, k+A.klt); m++)
-            {
+
+            for (m = k+1; m < imin(A.nt, k+A.klt); m++) {
                 tempmm = m == A.mt-1 ? A.m-m*A.mb : A.mb;
                 core_omp_ztrsm(
                     PlasmaRight, PlasmaLower,
@@ -62,8 +61,8 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
                     tempmm, A.mb,
                     -1.0, A(m, k), BLKLDD_BAND(uplo, A, m, k),
                      1.0, A(m, m), BLKLDD_BAND(uplo, A, m, m));
-                for (n = imax(k+1, m-A.klt); n < m; n++)
-                {
+
+                for (n = imax(k+1, m-A.klt); n < m; n++) {
                     tempmn = n == A.nt-1 ? A.n-n*A.nb : A.nb;
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaConjTrans,
@@ -75,9 +74,9 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
             }
         }
     }
-    //=======================================
+    //==============
     // PlasmaUpper
-    //=======================================
+    //==============
     else {
         for (k = 0; k < A.nt; k++) {
             tempkm = k == A.nt-1 ? A.n-k*A.nb : A.nb;
@@ -85,6 +84,7 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
                 PlasmaUpper, tempkm,
                 A(k, k), BLKLDD_BAND(uplo, A, k, k),
                 sequence, request, A.nb*k);
+
             for (m = k+1; m < imin(A.nt, k+A.kut); m++) {
                 tempmm = m == A.nt-1 ? A.n-m*A.nb : A.nb;
                 core_omp_ztrsm(
@@ -98,6 +98,7 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
                     tempmm, A.mb,
                     -1.0, A(k, m), BLKLDD_BAND(uplo, A, k, m),
                      1.0, A(m, m), BLKLDD_BAND(uplo, A, m, m));
+
                 for (n = imax(k+1, m-A.kut); n < m; n++) {
                     core_omp_zgemm(
                         PlasmaConjTrans, PlasmaNoTrans,

@@ -53,11 +53,13 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
       minMT = A.mt;
     }
 
-    // PlasmaLeft / Plasma_ConjTrans
-    if (side == PlasmaLeft ) {
+    if (side == PlasmaLeft) {
         // Plasma_ConjTrans will be converted do PlasmaTrans in
         // automatic datatype conversion, which is what we  want here.
         // PlasmaConjTrans is protected from this conversion.
+        //================================
+        // PlasmaLeft / Plasma_ConjTrans
+        //================================
         if (trans == Plasma_ConjTrans) {
             for (k = 0; k < minMT; k++) {
                 tempkm   = k == B.mt-1 ? B.m-k*B.mb : B.mb;
@@ -94,7 +96,9 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
                 }
             }
         }
+        //=============================
         // PlasmaLeft / PlasmaNoTrans
+        //=============================
         else {
             for (k = minMT-1; k >= 0; k--) {
                 tempkm = k == B.mt-1 ? B.m-k*B.mb : B.mb;
@@ -132,11 +136,13 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
             }
         }
     }
-    // PlasmaRight / Plasma_ConjTrans
     else {
         // Plasma_ConjTrans will be converted do PlasmaTrans in
         // automatic datatype conversion, which is what we want here.
         // PlasmaConjTrans is protected from this conversion.
+        //=================================
+        // PlasmaRight / Plasma_ConjTrans
+        //=================================
         if (trans == Plasma_ConjTrans) {
             for (k = minMT-1; k >= 0; k--) {
                 tempkn = k == B.nt-1 ? B.n-k*B.nb : B.nb;
@@ -174,7 +180,9 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
                 }
             }
         }
+        //==============================
         // PlasmaRight / PlasmaNoTrans
+        //==============================
         else {
             for (k = 0; k < minMT; k++) {
                 tempkn   = k == B.nt-1 ? B.n-k*B.nb : B.nb;

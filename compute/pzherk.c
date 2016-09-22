@@ -46,9 +46,9 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
         tempnn = plasma_tile_ndim(C, n);
         ldan = plasma_tile_mdim(A, n);
         ldcn = plasma_tile_mdim(C, n);
-        //=======================================
+        //================
         // PlasmaNoTrans
-        //=======================================
+        //================
         if (trans == PlasmaNoTrans) {
             for (k = 0; k < A.nt; k++) {
                 tempkn = plasma_tile_ndim(A, k);
@@ -59,9 +59,9 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
                     alpha, A(n, k), ldan,
                     dbeta, C(n, n), ldcn);
             }
-            //=======================================
+            //==============================
             // PlasmaNoTrans / PlasmaLower
-            //=======================================
+            //==============================
             if (uplo == PlasmaLower) {
                 for (m = n+1; m < C.mt; m++) {
                     tempmm = plasma_tile_mdim(C, m);
@@ -79,9 +79,9 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
                     }
                 }
             }
-            //=======================================
+            //==============================
             // PlasmaNoTrans / PlasmaUpper
-            //=======================================
+            //==============================
             else {
                 for (m = n+1; m < C.mt; m++) {
                     tempmm = plasma_tile_mdim(C, m);
@@ -99,9 +99,9 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
                 }
             }
         }
-        //=======================================
-        // PlasmaConjTrans
-        //=======================================
+        //=====================
+        // Plasma[_Conj]Trans
+        //=====================
         else {
             for (k = 0; k < A.mt; k++) {
                 tempkm = plasma_tile_mdim(A, k);
@@ -113,9 +113,9 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
                     alpha, A(k, n), ldak,
                     dbeta, C(n, n), ldcn);
             }
-            //=======================================
-            // PlasmaConjTrans / PlasmaLower
-            //=======================================
+            //===================================
+            // Plasma[_ConjTrans] / PlasmaLower
+            //===================================
             if (uplo == PlasmaLower) {
                 for (m = n+1; m < C.mt; m++) {
                     tempmm = plasma_tile_mdim(C, m);
@@ -133,9 +133,9 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
                     }
                 }
             }
-            //=======================================
-            // PlasmaConjTrans / PlasmaUpper
-            //=======================================
+            //===================================
+            // Plasma[_ConjTrans] / PlasmaUpper
+            //===================================
             else {
                 for (m = n+1; m < C.mt; m++) {
                     tempmm = plasma_tile_mdim(C, m);

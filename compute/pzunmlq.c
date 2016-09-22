@@ -53,9 +53,11 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
         minMT = A.mt;
     }
 
-    if (side == PlasmaLeft ) {
+    if (side == PlasmaLeft) {
+        //=============================
+        // PlasmaLeft / PlasmaNoTrans
+        //=============================
         if (trans == PlasmaNoTrans) {
-            // PlasmaLeft / PlasmaNoTrans
             for (k = 0; k < minMT; k++) {
                 tempkm   = k == B.mt -1 ? B.m -k*B.mb : B.mb;
                 tempkmin = k == minMT-1 ? minM-k*A.nb : A.nb;
@@ -91,8 +93,10 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                 }
             }
         }
+        //==================================
+        // PlasmaLeft / Plasma[_Conj]Trans
+        //==================================
         else {
-            // PlasmaLeft / Plasma_ConjTrans
             for (k = minMT-1; k >= 0; k--) {
                 tempkm   = k == B.mt -1 ? B.m -k*B.mb : B.mb;
                 tempkmin = k == minMT-1 ? minM-k*A.nb : A.nb;
@@ -130,8 +134,10 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
         }
     }
     else {
+        //==============================
+        // PlasmaRight / PlasmaNoTrans
+        //==============================
         if (trans == PlasmaNoTrans) {
-            // PlasmaRight / PlasmaNoTrans
             for (k = minMT-1; k >= 0; k--) {
                 tempkn   = k == B.nt -1 ? B.n -k*B.nb : B.nb;
                 tempkmin = k == minMT-1 ? minM-k*A.nb : A.nb;
@@ -167,8 +173,10 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                 }
             }
         }
+        //===================================
+        // PlasmaRight / Plasma[_Conj]Trans
+        //===================================
         else {
-            // PlasmaRight / Plasma_ConjTrans
             for (k = 0; k < minMT; k++) {
                 tempkn   = k == B.nt -1 ? B.n -k*B.nb : B.nb;
                 tempkmin = k == minMT-1 ? minM-k*A.mb : A.mb;
