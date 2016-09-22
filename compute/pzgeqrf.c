@@ -38,21 +38,12 @@ void plasma_pzgeqrf(plasma_desc_t A, plasma_desc_t T,
         return;
     }
 
-    // Set inner blocking from the plasma context
-    plasma_context_t *plasma = plasma_context_self();
-    if (plasma == NULL) {
-        plasma_error("PLASMA not initialized");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    int ib = plasma->ib;
-
     for (k = 0; k < imin(A.mt, A.nt); k++) {
         tempkm = plasma_tile_mdim(A, k);
         tempkn = plasma_tile_ndim(A, k);
         ldak = plasma_tile_mdim(A, k);
         core_omp_zgeqrt(
-            tempkm, tempkn, ib, T.nb,
+            tempkm, tempkn, T.mb, T.nb,
             A(k, k), ldak,
             T(k, k), T.mb,
             work,
@@ -66,7 +57,7 @@ void plasma_pzgeqrf(plasma_desc_t A, plasma_desc_t T,
             // PlasmaConjTrans is protected from this conversion.
             core_omp_zunmqr(
                 PlasmaLeft, Plasma_ConjTrans,
-                tempkm, tempnn, tempkm, ib, T.nb,
+                tempkm, tempnn, tempkm, T.mb, T.nb,
                 A(k, k), ldak,
                 T(k, k), T.mb,
                 A(k, n), ldak,
@@ -77,7 +68,7 @@ void plasma_pzgeqrf(plasma_desc_t A, plasma_desc_t T,
             tempmm = plasma_tile_mdim(A, m);
             ldam = plasma_tile_mdim(A, m);
             core_omp_ztsqrt(
-                tempmm, tempkn, ib, T.nb,
+                tempmm, tempkn, T.mb, T.nb,
                 A(k, k), ldak,
                 A(m, k), ldam,
                 T(m, k), T.mb,
@@ -88,7 +79,7 @@ void plasma_pzgeqrf(plasma_desc_t A, plasma_desc_t T,
                 tempnn = plasma_tile_ndim(A, n);
                 core_omp_ztsmqr(
                     PlasmaLeft, Plasma_ConjTrans,
-                    A.mb, tempnn, tempmm, tempnn, A.nb, ib, T.nb,
+                    A.mb, tempnn, tempmm, tempnn, A.nb, T.mb, T.nb,
                     A(k, n), ldak,
                     A(m, n), ldam,
                     A(m, k), ldam,

@@ -37,15 +37,6 @@ void plasma_pzunglq(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
     if (sequence->status != PlasmaSuccess)
         return;
 
-    // Set inner blocking from the plasma context
-    plasma_context_t *plasma = plasma_context_self();
-    if (plasma == NULL) {
-        plasma_error("PLASMA not initialized");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    int ib = plasma->ib;
-
     minmnt = imin(A.mt, A.nt);
     for (k = minmnt-1; k >= 0; k--) {
         tempAkm  = plasma_tile_mdim(A, k);
@@ -60,7 +51,7 @@ void plasma_pzunglq(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
                 ldqm = plasma_tile_mdim(Q, m);
                 core_omp_ztsmlq(
                     PlasmaRight, PlasmaNoTrans,
-                    tempmm, Q.nb, tempmm, tempnn, tempAkm, ib, T.nb,
+                    tempmm, Q.nb, tempmm, tempnn, tempAkm, T.mb, T.nb,
                     Q(m, k), ldqm,
                     Q(m, n), ldqm,
                     A(k, n), ldak,
@@ -74,7 +65,7 @@ void plasma_pzunglq(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
             ldqm = plasma_tile_mdim(Q, m);
             core_omp_zunmlq(
                 PlasmaRight, PlasmaNoTrans,
-                tempmm, tempkn, tempkmin, ib, T.nb,
+                tempmm, tempkn, tempkmin, T.mb, T.nb,
                 A(k, k), ldak,
                 T(k, k), T.mb,
                 Q(m, k), ldqm,

@@ -38,15 +38,6 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
     if (sequence->status != PlasmaSuccess)
         return;
 
-    // Set inner blocking from the plasma context
-    plasma_context_t *plasma = plasma_context_self();
-    if (plasma == NULL) {
-        plasma_error("PLASMA not initialized");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    int ib = plasma->ib;
-
     if (A.m > A.n) {
         minM  = A.n;
         minMT = A.nt;
@@ -68,7 +59,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                     tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
                     core_omp_zunmlq(
                             side, trans,
-                            tempkm, tempnn, tempkmin, ib, T.nb,
+                            tempkm, tempnn, tempkmin, T.mb, T.nb,
                             A(k, k), ldak,
                             T(k, k), T.mb,
                             B(k, n), ldbk,
@@ -83,7 +74,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                         core_omp_ztsmlq(
                                 side, trans,
                                 B.mb, tempnn, tempmm, tempnn, tempkmin,
-                                ib, T.nb,
+                                T.mb, T.nb,
                                 B(k, n), ldbk,
                                 B(m, n), ldbm,
                                 A(k, m), ldak,
@@ -109,7 +100,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                         core_omp_ztsmlq(
                                 side, trans,
                                 B.mb, tempnn, tempmm, tempnn, tempkmin,
-                                ib, T.nb,
+                                T.mb, T.nb,
                                 B(k, n), ldbk,
                                 B(m, n), ldbm,
                                 A(k, m), ldak,
@@ -122,7 +113,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                     tempnn = n == B.nt-1 ? B.n-n*B.nb : B.nb;
                     core_omp_zunmlq(
                             side, trans,
-                            tempkm, tempnn, tempkmin, ib, T.nb,
+                            tempkm, tempnn, tempkmin, T.mb, T.nb,
                             A(k, k), ldak,
                             T(k, k), T.mb,
                             B(k, n), ldbk,
@@ -147,7 +138,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                         core_omp_ztsmlq(
                                 side, trans,
                                 tempmm, B.nb, tempmm, tempnn, tempkmin,
-                                ib, T.nb,
+                                T.mb, T.nb,
                                 B(m, k), ldbm,
                                 B(m, n), ldbm,
                                 A(k, n), ldak,
@@ -161,7 +152,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                     ldbm = plasma_tile_mdim(B, m);
                     core_omp_zunmlq(
                             side, trans,
-                            tempmm, tempkn, tempkmin, ib, T.nb,
+                            tempmm, tempkn, tempkmin, T.mb, T.nb,
                             A(k, k), ldak,
                             T(k, k), T.mb,
                             B(m, k), ldbm,
@@ -181,7 +172,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                     ldbm = plasma_tile_mdim(B, m);
                     core_omp_zunmlq(
                             side, trans,
-                            tempmm, tempkn, tempkmin, ib, T.nb,
+                            tempmm, tempkn, tempkmin, T.mb, T.nb,
                             A(k, k), ldak,
                             T(k, k), T.mb,
                             B(m, k), ldbm,
@@ -196,7 +187,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                         core_omp_ztsmlq(
                                 side, trans,
                                 tempmm, B.nb, tempmm, tempnn, tempkmin,
-                                ib, T.nb,
+                                T.mb, T.nb,
                                 B(m, k), ldbm,
                                 B(m, n), ldbm,
                                 A(k, n), ldak,
