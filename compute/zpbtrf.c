@@ -139,7 +139,7 @@ int PLASMA_zpbtrf(plasma_enum_t uplo,
         return retval;
     }
     // Initialize request.
-    plasma_request_t request = PLASMA_REQUEST_INITIALIZER;
+    plasma_request_t request = PlasmaRequestInitializer;
 
     // The Async functions are submitted here.  If an error occurs
     // (at submission time or at run time) the sequence->status

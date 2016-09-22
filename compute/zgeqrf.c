@@ -135,7 +135,7 @@ int PLASMA_zgeqrf(int m, int n,
     }
 
     // Initialize request.
-    plasma_request_t request = PLASMA_REQUEST_INITIALIZER;
+    plasma_request_t request = PlasmaRequestInitializer;
 
     // asynchronous block
     #pragma omp parallel

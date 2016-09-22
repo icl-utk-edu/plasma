@@ -152,7 +152,7 @@ int PLASMA_zgelqs(int m, int n, int nrhs,
     }
 
     // Initialize request.
-    plasma_request_t request = PLASMA_REQUEST_INITIALIZER;
+    plasma_request_t request = PlasmaRequestInitializer;
 
     #pragma omp parallel
     #pragma omp master

@@ -190,7 +190,7 @@ int PLASMA_zunmlq(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
         return retval;
     }
     // Initialize request.
-    plasma_request_t request = PLASMA_REQUEST_INITIALIZER;
+    plasma_request_t request = PlasmaRequestInitializer;
 
     #pragma omp parallel
     #pragma omp master

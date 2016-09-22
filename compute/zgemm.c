@@ -236,7 +236,7 @@ int PLASMA_zgemm(plasma_enum_t transA, plasma_enum_t transB,
         return retval;
     }
     // Initialize request.
-    plasma_request_t request = PLASMA_REQUEST_INITIALIZER;
+    plasma_request_t request = PlasmaRequestInitializer;
 
     // asynchronous block
     #pragma omp parallel

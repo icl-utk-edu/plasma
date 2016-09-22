@@ -149,7 +149,7 @@ int PLASMA_zpotrs(plasma_enum_t uplo,
         return retval;
     }
     // Initialize request.
-    plasma_request_t request = PLASMA_REQUEST_INITIALIZER;
+    plasma_request_t request = PlasmaRequestInitializer;
 
     // asynchronous block
     #pragma omp parallel

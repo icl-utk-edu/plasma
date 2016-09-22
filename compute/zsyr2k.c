@@ -208,7 +208,7 @@ int PLASMA_zsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
         return retval;
     }
     // Initialize request.
-    plasma_request_t request = PLASMA_REQUEST_INITIALIZER;
+    plasma_request_t request = PlasmaRequestInitializer;
 
     // asynchronous block
     #pragma omp parallel
