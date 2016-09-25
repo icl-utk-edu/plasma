@@ -44,8 +44,8 @@ void plasma_pzgelqf(plasma_desc_t A, plasma_desc_t T,
 
     for (k = 0; k < imin(A.mt, A.nt); k++) {
         tempkm = plasma_tile_mdim(A, k);
-        tempkn = plasma_tile_mdim(A, k);
-        ldak = plasma_tile_mdim(A, k);
+        tempkn = plasma_tile_ndim(A, k);
+        ldak   = plasma_tile_mdim(A, k);
         core_omp_zgelqt(
             tempkm, tempkn, ib, T.nb,
             A(k, k), ldak,
@@ -55,7 +55,7 @@ void plasma_pzgelqf(plasma_desc_t A, plasma_desc_t T,
 
         for (m = k+1; m < A.mt; m++) {
             tempmm = plasma_tile_mdim(A, m);
-            ldam = plasma_tile_mdim(A, m);
+            ldam   = plasma_tile_mdim(A, m);
             // Plasma_ConjTrans will be converted to PlasmaTrans in
             // automatic datatype conversion, which is what we
             // want here.
@@ -81,7 +81,7 @@ void plasma_pzgelqf(plasma_desc_t A, plasma_desc_t T,
 
             for (m = k+1; m < A.mt; m++) {
                 tempmm = plasma_tile_mdim(A, m);
-                ldam = plasma_tile_mdim(A, m);
+                ldam   = plasma_tile_mdim(A, m);
                 core_omp_ztsmlq(
                     PlasmaRight, Plasma_ConjTrans,
                     tempmm, A.nb, tempmm, tempnn, A.mb, ib, T.nb,

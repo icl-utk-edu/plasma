@@ -50,12 +50,12 @@ void plasma_pzungqr(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
         tempAkn  = plasma_tile_ndim(A, k);
         tempkmin = imin(tempAkn, tempAkm);
         tempkm   = plasma_tile_mdim(Q, k);
-        ldak = plasma_tile_mdim(A, k);
-        ldqk = plasma_tile_mdim(Q, k);
+        ldak     = plasma_tile_mdim(A, k);
+        ldqk     = plasma_tile_mdim(Q, k);
         for (m = Q.mt - 1; m > k; m--) {
             tempmm = plasma_tile_mdim(Q, m);
-            ldam = plasma_tile_mdim(A, m);
-            ldqm = plasma_tile_mdim(Q, m);
+            ldam   = plasma_tile_mdim(A, m);
+            ldqm   = plasma_tile_mdim(Q, m);
             for (n = k; n < Q.nt; n++) {
                 tempnn = plasma_tile_ndim(Q, n);
                 core_omp_ztsmqr(

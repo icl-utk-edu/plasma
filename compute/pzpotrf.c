@@ -46,7 +46,7 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
     if (uplo == PlasmaLower) {
         for (k = 0; k < A.mt; k++) {
             tempkm = plasma_tile_mdim(A, k);
-            ldak = plasma_tile_mdim(A, k);
+            ldak   = plasma_tile_mdim(A, k);
             core_omp_zpotrf(
                 PlasmaLower, tempkm,
                 A(k, k), ldak,
@@ -54,7 +54,7 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
 
             for (m = k+1; m < A.mt; m++) {
                 tempmm = plasma_tile_mdim(A, m);
-                ldam = plasma_tile_mdim(A, m);
+                ldam   = plasma_tile_mdim(A, m);
                 core_omp_ztrsm(
                     PlasmaRight, PlasmaLower,
                     PlasmaConjTrans, PlasmaNonUnit,
@@ -64,7 +64,7 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
             }
             for (m = k+1; m < A.mt; m++) {
                 tempmm = plasma_tile_mdim(A, m);
-                ldam = plasma_tile_mdim(A, m);
+                ldam   = plasma_tile_mdim(A, m);
                 core_omp_zherk(
                     PlasmaLower, PlasmaNoTrans,
                     tempmm, A.mb,
@@ -89,7 +89,7 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
     else {
         for (k = 0; k < A.nt; k++) {
             tempkm = plasma_tile_ndim(A, k);
-            ldak = plasma_tile_mdim(A, k);
+            ldak   = plasma_tile_mdim(A, k);
             core_omp_zpotrf(
                 PlasmaUpper, tempkm,
                 A(k, k), ldak,
@@ -106,7 +106,7 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
             }
             for (m = k+1; m < A.nt; m++) {
                 tempmm = plasma_tile_ndim(A, m);
-                ldam = plasma_tile_mdim(A, m);
+                ldam   = plasma_tile_mdim(A, m);
                 core_omp_zherk(
                     PlasmaUpper, PlasmaConjTrans,
                     tempmm, A.mb,
