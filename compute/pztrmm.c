@@ -34,8 +34,6 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
     int ldak, ldam, ldan, ldbk, ldbm;
     int tempkm, tempkn, tempmm, tempnn;
 
-    plasma_complex64_t zone = 1.0;
-
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorSequence);
@@ -68,7 +66,7 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                                 tempmm, tempnn, tempkn,
                                 alpha, A(m, k), ldam,
                                        B(k, n), ldbk,
-                                zone,  B(m, n), ldbm);
+                                1.0,   B(m, n), ldbm);
                         }
                     }
                 }
@@ -97,7 +95,7 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                                 tempmm, tempnn, B.mb,
                                 alpha, A(k, m), ldak,
                                        B(k, n), ldbk,
-                                zone,  B(m, n), ldbm);
+                                1.0,   B(m, n), ldbm);
                         }
                     }
                 }
@@ -127,7 +125,7 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                                 tempmm, tempnn, B.mb,
                                 alpha, A(m, k), ldam,
                                        B(k, n), ldbk,
-                                zone,  B(m, n), ldbm);
+                                1.0,   B(m, n), ldbm);
                         }
                     }
                 }
@@ -157,7 +155,7 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                                 tempmm, tempnn, tempkm,
                                 alpha, A(k, m), ldak,
                                        B(k, n), ldbk,
-                                zone,  B(m, n), ldbm);
+                                1.0,   B(m, n), ldbm);
                         }
                     }
                 }
@@ -189,7 +187,7 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                                 tempmm, tempnn, B.mb,
                                 alpha, B(m, k), ldbm,
                                        A(k, n), ldak,
-                                zone,  B(m, n), ldbm);
+                                1.0,   B(m, n), ldbm);
                         }
                     }
                 }
@@ -217,7 +215,7 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                                 tempmm, tempnn, tempkn,
                                 alpha, B(m, k), ldbm,
                                        A(n, k), ldan,
-                                zone,  B(m, n), ldbm);
+                                1.0,   B(m, n), ldbm);
                         }
                     }
                 }
@@ -248,7 +246,7 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                                 tempmm, tempnn, tempkn,
                                 alpha, B(m, k), ldbm,
                                        A(k, n), ldak,
-                                zone,  B(m, n), ldbm);
+                                1.0,   B(m, n), ldbm);
                         }
                     }
                 }
@@ -275,7 +273,7 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                                 tempmm, tempnn, B.mb,
                                 alpha, B(m, k), ldbm,
                                        A(n, k), ldan,
-                                zone,  B(m, n), ldbm);
+                                1.0,   B(m, n), ldbm);
                         }
                     }
                 }

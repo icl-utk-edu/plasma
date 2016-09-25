@@ -37,7 +37,6 @@ void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
     int tempmm, tempnn, tempkn, tempkm;
 
     plasma_complex64_t zbeta;
-    plasma_complex64_t zone = 1.0;
 
     int innerK = transA == PlasmaNoTrans ? A.n : A.m;
 
@@ -74,7 +73,7 @@ void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
                     for (k = 0; k < A.nt; k++) {
                         tempkn = plasma_tile_ndim(A, k);
                         ldbk   = plasma_tile_mdim(B, k);
-                        zbeta = k == 0 ? beta : zone;
+                        zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
                             transA, transB,
                             tempmm, tempnn, tempkn,
@@ -90,7 +89,7 @@ void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
                     ldbn = plasma_tile_mdim(B, n);
                     for (k = 0; k < A.nt; k++) {
                         tempkn = plasma_tile_ndim(A, k);
-                        zbeta = k == 0 ? beta : zone;
+                        zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
                             transA, transB,
                             tempmm, tempnn, tempkn,
@@ -109,7 +108,7 @@ void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
                         tempkm = plasma_tile_mdim(A, k);
                         ldak   = plasma_tile_mdim(A, k);
                         ldbk   = plasma_tile_mdim(B, k);
-                        zbeta = k == 0 ? beta : zone;
+                        zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
                             transA, transB,
                             tempmm, tempnn, tempkm,
@@ -126,7 +125,7 @@ void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
                     for (k = 0; k < A.mt; k++) {
                         tempkm = plasma_tile_mdim(A, k);
                         ldak   = plasma_tile_mdim(A, k);
-                        zbeta = k == 0 ? beta : zone;
+                        zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
                             transA, transB,
                             tempmm, tempnn, tempkm,

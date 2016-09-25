@@ -31,9 +31,6 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
     int ldak, ldam, ldan;
     int tempkm, tempmm;
 
-    plasma_complex64_t zone  =  1.0;
-    plasma_complex64_t mzone = -1.0;
-
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorSequence);
@@ -59,8 +56,8 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
                     PlasmaRight, PlasmaLower,
                     PlasmaConjTrans, PlasmaNonUnit,
                     tempmm, A.mb,
-                    zone, A(k, k), ldak,
-                          A(m, k), ldam);
+                    1.0, A(k, k), ldak,
+                         A(m, k), ldam);
             }
             for (m = k+1; m < A.mt; m++) {
                 tempmm = plasma_tile_mdim(A, m);
@@ -76,9 +73,9 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaConjTrans,
                         tempmm, A.mb, A.mb,
-                        mzone, A(m, k), ldam,
-                               A(n, k), ldan,
-                        zone,  A(m, n), ldam);
+                        -1.0, A(m, k), ldam,
+                              A(n, k), ldan,
+                         1.0, A(m, n), ldam);
                 }
             }
         }
@@ -101,8 +98,8 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
                     PlasmaLeft, PlasmaUpper,
                     PlasmaConjTrans, PlasmaNonUnit,
                     A.nb, tempmm,
-                    zone, A(k, k), ldak,
-                          A(k, m), ldak);
+                    1.0, A(k, k), ldak,
+                         A(k, m), ldak);
             }
             for (m = k+1; m < A.nt; m++) {
                 tempmm = plasma_tile_ndim(A, m);
@@ -118,9 +115,9 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
                     core_omp_zgemm(
                         PlasmaConjTrans, PlasmaNoTrans,
                         A.mb, tempmm, A.mb,
-                        mzone, A(k, n), ldak,
-                               A(k, m), ldak,
-                        zone,  A(n, m), ldan);
+                        -1.0, A(k, n), ldak,
+                              A(k, m), ldak,
+                         1.0, A(n, m), ldan);
                 }
             }
         }

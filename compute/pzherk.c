@@ -35,7 +35,6 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
     int tempnn, tempmm, tempkn, tempkm;
 
     plasma_complex64_t zbeta;
-    plasma_complex64_t zone = 1.0;
     double dbeta;
 
     // Check sequence status.
@@ -71,7 +70,7 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
                     ldcm   = plasma_tile_mdim(C, m);
                     for (k = 0; k < A.nt; k++) {
                         tempkn = plasma_tile_ndim(A, k);
-                        zbeta = k == 0 ? beta : zone;
+                        zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
                             trans, PlasmaConjTrans,
                             tempmm, tempnn, tempkn,
@@ -90,7 +89,7 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
                     ldam   = plasma_tile_mdim(A, m);
                     for (k = 0; k < A.nt; k++) {
                         tempkn = plasma_tile_ndim(A, k);
-                        zbeta = k == 0 ? beta : zone;
+                        zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
                             trans, PlasmaConjTrans,
                             tempnn, tempmm, tempkn,
@@ -125,7 +124,7 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
                     for (k = 0; k < A.mt; k++) {
                         tempkm = plasma_tile_mdim(A, k);
                         ldak   = plasma_tile_mdim(A, k);
-                        zbeta = k == 0 ? beta : zone;
+                        zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
                             trans, PlasmaNoTrans,
                             tempmm, tempnn, tempkm,
@@ -144,7 +143,7 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
                     for (k = 0; k < A.mt; k++) {
                         tempkm = plasma_tile_mdim(A, k);
                         ldak   = plasma_tile_mdim(A, k);
-                        zbeta = k == 0 ? beta : zone;
+                        zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
                             trans, PlasmaNoTrans,
                             tempnn, tempmm, tempkm,

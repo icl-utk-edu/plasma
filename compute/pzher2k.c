@@ -75,7 +75,7 @@ void plasma_pzher2k(plasma_enum_t uplo, plasma_enum_t trans,
                     ldcm   = plasma_tile_mdim(C, m);
                     for (k = 0; k < A.nt; k++) {
                         tempkn = plasma_tile_ndim(A, k);
-                        zbeta = k == 0 ? beta : zone;
+                        zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
                             trans, PlasmaConjTrans,
                             tempmm, tempnn, tempkn,
@@ -87,7 +87,7 @@ void plasma_pzher2k(plasma_enum_t uplo, plasma_enum_t trans,
                             tempmm, tempnn, tempkn,
                             conj(alpha), B(m, k), ldam,
                                          A(n, k), ldan,
-                                  zone,  C(m, n), ldcm);
+                                   1.0,  C(m, n), ldcm);
                     }
                 }
             }
@@ -101,7 +101,7 @@ void plasma_pzher2k(plasma_enum_t uplo, plasma_enum_t trans,
                     ldbm   = plasma_tile_mdim(B, m);
                     for (k = 0; k < A.nt; k++) {
                         tempkn = plasma_tile_ndim(A, k);
-                        zbeta = k == 0 ? beta : zone;
+                        zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
                             trans, PlasmaConjTrans,
                             tempnn, tempmm, tempkn,
@@ -113,7 +113,7 @@ void plasma_pzher2k(plasma_enum_t uplo, plasma_enum_t trans,
                             tempnn, tempmm, tempkn,
                             conj(alpha), B(n, k), ldan,
                                          A(m, k), ldam,
-                                   zone, C(n, m), ldcn);
+                                    1.0, C(n, m), ldcn);
                     }
                 }
             }
@@ -145,7 +145,7 @@ void plasma_pzher2k(plasma_enum_t uplo, plasma_enum_t trans,
                         tempkm = plasma_tile_mdim(A, k);
                         ldak   = plasma_tile_mdim(A, k);
                         ldbk   = plasma_tile_mdim(B, k);
-                        zbeta = k == 0 ? beta : zone;
+                        zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
                             trans, PlasmaNoTrans,
                             tempmm, tempnn, tempkm,
@@ -157,7 +157,7 @@ void plasma_pzher2k(plasma_enum_t uplo, plasma_enum_t trans,
                             tempmm, tempnn, tempkm,
                             conj(alpha), B(k, m),
                             ldbk, A(k, n), ldak,
-                            zone, C(m, n), ldcm);
+                             1.0, C(m, n), ldcm);
                     }
                 }
             }
@@ -171,7 +171,7 @@ void plasma_pzher2k(plasma_enum_t uplo, plasma_enum_t trans,
                         tempkm = plasma_tile_mdim(A, k);
                         ldak   = plasma_tile_mdim(A, k);
                         ldbk   = plasma_tile_mdim(B, k);
-                        zbeta = k == 0 ? beta : zone;
+                        zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
                             trans, PlasmaNoTrans,
                             tempnn, tempmm, tempkm,
@@ -183,7 +183,7 @@ void plasma_pzher2k(plasma_enum_t uplo, plasma_enum_t trans,
                             tempnn, tempmm, tempkm,
                             conj(alpha), B(k, n), ldbk,
                                          A(k, m), ldak,
-                                  zone,  C(n, m), ldcn);
+                                   1.0,  C(n, m), ldcn);
                     }
                 }
             }

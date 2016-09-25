@@ -37,7 +37,6 @@ void plasma_pzsymm(plasma_enum_t side, plasma_enum_t uplo,
     int tempmm, tempnn, tempkn, tempkm;
 
     plasma_complex64_t zbeta;
-    plasma_complex64_t zone = 1.0;
 
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
@@ -60,7 +59,7 @@ void plasma_pzsymm(plasma_enum_t side, plasma_enum_t uplo,
                         tempkm = plasma_tile_mdim(C, k);
                         ldak   = plasma_tile_mdim(A, k);
                         ldbk   = plasma_tile_mdim(B, k);
-                        zbeta = k == 0 ? beta : zone;
+                        zbeta = k == 0 ? beta : 1.0;
                         if (k < m) {
                             core_omp_zgemm(
                                 PlasmaNoTrans, PlasmaNoTrans,
@@ -97,7 +96,7 @@ void plasma_pzsymm(plasma_enum_t side, plasma_enum_t uplo,
                         tempkm = plasma_tile_mdim(C, k);
                         ldak   = plasma_tile_mdim(A, k);
                         ldbk   = plasma_tile_mdim(B, k);
-                        zbeta = k == 0 ? beta : zone;
+                        zbeta = k == 0 ? beta : 1.0;
                         if (k < m) {
                             core_omp_zgemm(
                                 PlasmaTrans, PlasmaNoTrans,
@@ -137,7 +136,7 @@ void plasma_pzsymm(plasma_enum_t side, plasma_enum_t uplo,
                     for (k = 0; k < C.nt; k++) {
                         tempkn = plasma_tile_ndim(C, k);
                         ldak   = plasma_tile_mdim(A, k);
-                        zbeta = k == 0 ? beta : zone;
+                        zbeta = k == 0 ? beta : 1.0;
                         if (k < n) {
                             core_omp_zgemm(
                                 PlasmaNoTrans, PlasmaTrans,
@@ -173,7 +172,7 @@ void plasma_pzsymm(plasma_enum_t side, plasma_enum_t uplo,
                     for (k = 0; k < C.nt; k++) {
                         tempkn = plasma_tile_ndim(C, k);
                         ldak   = plasma_tile_mdim(A, k);
-                        zbeta = k == 0 ? beta : zone;
+                        zbeta = k == 0 ? beta : 1.0;
                         if (k < n) {
                             core_omp_zgemm(
                                 PlasmaNoTrans, PlasmaNoTrans,

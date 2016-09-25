@@ -35,7 +35,6 @@ void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
     int ldak, ldam, ldan, ldcm, ldcn, ldbk, ldbm, ldbn;
     int tempnn, tempmm, tempkn, tempkm;
 
-    plasma_complex64_t zone = 1.0;
     plasma_complex64_t zbeta;
 
     // Check sequence status.
@@ -55,7 +54,7 @@ void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
         if (trans == PlasmaNoTrans) {
             for (k = 0; k < A.nt; k++) {
                 tempkn = plasma_tile_ndim(A, k);
-                zbeta = k == 0 ? beta : zone;
+                zbeta = k == 0 ? beta : 1.0;
                 core_omp_zsyr2k(
                     uplo, trans,
                     tempnn, tempkn,
@@ -74,7 +73,7 @@ void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
                     ldcm   = plasma_tile_mdim(C, m);
                     for (k = 0; k < A.nt; k++) {
                         tempkn = plasma_tile_ndim(A, k);
-                        zbeta = k == 0 ? beta : zone;
+                        zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
                             trans, PlasmaTrans,
                             tempmm, tempnn, tempkn,
@@ -84,9 +83,9 @@ void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
                         core_omp_zgemm(
                             trans, PlasmaTrans,
                             tempmm, tempnn, tempkn,
-                             alpha, B(m, k), ldam,
-                                    A(n, k), ldan,
-                            zone,  C(m, n), ldcm);
+                            alpha, B(m, k), ldam,
+                                   A(n, k), ldan,
+                              1.0, C(m, n), ldcm);
                     }
                 }
             }
@@ -100,7 +99,7 @@ void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
                     ldbm   = plasma_tile_mdim(B, m);
                     for (k = 0; k < A.nt; k++) {
                         tempkn = plasma_tile_ndim(A, k);
-                        zbeta = k == 0 ? beta : zone;
+                        zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
                             trans, PlasmaTrans,
                             tempnn, tempmm, tempkn,
@@ -108,11 +107,11 @@ void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
                                      B(m, k), ldbm,
                             zbeta, C(n, m), ldcn);
                         core_omp_zgemm(
-                           trans, PlasmaTrans,
-                           tempnn, tempmm, tempkn,
-                             alpha, B(n, k), ldan,
-                                    A(m, k), ldam,
-                            zone, C(n, m), ldcn);
+                            trans, PlasmaTrans,
+                            tempnn, tempmm, tempkn,
+                            alpha, B(n, k), ldan,
+                                   A(m, k), ldam,
+                              1.0, C(n, m), ldcn);
                     }
                 }
             }
@@ -125,7 +124,7 @@ void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
                 tempkm = plasma_tile_mdim(A, k);
                 ldak   = plasma_tile_mdim(A, k);
                 ldbk   = plasma_tile_mdim(B, k);
-                zbeta = k == 0 ? beta : zone;
+                zbeta = k == 0 ? beta : 1.0;
                 core_omp_zsyr2k(
                     uplo, trans,
                           tempnn, tempkm,
@@ -144,7 +143,7 @@ void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
                         tempkm = plasma_tile_mdim(A, k);
                         ldak   = plasma_tile_mdim(A, k);
                         ldbk   = plasma_tile_mdim(B, k);
-                        zbeta = k == 0 ? beta : zone;
+                        zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
                             trans, PlasmaNoTrans,
                             tempmm, tempnn, tempkm,
@@ -156,7 +155,7 @@ void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
                             tempmm, tempnn, tempkm,
                             alpha, B(k, m), ldbk,
                                    A(k, n), ldak,
-                            zone, C(m, n), ldcm);
+                              1.0, C(m, n), ldcm);
                     }
                 }
             }
@@ -170,7 +169,7 @@ void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
                         tempkm = plasma_tile_mdim(A, k);
                         ldak   = plasma_tile_mdim(A, k);
                         ldbk   = plasma_tile_mdim(B, k);
-                        zbeta = k == 0 ? beta : zone;
+                        zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
                             trans, PlasmaNoTrans,
                             tempnn, tempmm, tempkm,
@@ -180,9 +179,9 @@ void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
                         core_omp_zgemm(
                             trans, PlasmaNoTrans,
                             tempnn, tempmm, tempkm,
-                              alpha, B(k, n), ldbk,
-                                    A(k, m), ldak,
-                            zone,  C(n, m), ldcn);
+                            alpha, B(k, n), ldbk,
+                                   A(k, m), ldak,
+                              1.0, C(n, m), ldcn);
                     }
                 }
             }

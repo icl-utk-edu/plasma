@@ -30,9 +30,6 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
     int k, m, n;
     int tempkm, tempmm, tempmn;
 
-    plasma_complex64_t zone  =  1.0;
-    plasma_complex64_t mzone = -1.0;
-
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorSequence);
@@ -56,8 +53,8 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
                     PlasmaRight, PlasmaLower,
                     PlasmaConjTrans, PlasmaNonUnit,
                     tempmm, tempkm,
-                    zone, A(k, k), BLKLDD_BAND(uplo, A, k, k),
-                          A(m, k), BLKLDD_BAND(uplo, A, m, k));
+                    1.0, A(k, k), BLKLDD_BAND(uplo, A, k, k),
+                         A(m, k), BLKLDD_BAND(uplo, A, m, k));
                 core_omp_zherk(
                     PlasmaLower, PlasmaNoTrans,
                     tempmm, A.mb,
@@ -69,9 +66,9 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaConjTrans,
                         tempmm, tempmn, tempkm,
-                        mzone, A(m, k), BLKLDD_BAND(uplo, A, m, k),
-                               A(n, k), BLKLDD_BAND(uplo, A, n, k),
-                        zone,  A(m, n), BLKLDD_BAND(uplo, A, m, n));
+                        -1.0, A(m, k), BLKLDD_BAND(uplo, A, m, k),
+                              A(n, k), BLKLDD_BAND(uplo, A, n, k),
+                         1.0, A(m, n), BLKLDD_BAND(uplo, A, m, n));
                 }
             }
         }
@@ -93,7 +90,7 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
                     PlasmaLeft, PlasmaUpper,
                     PlasmaConjTrans, PlasmaNonUnit,
                     A.nb, tempmm,
-                    zone, A(k, k), BLKLDD_BAND(uplo, A, k, k),
+                    1.0, A(k, k), BLKLDD_BAND(uplo, A, k, k),
                           A(k, m), BLKLDD_BAND(uplo, A, k, m));
                 core_omp_zherk(
                     PlasmaUpper, PlasmaConjTrans,
@@ -105,9 +102,9 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
                     core_omp_zgemm(
                         PlasmaConjTrans, PlasmaNoTrans,
                         A.mb, tempmm, A.mb,
-                        mzone, A(k, n), BLKLDD_BAND(uplo, A, k, n),
+                        -1.0, A(k, n), BLKLDD_BAND(uplo, A, k, n),
                                A(k, m), BLKLDD_BAND(uplo, A, k, m),
-                        zone,  A(n, m), BLKLDD_BAND(uplo, A, n, m));
+                        1.0,  A(n, m), BLKLDD_BAND(uplo, A, n, m));
                 }
             }
         }
