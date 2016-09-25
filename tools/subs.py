@@ -334,6 +334,11 @@ subs = {
 
     # ----- CBLAS
     ('',                     'CBLAS_SADDR'         ),
+    ('saxpy',                'caxpy'               ),
+
+    # ----- LAPACKE
+    ('slange',               'clange'              ),
+    ('slarnv',               'clarnv'              ),
 
     # ----- Complex numbers
     # See note in "normal" section below about regexps
