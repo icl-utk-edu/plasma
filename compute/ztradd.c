@@ -117,16 +117,18 @@ int PLASMA_ztradd(plasma_enum_t uplo, plasma_enum_t transA, int m, int n,
     }
 
     // Check input arguments
-    if ((uplo != PlasmaFull) &&
+    if ((uplo != PlasmaFull)  &&
         (uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
+
         plasma_error("illegal value of uplo");
         return -1;
     }
 
     if ((transA != PlasmaNoTrans) &&
-        (transA != PlasmaTrans) &&
+        (transA != PlasmaTrans)   &&
         (transA != PlasmaConjTrans)) {
+
         plasma_error("illegal value of transA");
         return -2;
     }
@@ -241,9 +243,11 @@ int PLASMA_ztradd(plasma_enum_t uplo, plasma_enum_t transA, int m, int n,
     plasma_desc_mat_free(&descA);
     plasma_desc_mat_free(&descB);
 
+    // Destroy sequence
+    plasma_sequence_destroy(sequence);
+
     // Return status
     status = sequence->status;
-    plasma_sequence_destroy(sequence);
     return status;
 }
 
@@ -362,7 +366,7 @@ void plasma_omp_ztradd(plasma_enum_t uplo, plasma_enum_t transA,
         return;
     }
 
-    // quick return
+    // Quick return
     int Am = transA == PlasmaNoTrans ? A->m : A->n;
     plasma_complex64_t zzero = (plasma_complex64_t)0.0;
 

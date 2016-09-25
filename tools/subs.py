@@ -194,6 +194,8 @@ lapack = [
     ('sgetrf',               'dgetrf',               'cgetrf',               'zgetrf'              ),
     ('sgetri',               'dgetri',               'cgetri',               'zgetri'              ),
     ('sgetrs',               'dgetrs',               'cgetrs',               'zgetrs'              ),
+    ('spbtrf',               'dpbtrf',               'cpbtrf',               'zpbtrf'              ),
+    ('spbtrs',               'dpbtrs',               'cpbtrs',               'zpbtrs'              ),
     ('shseqr',               'dhseqr',               'chseqr',               'zhseqr'              ),
     ('shst01',               'dhst01',               'chst01',               'zhst01'              ),
     ('slabad',               'dlabad',               'slabad',               'dlabad'              ),

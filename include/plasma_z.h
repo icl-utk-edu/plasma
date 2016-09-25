@@ -69,6 +69,10 @@ int PLASMA_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                  double alpha, plasma_complex64_t *A, int lda,
                  double beta,  plasma_complex64_t *C, int ldc);
 
+int PLASMA_zlacpy(plasma_enum_t uplo, int m, int n,
+                  plasma_complex64_t *A, int lda,
+                  plasma_complex64_t *B, int ldb);
+
 int PLASMA_zpbsv(plasma_enum_t uplo, int n, int kd, int nrhs,
                  plasma_complex64_t *AB, int ldab,
                  plasma_complex64_t *B, int ldb);
@@ -215,6 +219,9 @@ void plasma_omp_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                       double alpha, plasma_desc_t *A,
                       double beta,  plasma_desc_t *C,
                       plasma_sequence_t *sequence, plasma_request_t *request);
+
+void plasma_omp_zlacpy(plasma_enum_t uplo, plasma_desc_t *A, plasma_desc_t *B,
+                       plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_omp_zpbsv(plasma_enum_t uplo,
                       plasma_desc_t *AB,
