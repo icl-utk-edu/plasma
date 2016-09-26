@@ -209,7 +209,6 @@ void test_ztrsm(param_value_t param[], char *info)
     // ||alpha*B - A*X|| / (||A||*||X||)
     //================================================================
     if (test) {
-        plasma_complex64_t zzero =  0.0;
         plasma_complex64_t zone  =  1.0;
         plasma_complex64_t zmone = -1.0;
         double work[1];
@@ -220,11 +219,11 @@ void test_ztrsm(param_value_t param[], char *info)
         // See also test_ztrmm.c
         if (uplo == PlasmaLower) {
             LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'U', Am-1, Am-1,
-                                zzero, zzero, &A(0,1), lda);
+                                0.0, 0.0, &A(0,1), lda);
         }
         else {
             LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'L', Am-1, Am-1,
-                                zzero, zzero, &A(1,0), lda);
+                                0.0, 0.0, &A(1,0), lda);
         }
         if (diag == PlasmaUnit) {
             for (int i = 0; i < Am; ++i) {

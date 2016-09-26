@@ -120,12 +120,11 @@ void test_zpbtrf(param_value_t param[], char *info)
         }
     }
     // zero out elements outside the band
-    plasma_complex64_t zzero = 0.0;
     for (i = 0; i < n; i++) {
-        for (j = i+kd+1; j < n; j++) A(i, j) = zzero;
+        for (j = i+kd+1; j < n; j++) A(i, j) = 0.0;
     }
     for (j = 0; j < n; j++) {
-        for (i = j+kd+1; i < n; i++) A(i, j) = zzero;
+        for (i = j+kd+1; i < n; i++) A(i, j) = 0.0;
     }
 
     // band matrix A in LAPACK storage
@@ -136,7 +135,7 @@ void test_zpbtrf(param_value_t param[], char *info)
 
     // convert into LAPACK's symmetric band storage
     for (j = 0; j < n; j++) {
-        for (i = 0; i < ldab; i++) AB[i + j*ldab] = zzero;
+        for (i = 0; i < ldab; i++) AB[i + j*ldab] = 0.0;
         if (uplo == PlasmaUpper) {
             for (i = imax(0, j-kd); i <= j; i++) AB[i-j+kd + j*ldab] = A(i, j);
         }

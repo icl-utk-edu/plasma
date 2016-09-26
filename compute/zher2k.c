@@ -113,8 +113,6 @@ int PLASMA_zher2k(plasma_enum_t uplo, plasma_enum_t trans,
     plasma_desc_t descB;
     plasma_desc_t descC;
 
-    plasma_complex64_t zzero = 0.0;
-
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -167,7 +165,7 @@ int PLASMA_zher2k(plasma_enum_t uplo, plasma_enum_t trans,
     }
 
     // quick return
-    if (n == 0 || ((alpha == zzero || k == 0.0) && beta == 1.0))
+    if (n == 0 || ((alpha == 0.0 || k == 0.0) && beta == 1.0))
         return PlasmaSuccess;
 
     // Set tiling parameters.

@@ -134,10 +134,6 @@ void test_zgeqrf(param_value_t param[], char *info)
     //=================================================================
     if (test) {
         // Check the orthogonality of Q
-        plasma_complex64_t zzero =  0.0;
-        plasma_complex64_t zone  =  1.0;
-        double one  =  1.0;
-        double mone = -1.0;
         int minmn = imin(m, n);
 
         // Allocate space for Q.
@@ -154,11 +150,11 @@ void test_zgeqrf(param_value_t param[], char *info)
             (plasma_complex64_t *) malloc((size_t)minmn*minmn*
                                           sizeof(plasma_complex64_t));
         LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'g', minmn, minmn,
-                            zzero, zone, Id, minmn);
+                            0.0, 1.0, Id, minmn);
 
         // Perform Id - Q^H * Q
         cblas_zherk(CblasColMajor, CblasUpper, CblasConjTrans, minmn, m,
-                    mone, Q, ldq, one, Id, minmn);
+                    -1.0, Q, ldq, 1.0, Id, minmn);
 
         // WORK array of size m is needed for computing L_oo norm
         double *WORK = (double *) malloc((size_t)m*sizeof(double));
@@ -182,7 +178,7 @@ void test_zgeqrf(param_value_t param[], char *info)
             (plasma_complex64_t *)malloc((size_t)m*n*
                                          sizeof(plasma_complex64_t));
         LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'l', m, n,
-                            zzero, zzero, R, m);
+                            0.0, 0.0, R, m);
         LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'u', m, n, A, lda, R, m);
 
         // Compute Q * R.

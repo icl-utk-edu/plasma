@@ -128,7 +128,7 @@ int PLASMA_zposv(plasma_enum_t uplo, int n, int nrhs,
     }
 
     // quick return
-    if (min(n, nrhs) == 0)
+    if (imin(n, nrhs) == 0)
        return PlasmaSuccess;
 
     // Set tiling parameters.

@@ -117,9 +117,6 @@ int PLASMA_zgemm(plasma_enum_t transA, plasma_enum_t transB,
     plasma_desc_t descB;
     plasma_desc_t descC;
 
-    plasma_complex64_t zzero = 0.0;
-    plasma_complex64_t zone  = 1.0;
-
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -196,7 +193,7 @@ int PLASMA_zgemm(plasma_enum_t transA, plasma_enum_t transB,
     }
 
     // quick return
-    if (m == 0 || n == 0 || ((alpha == zzero || k == 0) && beta == zone))
+    if (m == 0 || n == 0 || ((alpha == 0.0 || k == 0) && beta == 1.0))
         return PlasmaSuccess;
 
     // Set tiling parameters.
