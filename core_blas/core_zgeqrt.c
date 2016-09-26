@@ -137,9 +137,6 @@ int core_zgeqrt(int m, int n, int ib,
             &T[ldt*i], ldt);
 
         if (n > i+sb) {
-            // Plasma_ConjTrans will be converted to PlasmaTrans in
-            // automatic datatype conversion, which is what we want here.
-            // PlasmaConjTrans is protected from this conversion.
             LAPACKE_zlarfb_work(
                 LAPACK_COL_MAJOR,
                 lapack_const(PlasmaLeft),

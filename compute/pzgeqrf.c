@@ -55,10 +55,6 @@ void plasma_pzgeqrf(plasma_desc_t A, plasma_desc_t T,
 
         for (n = k+1; n < A.nt; n++) {
             tempnn = plasma_tile_ndim(A, n);
-            // Plasma_ConjTrans will be converted to PlasmaTrans in
-            // automatic datatype conversion, which is what we
-            // want here.
-            // PlasmaConjTrans is protected from this conversion.
             core_omp_zunmqr(
                 PlasmaLeft, Plasma_ConjTrans,
                 tempkm, tempnn, tempkm, ib, T.nb,

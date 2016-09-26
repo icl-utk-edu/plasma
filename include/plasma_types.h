@@ -22,7 +22,13 @@ extern "C" {
 #define lapack_complex_double plasma_complex64_t
 #endif
 
-/******************************************************************************/
+/***************************************************************************//**
+ *
+ *  Some CBLAS routines take scalars by value in real arithmetic
+ *  and by pointer in complex arithmetic.
+ *  In precision generation, CBLAS_SADDR is removed from real arithmetic files.
+ *
+ **/
 #ifndef CBLAS_SADDR
 #define CBLAS_SADDR(var) &(var)
 #endif
@@ -39,11 +45,14 @@ enum {
 
 /***************************************************************************//**
  *
- *  PLASMA constants - CBLAS & LAPACK
+ *  PLASMA constants - CBLAS & LAPACK.
  *  The naming and numbering is consistent with:
  *
- *    1) CBLAS from Netlib (http://www.netlib.org/blas/blast-forum/cblas.tgz),
- *    2) C Interface to LAPACK from Netlib (http://www.netlib.org/lapack/lapwrapc/).
+ *    - CBLAS - http://www.netlib.org/blas/blast-forum/cblas.tgz,
+ *    - LAPACKE - http://www.netlib.org/lapack/lapwrapc/.
+ *
+ *  During precision generation, Plasma_ConjTrans is conveted to PlasmaTrans,
+ *  while PlasmaConjTrans is preserved.
  *
  **/
 enum {

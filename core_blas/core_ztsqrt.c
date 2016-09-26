@@ -133,9 +133,6 @@ int core_ztsqrt(int m, int n, int ib,
 #ifdef COMPLEX
                 LAPACKE_zlacgv_work(sb-i-1, WORK, 1);
 #endif
-                // Plasma_ConjTrans will be converted do PlasmaTrans in
-                // automatic datatype conversion, which is what we want here.
-                // PlasmaConjTrans is protected from this conversion.
                 cblas_zgemv(CblasColMajor,
                             (CBLAS_TRANSPOSE)Plasma_ConjTrans,
                             m, sb-i-1,

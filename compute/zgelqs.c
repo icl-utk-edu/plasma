@@ -315,9 +315,6 @@ void plasma_omp_zgelqs(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *B,
         sequence, request);
 
     // Find X = Q^H * Y
-    // Plasma_ConjTrans will be converted to PlasmaTrans by the
-    // automatic datatype conversion, which is what we want here.
-    // Note that PlasmaConjTrans is protected from this conversion.
     plasma_pzunmlq(PlasmaLeft, Plasma_ConjTrans,
                    *A, *B, *T,
                    work, sequence, request);

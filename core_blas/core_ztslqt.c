@@ -185,9 +185,6 @@ int core_ztslqt(int m, int n, int ib,
             T[ldt*(ii+i)+i] = TAU[ii+i];
         }
         if (m > ii+sb) {
-            // Plasma_ConjTrans will be converted to PlasmaTrans in
-            // automatic datatype conversion, which is what we want here.
-            // PlasmaConjTrans is protected from this conversion.
             core_ztsmlq(
                 PlasmaRight, Plasma_ConjTrans,
                 m-(ii+sb), sb, m-(ii+sb), n, ib, ib,

@@ -145,9 +145,6 @@ int core_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
         nw = n1;
     }
 
-    // Plasma_ConjTrans will be converted to PlasmaTrans in
-    // automatic datatype conversion, which is what we want here.
-    // PlasmaConjTrans is protected from this conversion.
     if ((trans != PlasmaNoTrans) && (trans != Plasma_ConjTrans)) {
         coreblas_error("Illegal value of trans");
         return -2;

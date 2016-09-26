@@ -56,10 +56,6 @@ void plasma_pzgelqf(plasma_desc_t A, plasma_desc_t T,
         for (m = k+1; m < A.mt; m++) {
             tempmm = plasma_tile_mdim(A, m);
             ldam   = plasma_tile_mdim(A, m);
-            // Plasma_ConjTrans will be converted to PlasmaTrans in
-            // automatic datatype conversion, which is what we
-            // want here.
-            // PlasmaConjTrans is protected from this conversion.
             core_omp_zunmlq(
                 PlasmaRight, Plasma_ConjTrans,
                 tempmm, tempkn, tempkn, ib, T.nb,
