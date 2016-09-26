@@ -176,11 +176,7 @@ int PLASMA_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
     if (imin(m, n) == 0)
         return PlasmaSuccess;
 
-    // Tune nb depending on m, n
-    // if (plasma_tune(PLASMA_FUNC_ZTRMM, m, n, 0) != PlasmaSuccess) {
-    //     plasma_error("plasma_tune() failed");
-    //     return status;
-    // }
+    // Set tiling parameters.
     nb = plasma->nb;
 
     // Create tile matrices.

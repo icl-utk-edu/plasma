@@ -170,11 +170,7 @@ int PLASMA_ztradd(plasma_enum_t uplo, plasma_enum_t transA, int m, int n,
     if (m == 0 || n == 0 || (alpha == zzero && beta == zone))
         return PlasmaSuccess;
 
-    // Tune
-    // if (plasma_tune(PLASMA_FUNC_ZTRADD, m, n, 0) != PlasmaSuccess) {
-    //     plasma_error("plasma_tune() failed");
-    //     return status;
-    // }
+    // Set tiling parameters.
     nb = plasma->nb;
 
     // Create tile matrices.

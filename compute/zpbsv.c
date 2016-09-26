@@ -106,7 +106,7 @@ int PLASMA_zpbsv(plasma_enum_t uplo, int n, int kd, int nrhs,
         return PlasmaErrorNotInitialized;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
@@ -132,18 +132,12 @@ int PLASMA_zpbsv(plasma_enum_t uplo, int n, int kd, int nrhs,
         plasma_error("illegal value of ldb");
         return -8;
     }
-    // Quick return - currently NOT equivalent to LAPACK's
-    //LAPACK does not have such check for DPOSV
-    //
-    //if (min(n, nrhs) == 0)
-    //    return PlasmaSuccess;
 
-    // Tune.
-    //status = plasma_tune(PLASMA_FUNC_ZPOSV, N, N, nrhs);
-    //if (status != PlasmaSuccess) {
-    //   plasma_error("PLASMA_zposv", "plasma_tune() failed");
-    //    return status;
-    // }
+    // quick return
+    if (min(n, nrhs) == 0)
+       return PlasmaSuccess;
+
+    // Set tiling parameters.
     nb = plasma->nb;
 
     // Initialize tile matrix descriptors.

@@ -87,7 +87,7 @@ int PLASMA_zpotrf(plasma_enum_t uplo,
         return PlasmaErrorNotInitialized;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
@@ -106,12 +106,7 @@ int PLASMA_zpotrf(plasma_enum_t uplo,
     if (imax(n, 0) == 0)
         return PlasmaSuccess;
 
-    // Tune
-    // status = plasma_tune(PLASMA_FUNC_ZPOSV, N, N, 0);
-    // if (status != PlasmaSuccess) {
-    //     plasma_error("plasma_tune() failed");
-    //     return status;
-    // }
+    // Set tiling parameters.
     nb = plasma->nb;
 
     // Create tile matrix.

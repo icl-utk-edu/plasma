@@ -127,12 +127,7 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
     if (imax(n, nrhs) == 0)
         return PlasmaSuccess;
 
-    // Tune
-    // status = plasma_tune(PLASMA_FUNC_ZPOSV, N, N, NHRS);
-    // if (status != PlasmaSuccess) {
-    //     plasma_error("plasma_tune() failed");
-    //     return status;
-    // }
+    // Set tiling parameters.
     nb = plasma->nb;
 
     // Initialize tile matrix descriptors.

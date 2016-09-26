@@ -141,7 +141,8 @@ int PLASMA_zgels(plasma_enum_t trans, int m, int n, int nrhs,
         plasma_error("illegal value of ldb");
         return -9;
     }
-    // Quick return
+
+    //quick return
     if (imin(m, imin(n, nrhs)) == 0) {
         for (int i = 0; i < imax(m, n); i++)
             for (int j = 0; j < nrhs; j++)
@@ -149,12 +150,7 @@ int PLASMA_zgels(plasma_enum_t trans, int m, int n, int nrhs,
         return PlasmaSuccess;
     }
 
-    // Tune NB & IB depending on M, N & NRHS; Set NBNB
-    //status = plasma_tune(PLASMA_FUNC_ZGELS, M, N, NRHS);
-    //if (status != PlasmaSuccess) {
-    //    plasma_error("plasma_tune() failed");
-    //    return status;
-    //}
+    // Set tiling parameters.
     ib = plasma->ib;
     nb = plasma->nb;
 

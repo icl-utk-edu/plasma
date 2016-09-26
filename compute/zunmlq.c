@@ -110,7 +110,7 @@ int PLASMA_zunmlq(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
         return PlasmaErrorNotInitialized;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if ((side != PlasmaLeft) && (side != PlasmaRight)) {
         plasma_error("illegal value of side");
         return -1;
@@ -150,12 +150,7 @@ int PLASMA_zunmlq(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
     if (m == 0 || n == 0 || k == 0)
         return PlasmaSuccess;
 
-    // Tune NB & IB depending on M, K & N; Set NB
-    //status = plasma_tune(PLASMA_FUNC_ZGELS, M, K, N);
-    //if (status != PlasmaSuccess) {
-    //    plasma_error("plasma_tune() failed");
-    //    return status;
-    //}
+    // Set tiling parameters.
     ib = plasma->ib;
     nb = plasma->nb;
 

@@ -87,7 +87,7 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
         return PlasmaErrorNotInitialized;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if (m < 0) {
         plasma_error("illegal value of m");
         return -1;
@@ -108,16 +108,12 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
         plasma_error("illegal value of ldb");
         return -8;
     }
-    // Quick return
+
+    // quick return
     if (m == 0 || n == 0 || nrhs == 0)
         return PlasmaSuccess;
 
-    // Tune NB & IB depending on M, N & NRHS; Set NBNBSIZE
-    //status = plasma_tune(PLASMA_FUNC_ZGELS, M, N, NRHS);
-    //if (status != PlasmaSuccess) {
-    //    plasma_error("plasma_tune() failed");
-    //    return status;
-    //}
+    // Set tiling parameters.
     ib = plasma->ib;
     nb = plasma->nb;
 

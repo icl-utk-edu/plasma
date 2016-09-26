@@ -114,12 +114,7 @@ int PLASMA_zungqr(int m, int n, int k,
     if (n <= 0)
         return PlasmaSuccess;
 
-    // Tune NB & IB depending on M & N; Set NB
-    //status = plasma_tune(PLASMA_FUNC_ZGELS, M, N, 0);
-    //if (status != PlasmaSuccess) {
-    //    plasma_error("PLASMA_zungqr", "plasma_tune() failed");
-    //    return status;
-    //}
+    // Set tiling parameters.
     ib = plasma->ib;
     nb = plasma->nb;
 

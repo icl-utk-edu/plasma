@@ -170,12 +170,7 @@ int PLASMA_zsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
     if (n == 0 || ((alpha == zzero || k == 0.0) && beta == 1.0))
         return PlasmaSuccess;
 
-    // Tune
-    // status = plasma_tune(PLASMA_FUNC_ZSYR2K, n, k, 0);
-    // if (status != PlasmaSuccess) {
-    //     plasma_error("plasma_tune() failed");
-    //     return status;
-    // }
+    // Set tiling parameters.
     nb = plasma->nb;
 
     // Create tile matrices.

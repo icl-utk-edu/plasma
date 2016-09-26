@@ -199,11 +199,7 @@ int PLASMA_zgemm(plasma_enum_t transA, plasma_enum_t transB,
     if (m == 0 || n == 0 || ((alpha == zzero || k == 0) && beta == zone))
         return PlasmaSuccess;
 
-    // Tune.
-    // if (plasma_tune(PLASMA_FUNC_ZGEMM, m, n, 0) != PlasmaSuccess) {
-    //     plasma_error("plasma_tune() failed");
-    //     return status;
-    // }
+    // Set tiling parameters.
     nb = plasma->nb;
 
     // Create tile matrices.

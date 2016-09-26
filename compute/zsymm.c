@@ -171,6 +171,7 @@ int PLASMA_zsymm(plasma_enum_t side, plasma_enum_t uplo, int m, int n,
     if (m == 0 || n == 0 || (alpha == zzero && beta == zone))
         return PlasmaSuccess;
 
+    // Set tiling parameters.
     nb = plasma->nb;
 
     // Create tile matrices.

@@ -75,13 +75,14 @@ int PLASMA_zgelqf(int m, int n,
 
     plasma_desc_t descA;
 
+    // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_fatal_error("PLASMA not initialized");
         return PlasmaErrorNotInitialized;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if (m < 0) {
         plasma_error("illegal value of m");
         return -1;
@@ -94,16 +95,12 @@ int PLASMA_zgelqf(int m, int n,
         plasma_error("illegal value of lda");
         return -4;
     }
-    // Quick return
+
+    // quick return
     if (imin(m, n) == 0)
         return PlasmaSuccess;
 
-    // Tune NB & IB depending on M, N & NRHS; Set NBNBSIZE
-    //status = plasma_tune(PLASMA_FUNC_ZGELS, M, N, 0);
-    //if (status != PlasmaSuccess) {
-    //    plasma_error("PLASMA_zgelqf", "plasma_tune() failed");
-    //    return status;
-    //}
+    // Set tiling parameters.
     ib = plasma->ib;
     nb = plasma->nb;
 

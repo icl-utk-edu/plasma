@@ -172,11 +172,7 @@ int PLASMA_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
     if ((m == 0) || (n == 0))
         return PlasmaSuccess;
 
-    // Tune.
-    // if (plasma_tune(PLASMA_FUNC_ZTRSM, m, n, 0) != PlasmaSuccess) {
-    //     plasma_error("plasma_tune() failed");
-    //     return status;
-    // }
+    // Set tiling parameters.
     nb = plasma->nb;
 
     // Create tile matrices.

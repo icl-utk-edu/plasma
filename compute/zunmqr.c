@@ -150,16 +150,12 @@ int PLASMA_zunmqr(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
         plasma_error("illegal value of ldc");
         return -10;
     }
-    // Quick return
+
+    // quick return
     if (m == 0 || n == 0 || k == 0)
         return PlasmaSuccess;
 
-    // Tune NB & IB depending on M, K & N; Set NB
-    //status = plasma_tune(PLASMA_FUNC_ZGELS, M, K, N);
-    //if (status != PlasmaSuccess) {
-    //    plasma_error("PLASMA_zunmqr", "plasma_tune() failed");
-    //    return status;
-    //}
+    // Set tiling parameters.
     ib = plasma->ib;
     nb = plasma->nb;
 
@@ -353,7 +349,6 @@ void plasma_omp_zunmqr(plasma_enum_t side, plasma_enum_t trans,
     }
 
     // quick return
-    // (m == 0 || n == 0 || k == 0)
     if (C->m == 0 || C->n == 0 || imin(A->m, A->n) == 0)
         return;
 
