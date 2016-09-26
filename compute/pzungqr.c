@@ -44,8 +44,7 @@ void plasma_pzungqr(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
     // Set inner blocking from the T tile row-dimension.
     int ib = T.mb;
 
-    minmnt = imin(A.mt, A.nt);
-    for (k = minmnt-1; k >= 0; k--) {
+    for (k = imin(A.mt, A.nt)-1; k >= 0; k--) {
         tempAkm  = plasma_tile_mdim(A, k);
         tempAkn  = plasma_tile_ndim(A, k);
         tempkmin = imin(tempAkn, tempAkm);
