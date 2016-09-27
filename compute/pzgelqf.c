@@ -29,6 +29,10 @@ void plasma_pzgelqf(plasma_desc_t A, plasma_desc_t T,
                     plasma_workspace_t *work,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
+    int k, m, n;
+    int ldak, ldam;
+    int tempkm, tempkn, tempmm, tempnn;
+
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorSequence);
@@ -38,45 +42,48 @@ void plasma_pzgelqf(plasma_desc_t A, plasma_desc_t T,
     // Set inner blocking from the T tile row-dimension.
     int ib = T.mb;
 
-    for (int k = 0; k < imin(A.mt, A.nt); k++) {
-        int mdimak = plasma_tile_mdim(A, k);
-        int ndimak = plasma_tile_ndim(A, k);
+    for (k = 0; k < imin(A.mt, A.nt); k++) {
+        tempkm = plasma_tile_mdim(A, k);
+        tempkn = plasma_tile_ndim(A, k);
+        ldak   = plasma_tile_mdim(A, k);
         core_omp_zgelqt(
-            mdimak, ndimak, ib, T.nb,
-            A(k, k), mdimak,
+            tempkm, tempkn, ib, T.nb,
+            A(k, k), ldak,
             T(k, k), T.mb,
             work,
             sequence, request);
 
-        for (int m = k+1; m < A.mt; m++) {
-            int mdimam = plasma_tile_mdim(A, m);
+        for (m = k+1; m < A.mt; m++) {
+            tempmm = plasma_tile_mdim(A, m);
+            ldam   = plasma_tile_mdim(A, m);
             core_omp_zunmlq(
                 PlasmaRight, Plasma_ConjTrans,
-                mdimam, ndimak, ndimak, ib, T.nb,
-                A(k, k), mdimak,
+                tempmm, tempkn, tempkn, ib, T.nb,
+                A(k, k), ldak,
                 T(k, k), T.mb,
-                A(m, k), mdimam,
+                A(m, k), ldam,
                 work,
                 sequence, request);
         }
-        for (int n = k+1; n < A.nt; n++) {
-            int ndiman = plasma_tile_ndim(A, n);
+        for (n = k+1; n < A.nt; n++) {
+            tempnn = plasma_tile_ndim(A, n);
             core_omp_ztslqt(
-                mdimak, ndiman, ib, T.nb,
-                A(k, k), mdimak,
-                A(k, n), mdimak,
+                tempkm, tempnn, ib, T.nb,
+                A(k, k), ldak,
+                A(k, n), ldak,
                 T(k, n), T.mb,
                 work,
                 sequence, request);
 
-            for (int m = k+1; m < A.mt; m++) {
-                int mdimam = plasma_tile_mdim(A, m);
+            for (m = k+1; m < A.mt; m++) {
+                tempmm = plasma_tile_mdim(A, m);
+                ldam   = plasma_tile_mdim(A, m);
                 core_omp_ztsmlq(
                     PlasmaRight, Plasma_ConjTrans,
-                    mdimam, A.nb, mdimam, ndiman, A.mb, ib, T.nb,
-                    A(m, k), mdimam,
-                    A(m, n), mdimam,
-                    A(k, n), mdimak,
+                    tempmm, A.nb, tempmm, tempnn, A.mb, ib, T.nb,
+                    A(m, k), ldam,
+                    A(m, n), ldam,
+                    A(k, n), ldak,
                     T(k, n), T.mb,
                     work,
                     sequence, request);
