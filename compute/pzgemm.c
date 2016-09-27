@@ -47,10 +47,10 @@ void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
     }
 
     for (m = 0; m < C.mt; m++) {
-        tempmm = plasma_tile_mdim(A, m);
+        tempmm = plasma_tile_mdim(C, m);
         ldcm   = plasma_tile_mdim(C, m);
         for (n = 0; n < C.nt; n++) {
-            tempnn = plasma_tile_ndim(A, n);
+            tempnn = plasma_tile_ndim(C, n);
             //=========================================
             // alpha*A*B does not contribute; scale C
             //=========================================
