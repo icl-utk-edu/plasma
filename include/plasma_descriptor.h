@@ -141,7 +141,11 @@ static inline void *plasma_tile_addr(plasma_desc_t A, int m, int n)
         plasma_fatal_error("invalid matrix type");
 }
 
-/******************************************************************************/
+/***************************************************************************//**
+ *
+ *  Returns the height of the tile with vertical position k.
+ *
+ */
 static inline int plasma_tile_mdim(plasma_desc_t A, int k)
 {
     if (A.i/A.mb+k < A.lm/A.mb)
@@ -150,13 +154,45 @@ static inline int plasma_tile_mdim(plasma_desc_t A, int k)
         return A.lm%A.mb;
 }
 
-/******************************************************************************/
+/***************************************************************************//**
+ *
+ *  Returns the width of the tile with horizontal position k.
+ *
+ */
 static inline int plasma_tile_ndim(plasma_desc_t A, int k)
 {
     if (A.j/A.nb+k < A.ln/A.nb)
         return A.nb;
     else
         return A.ln%A.nb;
+}
+
+/***************************************************************************//**
+ *
+ *  Returns the height of the portion of the submatrix occupying the tile
+ *  at vertical position k.
+ *
+ */
+static inline int plasma_tile_mview(plasma_desc_t A, int k)
+{
+    if (A.i/A.mb+k < A.m/A.mb)
+        return A.mb;
+    else
+        return A.m%A.mb;
+}
+
+/***************************************************************************//**
+ *
+ *  Returns the width of the portion of the submatrix occupying the tile
+ *  at horizontal position k.
+ *
+ */
+static inline int plasma_tile_nview(plasma_desc_t A, int k)
+{
+    if (A.j/A.nb+k < A.n/A.nb)
+        return A.nb;
+    else
+        return A.n%A.nb;
 }
 
 /******************************************************************************/
