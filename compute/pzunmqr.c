@@ -31,10 +31,6 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
                     plasma_workspace_t *work,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    int k, m, n;
-    int ldak, ldbk, ldam, ldan, ldbm;
-    int tempBkm, tempnn, tempkmin, tempmm, tempBkn, tempAkm, tempAkn;
-
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorSequence);
@@ -49,33 +45,32 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
         // PlasmaLeft / Plasma_ConjTrans
         //================================
         if (trans == Plasma_ConjTrans) {
-            for (k = 0; k < imin(A.mt, A.nt); k++) {
-                tempBkm  = plasma_tile_mdim(B, k);
-                tempAkm  = plasma_tile_mdim(A, k);
-                tempAkn  = plasma_tile_ndim(A, k);
-                tempkmin = imin(tempAkn, tempAkm);
-                ldak     = plasma_tile_mdim(A, k);
-                ldbk     = plasma_tile_mdim(B, k);
-                for (n = 0; n < B.nt; n++) {
-                    tempnn = plasma_tile_ndim(B, n);
+            for (int k = 0; k < imin(A.mt, A.nt); k++) {
+                int mvbk = plasma_tile_mview(B, k);
+                int mvak = plasma_tile_mview(A, k);
+                int nvak = plasma_tile_nview(A, k);
+                int ldak = plasma_tile_mmain(A, k);
+                int ldbk = plasma_tile_mmain(B, k);
+                for (int n = 0; n < B.nt; n++) {
+                    int nvbn = plasma_tile_nview(B, n);
                     core_omp_zunmqr(
                         side, trans,
-                        tempBkm, tempnn, tempkmin, ib, T.nb,
+                        mvbk, nvbn, imin(nvak, mvak), ib, T.nb,
                         A(k, k), ldak,
                         T(k, k), T.mb,
                         B(k, n), ldbk,
                         work,
                         sequence, request);
                 }
-                for (m = k+1; m < B.mt; m++) {
-                    tempmm = plasma_tile_mdim(B, m);
-                    ldam   = plasma_tile_mdim(A, m);
-                    ldbm   = plasma_tile_mdim(B, m);
-                    for (n = 0; n < B.nt; n++) {
-                        tempnn = plasma_tile_ndim(B, n);
+                for (int m = k+1; m < B.mt; m++) {
+                    int mvbm = plasma_tile_mview(B, m);
+                    int ldam = plasma_tile_mmain(A, m);
+                    int ldbm = plasma_tile_mmain(B, m);
+                    for (int n = 0; n < B.nt; n++) {
+                        int nvbn = plasma_tile_nview(B, n);
                         core_omp_ztsmqr(
                             side, trans,
-                            B.mb, tempnn, tempmm, tempnn, tempkmin, ib, T.nb,
+                            B.mb, nvbn, mvbm, nvbn, imin(nvak, mvak), ib, T.nb,
                             B(k, n), ldbk,
                             B(m, n), ldbm,
                             A(m, k), ldam,
@@ -90,22 +85,21 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
         // PlasmaLeft / PlasmaNoTrans
         //=============================
         else {
-            for (k = imin(A.mt, A.nt)-1; k >= 0; k--) {
-                tempBkm  = plasma_tile_mdim(B, k);
-                tempAkm  = plasma_tile_mdim(A, k);
-                tempAkn  = plasma_tile_ndim(A, k);
-                tempkmin = imin(tempAkn, tempAkm);
-                ldak     = plasma_tile_mdim(A, k);
-                ldbk     = plasma_tile_mdim(B, k);
-                for (m = B.mt-1; m > k; m--) {
-                    tempmm = plasma_tile_mdim(B, m);
-                    ldam   = plasma_tile_mdim(A, m);
-                    ldbm   = plasma_tile_mdim(B, m);
-                    for (n = 0; n < B.nt; n++) {
-                        tempnn = plasma_tile_ndim(B, n);
+            for (int k = imin(A.mt, A.nt)-1; k >= 0; k--) {
+                int mvbk = plasma_tile_mview(B, k);
+                int mvak = plasma_tile_mview(A, k);
+                int nvak = plasma_tile_nview(A, k);
+                int ldak = plasma_tile_mmain(A, k);
+                int ldbk = plasma_tile_mmain(B, k);
+                for (int m = B.mt-1; m > k; m--) {
+                    int mvbm = plasma_tile_mview(B, m);
+                    int ldam = plasma_tile_mmain(A, m);
+                    int ldbm = plasma_tile_mmain(B, m);
+                    for (int n = 0; n < B.nt; n++) {
+                        int nvbn = plasma_tile_nview(B, n);
                         core_omp_ztsmqr(
                             side, trans,
-                            B.mb, tempnn, tempmm, tempnn, tempkmin, ib, T.nb,
+                            B.mb, nvbn, mvbm, nvbn, imin(nvak, mvak), ib, T.nb,
                             B(k, n), ldbk,
                             B(m, n), ldbm,
                             A(m, k), ldam,
@@ -114,11 +108,11 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
                             sequence, request);
                     }
                 }
-                for (n = 0; n < B.nt; n++) {
-                    tempnn = plasma_tile_ndim(B, n);
+                for (int n = 0; n < B.nt; n++) {
+                    int nvbn = plasma_tile_nview(B, n);
                     core_omp_zunmqr(
                         side, trans,
-                        tempBkm, tempnn, tempkmin, ib, T.nb,
+                        mvbk, nvbn, imin(nvak, mvak), ib, T.nb,
                         A(k, k), ldak,
                         T(k, k), T.mb,
                         B(k, n), ldbk,
@@ -133,22 +127,21 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
         // PlasmaRight / Plasma_ConjTrans
         //=================================
         if (trans == Plasma_ConjTrans) {
-            for (k = imin(A.mt, A.nt)-1; k >= 0; k--) {
-                tempBkn  = plasma_tile_ndim(B, k);
-                tempAkm  = plasma_tile_mdim(A, k);
-                tempAkn  = plasma_tile_ndim(A, k);
-                tempkmin = imin(tempAkn, tempAkm);
-                ldak     = plasma_tile_mdim(A, k);
-                ldbk     = plasma_tile_mdim(B, k);
-                for (n = B.nt-1; n > k; n--) {
-                    tempnn = plasma_tile_ndim(B, n);
-                    ldan   = plasma_tile_mdim(A, n);
-                    for (m = 0; m < B.mt; m++) {
-                        tempmm = plasma_tile_mdim(B, m);
-                        ldbm   = plasma_tile_mdim(B, m);
+            for (int k = imin(A.mt, A.nt)-1; k >= 0; k--) {
+                int nvbk = plasma_tile_nview(B, k);
+                int mvak = plasma_tile_mview(A, k);
+                int nvak = plasma_tile_nview(A, k);
+                int ldak = plasma_tile_mmain(A, k);
+                int ldbk = plasma_tile_mmain(B, k);
+                for (int n = B.nt-1; n > k; n--) {
+                    int nvbn = plasma_tile_nview(B, n);
+                    int ldan = plasma_tile_mmain(A, n);
+                    for (int m = 0; m < B.mt; m++) {
+                        int mvbm = plasma_tile_mview(B, m);
+                        int ldbm = plasma_tile_mmain(B, m);
                         core_omp_ztsmqr(
                             side, trans,
-                            tempmm, B.nb, tempmm, tempnn, tempkmin, ib, T.nb,
+                            mvbm, B.nb, mvbm, nvbn, imin(nvak, mvak), ib, T.nb,
                             B(m, k), ldbm,
                             B(m, n), ldbm,
                             A(n, k), ldan,
@@ -157,12 +150,12 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
                             sequence, request);
                     }
                 }
-                for (m = 0; m < B.mt; m++) {
-                    tempmm = plasma_tile_mdim(B, m);
-                    ldbm   = plasma_tile_mdim(B, m);
+                for (int m = 0; m < B.mt; m++) {
+                    int mvbm = plasma_tile_mview(B, m);
+                    int ldbm = plasma_tile_mmain(B, m);
                     core_omp_zunmqr(
                         side, trans,
-                        tempmm, tempBkn, tempkmin, ib, T.nb,
+                        mvbm, nvbk, imin(nvak, mvak), ib, T.nb,
                         A(k, k), ldak,
                         T(k, k), T.mb,
                         B(m, k), ldbm,
@@ -175,33 +168,32 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
         // PlasmaRight / PlasmaNoTrans
         //==============================
         else {
-            for (k = 0; k < imin(A.mt, A.nt); k++) {
-                tempBkn  = plasma_tile_ndim(B, k);
-                tempAkm  = plasma_tile_mdim(A, k);
-                tempAkn  = plasma_tile_ndim(A, k);
-                tempkmin = imin(tempAkn, tempAkm);
-                ldak     = plasma_tile_mdim(A, k);
-                for (m = 0; m < B.mt; m++) {
-                    tempmm = plasma_tile_mdim(B, m);
-                    ldbm   = plasma_tile_mdim(B, m);
+            for (int k = 0; k < imin(A.mt, A.nt); k++) {
+                int nvbk = plasma_tile_nview(B, k);
+                int mvak = plasma_tile_mview(A, k);
+                int nvak = plasma_tile_nview(A, k);
+                int ldak = plasma_tile_mmain(A, k);
+                for (int m = 0; m < B.mt; m++) {
+                    int mvbm = plasma_tile_mview(B, m);
+                    int ldbm = plasma_tile_mmain(B, m);
                     core_omp_zunmqr(
                         side, trans,
-                        tempmm, tempBkn, tempkmin, ib, T.nb,
+                        mvbm, nvbk, imin(nvak, mvak), ib, T.nb,
                         A(k, k), ldak,
                         T(k, k), T.mb,
                         B(m, k), ldbm,
                         work,
                         sequence, request);
                 }
-                for (n = k+1; n < B.nt; n++) {
-                    tempnn = plasma_tile_ndim(B, n);
-                    ldan   = plasma_tile_mdim(A, n);
-                    for (m = 0; m < B.mt; m++) {
-                        tempmm = plasma_tile_mdim(B, m);
-                        ldbm   = plasma_tile_mdim(B, m);
+                for (int n = k+1; n < B.nt; n++) {
+                    int nvbn = plasma_tile_nview(B, n);
+                    int ldan = plasma_tile_mmain(A, n);
+                    for (int m = 0; m < B.mt; m++) {
+                        int mvbm = plasma_tile_mview(B, m);
+                        int ldbm = plasma_tile_mmain(B, m);
                         core_omp_ztsmqr(
                             side, trans,
-                            tempmm, B.nb, tempmm, tempnn, tempkmin, ib, T.nb,
+                            mvbm, B.nb, mvbm, nvbn, imin(nvak, mvak), ib, T.nb,
                             B(m, k), ldbm,
                             B(m, n), ldbm,
                             A(n, k), ldan,

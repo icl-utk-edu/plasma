@@ -32,38 +32,32 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                    plasma_complex64_t beta,  plasma_desc_t C,
                    plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    int k, m, n;
-    int ldak, ldam, ldan, ldbk, ldbm, ldcm;
-    int tempmm, tempnn, tempkn, tempkm;
-
-    plasma_complex64_t zbeta;
-
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
     }
 
-    for (m = 0; m < C.mt; m++) {
-        tempmm = plasma_tile_mdim(C, m);
-        ldcm   = plasma_tile_mdim(C, m);
-        for (n = 0; n < C.nt; n++) {
-            tempnn = plasma_tile_ndim(C, n);
+    for (int m = 0; m < C.mt; m++) {
+        int mvcm = plasma_tile_mview(C, m);
+        int ldcm = plasma_tile_mmain(C, m);
+        for (int n = 0; n < C.nt; n++) {
+            int nvcn = plasma_tile_nview(C, n);
             if (side == PlasmaLeft) {
-                ldam = plasma_tile_mdim(A, m);
+                int ldam = plasma_tile_mmain(A, m);
                 //===========================
                 // PlasmaLeft / PlasmaLower
                 //===========================
                 if (uplo == PlasmaLower) {
-                    for (k = 0; k < C.mt; k++) {
-                        tempkm = plasma_tile_mdim(C, k);
-                        ldak   = plasma_tile_mdim(A, k);
-                        ldbk   = plasma_tile_mdim(B, k);
-                        zbeta = k == 0 ? beta : 1.0;
+                    for (int k = 0; k < C.mt; k++) {
+                        int mvck = plasma_tile_mview(C, k);
+                        int ldak = plasma_tile_mmain(A, k);
+                        int ldbk = plasma_tile_mmain(B, k);
+                        plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
                         if (k < m) {
                             core_omp_zgemm(
                                 PlasmaNoTrans, PlasmaNoTrans,
-                                tempmm, tempnn, tempkm,
+                                mvcm, nvcn, mvck,
                                 alpha, A(m, k), ldam,
                                        B(k, n), ldbk,
                                 zbeta, C(m, n), ldcm);
@@ -72,7 +66,7 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                             if (k == m) {
                                 core_omp_zhemm(
                                     side, uplo,
-                                    tempmm, tempnn,
+                                    mvcm, nvcn,
                                     alpha, A(k, k), ldak,
                                            B(k, n), ldbk,
                                     zbeta, C(m, n), ldcm);
@@ -80,7 +74,7 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                             else {
                                 core_omp_zgemm(
                                     PlasmaConjTrans, PlasmaNoTrans,
-                                    tempmm, tempnn, tempkm,
+                                    mvcm, nvcn, mvck,
                                     alpha, A(k, m), ldak,
                                            B(k, n), ldbk,
                                     zbeta, C(m, n), ldcm);
@@ -92,15 +86,15 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                 // PlasmaLeft / PlasmaUpper
                 //===========================
                 else {
-                    for (k = 0; k < C.mt; k++) {
-                        tempkm = plasma_tile_mdim(C, k);
-                        ldak   = plasma_tile_mdim(A, k);
-                        ldbk   = plasma_tile_mdim(B, k);
-                        zbeta = k == 0 ? beta : 1.0;
+                    for (int k = 0; k < C.mt; k++) {
+                        int mvck = plasma_tile_mview(C, k);
+                        int ldak = plasma_tile_mmain(A, k);
+                        int ldbk = plasma_tile_mmain(B, k);
+                        plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
                         if (k < m) {
                             core_omp_zgemm(
                                 PlasmaConjTrans, PlasmaNoTrans,
-                                tempmm, tempnn, tempkm,
+                                mvcm, nvcn, mvck,
                                 alpha, A(k, m), ldak,
                                        B(k, n), ldbk,
                                 zbeta, C(m, n), ldcm);
@@ -109,7 +103,7 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                             if (k == m) {
                                 core_omp_zhemm(
                                     side, uplo,
-                                    tempmm, tempnn,
+                                    mvcm, nvcn,
                                     alpha, A(k, k), ldak,
                                            B(k, n), ldbk,
                                     zbeta, C(m, n), ldcm);
@@ -117,7 +111,7 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                             else {
                                 core_omp_zgemm(
                                     PlasmaNoTrans, PlasmaNoTrans,
-                                    tempmm, tempnn, tempkm,
+                                    mvcm, nvcn, mvck,
                                     alpha, A(m, k), ldam,
                                            B(k, n), ldbk,
                                     zbeta, C(m, n), ldcm);
@@ -127,20 +121,20 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                 }
             }
             else {
-                ldan = plasma_tile_mdim(A, n);
-                ldbm = plasma_tile_mdim(B, m);
+                int ldan = plasma_tile_mmain(A, n);
+                int ldbm = plasma_tile_mmain(B, m);
                 //============================
                 // PlasmaRight / PlasmaLower
                 //============================
                 if (uplo == PlasmaLower) {
-                    for (k = 0; k < C.nt; k++) {
-                        tempkn = plasma_tile_ndim(C, k);
-                        ldak   = plasma_tile_mdim(A, k);
-                        zbeta = k == 0 ? beta : 1.0;
+                    for (int k = 0; k < C.nt; k++) {
+                        int nvck = plasma_tile_nview(C, k);
+                        int ldak = plasma_tile_mmain(A, k);
+                        plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
                         if (k < n) {
                             core_omp_zgemm(
                                 PlasmaNoTrans, PlasmaConjTrans,
-                                tempmm, tempnn, tempkn,
+                                mvcm, nvcn, nvck,
                                 alpha, B(m, k), ldbm,
                                        A(n, k), ldan,
                                 zbeta, C(m, n), ldcm);
@@ -149,7 +143,7 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                             if (n == k) {
                                 core_omp_zhemm(
                                     side, uplo,
-                                    tempmm, tempnn,
+                                    mvcm, nvcn,
                                     alpha, A(k, k), ldak,
                                            B(m, k), ldbm,
                                     zbeta, C(m, n), ldcm);
@@ -157,7 +151,7 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                             else {
                                 core_omp_zgemm(
                                     PlasmaNoTrans, PlasmaNoTrans,
-                                    tempmm, tempnn, tempkn,
+                                    mvcm, nvcn, nvck,
                                     alpha, B(m, k), ldbm,
                                            A(k, n), ldak,
                                     zbeta, C(m, n), ldcm);
@@ -169,14 +163,14 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                 // PlasmaRight / PlasmaUpper
                 //============================
                 else {
-                    for (k = 0; k < C.nt; k++) {
-                        tempkn = plasma_tile_ndim(C, k);
-                        ldak   = plasma_tile_mdim(A, k);
-                        zbeta = k == 0 ? beta : 1.0;
+                    for (int k = 0; k < C.nt; k++) {
+                        int nvck = plasma_tile_nview(C, k);
+                        int ldak = plasma_tile_mmain(A, k);
+                        plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
                         if (k < n) {
                             core_omp_zgemm(
                                 PlasmaNoTrans, PlasmaNoTrans,
-                                tempmm, tempnn, tempkn,
+                                mvcm, nvcn, nvck,
                                 alpha, B(m, k), ldbm,
                                        A(k, n), ldak,
                                 zbeta, C(m, n), ldcm);
@@ -185,7 +179,7 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                             if (n == k) {
                                 core_omp_zhemm(
                                     side, uplo,
-                                    tempmm, tempnn,
+                                    mvcm, nvcn,
                                     alpha, A(k, k), ldak,
                                            B(m, k), ldbm,
                                     zbeta, C(m, n), ldcm);
@@ -193,7 +187,7 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                             else {
                                 core_omp_zgemm(
                                     PlasmaNoTrans, PlasmaConjTrans,
-                                    tempmm, tempnn, tempkn,
+                                    mvcm, nvcn, nvck,
                                     alpha, B(m, k), ldbm,
                                            A(n, k), ldan,
                                     zbeta, C(m, n), ldcm);

@@ -146,7 +146,7 @@ static inline void *plasma_tile_addr(plasma_desc_t A, int m, int n)
  *  Returns the height of the tile with vertical position k.
  *
  */
-static inline int plasma_tile_mdim(plasma_desc_t A, int k)
+static inline int plasma_tile_mmain(plasma_desc_t A, int k)
 {
     if (A.i/A.mb+k < A.lm/A.mb)
         return A.mb;
@@ -159,7 +159,7 @@ static inline int plasma_tile_mdim(plasma_desc_t A, int k)
  *  Returns the width of the tile with horizontal position k.
  *
  */
-static inline int plasma_tile_ndim(plasma_desc_t A, int k)
+static inline int plasma_tile_nmain(plasma_desc_t A, int k)
 {
     if (A.j/A.nb+k < A.ln/A.nb)
         return A.nb;
@@ -208,7 +208,7 @@ static inline int BLKLDD_BAND(plasma_enum_t uplo, plasma_desc_t A, int m, int n)
     else {
         kut = 0;
     }
-    return plasma_tile_mdim(A, kut+m-n);
+    return plasma_tile_mmain(A, kut+m-n);
 }
 
 /******************************************************************************/

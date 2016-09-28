@@ -29,12 +29,6 @@ void plasma_pzungqr(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
                     plasma_workspace_t *work,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    int k, m, n;
-    int ldak, ldqk, ldam, ldqm;
-    int tempmm, tempnn, tempkmin, tempkm;
-    int tempAkm, tempAkn;
-    int minmnt;
-
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorSequence);
@@ -44,22 +38,21 @@ void plasma_pzungqr(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
     // Set inner blocking from the T tile row-dimension.
     int ib = T.mb;
 
-    for (k = imin(A.mt, A.nt)-1; k >= 0; k--) {
-        tempAkm  = plasma_tile_mdim(A, k);
-        tempAkn  = plasma_tile_ndim(A, k);
-        tempkmin = imin(tempAkn, tempAkm);
-        tempkm   = plasma_tile_mdim(Q, k);
-        ldak     = plasma_tile_mdim(A, k);
-        ldqk     = plasma_tile_mdim(Q, k);
-        for (m = Q.mt - 1; m > k; m--) {
-            tempmm = plasma_tile_mdim(Q, m);
-            ldam   = plasma_tile_mdim(A, m);
-            ldqm   = plasma_tile_mdim(Q, m);
-            for (n = k; n < Q.nt; n++) {
-                tempnn = plasma_tile_ndim(Q, n);
+    for (int k = imin(A.mt, A.nt)-1; k >= 0; k--) {
+        int mvak  = plasma_tile_mview(A, k);
+        int nvak  = plasma_tile_nview(A, k);
+        int mvqk  = plasma_tile_mview(Q, k);
+        int ldak  = plasma_tile_mmain(A, k);
+        int ldqk  = plasma_tile_mmain(Q, k);
+        for (int m = Q.mt - 1; m > k; m--) {
+            int mvqm = plasma_tile_mview(Q, m);
+            int ldam = plasma_tile_mmain(A, m);
+            int ldqm = plasma_tile_mmain(Q, m);
+            for (int n = k; n < Q.nt; n++) {
+                int nvqn = plasma_tile_nview(Q, n);
                 core_omp_ztsmqr(
                     PlasmaLeft, PlasmaNoTrans,
-                    Q.mb, tempnn, tempmm, tempnn, tempAkn, ib, T.nb,
+                    Q.mb, nvqn, mvqm, nvqn, nvak, ib, T.nb,
                     Q(k, n), ldqk,
                     Q(m, n), ldqm,
                     A(m, k), ldam,
@@ -68,11 +61,11 @@ void plasma_pzungqr(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
                     sequence, request);
             }
         }
-        for (n = k; n < Q.nt; n++) {
-            tempnn = plasma_tile_ndim(Q, n);
+        for (int n = k; n < Q.nt; n++) {
+            int nvqn = plasma_tile_nview(Q, n);
             core_omp_zunmqr(
                 PlasmaLeft, PlasmaNoTrans,
-                tempkm, tempnn, tempkmin, ib, T.nb,
+                mvqk, nvqn, imin(nvak, mvak), ib, T.nb,
                 A(k, k), ldak,
                 T(k, k), T.mb,
                 Q(k, n), ldqk,

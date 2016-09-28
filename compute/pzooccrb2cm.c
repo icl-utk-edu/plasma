@@ -36,7 +36,7 @@ void plasma_pzooccrb2cm(plasma_desc_t A, plasma_complex64_t *Af77, int lda,
     }
 
     for (m = 0; m < A.mt; m++) {
-        ldt = plasma_tile_mdim(A, m);
+        ldt = plasma_tile_mmain(A, m);
         for (n = 0; n < A.nt; n++) {
             x1 = n == 0 ? A.j%A.nb : 0;
             y1 = m == 0 ? A.i%A.mb : 0;
