@@ -86,7 +86,8 @@
  * @sa PLASMA_sposv
  *
  ******************************************************************************/
-int PLASMA_zposv(plasma_enum_t uplo, int n, int nrhs,
+int PLASMA_zposv(plasma_enum_t uplo,
+                 int n, int nrhs,
                  plasma_complex64_t *pA, int lda,
                  plasma_complex64_t *pB, int ldb)
 {

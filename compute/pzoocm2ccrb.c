@@ -19,8 +19,10 @@
 #include "core_blas.h"
 
 /******************************************************************************/
-void plasma_pzoocm2ccrb(plasma_complex64_t *pA, int lda, plasma_desc_t A,
-                        plasma_sequence_t *sequence, plasma_request_t *request)
+void plasma_pzoocm2ccrb(plasma_complex64_t *pA, int lda,
+                        plasma_desc_t A,
+                        plasma_sequence_t *sequence,
+                        plasma_request_t *request)
 {
     plasma_complex64_t *f77;
     plasma_complex64_t *bdl;

@@ -23,8 +23,10 @@
 
 /******************************************************************************/
 void plasma_pzooccrb2cm_band(plasma_enum_t uplo,
-                             plasma_desc_t A, plasma_complex64_t *pA, int lda,
-                             plasma_sequence_t *sequence, plasma_request_t *request)
+                             plasma_desc_t A,
+                             plasma_complex64_t *pA, int lda,
+                             plasma_sequence_t *sequence,
+                             plasma_request_t *request)
 {
     int n, m;
 

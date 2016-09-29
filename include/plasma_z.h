@@ -33,7 +33,8 @@ int PLASMA_zgelqs(int m, int n, int nrhs,
                   plasma_desc_t T,
                   plasma_complex64_t *pB, int ldb);
 
-int PLASMA_zgels(plasma_enum_t trans, int m, int n, int nrhs,
+int PLASMA_zgels(plasma_enum_t trans,
+                 int m, int n, int nrhs,
                  plasma_complex64_t *pA, int lda,
                  plasma_desc_t T,
                  plasma_complex64_t *pB, int ldb);
@@ -53,7 +54,8 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
                   plasma_desc_t T,
                   plasma_complex64_t *pB, int ldb);
 
-int PLASMA_zhemm(plasma_enum_t side, plasma_enum_t uplo, int m, int n,
+int PLASMA_zhemm(plasma_enum_t side, plasma_enum_t uplo,
+                 int m, int n,
                  plasma_complex64_t alpha, plasma_complex64_t *pA, int lda,
                                            plasma_complex64_t *pB, int ldb,
                  plasma_complex64_t beta,  plasma_complex64_t *pC, int ldc);
@@ -236,8 +238,7 @@ void plasma_omp_zposv(plasma_enum_t uplo, plasma_desc_t A, plasma_desc_t B,
                       plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_omp_zpotrf(plasma_enum_t uplo, plasma_desc_t A,
-                       plasma_sequence_t *sequence,
-                       plasma_request_t *request);
+                       plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_omp_zpotrs(plasma_enum_t uplo, plasma_desc_t A, plasma_desc_t B,
                         plasma_sequence_t *sequence, plasma_request_t *request);

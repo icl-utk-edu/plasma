@@ -92,7 +92,8 @@
  * @sa PLASMA_ssymm
  *
  ******************************************************************************/
-int PLASMA_zsymm(plasma_enum_t side, plasma_enum_t uplo, int m, int n,
+int PLASMA_zsymm(plasma_enum_t side, plasma_enum_t
+                 uplo, int m, int n,
                  plasma_complex64_t alpha, plasma_complex64_t *pA, int lda,
                                            plasma_complex64_t *pB, int ldb,
                  plasma_complex64_t beta,  plasma_complex64_t *pC, int ldc)

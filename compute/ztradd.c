@@ -92,7 +92,8 @@
  * @sa PLASMA_stradd
  *
  ******************************************************************************/
-int PLASMA_ztradd(plasma_enum_t uplo, plasma_enum_t transA, int m, int n,
+int PLASMA_ztradd(plasma_enum_t uplo, plasma_enum_t transA,
+                  int m, int n,
                   plasma_complex64_t alpha, plasma_complex64_t *pA, int lda,
                   plasma_complex64_t beta,  plasma_complex64_t *pB, int ldb)
 {

@@ -204,8 +204,7 @@ int PLASMA_zgelqf(int m, int n,
  ******************************************************************************/
 void plasma_omp_zgelqf(plasma_desc_t A, plasma_desc_t T,
                        plasma_workspace_t work,
-                       plasma_sequence_t *sequence,
-                       plasma_request_t *request)
+                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();

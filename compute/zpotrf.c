@@ -70,7 +70,9 @@
  * @sa PLASMA_spotrf
  *
  ******************************************************************************/
-int PLASMA_zpotrf(plasma_enum_t uplo, int n, plasma_complex64_t *pA, int lda)
+int PLASMA_zpotrf(plasma_enum_t uplo,
+                  int n,
+                  plasma_complex64_t *pA, int lda)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -200,8 +202,7 @@ int PLASMA_zpotrf(plasma_enum_t uplo, int n, plasma_complex64_t *pA, int lda)
  * @sa plasma_omp_spotrf
  *
  ******************************************************************************/
-void plasma_omp_zpotrf(plasma_enum_t uplo,
-                       plasma_desc_t A,
+void plasma_omp_zpotrf(plasma_enum_t uplo, plasma_desc_t A,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
