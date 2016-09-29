@@ -32,12 +32,12 @@
  *
  *******************************************************************************
  *
- * @param[in] transA
+ * @param[in] transa
  *          - PlasmaNoTrans:   A is not transposed,
  *          - PlasmaTrans:     A is transposed,
  *          - PlasmaConjTrans: A is conjugate transposed.
  *
- * @param[in] transB
+ * @param[in] transb
  *          - PlasmaNoTrans:   B is not transposed,
  *          - PlasmaTrans:     B is transposed,
  *          - PlasmaConjTrans: B is conjugate transposed.
@@ -58,21 +58,21 @@
  *          The scalar alpha.
  *
  * @param[in] A
- *          An lda-by-ka matrix, where ka is k when transA = PlasmaNoTrans,
+ *          An lda-by-ka matrix, where ka is k when transa = PlasmaNoTrans,
  *          and is m otherwise.
  *
  * @param[in] lda
  *          The leading dimension of the array A.
- *          When transA = PlasmaNoTrans, lda >= max(1,m),
+ *          When transa = PlasmaNoTrans, lda >= max(1,m),
  *          otherwise, lda >= max(1,k).
  *
  * @param[in] B
- *          An ldb-by-kb matrix, where kb is n when transB = PlasmaNoTrans,
+ *          An ldb-by-kb matrix, where kb is n when transb = PlasmaNoTrans,
  *          and is k otherwise.
  *
  * @param[in] ldb
  *          The leading dimension of the array B.
- *          When transB = PlasmaNoTrans, ldb >= max(1,k),
+ *          When transb = PlasmaNoTrans, ldb >= max(1,k),
  *          otherwise, ldb >= max(1,n).
  *
  * @param[in] beta
@@ -86,14 +86,14 @@
  *          The leading dimension of the array C. ldc >= max(1,m).
  *
  ******************************************************************************/
-void core_zgemm(plasma_enum_t transA, plasma_enum_t transB,
+void core_zgemm(plasma_enum_t transa, plasma_enum_t transb,
                 int m, int n, int k,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                                           const plasma_complex64_t *B, int ldb,
                 plasma_complex64_t beta,        plasma_complex64_t *C, int ldc)
 {
     cblas_zgemm(CblasColMajor,
-                (CBLAS_TRANSPOSE)transA, (CBLAS_TRANSPOSE)transB,
+                (CBLAS_TRANSPOSE)transa, (CBLAS_TRANSPOSE)transb,
                 m, n, k,
                 CBLAS_SADDR(alpha), A, lda,
                                     B, ldb,
@@ -102,18 +102,18 @@ void core_zgemm(plasma_enum_t transA, plasma_enum_t transB,
 
 /******************************************************************************/
 void core_omp_zgemm(
-    plasma_enum_t transA, plasma_enum_t transB,
+    plasma_enum_t transa, plasma_enum_t transb,
     int m, int n, int k,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                               const plasma_complex64_t *B, int ldb,
     plasma_complex64_t beta,        plasma_complex64_t *C, int ldc)
 {
     // omp depends assume lda == m or k, ldb == k or n, ldc == m,
-    // depending on transA and transB.
+    // depending on transa and transb.
     #pragma omp task depend(in:A[0:m*k]) \
                      depend(in:B[0:k*n]) \
                      depend(inout:C[0:m*n])
-    core_zgemm(transA, transB,
+    core_zgemm(transa, transb,
                m, n, k,
                alpha, A, lda,
                       B, ldb,

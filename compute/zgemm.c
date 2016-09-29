@@ -36,12 +36,12 @@
  *
  *******************************************************************************
  *
- * @param[in] transA
+ * @param[in] transa
  *          - PlasmaNoTrans:   A is not transposed,
  *          - PlasmaTrans:     A is transposed,
  *          - PlasmaConjTrans: A is conjugate transposed.
  *
- * @param[in] transB
+ * @param[in] transb
  *          - PlasmaNoTrans:   B is not transposed,
  *          - PlasmaTrans:     B is transposed,
  *          - PlasmaConjTrans: B is conjugate transposed.
@@ -62,21 +62,21 @@
  *          The scalar alpha.
  *
  * @param[in] A
- *          An lda-by-ka matrix, where ka is k when transA = PlasmaNoTrans,
+ *          An lda-by-ka matrix, where ka is k when transa = PlasmaNoTrans,
  *          and is m otherwise.
  *
  * @param[in] lda
  *          The leading dimension of the array A.
- *          When transA = PlasmaNoTrans, lda >= max(1,m),
+ *          When transa = PlasmaNoTrans, lda >= max(1,m),
  *          otherwise, lda >= max(1,k).
  *
  * @param[in] B
- *          An ldb-by-kb matrix, where kb is n when transB = PlasmaNoTrans,
+ *          An ldb-by-kb matrix, where kb is n when transb = PlasmaNoTrans,
  *          and is k otherwise.
  *
  * @param[in] ldb
  *          The leading dimension of the array B.
- *          When transB = PlasmaNoTrans, ldb >= max(1,k),
+ *          When transb = PlasmaNoTrans, ldb >= max(1,k),
  *          otherwise, ldb >= max(1,n).
  *
  * @param[in] beta
@@ -101,7 +101,7 @@
  * @sa plasma_sgemm
  *
  ******************************************************************************/
-int plasma_zgemm(plasma_enum_t transA, plasma_enum_t transB,
+int plasma_zgemm(plasma_enum_t transa, plasma_enum_t transb,
                  int m, int n, int k,
                  plasma_complex64_t alpha, plasma_complex64_t *pA, int lda,
                                            plasma_complex64_t *pB, int ldb,
@@ -115,16 +115,16 @@ int plasma_zgemm(plasma_enum_t transA, plasma_enum_t transB,
     }
 
     // Check input arguments.
-    if ((transA != PlasmaNoTrans) &&
-        (transA != PlasmaTrans) &&
-        (transA != PlasmaConjTrans)) {
-        plasma_error("illegal value of transA");
+    if ((transa != PlasmaNoTrans) &&
+        (transa != PlasmaTrans) &&
+        (transa != PlasmaConjTrans)) {
+        plasma_error("illegal value of transa");
         return -1;
     }
-    if ((transB != PlasmaNoTrans) &&
-        (transB != PlasmaTrans) &&
-        (transB != PlasmaConjTrans)) {
-        plasma_error("illegal value of transB");
+    if ((transb != PlasmaNoTrans) &&
+        (transb != PlasmaTrans) &&
+        (transb != PlasmaConjTrans)) {
+        plasma_error("illegal value of transb");
         return -2;
     }
     if (m < 0) {
@@ -142,7 +142,7 @@ int plasma_zgemm(plasma_enum_t transA, plasma_enum_t transB,
 
     int am, an;
     int bm, bn;
-    if (transA == PlasmaNoTrans) {
+    if (transa == PlasmaNoTrans) {
         am = m;
         an = k;
     }
@@ -150,7 +150,7 @@ int plasma_zgemm(plasma_enum_t transA, plasma_enum_t transB,
         am = k;
         an = m;
     }
-    if (transB == PlasmaNoTrans) {
+    if (transb == PlasmaNoTrans) {
         bm = k;
         bn = n;
     }
@@ -227,7 +227,7 @@ int plasma_zgemm(plasma_enum_t transA, plasma_enum_t transB,
         plasma_zcm2ccrb_Async(pC, ldc, C, sequence, &request);
 
         // Call the tile async function.
-        plasma_omp_zgemm(transA, transB,
+        plasma_omp_zgemm(transa, transb,
                          alpha, A,
                                 B,
                          beta,  C,
@@ -263,12 +263,12 @@ int plasma_zgemm(plasma_enum_t transA, plasma_enum_t transB,
  *
  *******************************************************************************
  *
- * @param[in] transA
+ * @param[in] transa
  *          - PlasmaNoTrans:   A is not transposed,
  *          - PlasmaTrans:     A is transposed,
  *          - PlasmaConjTrans: A is conjugate transposed.
  *
- * @param[in] transB
+ * @param[in] transb
  *          - PlasmaNoTrans:   B is not transposed,
  *          - PlasmaTrans:     B is transposed,
  *          - PlasmaConjTrans: B is conjugate transposed.
@@ -311,7 +311,7 @@ int plasma_zgemm(plasma_enum_t transA, plasma_enum_t transB,
  * @sa plasma_omp_sgemm
  *
  ******************************************************************************/
-void plasma_omp_zgemm(plasma_enum_t transA, plasma_enum_t transB,
+void plasma_omp_zgemm(plasma_enum_t transa, plasma_enum_t transb,
                       plasma_complex64_t alpha, plasma_desc_t A,
                                                 plasma_desc_t B,
                       plasma_complex64_t beta,  plasma_desc_t C,
@@ -326,17 +326,17 @@ void plasma_omp_zgemm(plasma_enum_t transA, plasma_enum_t transB,
     }
 
     // Check input arguments.
-    if ((transA != PlasmaNoTrans) &&
-        (transA != PlasmaTrans) &&
-        (transA != PlasmaConjTrans)) {
-        plasma_error("illegal value of transA");
+    if ((transa != PlasmaNoTrans) &&
+        (transa != PlasmaTrans) &&
+        (transa != PlasmaConjTrans)) {
+        plasma_error("illegal value of transa");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-    if ((transB != PlasmaNoTrans) &&
-        (transB != PlasmaTrans) &&
-        (transB != PlasmaConjTrans)) {
-        plasma_error("illegal value of transB");
+    if ((transb != PlasmaNoTrans) &&
+        (transb != PlasmaTrans) &&
+        (transb != PlasmaConjTrans)) {
+        plasma_error("illegal value of transb");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
@@ -367,12 +367,12 @@ void plasma_omp_zgemm(plasma_enum_t transA, plasma_enum_t transB,
     }
 
     // quick return
-    int k = transA == PlasmaNoTrans ? A.n : A.m;
+    int k = transa == PlasmaNoTrans ? A.n : A.m;
     if (C.m == 0 || C.n == 0 || ((alpha == 0.0 || k == 0) && beta == 1.0))
         return;
 
     // Call the parallel function.
-    plasma_pzgemm(transA, transB,
+    plasma_pzgemm(transa, transb,
                   alpha, A,
                          B,
                   beta,  C,

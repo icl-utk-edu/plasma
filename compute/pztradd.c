@@ -25,7 +25,7 @@
  * Parallel tile matrix-matrix addition.
  * @see plasma_omp_ztradd
  ******************************************************************************/
-void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
+void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transa,
                     plasma_complex64_t alpha,  plasma_desc_t A,
                     plasma_complex64_t beta,   plasma_desc_t B,
                     plasma_sequence_t *sequence, plasma_request_t *request)
@@ -41,14 +41,14 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
         //==============================
         // PlasmaLower / PlasmaNoTrans
         //==============================
-        if (transA == PlasmaNoTrans) {
+        if (transa == PlasmaNoTrans) {
             for (int n = 0; n < imin(B.mt,B.nt); n++) {
                 int mvbn = plasma_tile_mview(B, n);
                 int nvbn = plasma_tile_nview(B, n);
                 int ldan = plasma_tile_mmain(A, n);
                 int ldbn = plasma_tile_mmain(B, n);
                 core_omp_ztradd(
-                    uplo, transA,
+                    uplo, transa,
                     mvbn, nvbn,
                     alpha, A(n, n), ldan,
                     beta,  B(n, n), ldbn);
@@ -58,7 +58,7 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
                     int ldam = plasma_tile_mmain(A, m);
                     int ldbm = plasma_tile_mmain(B, m);
                     core_omp_zgeadd(
-                        transA, 
+                        transa, 
                         mvbm, nvbn,
                         alpha, A(m, n), ldam,
                         beta,  B(m, n), ldbm);
@@ -75,7 +75,7 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
                 int ldan = plasma_tile_mmain(A, n);
                 int ldbn = plasma_tile_mmain(B, n);
                 core_omp_ztradd(
-                    uplo, transA,
+                    uplo, transa,
                     mvbn, nvbn,
                     alpha, A(n, n), ldan,
                     beta,  B(n, n), ldbn);
@@ -84,7 +84,7 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
                     int mvbm = plasma_tile_mview(B, m);
                     int ldbm = plasma_tile_mmain(B, m);
                     core_omp_zgeadd(
-                        transA,
+                        transa,
                         mvbm, nvbn,
                         alpha, A(n, m), ldan,
                         beta,  B(m, n), ldbm);
@@ -96,14 +96,14 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
         //==============================
         // PlasmaUpper / PlasmaNoTrans
         //==============================
-        if (transA == PlasmaNoTrans) {
+        if (transa == PlasmaNoTrans) {
             for (int m = 0; m < imin(B.mt,B.nt); m++) {
                 int mvbm = plasma_tile_mview(B, m);
                 int nvbm = plasma_tile_nview(B, m);
                 int ldam = plasma_tile_mmain(A, m);
                 int ldbm = plasma_tile_mmain(B, m);
                 core_omp_ztradd(
-                    uplo, transA,
+                    uplo, transa,
                     mvbm, nvbm,
                     alpha, A(m, m), ldam,
                     beta,  B(m, m), ldbm);
@@ -111,7 +111,7 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
                 for (int n = m+1; n < B.nt; n++) {
                     int nvbn = plasma_tile_nview(B, n);
                     core_omp_zgeadd(
-                        transA,
+                        transa,
                         mvbm, nvbn,
                         alpha, A(m, n), ldam,
                         beta,  B(m, n), ldbm);
@@ -128,7 +128,7 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
                 int ldam = plasma_tile_mmain(A, m);
                 int ldbm = plasma_tile_mmain(B, m);
                 core_omp_ztradd(
-                    uplo, transA,
+                    uplo, transa,
                     mvbm, nvbm,
                     alpha, A(m, m), ldam,
                     beta,  B(m, m), ldbm);
@@ -137,7 +137,7 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
                     int nvbn = plasma_tile_nview(B, n);
                     int ldan = plasma_tile_mmain(A, n);
                     core_omp_zgeadd(
-                        transA,
+                        transa,
                         mvbm, nvbn,
                         alpha, A(n, m), ldan,
                         beta,  B(m, n), ldbm);
@@ -150,7 +150,7 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
         //================================
         // PlasmaGeneral / PlasmaNoTrans
         //================================
-        if (transA == PlasmaNoTrans) {
+        if (transa == PlasmaNoTrans) {
             for (int m = 0; m < B.mt; m++) {
                 int mvbm = plasma_tile_mview(B, m);
                 int ldam = plasma_tile_mmain(A, m);
@@ -158,7 +158,7 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
                 for (int n = 0; n < B.nt; n++) {
                     int nvbn = plasma_tile_nview(B, n);
                     core_omp_zgeadd(
-                        transA, mvbm, nvbn,
+                        transa, mvbm, nvbn,
                         alpha, A(m, n), ldam,
                         beta,  B(m, n), ldbm);
                 }
@@ -176,7 +176,7 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
                     int nvbn = plasma_tile_nview(B, n);
                     int ldan = plasma_tile_mmain(A, n);
                     core_omp_zgeadd(
-                        transA, mvbm, nvbn,
+                        transa, mvbm, nvbn,
                         alpha, A(n, m), ldan,
                         beta,  B(m, n), ldbm);
                 }

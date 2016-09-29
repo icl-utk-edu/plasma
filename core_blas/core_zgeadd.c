@@ -30,11 +30,11 @@
  *    \f[ op( X ) = X^H, \f]
  *
  *  alpha and beta are scalars and A, B are matrices with op( A ) an m-by-n or
- *  n-by-m matrix depending on the value of transA and B an m-by-n matrix.
+ *  n-by-m matrix depending on the value of transa and B an m-by-n matrix.
  *
  *******************************************************************************
  *
- * @param[in] transA
+ * @param[in] transa
  *          Specifies whether the matrix A is non-transposed, transposed, or
  *          conjugate transposed
  *          - PlasmaNoTrans:   op( A ) = A
@@ -52,12 +52,12 @@
  *          Scalar factor of A.
  *
  * @param[in] A
- *          Matrix of size lda-by-k, where k is n when transA == PlasmaNoTrans
+ *          Matrix of size lda-by-k, where k is n when transa == PlasmaNoTrans
  *          and m otherwise.
  *
  * @param[in] lda
  *          Leading dimension of the array A. lda >= max(1,l), where l is m
- *          when transA == PlasmaNoTrans and n otherwise.
+ *          when transa == PlasmaNoTrans and n otherwise.
  *
  * @param[in] beta
  *          Scalar factor of B.
@@ -71,7 +71,7 @@
  *          ldb >= max(1,m)
  *
  ******************************************************************************/
-void core_zgeadd(plasma_enum_t transA, int m, int n,
+void core_zgeadd(plasma_enum_t transa, int m, int n,
                       plasma_complex64_t  alpha,
                 const plasma_complex64_t *A, int lda,
                       plasma_complex64_t  beta,
@@ -79,11 +79,11 @@ void core_zgeadd(plasma_enum_t transA, int m, int n,
 {
     int i, j;
 
-    if ((transA != PlasmaNoTrans) &&
-        (transA != PlasmaTrans)   &&
-        (transA != PlasmaConjTrans)) {
+    if ((transa != PlasmaNoTrans) &&
+        (transa != PlasmaTrans)   &&
+        (transa != PlasmaConjTrans)) {
 
-        plasma_error("illegal value of transA");
+        plasma_error("illegal value of transa");
         return;
     }
 
@@ -102,8 +102,8 @@ void core_zgeadd(plasma_enum_t transA, int m, int n,
         return;
     }
 
-    if ( ((transA == PlasmaNoTrans) && (lda < imax(1,m)) && (m > 0)) ||
-         ((transA != PlasmaNoTrans) && (lda < imax(1,n)) && (n > 0)) ) {
+    if ( ((transa == PlasmaNoTrans) && (lda < imax(1,m)) && (m > 0)) ||
+         ((transa != PlasmaNoTrans) && (lda < imax(1,n)) && (n > 0)) ) {
 
         plasma_error("Illegal value of lda");
         return;
@@ -119,7 +119,7 @@ void core_zgeadd(plasma_enum_t transA, int m, int n,
         return;
     }
 
-    switch (transA) {
+    switch (transa) {
     case PlasmaConjTrans:
         for (j = 0; j < n; j++, A++) {
             for (i = 0; i < m; i++, B++) {
@@ -152,11 +152,11 @@ void core_zgeadd(plasma_enum_t transA, int m, int n,
 
 /******************************************************************************/
 void core_omp_zgeadd(
-    plasma_enum_t transA, int m, int n,
+    plasma_enum_t transa, int m, int n,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
     plasma_complex64_t beta,        plasma_complex64_t *B, int ldb)
 {
     // omp depend assumes lda = PlasmaNoTrans ? m : n; ldb = m
     #pragma omp task depend(in:A[0:m*n]) depend(inout:B[0:m*n])
-    core_zgeadd(transA, m, n, alpha, A, lda, beta, B, ldb);
+    core_zgeadd(transa, m, n, alpha, A, lda, beta, B, ldb);
 }

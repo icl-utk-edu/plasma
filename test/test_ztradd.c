@@ -91,7 +91,7 @@ void test_ztradd(param_value_t param[], char *info)
     // Set parameters
     //================================================================
     plasma_enum_t uplo   = plasma_uplo_const_t(param[PARAM_UPLO].c);
-    plasma_enum_t transA = plasma_trans_const_t(param[PARAM_TRANSA].c);
+    plasma_enum_t transa = plasma_trans_const_t(param[PARAM_TRANSA].c);
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
@@ -99,7 +99,7 @@ void test_ztradd(param_value_t param[], char *info)
     int Am, An;
     int Bm, Bn;
 
-    if (transA == PlasmaNoTrans) {
+    if (transa == PlasmaNoTrans) {
         Am = m;
         An = n;
     }
@@ -163,7 +163,7 @@ void test_ztradd(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    plasma_ztradd(uplo, transA, m, n, alpha, A, lda, beta, B, ldb);
+    plasma_ztradd(uplo, transa, m, n, alpha, A, lda, beta, B, ldb);
 
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
@@ -178,7 +178,7 @@ void test_ztradd(param_value_t param[], char *info)
         // Calculate relative error |B_ref - B|_F / |B_ref|_F < 3*eps
         // Using 3*eps covers complex arithmetic
 
-        core_ztradd(uplo, transA, m, n, alpha, A, lda, beta, Bref, ldb);
+        core_ztradd(uplo, transa, m, n, alpha, A, lda, beta, Bref, ldb);
 
         double work[1];
 

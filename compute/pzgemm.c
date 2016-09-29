@@ -26,7 +26,7 @@
  * Parallel tile matrix-matrix multiplication.
  * @see plasma_omp_zgemm
  ******************************************************************************/
-void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
+void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                    plasma_complex64_t alpha, plasma_desc_t A,
                                              plasma_desc_t B,
                    plasma_complex64_t beta,  plasma_desc_t C,
@@ -46,29 +46,29 @@ void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
             //=========================================
             // alpha*A*B does not contribute; scale C
             //=========================================
-            int inner_k = transA == PlasmaNoTrans ? A.n : A.m;
+            int inner_k = transa == PlasmaNoTrans ? A.n : A.m;
             if (alpha == 0.0 || inner_k == 0) {
                 int ldam = imax(1, plasma_tile_mmain(A, 0));
                 int ldbk = imax(1, plasma_tile_mmain(B, 0));
                 core_omp_zgemm(
-                    transA, transB,
+                    transa, transb,
                     mvcm, nvcn, 0,
                     alpha, A(0, 0), ldam,
                            B(0, 0), ldbk,
                     beta,  C(m, n), ldcm);
             }
-            else if (transA == PlasmaNoTrans) {
+            else if (transa == PlasmaNoTrans) {
                 int ldam = plasma_tile_mmain(A, m);
                 //================================
                 // PlasmaNoTrans / PlasmaNoTrans
                 //================================
-                if (transB == PlasmaNoTrans) {
+                if (transb == PlasmaNoTrans) {
                     for (int k = 0; k < A.nt; k++) {
                         int nvak = plasma_tile_nview(A, k);
                         int ldbk   = plasma_tile_mmain(B, k);
                         plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
-                            transA, transB,
+                            transa, transb,
                             mvcm, nvcn, nvak,
                             alpha, A(m, k), ldam,
                                    B(k, n), ldbk,
@@ -84,7 +84,7 @@ void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
                         int nvak = plasma_tile_nview(A, k);
                         plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
-                            transA, transB,
+                            transa, transb,
                             mvcm, nvcn, nvak,
                             alpha, A(m, k), ldam,
                                    B(n, k), ldbn,
@@ -96,14 +96,14 @@ void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
                 //=====================================
                 // Plasma[_Conj]Trans / PlasmaNoTrans
                 //=====================================
-                if (transB == PlasmaNoTrans) {
+                if (transb == PlasmaNoTrans) {
                     for (int k = 0; k < A.mt; k++) {
                         int mvak = plasma_tile_mview(A, k);
                         int ldak = plasma_tile_mmain(A, k);
                         int ldbk = plasma_tile_mmain(B, k);
                         plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
-                            transA, transB,
+                            transa, transb,
                             mvcm, nvcn, mvak,
                             alpha, A(k, m), ldak,
                                    B(k, n), ldbk,
@@ -120,7 +120,7 @@ void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
                         int ldak = plasma_tile_mmain(A, k);
                         plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
-                            transA, transB,
+                            transa, transb,
                             mvcm, nvcn, mvak,
                             alpha, A(k, m), ldak,
                                    B(n, k), ldbn,

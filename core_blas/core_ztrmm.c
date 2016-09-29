@@ -45,7 +45,7 @@
  *          - PlasmaUpper: Upper triangle of A is stored;
  *          - PlasmaLower: Lower triangle of A is stored.
  *
- * @param[in] transA
+ * @param[in] transa
  *          Specifies whether the matrix A is transposed, not transposed or
  *          conjugate transposed:
  *          - PlasmaNoTrans:   A is transposed;
@@ -93,7 +93,7 @@
  *
  ******************************************************************************/
 void core_ztrmm(
-    plasma_enum_t side, plasma_enum_t uplo, plasma_enum_t transA, plasma_enum_t diag,
+    plasma_enum_t side, plasma_enum_t uplo, plasma_enum_t transa, plasma_enum_t diag,
     int m, int n,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                                     plasma_complex64_t *B, int ldb)
@@ -101,7 +101,7 @@ void core_ztrmm(
     cblas_ztrmm(
         CblasColMajor,
         (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
-        (CBLAS_TRANSPOSE)transA, (CBLAS_DIAG)diag,
+        (CBLAS_TRANSPOSE)transa, (CBLAS_DIAG)diag,
         m, n,
         CBLAS_SADDR(alpha), A, lda,
         B, ldb);
@@ -109,17 +109,17 @@ void core_ztrmm(
 
 /******************************************************************************/
 void core_omp_ztrmm(
-    plasma_enum_t side, plasma_enum_t uplo, plasma_enum_t transA, plasma_enum_t diag,
+    plasma_enum_t side, plasma_enum_t uplo, plasma_enum_t transa, plasma_enum_t diag,
     int m, int n,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                                     plasma_complex64_t *B, int ldb)
 {
     // OpenMP depends assume lda == m or n, ldb == n or m
-    // depending on transpose parameter transA
+    // depending on transpose parameter transa
     #pragma omp task depend(in:A[0:m*n]) \
                      depend(inout:B[0:n*m])
     core_ztrmm(side, uplo,
-               transA, diag,
+               transa, diag,
                m, n,
                alpha, A, lda,
                       B, ldb);

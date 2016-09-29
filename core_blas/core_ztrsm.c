@@ -42,7 +42,7 @@
  *          - PlasmaUpper: A is upper triangular,
  *          - PlasmaLower: A is lower triangular.
  *
- * @param[in] transA
+ * @param[in] transa
  *          - PlasmaNoTrans:   A is not transposed,
  *          - PlasmaTrans:     A is transposed,
  *          - PlasmaConjTrans: A is conjugate transposed.
@@ -85,14 +85,14 @@
  *
  ******************************************************************************/
 void core_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
-                plasma_enum_t transA, plasma_enum_t diag,
+                plasma_enum_t transa, plasma_enum_t diag,
                 int m, int n,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                                                 plasma_complex64_t *B, int ldb)
 {
     cblas_ztrsm(CblasColMajor,
                 (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
-                (CBLAS_TRANSPOSE)transA, (CBLAS_DIAG)diag,
+                (CBLAS_TRANSPOSE)transa, (CBLAS_DIAG)diag,
                 m, n,
                 CBLAS_SADDR(alpha), A, lda,
                                     B, ldb);
@@ -101,7 +101,7 @@ void core_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
 /******************************************************************************/
 void core_omp_ztrsm(
     plasma_enum_t side, plasma_enum_t uplo,
-    plasma_enum_t transA, plasma_enum_t diag,
+    plasma_enum_t transa, plasma_enum_t diag,
     int m, int n,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                                     plasma_complex64_t *B, int ldb)
@@ -110,7 +110,7 @@ void core_omp_ztrsm(
     // depending on side.
     #pragma omp task depend(in:A[0:m*m]) depend(inout:B[0:m*n])
     core_ztrsm(side, uplo,
-               transA, diag,
+               transa, diag,
                m, n,
                alpha, A, lda,
                       B, ldb);
