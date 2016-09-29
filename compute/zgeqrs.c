@@ -73,13 +73,6 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
                   plasma_desc_t *descT,
                   plasma_complex64_t *B, int ldb)
 {
-    int ib, nb;
-    int retval;
-    int status;
-
-    plasma_desc_t descA;
-    plasma_desc_t descB;
-
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -114,10 +107,13 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
         return PlasmaSuccess;
 
     // Set tiling parameters.
-    ib = plasma->ib;
-    nb = plasma->nb;
+    int ib = plasma->ib;
+    int nb = plasma->nb;
 
     // Create tile matrices.
+    plasma_desc_t descA;
+    plasma_desc_t descB;
+    int retval;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
                                         lda, n, 0, 0, m, n, &descA);
     if (retval != PlasmaSuccess) {
@@ -179,7 +175,7 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
     plasma_desc_destroy(&descB);
 
     // Return status.
-    status = sequence->status;
+    int status = sequence->status;
     plasma_sequence_destroy(sequence);
     return status;
 }
@@ -299,17 +295,16 @@ void plasma_omp_zgeqrs(plasma_desc_t *A, plasma_desc_t *T,
         return;
     }
 
-    // Quick return
-    // (m == 0 || n == 0 || nrhs == 0)
+    // quick return
     if (A->m == 0 || A->n == 0 || B->n == 0)
         return;
 
-    // Find Y = Q^H * B
+    // Find Y = Q^H * B.
     plasma_pzunmqr(PlasmaLeft, Plasma_ConjTrans,
                    *A, *B, *T,
                    work, sequence, request);
 
-    // Solve R * X = Y
+    // Solve R * X = Y.
     plasma_complex64_t zone  =  1.0;
     plasma_pztrsm(PlasmaLeft, PlasmaUpper,
                   PlasmaNoTrans, PlasmaNonUnit,

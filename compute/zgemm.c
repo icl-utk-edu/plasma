@@ -107,16 +107,6 @@ int PLASMA_zgemm(plasma_enum_t transA, plasma_enum_t transB,
                                            plasma_complex64_t *B, int ldb,
                  plasma_complex64_t beta,  plasma_complex64_t *C, int ldc)
 {
-    int Am, An;
-    int Bm, Bn;
-    int nb;
-    int retval;
-    int status;
-
-    plasma_desc_t descA;
-    plasma_desc_t descB;
-    plasma_desc_t descC;
-
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -154,24 +144,26 @@ int PLASMA_zgemm(plasma_enum_t transA, plasma_enum_t transB,
         return -7;
     }
 
+    int am, an;
+    int bm, bn;
     if (transA == PlasmaNoTrans) {
-        Am = m;
-        An = k;
+        am = m;
+        an = k;
     }
     else {
-        Am = k;
-        An = m;
+        am = k;
+        an = m;
     }
     if (transB == PlasmaNoTrans) {
-        Bm = k;
-        Bn = n;
+        bm = k;
+        bn = n;
     }
     else {
-        Bm = n;
-        Bn = k;
+        bm = n;
+        bn = k;
     }
 
-    if (lda < imax(1, Am)) {
+    if (lda < imax(1, am)) {
         plasma_error("illegal value of lda");
         return -8;
     }
@@ -179,7 +171,7 @@ int PLASMA_zgemm(plasma_enum_t transA, plasma_enum_t transB,
         plasma_error("NULL B");
         return -9;
     }
-    if (ldb < imax(1, Bm)) {
+    if (ldb < imax(1, bm)) {
         plasma_error("illegal value of ldb");
         return -10;
     }
@@ -197,17 +189,21 @@ int PLASMA_zgemm(plasma_enum_t transA, plasma_enum_t transB,
         return PlasmaSuccess;
 
     // Set tiling parameters.
-    nb = plasma->nb;
+    int nb = plasma->nb;
 
     // Create tile matrices.
+    plasma_desc_t descA;
+    plasma_desc_t descB;
+    plasma_desc_t descC;
+    int retval;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        Am, An, 0, 0, Am, An, &descA);
+                                        am, an, 0, 0, am, an, &descA);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        Bm, Bn, 0, 0, Bm, Bn, &descB);
+                                        bm, bn, 0, 0, bm, bn, &descB);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         plasma_desc_destroy(&descA);
@@ -229,6 +225,7 @@ int PLASMA_zgemm(plasma_enum_t transA, plasma_enum_t transB,
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
+
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
 
@@ -261,7 +258,7 @@ int PLASMA_zgemm(plasma_enum_t transA, plasma_enum_t transB,
     plasma_desc_destroy(&descC);
 
     // Return status.
-    status = sequence->status;
+    int status = sequence->status;
     plasma_sequence_destroy(sequence);
     return status;
 }

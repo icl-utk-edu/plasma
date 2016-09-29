@@ -95,15 +95,6 @@ int PLASMA_zhemm(plasma_enum_t side, plasma_enum_t uplo, int m, int n,
                                            plasma_complex64_t *B, int ldb,
                  plasma_complex64_t beta,  plasma_complex64_t *C, int ldc)
 {
-    int Am;
-    int nb;
-    int retval;
-    int status;
-
-    plasma_desc_t descA;
-    plasma_desc_t descB;
-    plasma_desc_t descC;
-
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -134,14 +125,15 @@ int PLASMA_zhemm(plasma_enum_t side, plasma_enum_t uplo, int m, int n,
         return -6;
     }
 
+    int am;
     if (side == PlasmaLeft) {
-        Am = m;
+        am = m;
     }
     else {
-        Am = n;
+        am = n;
     }
 
-    if (lda < imax(1, Am)) {
+    if (lda < imax(1, am)) {
         plasma_error("illegal value of lda");
         return -7;
     }
@@ -167,11 +159,15 @@ int PLASMA_zhemm(plasma_enum_t side, plasma_enum_t uplo, int m, int n,
         return PlasmaSuccess;
 
     // Set tiling parameters.
-    nb = plasma->nb;
+    int nb = plasma->nb;
 
     // Create tile matrices.
+    plasma_desc_t descA;
+    plasma_desc_t descB;
+    plasma_desc_t descC;
+    int retval;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        Am, Am, 0, 0, Am, Am, &descA);
+                                        am, am, 0, 0, am, am, &descA);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
@@ -199,6 +195,7 @@ int PLASMA_zhemm(plasma_enum_t side, plasma_enum_t uplo, int m, int n,
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
+
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
 
@@ -229,7 +226,7 @@ int PLASMA_zhemm(plasma_enum_t side, plasma_enum_t uplo, int m, int n,
     plasma_desc_destroy(&descC);
 
     // Return status.
-    status = sequence->status;
+    int status = sequence->status;
     plasma_sequence_destroy(sequence);
     return status;
 }

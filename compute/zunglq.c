@@ -74,13 +74,6 @@ int PLASMA_zunglq(int m, int n, int k,
                   plasma_desc_t *descT,
                   plasma_complex64_t *Q, int ldq)
 {
-    int ib, nb;
-    int retval;
-    int status;
-
-    plasma_desc_t descA;
-    plasma_desc_t descQ;
-
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -115,10 +108,13 @@ int PLASMA_zunglq(int m, int n, int k,
         return PlasmaSuccess;
 
     // Set tiling parameters.
-    ib = plasma->ib;
-    nb = plasma->nb;
+    int ib = plasma->ib;
+    int nb = plasma->nb;
 
     // Create tile matrices.
+    plasma_desc_t descA;
+    plasma_desc_t descQ;
+    int retval;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
                                         lda, n, 0, 0, k, n, &descA);
     if (retval != PlasmaSuccess) {
@@ -149,6 +145,7 @@ int PLASMA_zunglq(int m, int n, int k,
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
+
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
 
@@ -175,7 +172,7 @@ int PLASMA_zunglq(int m, int n, int k,
     plasma_desc_destroy(&descQ);
 
     // Return status.
-    status = sequence->status;
+    int status = sequence->status;
     plasma_sequence_destroy(sequence);
     return status;
 }
@@ -243,32 +240,22 @@ void plasma_omp_zunglq(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *Q,
 
     // Check input arguments.
     if (plasma_desc_check(A) != PlasmaSuccess) {
-        plasma_error("invalid descriptor A");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    if (A->mb != plasma->nb || A->nb != plasma->nb) {
-        plasma_error("wrong tile dimensions of A");
+        plasma_error("invalid A");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if (plasma_desc_check(T) != PlasmaSuccess) {
-        plasma_error("invalid descriptor T");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    if (T->mb != plasma->ib || T->nb != plasma->nb) {
-        plasma_error("wrong tile dimensions of T");
+        plasma_error("invalid T");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if (plasma_desc_check(Q) != PlasmaSuccess) {
-        plasma_error("invalid descriptor Q");
+        plasma_error("invalid Q");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-    if (Q->mb != plasma->nb || Q->nb != plasma->nb) {
-        plasma_error("wrong tile dimensions of Q");
+    if (work == NULL) {
+        plasma_error("NULL work");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }

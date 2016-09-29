@@ -98,14 +98,6 @@ int PLASMA_zunmqr(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
                   plasma_desc_t *descT,
                   plasma_complex64_t *C, int ldc)
 {
-    int Am;
-    int ib, nb;
-    int retval;
-    int status;
-
-    plasma_desc_t descA;
-    plasma_desc_t descC;
-
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -131,18 +123,17 @@ int PLASMA_zunmqr(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
         return -4;
     }
 
-    if (side == PlasmaLeft) {
-        Am = m;
-    }
-    else {
-        Am = n;
-    }
+    int am;
+    if (side == PlasmaLeft)
+        am = m;
+    else
+        am = n;
 
-    if ((k < 0) || (k > Am)) {
+    if ((k < 0) || (k > am)) {
         plasma_error("illegal value of k");
         return -5;
     }
-    if (lda < imax(1, Am)) {
+    if (lda < imax(1, am)) {
         plasma_error("illegal value of lda");
         return -7;
     }
@@ -156,12 +147,15 @@ int PLASMA_zunmqr(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
         return PlasmaSuccess;
 
     // Set tiling parameters.
-    ib = plasma->ib;
-    nb = plasma->nb;
+    int ib = plasma->ib;
+    int nb = plasma->nb;
 
     // Create tile matrices.
+    plasma_desc_t descA;
+    plasma_desc_t descC;
+    int retval;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        lda, k, 0, 0, Am, k, &descA);
+                                        lda, k, 0, 0, am, k, &descA);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
@@ -190,6 +184,7 @@ int PLASMA_zunmqr(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
+
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
 
@@ -217,7 +212,7 @@ int PLASMA_zunmqr(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
     plasma_desc_destroy(&descC);
 
     // Return status.
-    status = sequence->status;
+    int status = sequence->status;
     plasma_sequence_destroy(sequence);
     return status;
 }
@@ -308,32 +303,22 @@ void plasma_omp_zunmqr(plasma_enum_t side, plasma_enum_t trans,
         return;
     }
     if (plasma_desc_check(A) != PlasmaSuccess) {
-        plasma_error("invalid descriptor A");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    if (A->mb != plasma->nb || A->nb != plasma->nb) {
-        plasma_error("wrong tile dimensions of A");
+        plasma_error("invalid A");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if (plasma_desc_check(T) != PlasmaSuccess) {
-        plasma_error("invalid descriptor T");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    if (T->mb != plasma->ib || T->nb != plasma->nb) {
-        plasma_error("wrong tile dimensions of T");
+        plasma_error("invalid T");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if (plasma_desc_check(C) != PlasmaSuccess) {
-        plasma_error("invalid descriptor C");
+        plasma_error("invalid C");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-    if (C->mb != plasma->nb || C->nb != plasma->nb) {
-        plasma_error("wrong tile dimensions of C");
+    if (work == NULL) {
+        plasma_error("NULL work");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }

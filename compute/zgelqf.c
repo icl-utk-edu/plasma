@@ -69,12 +69,6 @@ int PLASMA_zgelqf(int m, int n,
                   plasma_complex64_t *A, int lda,
                   plasma_desc_t *descT)
 {
-    int ib, nb;
-    int retval;
-    int status;
-
-    plasma_desc_t descA;
-
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -101,10 +95,12 @@ int PLASMA_zgelqf(int m, int n,
         return PlasmaSuccess;
 
     // Set tiling parameters.
-    ib = plasma->ib;
-    nb = plasma->nb;
+    int ib = plasma->ib;
+    int nb = plasma->nb;
 
     // Create tile matrix.
+    plasma_desc_t descA;
+    int retval;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
                                         m, n, 0, 0, m, n, &descA);
     if (retval != PlasmaSuccess) {
@@ -128,6 +124,7 @@ int PLASMA_zgelqf(int m, int n,
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
+
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
 
@@ -152,7 +149,7 @@ int PLASMA_zgelqf(int m, int n,
     plasma_desc_destroy(&descA);
 
     // Return status.
-    status = sequence->status;
+    int status = sequence->status;
     plasma_sequence_destroy(sequence);
     return status;
 }
@@ -256,7 +253,7 @@ void plasma_omp_zgelqf(plasma_desc_t *A, plasma_desc_t *T,
         return;
     }
 
-    // Quick return
+    // quick return
     if (imin(A->m, A->n) == 0)
         return;
 

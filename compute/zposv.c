@@ -90,13 +90,6 @@ int PLASMA_zposv(plasma_enum_t uplo, int n, int nrhs,
                  plasma_complex64_t *A, int lda,
                  plasma_complex64_t *B, int ldb)
 {
-    int nb;
-    int status;
-    int retval;
-
-    plasma_desc_t descA;
-    plasma_desc_t descB;
-
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -132,9 +125,12 @@ int PLASMA_zposv(plasma_enum_t uplo, int n, int nrhs,
        return PlasmaSuccess;
 
     // Set tiling parameters.
-    nb = plasma->nb;
+    int nb = plasma->nb;
 
     // Create tile matrices.
+    plasma_desc_t descA;
+    plasma_desc_t descB;
+    int retval;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
                                         lda, n, 0, 0, n, n, &descA);
     if (retval != PlasmaSuccess) {
@@ -156,6 +152,7 @@ int PLASMA_zposv(plasma_enum_t uplo, int n, int nrhs,
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
+
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
 
@@ -183,7 +180,7 @@ int PLASMA_zposv(plasma_enum_t uplo, int n, int nrhs,
     plasma_desc_destroy(&descB);
 
     // Return status.
-    status = sequence->status;
+    int status = sequence->status;
     plasma_sequence_destroy(sequence);
     return status;
 }
@@ -283,29 +280,24 @@ void plasma_omp_zposv(plasma_enum_t uplo,
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-/*
+
     // quick return
-    if (min(n, nrhs == 0)
-        return PlasmaSuccess;
-*/
+    if (A->n == 0 || B->n == 0)
+        return;
+
     // Call the parallel functions.
     plasma_pzpotrf(uplo, *A, sequence, request);
 
-    plasma_complex64_t zone = 1.0;
-    plasma_enum_t trans = uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans;
-
-    plasma_pztrsm(PlasmaLeft, uplo,
-                  trans, PlasmaNonUnit,
-                  zone,
-                  *A,
-                  *B,
+    plasma_enum_t trans;
+    trans = uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans;
+    plasma_pztrsm(PlasmaLeft, uplo, trans, PlasmaNonUnit,
+                  1.0, *A,
+                       *B,
                   sequence, request);
 
     trans = uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans;
-    plasma_pztrsm(PlasmaLeft, uplo,
-                  trans, PlasmaNonUnit,
-                  zone,
-                  *A,
-                  *B,
+    plasma_pztrsm(PlasmaLeft, uplo, trans, PlasmaNonUnit,
+                  1.0, *A,
+                       *B,
                   sequence, request);
 }

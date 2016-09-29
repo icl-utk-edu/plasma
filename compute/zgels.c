@@ -102,13 +102,6 @@ int PLASMA_zgels(plasma_enum_t trans, int m, int n, int nrhs,
                  plasma_desc_t *descT,
                  plasma_complex64_t *B, int ldb)
 {
-    int ib, nb;
-    int retval;
-    int status;
-
-    plasma_desc_t descA;
-    plasma_desc_t descB;
-
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -151,10 +144,13 @@ int PLASMA_zgels(plasma_enum_t trans, int m, int n, int nrhs,
     }
 
     // Set tiling parameters.
-    ib = plasma->ib;
-    nb = plasma->nb;
+    int ib = plasma->ib;
+    int nb = plasma->nb;
 
     // Create tile matrices.
+    plasma_desc_t descA;
+    plasma_desc_t descB;
+    int retval;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
                                         lda, n, 0, 0, m, n, &descA);
     if (retval != PlasmaSuccess) {
@@ -215,7 +211,7 @@ int PLASMA_zgels(plasma_enum_t trans, int m, int n, int nrhs,
     plasma_desc_destroy(&descB);
 
     // Return status.
-    status = sequence->status;
+    int status = sequence->status;
     plasma_sequence_destroy(sequence);
     return status;
 }
@@ -295,7 +291,7 @@ void plasma_omp_zgels(plasma_enum_t trans, plasma_desc_t *A,
         return;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if (trans != PlasmaNoTrans) {
         plasma_error("only PlasmaNoTrans supported");
         plasma_request_fail(sequence, request, PlasmaErrorNotSupported);
@@ -348,16 +344,17 @@ void plasma_omp_zgels(plasma_enum_t trans, plasma_desc_t *A,
         return;
     }
 
-    // Quick return
-    // (imin(m, imin(n, nrhs)) == 0)
+    // quick return
     if (imin(A->m, imin(A->n, B->n)) == 0) {
-        // zero matrix B
-        plasma_pzlaset(PlasmaGeneral, 0., 0., *B, sequence, request);
+        // Zero matrix B.
+        plasma_pzlaset(PlasmaGeneral, 0.0, 0.0, *B, sequence, request);
         return;
     }
 
+    //===============================
+    // Solve using QR factorization.
+    //===============================    
     if (A->m >= A->n) {
-        // solution based on QR factorization of A
         plasma_pzgeqrf(*A, *T, work, sequence, request);
 
         plasma_pzunmqr(PlasmaLeft, Plasma_ConjTrans,
@@ -371,26 +368,26 @@ void plasma_omp_zgels(plasma_enum_t trans, plasma_desc_t *A,
                       plasma_desc_view(*B, 0, 0, A->n, B->n),
                       sequence, request);
     }
+    //===============================
+    // Solve using LQ factorization.
+    //===============================    
     else {
-        // solution based on LQ factorization of A
         plasma_pzgelqf(*A, *T, work, sequence, request);
 
-        // zero the trailing block of the right-hand side matrix
-        // (B has less rows than X)
-        plasma_pzlaset(PlasmaGeneral, 0., 0.,
-                       plasma_desc_view(*B, A->m, 0,
-                                        A->n - A->m, B->n),
+        // Zero the trailing block of the right-hand-side matrix.
+        // B has less rows than X.
+        plasma_pzlaset(PlasmaGeneral, 0.0, 0.0,
+                       plasma_desc_view(*B, A->m, 0, A->n - A->m, B->n),
                        sequence, request);
 
-        // Solve L * Y = B
-        plasma_complex64_t zone  =  1.0;
+        // Solve L * Y = B.
         plasma_pztrsm(
             PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaNonUnit,
-            zone, plasma_desc_view(*A, 0, 0, A->m, A->m),
-                  plasma_desc_view(*B, 0, 0, A->m, B->n),
+            1.0, plasma_desc_view(*A, 0, 0, A->m, A->m),
+                 plasma_desc_view(*B, 0, 0, A->m, B->n),
             sequence, request);
 
-        // Find X = Q^H * Y
+        // Find X = Q^H * Y.
         plasma_pzunmlq(PlasmaLeft, Plasma_ConjTrans,
                        *A, *B, *T,
                        work, sequence, request);

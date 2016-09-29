@@ -77,12 +77,6 @@ int PLASMA_zpbtrf(plasma_enum_t uplo,
                   int n, int kd,
                   plasma_complex64_t *AB, int ldab)
 {
-    int nb;
-    int retval;
-    int status;
-
-    plasma_desc_t descAB;
-
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -114,10 +108,12 @@ int PLASMA_zpbtrf(plasma_enum_t uplo,
         return PlasmaSuccess;
 
     // Set tiling parameters.
-    nb = plasma->nb;
+    int nb = plasma->nb;
 
     // Initialize tile matrix descriptors.
     int lda = nb*(1+(kd+nb-1)/nb);
+    plasma_desc_t descAB;
+    int retval;
     retval = plasma_desc_general_band_create(PlasmaComplexDouble, uplo, nb, nb,
                                              lda, n, 0, 0, n, n, kd, kd,
                                              &descAB);
@@ -133,6 +129,7 @@ int PLASMA_zpbtrf(plasma_enum_t uplo,
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
+
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
 
@@ -158,7 +155,7 @@ int PLASMA_zpbtrf(plasma_enum_t uplo,
     plasma_desc_destroy(&descAB);
 
     // Return status.
-    status = sequence->status;
+    int status = sequence->status;
     plasma_sequence_destroy(sequence);
     return status;
 }
@@ -232,18 +229,6 @@ void plasma_omp_zpbtrf(plasma_enum_t uplo,
     if (request == NULL) {
         plasma_fatal_error("NULL request");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-
-    if (AB->mb != AB->nb) {
-        plasma_error("only square tiles supported");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-
-    // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
     }
 

@@ -81,13 +81,6 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
                   plasma_complex64_t *AB, int ldab,
                   plasma_complex64_t *B, int ldb)
 {
-    int nb;
-    int retval;
-    int status;
-
-    plasma_desc_t descAB;
-    plasma_desc_t descB;
-
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -128,16 +121,23 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
         return PlasmaSuccess;
 
     // Set tiling parameters.
-    nb = plasma->nb;
+    int nb = plasma->nb;
 
-    // Initialize tile matrix descriptors.
-    int tku  = (kd+kd+nb-1)/nb; // number of tiles in upper band (not including diagonal)
-    int tkl  = (kd+nb-1)/nb;    // number of tiles in lower band (not including diagonal)
-    int ldab_desc = (tku+tkl+1)*nb;  // since we use zgetrf on panel, we pivot back within panel.
-                                     // this could fill the last tile of the panel,
-                                     // and we need extra NB space on the bottom
+    // number of tiles in upper band (not including diagonal)
+    int tku  = (kd+kd+nb-1)/nb;
+
+    // number of tiles in lower band (not including diagonal)
+    int tkl  = (kd+nb-1)/nb;
+
+    // Since we use zgetrf on panel, we pivot back within panel.
+    // This could fill the last tile of the panel,
+    // and we need extra nb space on the bottom.
+    int ldab_desc = (tku+tkl+1)*nb;  
 
     // Create tile matrices.
+    plasma_desc_t descAB;
+    plasma_desc_t descB;
+    int retval;
     retval = plasma_desc_general_band_create(PlasmaComplexDouble, uplo, nb, nb,
                                              ldab_desc, n, 0, 0, n, n, kd, kd,
                                              &descAB);
@@ -160,6 +160,7 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
+
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
 
@@ -189,7 +190,7 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
     plasma_desc_destroy(&descB);
 
     // Return status.
-    status = sequence->status;
+    int status = sequence->status;
     plasma_sequence_destroy(sequence);
     return status;
 }
@@ -287,56 +288,24 @@ void plasma_omp_zpbtrs(plasma_enum_t uplo,
         return;
     }
 
-    if (AB->mb != AB->nb) {
-        plasma_error("only square tiles supported");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    if (AB->m != AB->n) {
-        plasma_error("only square matrix A is supported");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    if (B->mb != B->nb) {
-        plasma_error("only square tiles supported");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-
-    // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
-        return;
-    }
-
     // quick return
-    /*
-    if (min(n, nrhs) == 0)
+    if (AB->n == 0 || B->n == 0)
         return;
-    */
 
     // Call the parallel functions.
-    plasma_pztbsm(
-        PlasmaLeft,
-        uplo,
-        uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans,
-        PlasmaNonUnit,
-        1.0,
-        *AB,
-        *B,
-        NULL,
-        sequence,
-        request);
+    plasma_pztbsm(PlasmaLeft, uplo,
+                  uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans,
+                  PlasmaNonUnit,
+                  1.0, *AB,
+                       *B,
+                  NULL,
+                  sequence, request);
 
-    plasma_pztbsm(
-        PlasmaLeft,
-        uplo,
-        uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans,
-        PlasmaNonUnit,
-        1.0,
-        *AB,
-        *B,
-        NULL,
-        sequence,
-        request);
+    plasma_pztbsm(PlasmaLeft, uplo,
+                  uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans,
+                  PlasmaNonUnit,
+                  1.0, *AB,
+                       *B,
+                  NULL,
+                  sequence, request);
 }

@@ -74,12 +74,6 @@ int PLASMA_zpotrf(plasma_enum_t uplo,
                   int n,
                   plasma_complex64_t *A, int lda)
 {
-    int nb;
-    int retval;
-    int status;
-
-    plasma_desc_t descA;
-
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -107,9 +101,11 @@ int PLASMA_zpotrf(plasma_enum_t uplo,
         return PlasmaSuccess;
 
     // Set tiling parameters.
-    nb = plasma->nb;
+    int nb = plasma->nb;
 
     // Create tile matrix.
+    plasma_desc_t descA;
+    int retval;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
                                         n, n, 0, 0, n, n, &descA);
     if (retval != PlasmaSuccess) {
@@ -124,6 +120,7 @@ int PLASMA_zpotrf(plasma_enum_t uplo,
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
+
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
 
@@ -146,7 +143,7 @@ int PLASMA_zpotrf(plasma_enum_t uplo,
     plasma_desc_destroy(&descA);
 
     // Return status.
-    status = sequence->status;
+    int status = sequence->status;
     plasma_sequence_destroy(sequence);
     return status;
 }
