@@ -150,7 +150,7 @@ void test_zpbtrf(param_value_t param[], char *info)
     int iinfo;
 
     plasma_time_t start = omp_get_wtime();
-    iinfo = PLASMA_zpbtrf(uplo, n, kd, AB, ldab);
+    iinfo = plasma_zpbtrf(uplo, n, kd, AB, ldab);
     if (iinfo != 0) printf( " zpbtrf failed with info=%d\n", iinfo );
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
@@ -184,7 +184,7 @@ void test_zpbtrf(param_value_t param[], char *info)
         LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'F', n, nrhs, B, ldb, X, ldx);
 
         // solve for X
-        iinfo = PLASMA_zpbtrs(uplo, n, kd, nrhs, AB, ldab, X, ldb);
+        iinfo = plasma_zpbtrs(uplo, n, kd, nrhs, AB, ldab, X, ldb);
         if (iinfo != 0) printf( " zpbtrs failed with info = %d\n", iinfo );
 
         // compute residual vector

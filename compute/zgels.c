@@ -57,9 +57,9 @@
  *          On entry, the m-by-n matrix A.
  *          On exit,
  *          if m >= n, A is overwritten by details of its QR factorization as
- *                     returned by PLASMA_zgeqrf;
+ *                     returned by plasma_zgeqrf;
  *          if m < n, A is overwritten by details of its LQ factorization as
- *                      returned by PLASMA_zgelqf.
+ *                      returned by plasma_zgelqf.
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,m).
@@ -90,14 +90,14 @@
  *******************************************************************************
  *
  * @sa plasma_omp_zgels
- * @sa PLASMA_cgels
- * @sa PLASMA_dgels
- * @sa PLASMA_sgels
- * @sa PLASMA_zgeqrf
- * @sa PLASMA_zgeqrs
+ * @sa plasma_cgels
+ * @sa plasma_dgels
+ * @sa plasma_sgels
+ * @sa plasma_zgeqrf
+ * @sa plasma_zgeqrs
  *
  ******************************************************************************/
-int PLASMA_zgels(plasma_enum_t trans,
+int plasma_zgels(plasma_enum_t trans,
                  int m, int n, int nrhs,
                  plasma_complex64_t *pA, int lda,
                  plasma_desc_t T,
@@ -191,8 +191,8 @@ int PLASMA_zgels(plasma_enum_t trans,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_Async(pA, lda, A, sequence, &request);
-        PLASMA_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
+        plasma_zcm2ccrb_Async(pA, lda, A, sequence, &request);
+        plasma_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
 
         // Call the tile async function.
         plasma_omp_zgels(PlasmaNoTrans,
@@ -201,8 +201,8 @@ int PLASMA_zgels(plasma_enum_t trans,
                          sequence, &request);
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(A, pA, lda, sequence, &request);
-        PLASMA_zccrb2cm_Async(B, pB, ldb, sequence, &request);
+        plasma_zccrb2cm_Async(A, pA, lda, sequence, &request);
+        plasma_zccrb2cm_Async(B, pB, ldb, sequence, &request);
     }
     // implicit synchronization
 
@@ -237,14 +237,14 @@ int PLASMA_zgels(plasma_enum_t trans,
  *          Descriptor of matrix A stored in the tile layout.
  *          On exit,
  *          if m >= n, A is overwritten by details of its QR factorization
- *                     as returned by PLASMA_zgeqrf;
+ *                     as returned by plasma_zgeqrf;
  *          if m < n,  A is overwritten by details of its LQ factorization
- *                     as returned by PLASMA_zgelqf.
+ *                     as returned by plasma_zgelqf.
  *
  * @param[out] T
  *          Descriptor of matrix T.
  *          Auxiliary factorization data, computed by
- *          PLASMA_zgeqrf or PLASMA_zgelqf.
+ *          plasma_zgeqrf or plasma_zgelqf.
  *
  * @param[in,out] B
  *          Descriptor of matrix B.
@@ -273,7 +273,7 @@ int PLASMA_zgels(plasma_enum_t trans,
  *
  *******************************************************************************
  *
- * @sa PLASMA_zgels
+ * @sa plasma_zgels
  * @sa plasma_omp_cgels
  * @sa plasma_omp_dgels
  * @sa plasma_omp_sgels

@@ -92,12 +92,12 @@
  *******************************************************************************
  *
  * @sa plasma_omp_zsyr2k
- * @sa PLASMA_csyr2k
- * @sa PLASMA_dsyr2k
- * @sa PLASMA_ssyr2k
+ * @sa plasma_csyr2k
+ * @sa plasma_dsyr2k
+ * @sa plasma_ssyr2k
  *
  ******************************************************************************/
-int PLASMA_zsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
+int plasma_zsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
                   int n, int k,
                   plasma_complex64_t alpha, plasma_complex64_t *pA, int lda,
                                             plasma_complex64_t *pB, int ldb,
@@ -208,9 +208,9 @@ int PLASMA_zsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_Async(pA, lda, A, sequence, &request);
-        PLASMA_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
-        PLASMA_zcm2ccrb_Async(pC, ldc, C, sequence, &request);
+        plasma_zcm2ccrb_Async(pA, lda, A, sequence, &request);
+        plasma_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
+        plasma_zcm2ccrb_Async(pC, ldc, C, sequence, &request);
 
         // Call the tile async function.
         plasma_omp_zsyr2k(uplo, trans,
@@ -220,7 +220,7 @@ int PLASMA_zsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
                           sequence, &request);
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(C, pC, ldc, sequence, &request);
+        plasma_zccrb2cm_Async(C, pC, ldc, sequence, &request);
     }
     // implicit synchronization
 
@@ -240,7 +240,7 @@ int PLASMA_zsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
  * @ingroup plasma_syr2k
  *
  *  Performs rank 2k update.
- *  Non-blocking tile version of PLASMA_zsyr2k().
+ *  Non-blocking tile version of plasma_zsyr2k().
  *  May return before the computation is finished.
  *  Operates on matrices stored by tiles.
  *  All matrices are passed through descriptors.
@@ -291,7 +291,7 @@ int PLASMA_zsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
  *
  *******************************************************************************
  *
- * @sa PLASMA_zsyr2k
+ * @sa plasma_zsyr2k
  * @sa plasma_omp_zsyr2k
  * @sa plasma_omp_csyr2k
  *

@@ -33,7 +33,7 @@
  *
  *        Q = H(1) H(2) . . . H(k)
  *
- *  as returned by PLASMA_zgelqf. Q is of order m if side = PlasmaLeft
+ *  as returned by plasma_zgelqf. Q is of order m if side = PlasmaLeft
  *  and of order n if side = PlasmaRight.
  *
  *******************************************************************************
@@ -62,13 +62,13 @@
  *
  * @param[in] A
  *          Details of the LQ factorization of the original matrix A as returned
- *          by PLASMA_zgelqf.
+ *          by plasma_zgelqf.
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,k).
  *
  * @param[in] descT
- *          Auxiliary factorization data, computed by PLASMA_zgelqf.
+ *          Auxiliary factorization data, computed by plasma_zgelqf.
  *
  * @param[in,out] C
  *          On entry, the m-by-n matrix C.
@@ -85,13 +85,13 @@
  *******************************************************************************
  *
  * @sa plasma_omp_zunmlq
- * @sa PLASMA_cunmlq
- * @sa PLASMA_dormlq
- * @sa PLASMA_sormlq
- * @sa PLASMA_zgelqf
+ * @sa plasma_cunmlq
+ * @sa plasma_dormlq
+ * @sa plasma_sormlq
+ * @sa plasma_zgelqf
  *
  ******************************************************************************/
-int PLASMA_zunmlq(plasma_enum_t side, plasma_enum_t trans,
+int plasma_zunmlq(plasma_enum_t side, plasma_enum_t trans,
                   int m, int n, int k,
                   plasma_complex64_t *pA, int lda,
                   plasma_desc_t T,
@@ -192,8 +192,8 @@ int PLASMA_zunmlq(plasma_enum_t side, plasma_enum_t trans,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_Async(pA, lda, A, sequence, &request);
-        PLASMA_zcm2ccrb_Async(pC, ldc, C, sequence, &request);
+        plasma_zcm2ccrb_Async(pA, lda, A, sequence, &request);
+        plasma_zcm2ccrb_Async(pC, ldc, C, sequence, &request);
 
         // Call the tile async function.
         plasma_omp_zunmlq(side, trans,
@@ -201,7 +201,7 @@ int PLASMA_zunmlq(plasma_enum_t side, plasma_enum_t trans,
                           sequence, &request);
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(C, pC, ldc, sequence, &request);
+        plasma_zccrb2cm_Async(C, pC, ldc, sequence, &request);
     }
     // implicit synchronization
 
@@ -221,7 +221,7 @@ int PLASMA_zunmlq(plasma_enum_t side, plasma_enum_t trans,
  *
  * @ingroup plasma_unmlq
  *
- *  Non-blocking tile version of PLASMA_zunmlq().
+ *  Non-blocking tile version of plasma_zunmlq().
  *  May return before the computation is finished.
  *  Allows for pipelining of operations at runtime.
  *
@@ -240,11 +240,11 @@ int PLASMA_zunmlq(plasma_enum_t side, plasma_enum_t trans,
  * @param[in] A
  *          Descriptor of matrix A stored in the tile layout.
  *          Details of the QR factorization of the original matrix A as returned
- *          by PLASMA_zgeqrf.
+ *          by plasma_zgeqrf.
  *
  * @param[in] T
  *          Descriptor of matrix T.
- *          Auxiliary factorization data, computed by PLASMA_zgeqrf.
+ *          Auxiliary factorization data, computed by plasma_zgeqrf.
  *
  * @param[in,out] C
  *          Descriptor of matrix C.
@@ -272,7 +272,7 @@ int PLASMA_zunmlq(plasma_enum_t side, plasma_enum_t trans,
  *
  *******************************************************************************
  *
- * @sa PLASMA_zunmlq
+ * @sa plasma_zunmlq
  * @sa plasma_omp_cunmlq
  * @sa plasma_omp_dormlq
  * @sa plasma_omp_sormlq

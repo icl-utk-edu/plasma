@@ -158,7 +158,7 @@ void test_ztrmm(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    PLASMA_ztrmm(side, uplo,
+    plasma_ztrmm(side, uplo,
                  transa, diag,
                  m, n, alpha, A, lda, B, ldb);
 

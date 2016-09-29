@@ -191,7 +191,7 @@ void test_ztrsm(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    PLASMA_ztrsm(
+    plasma_ztrsm(
         side, uplo,
         transa, diag,
         m, n,

@@ -102,12 +102,12 @@
  *******************************************************************************
  *
  * @sa plasma_omp_ztrmm
- * @sa PLASMA_ctrmm
- * @sa PLASMA_dtrmm
- * @sa PLASMA_strmm
+ * @sa plasma_ctrmm
+ * @sa plasma_dtrmm
+ * @sa plasma_strmm
  *
  ******************************************************************************/
-int PLASMA_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
+int plasma_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
                  plasma_enum_t transA, plasma_enum_t diag,
                  int m, int n,
                  plasma_complex64_t alpha, plasma_complex64_t *pA, int lda,
@@ -205,8 +205,8 @@ int PLASMA_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
     #pragma omp master
     {
         // Translate matrices to tile layout.
-        PLASMA_zcm2ccrb_Async(pA, lda, A, sequence, &request);
-        PLASMA_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
+        plasma_zcm2ccrb_Async(pA, lda, A, sequence, &request);
+        plasma_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
 
         // Call tile async interface.
         plasma_omp_ztrmm(side, uplo, transA, diag,
@@ -215,8 +215,8 @@ int PLASMA_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
                          sequence, &request);
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(A, pA, lda, sequence, &request);
-        PLASMA_zccrb2cm_Async(B, pB, ldb, sequence, &request);
+        plasma_zccrb2cm_Async(A, pA, lda, sequence, &request);
+        plasma_zccrb2cm_Async(B, pB, ldb, sequence, &request);
     }
     // implicit synchronization
 
@@ -235,7 +235,7 @@ int PLASMA_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
  * @ingroup plasma_trmm
  *
  *  Performs triangular matrix multiplication. Non-blocking tile version of
- *  PLASMA_ztrmm(). May return before the computation is finished. Operates on
+ *  plasma_ztrmm(). May return before the computation is finished. Operates on
  *  matrices stored by tiles. All matrices are passed through descriptors. All
  *  dimensions are taken from the descriptors. Allows for pipelining of
  *  operations at runtime.
@@ -264,7 +264,7 @@ int PLASMA_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
  *
  *******************************************************************************
  *
- * @sa PLASMA_ztrmm
+ * @sa plasma_ztrmm
  * @sa plasma_omp_ctrmm
  * @sa plasma_omp_dtrmm
  * @sa plasma_omp_strmm

@@ -87,12 +87,12 @@
  *******************************************************************************
  *
  * @sa plasma_omp_zsymm
- * @sa PLASMA_csymm
- * @sa PLASMA_dsymm
- * @sa PLASMA_ssymm
+ * @sa plasma_csymm
+ * @sa plasma_dsymm
+ * @sa plasma_ssymm
  *
  ******************************************************************************/
-int PLASMA_zsymm(plasma_enum_t side, plasma_enum_t
+int plasma_zsymm(plasma_enum_t side, plasma_enum_t
                  uplo, int m, int n,
                  plasma_complex64_t alpha, plasma_complex64_t *pA, int lda,
                                            plasma_complex64_t *pB, int ldb,
@@ -193,9 +193,9 @@ int PLASMA_zsymm(plasma_enum_t side, plasma_enum_t
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_Async(pA, lda, A, sequence, &request);
-        PLASMA_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
-        PLASMA_zcm2ccrb_Async(pC, ldc, C, sequence, &request);
+        plasma_zcm2ccrb_Async(pA, lda, A, sequence, &request);
+        plasma_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
+        plasma_zcm2ccrb_Async(pC, ldc, C, sequence, &request);
 
         // Call the tile async function.
         plasma_omp_zsymm(side, uplo,
@@ -205,7 +205,7 @@ int PLASMA_zsymm(plasma_enum_t side, plasma_enum_t
                          sequence, &request);
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(C, pC, ldc, sequence, &request);
+        plasma_zccrb2cm_Async(C, pC, ldc, sequence, &request);
     }
     // implicit synchronization
 
@@ -225,7 +225,7 @@ int PLASMA_zsymm(plasma_enum_t side, plasma_enum_t
  * @ingroup plasma_symm
  *
  *  Performs symmetric matrix multiplication.
- *  Non-blocking tile version of PLASMA_zsymm().
+ *  Non-blocking tile version of plasma_zsymm().
  *  May return before the computation is finished.
  *  Allows for pipelining of operations at runtime.
  *
@@ -269,7 +269,7 @@ int PLASMA_zsymm(plasma_enum_t side, plasma_enum_t
  *
  *******************************************************************************
  *
- * @sa PLASMA_zsymm
+ * @sa plasma_zsymm
  * @sa plasma_omp_csymm
  * @sa plasma_omp_dsymm
  * @sa plasma_omp_ssymm

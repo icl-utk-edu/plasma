@@ -122,7 +122,7 @@ void test_zgelqf(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zgelqf(m, n, A, lda, T);
+    plasma_zgelqf(m, n, A, lda, T);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
@@ -144,7 +144,7 @@ void test_zgelqf(param_value_t param[], char *info)
         assert(Q != NULL);
 
         // Build Q.
-        PLASMA_zunglq(minmn, n, minmn, A, lda, T, Q, ldq);
+        plasma_zunglq(minmn, n, minmn, A, lda, T, Q, ldq);
 
         // Build the identity matrix
         plasma_complex64_t *Id =
@@ -186,7 +186,7 @@ void test_zgelqf(param_value_t param[], char *info)
         LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'l', m, n, A, lda, L, m);
 
         // Compute L * Q.
-        PLASMA_zunmlq(PlasmaRight, PlasmaNoTrans, m, n, minmn, A, lda, T,
+        plasma_zunmlq(PlasmaRight, PlasmaNoTrans, m, n, minmn, A, lda, T,
                       L, m);
 
         // Compute the difference.

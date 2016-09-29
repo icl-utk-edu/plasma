@@ -24,7 +24,7 @@
  *
  *  Generates an m-by-n matrix Q with orthonormal rows, which is
  *  defined as the first m rows of a product of the elementary reflectors
- *  returned by PLASMA_zgelqf.
+ *  returned by plasma_zgelqf.
  *
  *******************************************************************************
  *
@@ -41,13 +41,13 @@
  *
  * @param[in] A
  *          Details of the LQ factorization of the original matrix A as returned
- *          by PLASMA_zgelqf.
+ *          by plasma_zgelqf.
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,m).
  *
  * @param[in] descT
- *          Auxiliary factorization data, computed by PLASMA_zgelqf.
+ *          Auxiliary factorization data, computed by plasma_zgelqf.
  *
  * @param[out] Q
  *          On exit, the m-by-n matrix Q.
@@ -63,13 +63,13 @@
  *******************************************************************************
  *
  * @sa plasma_omp_zunglq
- * @sa PLASMA_cunglq
- * @sa PLASMA_dorglq
- * @sa PLASMA_sorglq
- * @sa PLASMA_zgelqf
+ * @sa plasma_cunglq
+ * @sa plasma_dorglq
+ * @sa plasma_sorglq
+ * @sa plasma_zgelqf
  *
  ******************************************************************************/
-int PLASMA_zunglq(int m, int n, int k,
+int plasma_zunglq(int m, int n, int k,
                   plasma_complex64_t *pA, int lda,
                   plasma_desc_t T,
                   plasma_complex64_t *Qf77, int ldq)
@@ -154,14 +154,14 @@ int PLASMA_zunglq(int m, int n, int k,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_Async(pA, lda, A, sequence, &request);
-        PLASMA_zcm2ccrb_Async(Qf77, ldq, Q, sequence, &request);
+        plasma_zcm2ccrb_Async(pA, lda, A, sequence, &request);
+        plasma_zcm2ccrb_Async(Qf77, ldq, Q, sequence, &request);
 
         // Call the tile async function.
         plasma_omp_zunglq(A, T, Q, work, sequence, &request);
 
         // Translate Q back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(Q, Qf77, ldq, sequence, &request);
+        plasma_zccrb2cm_Async(Q, Qf77, ldq, sequence, &request);
     }
     // implicit synchronization
 
@@ -181,7 +181,7 @@ int PLASMA_zunglq(int m, int n, int k,
  *
  * @ingroup plasma_unglq
  *
- *  Non-blocking tile version of PLASMA_zunglq().
+ *  Non-blocking tile version of plasma_zunglq().
  *  May return before the computation is finished.
  *  Allows for pipelining of operations at runtime.
  *
@@ -193,7 +193,7 @@ int PLASMA_zunglq(int m, int n, int k,
  *
  * @param[in] T
  *          Descriptor of matrix T.
- *          Auxiliary factorization data, computed by PLASMA_zgelqf.
+ *          Auxiliary factorization data, computed by plasma_zgelqf.
  *
  * @param[out] Q
  *          Descriptor of matrix Q. On exit, matrix Q stored in the tile layout.
@@ -219,7 +219,7 @@ int PLASMA_zunglq(int m, int n, int k,
  *
  *******************************************************************************
  *
- * @sa PLASMA_zunglq
+ * @sa plasma_zunglq
  * @sa plasma_omp_cunglq
  * @sa plasma_omp_dorglq
  * @sa plasma_omp_sorglq

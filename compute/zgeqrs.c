@@ -23,7 +23,7 @@
  * @ingroup plasma_geqrs
  *
  *  Computes a minimum-norm solution min || A*X - B || using the
- *  QR factorization A = Q*R computed by PLASMA_zgeqrf.
+ *  QR factorization A = Q*R computed by plasma_zgeqrf.
  *
  *******************************************************************************
  *
@@ -38,13 +38,13 @@
  *
  * @param[in] A
  *          Details of the QR factorization of the original matrix A as returned
- *          by PLASMA_zgeqrf.
+ *          by plasma_zgeqrf.
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda >= m.
  *
  * @param[in] descT
- *          Auxiliary factorization data, computed by PLASMA_zgeqrf.
+ *          Auxiliary factorization data, computed by plasma_zgeqrf.
  *
  * @param[in,out] B
  *          On entry, the m-by-nrhs right hand side matrix B.
@@ -61,14 +61,14 @@
  *******************************************************************************
  *
  * @sa plasma_omp_zgeqrs
- * @sa PLASMA_cgeqrs
- * @sa PLASMA_dgeqrs
- * @sa PLASMA_sgeqrs
- * @sa PLASMA_zgeqrf
- * @sa PLASMA_zgels
+ * @sa plasma_cgeqrs
+ * @sa plasma_dgeqrs
+ * @sa plasma_sgeqrs
+ * @sa plasma_zgeqrf
+ * @sa plasma_zgels
  *
  ******************************************************************************/
-int PLASMA_zgeqrs(int m, int n, int nrhs,
+int plasma_zgeqrs(int m, int n, int nrhs,
                   plasma_complex64_t *pA, int lda,
                   plasma_desc_t T,
                   plasma_complex64_t *pB, int ldb)
@@ -153,14 +153,14 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_Async(pA, lda, A, sequence, &request);
-        PLASMA_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
+        plasma_zcm2ccrb_Async(pA, lda, A, sequence, &request);
+        plasma_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
 
         // Call the tile async function.
         plasma_omp_zgeqrs(A, T, B, work, sequence, &request);
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(B, pB, ldb, sequence, &request);
+        plasma_zccrb2cm_Async(B, pB, ldb, sequence, &request);
     }
     // implicit synchronization
 
@@ -181,7 +181,7 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
  * @ingroup plasma_geqrs
  *
  *  Computes a minimum-norm solution using the tile QR factorization.
- *  Non-blocking tile version of PLASMA_zgeqrs().
+ *  Non-blocking tile version of plasma_zgeqrs().
  *  May return before the computation is finished.
  *  Allows for pipelining of operations at runtime.
  *
@@ -193,7 +193,7 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
  *
  * @param[in] T
  *          Descriptor of matrix T.
- *          Auxiliary factorization data, computed by PLASMA_zgeqrf.
+ *          Auxiliary factorization data, computed by plasma_zgeqrf.
  *
  * @param[in,out] B
  *          Descriptor of matrix B.
@@ -221,7 +221,7 @@ int PLASMA_zgeqrs(int m, int n, int nrhs,
  *
  *******************************************************************************
  *
- * @sa PLASMA_zgeqrs
+ * @sa plasma_zgeqrs
  * @sa plasma_omp_cgeqrs
  * @sa plasma_omp_dgeqrs
  * @sa plasma_omp_sgeqrs

@@ -145,11 +145,11 @@ void test_zgelqs(param_value_t param[], char *info)
     //================================================================
     // prepare LQ factorization of A - only auxiliary for this test,
     // time is not measured
-    PLASMA_zgelqf(m, n, A, lda, T);
+    plasma_zgelqf(m, n, A, lda, T);
 
     // perform solution of the system by the prepared LQ factorization of A
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zgelqs(m, n, nrhs,
+    plasma_zgelqs(m, n, nrhs,
                   A, lda,
                   T,
                   B, ldb);

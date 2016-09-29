@@ -24,7 +24,7 @@
  *
  *  Solves a system of linear equations A * X = B with a Hermitian positive
  *  definite in the complex matrix A using the Cholesky factorization
- *  A = U^H*U or A = L*L^H computed by PLASMA_zpotrf.
+ *  A = U^H*U or A = L*L^H computed by plasma_zpotrf.
  *
  *******************************************************************************
  *
@@ -42,7 +42,7 @@
  * @param[in,out] A
  *          The triangular factor U or L from the Cholesky
  *          factorization A = U^H*U or A = L*L^H, computed by
- *          PLASMA_zpotrf.
+ *          plasma_zpotrf.
  *          Remark: If out-of-place layout translation is used, the
  *          matrix A can be considered as input, however if inplace
  *          layout translation is enabled, the content of A will be
@@ -67,13 +67,13 @@
  *******************************************************************************
  *
  * @sa plasma_omp_zpotrs
- * @sa PLASMA_cpotrs
- * @sa PLASMA_dpotrs
- * @sa PLASMA_spotrs
- * @sa PLASMA_zpotrf
+ * @sa plasma_cpotrs
+ * @sa plasma_dpotrs
+ * @sa plasma_spotrs
+ * @sa plasma_zpotrf
  *
  ******************************************************************************/
-int PLASMA_zpotrs(plasma_enum_t uplo,
+int plasma_zpotrs(plasma_enum_t uplo,
                   int n, int nrhs,
                   plasma_complex64_t *pA, int lda,
                   plasma_complex64_t *pB, int ldb)
@@ -149,14 +149,14 @@ int PLASMA_zpotrs(plasma_enum_t uplo,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_Async(pA, lda, A, sequence, &request);
-        PLASMA_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
+        plasma_zcm2ccrb_Async(pA, lda, A, sequence, &request);
+        plasma_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
 
         // Call the tile async function.
         plasma_omp_zpotrs(uplo, A, B, sequence, &request);
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(B, pB, ldb, sequence, &request);
+        plasma_zccrb2cm_Async(B, pB, ldb, sequence, &request);
     }
     // implicit synchronization
 
@@ -176,7 +176,7 @@ int PLASMA_zpotrs(plasma_enum_t uplo,
  *
  *  Solves a system of linear equations using previously
  *  computed Cholesky factorization.
- *  Non-blocking tile version of PLASMA_zpotrs().
+ *  Non-blocking tile version of plasma_zpotrs().
  *  May return before the computation is finished.
  *  Operates on matrices stored by tiles.
  *  All matrices are passed through descriptors.
@@ -191,7 +191,7 @@ int PLASMA_zpotrs(plasma_enum_t uplo,
  *
  * @param[in] A
  *          The triangular factor U or L from the Cholesky factorization
- *          A = U^H*U or A = L*L^H, computed by PLASMA_zpotrf.
+ *          A = U^H*U or A = L*L^H, computed by plasma_zpotrf.
  *
  * @param[in,out] B
  *          On entry, the n-by-nrhs right hand side matrix B.
@@ -214,7 +214,7 @@ int PLASMA_zpotrs(plasma_enum_t uplo,
  *
  *******************************************************************************
  *
- * @sa PLASMA_zpotrs
+ * @sa plasma_zpotrs
  * @sa plasma_omp_zpotrs
  * @sa plasma_omp_cpotrs
  * @sa plasma_omp_dpotrs

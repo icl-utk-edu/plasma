@@ -95,12 +95,12 @@
  *******************************************************************************
  *
  * @sa plasma_omp_ztrsm
- * @sa PLASMA_ctrsm
- * @sa PLASMA_dtrsm
- * @sa PLASMA_strsm
+ * @sa plasma_ctrsm
+ * @sa plasma_dtrsm
+ * @sa plasma_strsm
  *
  ******************************************************************************/
-int PLASMA_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
+int plasma_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
                  plasma_enum_t transA, plasma_enum_t diag,
                  int m, int n,
                  plasma_complex64_t alpha, plasma_complex64_t *pA, int lda,
@@ -200,8 +200,8 @@ int PLASMA_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_Async(pA, lda, A, sequence, &request);
-        PLASMA_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
+        plasma_zcm2ccrb_Async(pA, lda, A, sequence, &request);
+        plasma_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
 
         // Call the tile async function.
         plasma_omp_ztrsm(side, uplo, transA, diag,
@@ -210,7 +210,7 @@ int PLASMA_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
                          sequence, &request);
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(B, pB, ldb, sequence, &request);
+        plasma_zccrb2cm_Async(B, pB, ldb, sequence, &request);
     }
     // implicit synchronization
 
@@ -229,7 +229,7 @@ int PLASMA_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
  * @ingroup plasma_trsm
  *
  *  Computes triangular solve.
- *  Non-blocking tile version of PLASMA_ztrsm().
+ *  Non-blocking tile version of plasma_ztrsm().
  *  Operates on matrices stored by tiles.
  *  All matrices are passed through descriptors.
  *  All dimensions are taken from the descriptors.
@@ -280,7 +280,7 @@ int PLASMA_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
  *
  *******************************************************************************
  *
- * @sa PLASMA_ztrsm
+ * @sa plasma_ztrsm
  * @sa plasma_omp_ctrsm
  * @sa plasma_omp_dtrsm
  * @sa plasma_omp_strsm

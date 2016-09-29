@@ -174,7 +174,7 @@ void test_zhemm(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    PLASMA_zhemm(
+    plasma_zhemm(
         side, uplo,
         m, n,
         alpha, A, lda,

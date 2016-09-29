@@ -144,7 +144,7 @@ void test_zgels(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zgels(PlasmaNoTrans, m, n, nrhs,
+    plasma_zgels(PlasmaNoTrans, m, n, nrhs,
                  A, lda,
                  T,
                  B, ldb);

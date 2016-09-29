@@ -23,7 +23,7 @@
     Convert tiled (CCRB) to column-major (CM) matrix layout.
     Out-of-place.
 */
-void PLASMA_zccrb2cm_Async(plasma_desc_t A, plasma_complex64_t *pA, int lda,
+void plasma_zccrb2cm_Async(plasma_desc_t A, plasma_complex64_t *pA, int lda,
                            plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.

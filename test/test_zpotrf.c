@@ -126,7 +126,7 @@ void test_zpotrf(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zpotrf(uplo, n, A, lda);
+    plasma_zpotrf(uplo, n, A, lda);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 

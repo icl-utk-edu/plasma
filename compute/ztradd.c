@@ -87,12 +87,12 @@
  *******************************************************************************
  *
  * @sa plasma_omp_ztradd
- * @sa PLASMA_ctradd
- * @sa PLASMA_dtradd
- * @sa PLASMA_stradd
+ * @sa plasma_ctradd
+ * @sa plasma_dtradd
+ * @sa plasma_stradd
  *
  ******************************************************************************/
-int PLASMA_ztradd(plasma_enum_t uplo, plasma_enum_t transA,
+int plasma_ztradd(plasma_enum_t uplo, plasma_enum_t transA,
                   int m, int n,
                   plasma_complex64_t alpha, plasma_complex64_t *pA, int lda,
                   plasma_complex64_t beta,  plasma_complex64_t *pB, int ldb)
@@ -196,8 +196,8 @@ int PLASMA_ztradd(plasma_enum_t uplo, plasma_enum_t transA,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_Async(pA, lda, A, sequence, &request);
-        PLASMA_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
+        plasma_zcm2ccrb_Async(pA, lda, A, sequence, &request);
+        plasma_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
 
         // Call tile async function.
         if (sequence->status == PlasmaSuccess) {
@@ -208,8 +208,8 @@ int PLASMA_ztradd(plasma_enum_t uplo, plasma_enum_t transA,
         }
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(A, pA, lda, sequence, &request);
-        PLASMA_zccrb2cm_Async(B, pB, ldb, sequence, &request);
+        plasma_zccrb2cm_Async(A, pA, lda, sequence, &request);
+        plasma_zccrb2cm_Async(B, pB, ldb, sequence, &request);
     }
     // implicit synchronization
 
@@ -229,7 +229,7 @@ int PLASMA_ztradd(plasma_enum_t uplo, plasma_enum_t transA,
  *
  *  Performs an addition of two trapezoidal matrices similarly to the
  * 'pztradd()' function from the PBLAS library. Non-blocking tile version of
- *  PLASMA_ztradd(). May return before the computation is finished. Operates
+ *  plasma_ztradd(). May return before the computation is finished. Operates
  *  on matrices stored by tiles. All matrices are passed through descriptors.
  *  All dimensions are taken from the descriptors. Allows for pipelining of
  *  operations at runtime.
@@ -278,7 +278,7 @@ int PLASMA_ztradd(plasma_enum_t uplo, plasma_enum_t transA,
  *
  *******************************************************************************
  *
- * @sa PLASMA_ztradd
+ * @sa plasma_ztradd
  * @sa plasma_omp_ctradd
  * @sa plasma_omp_dtradd
  * @sa plasma_omp_stradd

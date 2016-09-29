@@ -163,7 +163,7 @@ void test_ztradd(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    PLASMA_ztradd(uplo, transA, m, n, alpha, A, lda, beta, B, ldb);
+    plasma_ztradd(uplo, transA, m, n, alpha, A, lda, beta, B, ldb);
 
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;

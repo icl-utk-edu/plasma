@@ -80,12 +80,12 @@
  *******************************************************************************
  *
  * @sa plasma_omp_zsyrk
- * @sa PLASMA_csyrk
- * @sa PLASMA_dsyrk
- * @sa PLASMA_ssyrk
+ * @sa plasma_csyrk
+ * @sa plasma_dsyrk
+ * @sa plasma_ssyrk
  *
  ******************************************************************************/
-int PLASMA_zsyrk(plasma_enum_t uplo, plasma_enum_t trans,
+int plasma_zsyrk(plasma_enum_t uplo, plasma_enum_t trans,
                  int n, int k,
                  plasma_complex64_t alpha, plasma_complex64_t *pA, int lda,
                  plasma_complex64_t beta,  plasma_complex64_t *pC, int ldc)
@@ -177,8 +177,8 @@ int PLASMA_zsyrk(plasma_enum_t uplo, plasma_enum_t trans,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_Async(pA, lda, A, sequence, &request);
-        PLASMA_zcm2ccrb_Async(pC, ldc, C, sequence, &request);
+        plasma_zcm2ccrb_Async(pA, lda, A, sequence, &request);
+        plasma_zcm2ccrb_Async(pC, ldc, C, sequence, &request);
 
         // Call the tile async function.
         plasma_omp_zsyrk(uplo, trans,
@@ -187,7 +187,7 @@ int PLASMA_zsyrk(plasma_enum_t uplo, plasma_enum_t trans,
                          sequence, &request);
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(C, pC, ldc, sequence, &request);
+        plasma_zccrb2cm_Async(C, pC, ldc, sequence, &request);
     }
     // implicit synchronization
 
@@ -206,7 +206,7 @@ int PLASMA_zsyrk(plasma_enum_t uplo, plasma_enum_t trans,
  * @ingroup plasma_syrk
  *
  *  Performs rank k update.
- *  Non-blocking tile version of PLASMA_zsyrk().
+ *  Non-blocking tile version of plasma_zsyrk().
  *  May return before the computation is finished.
  *  Operates on matrices stored by tiles.
  *  All matrices are passed through descriptors.
@@ -252,7 +252,7 @@ int PLASMA_zsyrk(plasma_enum_t uplo, plasma_enum_t trans,
  *
  *******************************************************************************
  *
- * @sa PLASMA_zsyrk
+ * @sa plasma_zsyrk
  * @sa plasma_omp_zsyrk
  * @sa plasma_omp_csyrk
  * @sa plasma_omp_dsyrk

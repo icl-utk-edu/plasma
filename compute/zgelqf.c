@@ -48,7 +48,7 @@
  *          The leading dimension of the array A. lda >= max(1,m).
  *
  * @param[out] descT
- *          On exit, auxiliary factorization data, required by PLASMA_zgelqs
+ *          On exit, auxiliary factorization data, required by plasma_zgelqs
  *          to solve the system of equations.
  *
  *******************************************************************************
@@ -59,13 +59,13 @@
  *******************************************************************************
  *
  * @sa plasma_omp_zgelqf
- * @sa PLASMA_cgelqf
- * @sa PLASMA_dgelqf
- * @sa PLASMA_sgelqf
- * @sa PLASMA_zgelqs
+ * @sa plasma_cgelqf
+ * @sa plasma_dgelqf
+ * @sa plasma_sgelqf
+ * @sa plasma_zgelqs
  *
  ******************************************************************************/
-int PLASMA_zgelqf(int m, int n,
+int plasma_zgelqf(int m, int n,
                   plasma_complex64_t *pA, int lda,
                   plasma_desc_t T)
 {
@@ -133,13 +133,13 @@ int PLASMA_zgelqf(int m, int n,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_Async(pA, lda, A, sequence, &request);
+        plasma_zcm2ccrb_Async(pA, lda, A, sequence, &request);
 
         // Call the tile async function.
         plasma_omp_zgelqf(A, T, work, sequence, &request);
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(A, pA, lda, sequence, &request);
+        plasma_zccrb2cm_Async(A, pA, lda, sequence, &request);
     }
     // implicit synchronization
 
@@ -159,7 +159,7 @@ int PLASMA_zgelqf(int m, int n,
  * @ingroup plasma_gelqf
  *
  *  Computes the tile LQ factorization of a matrix.
- *  Non-blocking tile version of PLASMA_zgelqf().
+ *  Non-blocking tile version of plasma_zgelqf().
  *  May return before the computation is finished.
  *  Allows for pipelining of operations at runtime.
  *
@@ -171,7 +171,7 @@ int PLASMA_zgelqf(int m, int n,
  *
  * @param[out] T
  *          Descriptor of matrix T.
- *          On exit, auxiliary factorization data, required by PLASMA_zgelqs to
+ *          On exit, auxiliary factorization data, required by plasma_zgelqs to
  *          solve the system of equations.
  *
  * @param[in] work
@@ -195,7 +195,7 @@ int PLASMA_zgelqf(int m, int n,
  *
  *******************************************************************************
  *
- * @sa PLASMA_zgelqf
+ * @sa plasma_zgelqf
  * @sa plasma_omp_cgelqf
  * @sa plasma_omp_dgelqf
  * @sa plasma_omp_sgelqf

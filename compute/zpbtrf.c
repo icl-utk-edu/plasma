@@ -68,12 +68,12 @@
  *******************************************************************************
  *
  * @sa plasma_omp_zpbtrf
- * @sa PLASMA_cpbtrf
- * @sa PLASMA_dpbtrf
- * @sa PLASMA_spbtrf
+ * @sa plasma_cpbtrf
+ * @sa plasma_dpbtrf
+ * @sa plasma_spbtrf
  *
  ******************************************************************************/
-int PLASMA_zpbtrf(plasma_enum_t uplo,
+int plasma_zpbtrf(plasma_enum_t uplo,
                   int n, int kd,
                   plasma_complex64_t *pAB, int ldab)
 {
@@ -137,13 +137,13 @@ int PLASMA_zpbtrf(plasma_enum_t uplo,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_band_Async(uplo, pAB, ldab, AB, sequence, &request);
+        plasma_zcm2ccrb_band_Async(uplo, pAB, ldab, AB, sequence, &request);
 
         // Call the tile async function.
         plasma_omp_zpbtrf(uplo, AB, sequence, &request);
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_band_Async(uplo, AB, pAB, ldab, sequence, &request);
+        plasma_zccrb2cm_band_Async(uplo, AB, pAB, ldab, sequence, &request);
     }
     // implicit synchronization
 
@@ -162,7 +162,7 @@ int PLASMA_zpbtrf(plasma_enum_t uplo,
  *
  *  Performs the Cholesky factorization of a Hermitian positive definite
  *  matrix.
- *  Non-blocking tile version of PLASMA_zpbtrf().
+ *  Non-blocking tile version of plasma_zpbtrf().
  *  May return before the computation is finished.
  *  Operates on matrices stored by tiles.
  *  All matrices are passed through descriptors.
@@ -191,7 +191,7 @@ int PLASMA_zpbtrf(plasma_enum_t uplo,
  *
  *******************************************************************************
  *
- * @sa PLASMA_zpbtrf
+ * @sa plasma_zpbtrf
  * @sa plasma_omp_zpbtrf
  * @sa plasma_omp_cpbtrf
  * @sa plasma_omp_dpbtrf

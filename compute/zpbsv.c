@@ -83,12 +83,12 @@
  *******************************************************************************
  *
  * @sa plasma_omp_zpbsv
- * @sa PLASMA_cpbsv
- * @sa PLASMA_dpbsv
- * @sa PLASMA_spbsv
+ * @sa plasma_cpbsv
+ * @sa plasma_dpbsv
+ * @sa plasma_spbsv
  *
  ******************************************************************************/
-int PLASMA_zpbsv(plasma_enum_t uplo,
+int plasma_zpbsv(plasma_enum_t uplo,
                  int n, int kd, int nrhs,
                  plasma_complex64_t *pAB, int ldab,
                  plasma_complex64_t *pB,  int ldb)
@@ -169,15 +169,15 @@ int PLASMA_zpbsv(plasma_enum_t uplo,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_band_Async(uplo, pAB, ldab, AB, sequence, &request);
-        PLASMA_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
+        plasma_zcm2ccrb_band_Async(uplo, pAB, ldab, AB, sequence, &request);
+        plasma_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
 
         // Call the tile async function.
         plasma_omp_zpbsv(uplo, AB, B, sequence, &request);
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(B, pB, ldb, sequence, &request);
-        PLASMA_zccrb2cm_band_Async(uplo, AB, pAB, ldab, sequence, &request);
+        plasma_zccrb2cm_Async(B, pB, ldb, sequence, &request);
+        plasma_zccrb2cm_band_Async(uplo, AB, pAB, ldab, sequence, &request);
     }
     // implicit synchronization
 
@@ -197,7 +197,7 @@ int PLASMA_zpbsv(plasma_enum_t uplo,
  *
  *  Solves a Hermitian positive definite band system of linear equations
  *  using Cholesky factorization.
- *  Non-blocking tile version of PLASMA_zpbsv().
+ *  Non-blocking tile version of plasma_zpbsv().
  *  Operates on matrices stored by tiles.
  *  All matrices are passed through descriptors.
  *  All dimensions are taken from the descriptors.
@@ -232,7 +232,7 @@ int PLASMA_zpbsv(plasma_enum_t uplo,
  *
  *******************************************************************************
  *
- * @sa PLASMA_zpbsv
+ * @sa plasma_zpbsv
  * @sa plasma_omp_cpbsv
  * @sa plasma_omp_dpbsv
  * @sa plasma_omp_spbsv

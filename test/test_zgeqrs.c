@@ -144,11 +144,11 @@ void test_zgeqrs(param_value_t param[], char *info)
     //================================================================
     // prepare QR factorization of A - only auxiliary for this test,
     // time is not measured
-    PLASMA_zgeqrf(m, n, A, lda, T);
+    plasma_zgeqrf(m, n, A, lda, T);
 
     // perform solution of the system by the prepared QR factorization of A
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zgeqrs(m, n, nrhs,
+    plasma_zgeqrs(m, n, nrhs,
                   A, lda,
                   T,
                   B, ldb);

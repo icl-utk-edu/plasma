@@ -49,7 +49,7 @@
  *          The leading dimension of the array A. lda >= max(1,m).
  *
  * @param[out] descT
- *          On exit, auxiliary factorization data, required by PLASMA_zgeqrs to
+ *          On exit, auxiliary factorization data, required by plasma_zgeqrs to
  *          solve the system of equations.
  *
  *******************************************************************************
@@ -60,14 +60,14 @@
  *******************************************************************************
  *
  * @sa plasma_omp_zgeqrf
- * @sa PLASMA_cgeqrf
- * @sa PLASMA_dgeqrf
- * @sa PLASMA_sgeqrf
- * @sa PLASMA_zgeqrs
- * @sa PLASMA_zgels
+ * @sa plasma_cgeqrf
+ * @sa plasma_dgeqrf
+ * @sa plasma_sgeqrf
+ * @sa plasma_zgeqrs
+ * @sa plasma_zgels
  *
  ******************************************************************************/
-int PLASMA_zgeqrf(int m, int n,
+int plasma_zgeqrf(int m, int n,
                   plasma_complex64_t *pA, int lda,
                   plasma_desc_t T)
 {
@@ -135,13 +135,13 @@ int PLASMA_zgeqrf(int m, int n,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_Async(pA, lda, A, sequence, &request);
+        plasma_zcm2ccrb_Async(pA, lda, A, sequence, &request);
 
         // Call the tile async function.
         plasma_omp_zgeqrf(A, T, work, sequence, &request);
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(A, pA, lda, sequence, &request);
+        plasma_zccrb2cm_Async(A, pA, lda, sequence, &request);
     }
     // implicit synchronization
 
@@ -161,7 +161,7 @@ int PLASMA_zgeqrf(int m, int n,
  * @ingroup plasma_geqrf
  *
  *  Computes a tile QR factorization of a matrix.
- *  Non-blocking tile version of PLASMA_zgeqrf().
+ *  Non-blocking tile version of plasma_zgeqrf().
  *  May return before the computation is finished.
  *  Operates on matrices stored by tiles.
  *  All matrices are passed through descriptors.
@@ -176,7 +176,7 @@ int PLASMA_zgeqrf(int m, int n,
  *
  * @param[out] T
  *          Descriptor of matrix T.
- *          On exit, auxiliary factorization data, required by PLASMA_zgeqrs to
+ *          On exit, auxiliary factorization data, required by plasma_zgeqrs to
  *          solve the system of equations.
  *
  * @param[in] work
@@ -200,7 +200,7 @@ int PLASMA_zgeqrf(int m, int n,
  *
  *******************************************************************************
  *
- * @sa PLASMA_zgeqrf
+ * @sa plasma_zgeqrf
  * @sa plasma_omp_cgeqrf
  * @sa plasma_omp_dgeqrf
  * @sa plasma_omp_sgeqrf

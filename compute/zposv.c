@@ -81,12 +81,12 @@
  *******************************************************************************
  *
  * @sa plasma_omp_zposv
- * @sa PLASMA_cposv
- * @sa PLASMA_dposv
- * @sa PLASMA_sposv
+ * @sa plasma_cposv
+ * @sa plasma_dposv
+ * @sa plasma_sposv
  *
  ******************************************************************************/
-int PLASMA_zposv(plasma_enum_t uplo,
+int plasma_zposv(plasma_enum_t uplo,
                  int n, int nrhs,
                  plasma_complex64_t *pA, int lda,
                  plasma_complex64_t *pB, int ldb)
@@ -162,14 +162,14 @@ int PLASMA_zposv(plasma_enum_t uplo,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_Async(pA, lda, A, sequence, &request);
-        PLASMA_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
+        plasma_zcm2ccrb_Async(pA, lda, A, sequence, &request);
+        plasma_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
 
         // Call the tile async function.
         plasma_omp_zposv(uplo, A, B, sequence, &request);
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(B, pB, ldb, sequence, &request);
+        plasma_zccrb2cm_Async(B, pB, ldb, sequence, &request);
     }
     // implicit synchronization
 
@@ -189,7 +189,7 @@ int PLASMA_zposv(plasma_enum_t uplo,
  *
  *  Solves a Hermitian positive definite system of linear equations
  *  using Cholesky factorization.
- *  Non-blocking tile version of PLASMA_zposv().
+ *  Non-blocking tile version of plasma_zposv().
  *  Operates on matrices stored by tiles.
  *  All matrices are passed through descriptors.
  *  All dimensions are taken from the descriptors.
@@ -233,7 +233,7 @@ int PLASMA_zposv(plasma_enum_t uplo,
  *
  *******************************************************************************
  *
- * @sa PLASMA_zposv
+ * @sa plasma_zposv
  * @sa plasma_omp_cposv
  * @sa plasma_omp_dposv
  * @sa plasma_omp_sposv

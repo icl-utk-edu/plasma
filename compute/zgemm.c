@@ -96,12 +96,12 @@
  *******************************************************************************
  *
  * @sa plasma_omp_zgemm
- * @sa PLASMA_cgemm
- * @sa PLASMA_dgemm
- * @sa PLASMA_sgemm
+ * @sa plasma_cgemm
+ * @sa plasma_dgemm
+ * @sa plasma_sgemm
  *
  ******************************************************************************/
-int PLASMA_zgemm(plasma_enum_t transA, plasma_enum_t transB,
+int plasma_zgemm(plasma_enum_t transA, plasma_enum_t transB,
                  int m, int n, int k,
                  plasma_complex64_t alpha, plasma_complex64_t *pA, int lda,
                                            plasma_complex64_t *pB, int ldb,
@@ -222,9 +222,9 @@ int PLASMA_zgemm(plasma_enum_t transA, plasma_enum_t transB,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_Async(pA, lda, A, sequence, &request);
-        PLASMA_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
-        PLASMA_zcm2ccrb_Async(pC, ldc, C, sequence, &request);
+        plasma_zcm2ccrb_Async(pA, lda, A, sequence, &request);
+        plasma_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
+        plasma_zcm2ccrb_Async(pC, ldc, C, sequence, &request);
 
         // Call the tile async function.
         plasma_omp_zgemm(transA, transB,
@@ -234,7 +234,7 @@ int PLASMA_zgemm(plasma_enum_t transA, plasma_enum_t transB,
                          sequence, &request);
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(C, pC, ldc, sequence, &request);
+        plasma_zccrb2cm_Async(C, pC, ldc, sequence, &request);
     }
     // implicit synchronization
 
@@ -254,7 +254,7 @@ int PLASMA_zgemm(plasma_enum_t transA, plasma_enum_t transB,
  * @ingroup plasma_gemm
  *
  *  Performs matrix multiplication.
- *  Non-blocking tile version of PLASMA_zgemm().
+ *  Non-blocking tile version of plasma_zgemm().
  *  May return before the computation is finished.
  *  Operates on matrices stored by tiles.
  *  All matrices are passed through descriptors.
@@ -305,7 +305,7 @@ int PLASMA_zgemm(plasma_enum_t transA, plasma_enum_t transB,
  *
  *******************************************************************************
  *
- * @sa PLASMA_zgemm
+ * @sa plasma_zgemm
  * @sa plasma_omp_cgemm
  * @sa plasma_omp_dgemm
  * @sa plasma_omp_sgemm

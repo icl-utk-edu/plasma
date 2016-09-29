@@ -175,7 +175,7 @@ void test_zsyr2k(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    PLASMA_zsyr2k(
+    plasma_zsyr2k(
         uplo, trans,
         n, k,
         alpha, A, lda,
