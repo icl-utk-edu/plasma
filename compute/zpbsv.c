@@ -88,9 +88,10 @@
  * @sa PLASMA_spbsv
  *
  ******************************************************************************/
-int PLASMA_zpbsv(plasma_enum_t uplo, int n, int kd, int nrhs,
-                 plasma_complex64_t *AB, int ldab,
-                 plasma_complex64_t *B, int ldb)
+int PLASMA_zpbsv(plasma_enum_t uplo,
+                 int n, int kd, int nrhs,
+                 plasma_complex64_t *pAB, int ldab,
+                 plasma_complex64_t *pB,  int ldb)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -135,21 +136,20 @@ int PLASMA_zpbsv(plasma_enum_t uplo, int n, int kd, int nrhs,
 
     // Initialize tile matrix descriptors.
     int lda = nb*(1+(kd+nb-1)/nb);
-    plasma_desc_t descAB;
-    plasma_desc_t descB;
+    plasma_desc_t AB;
+    plasma_desc_t B;
     int retval;
     retval = plasma_desc_general_band_create(PlasmaComplexDouble, uplo, nb, nb,
-                                             lda, n, 0, 0, n, n, kd, kd,
-                                             &descAB);
+                                             lda, n, 0, 0, n, n, kd, kd, &AB);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_band_create() failed");
         return retval;
     }
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        ldb, nrhs, 0, 0, n, nrhs, &descB);
+                                        ldb, nrhs, 0, 0, n, nrhs, &B);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
-        plasma_desc_destroy(&descAB);
+        plasma_desc_destroy(&AB);
         return retval;
     }
 
@@ -169,24 +169,21 @@ int PLASMA_zpbsv(plasma_enum_t uplo, int n, int kd, int nrhs,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_band_Async(uplo, AB, ldab, &descAB, sequence, &request);
-        PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
+        PLASMA_zcm2ccrb_band_Async(uplo, pAB, ldab, AB, sequence, &request);
+        PLASMA_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
 
         // Call the tile async function.
-        plasma_omp_zpbsv(uplo,
-                         &descAB,
-                         &descB,
-                         sequence, &request);
+        plasma_omp_zpbsv(uplo, AB, B, sequence, &request);
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
-        PLASMA_zccrb2cm_band_Async(uplo, &descAB, AB, ldab, sequence, &request);
+        PLASMA_zccrb2cm_Async(B, pB, ldb, sequence, &request);
+        PLASMA_zccrb2cm_band_Async(uplo, AB, pAB, ldab, sequence, &request);
     }
     // implicit synchronization
 
     // Free matrices in tile layout.
-    plasma_desc_destroy(&descAB);
-    plasma_desc_destroy(&descB);
+    plasma_desc_destroy(&AB);
+    plasma_desc_destroy(&B);
 
     // Return status.
     int status = sequence->status;
@@ -241,7 +238,7 @@ int PLASMA_zpbsv(plasma_enum_t uplo, int n, int kd, int nrhs,
  * @sa plasma_omp_spbsv
  *
  ******************************************************************************/
-void plasma_omp_zpbsv(plasma_enum_t uplo, plasma_desc_t *AB, plasma_desc_t *B,
+void plasma_omp_zpbsv(plasma_enum_t uplo, plasma_desc_t AB, plasma_desc_t B,
                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
@@ -280,19 +277,19 @@ void plasma_omp_zpbsv(plasma_enum_t uplo, plasma_desc_t *AB, plasma_desc_t *B,
     }
 
     // quick return
-    if (AB->n == 0 || B->n == 0)
+    if (AB.n == 0 || B.n == 0)
         return;
 
     // Call the parallel functions.
     // factorization
-    plasma_pzpbtrf(uplo, *AB, sequence, request);
+    plasma_pzpbtrf(uplo, AB, sequence, request);
 
     // forward-substitution
     plasma_pztbsm(PlasmaLeft, uplo,
                   uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans, 
                   PlasmaNonUnit,
-                  1.0, *AB,
-                       *B,
+                  1.0, AB,
+                       B,
                   NULL,
                   sequence, request);
 
@@ -300,8 +297,8 @@ void plasma_omp_zpbsv(plasma_enum_t uplo, plasma_desc_t *AB, plasma_desc_t *B,
     plasma_pztbsm(PlasmaLeft, uplo,
                   uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans, 
                   PlasmaNonUnit,
-                  1.0, *AB,
-                       *B,
+                  1.0, AB,
+                       B,
                   NULL,
                   sequence, request);
 }

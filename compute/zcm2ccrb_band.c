@@ -24,7 +24,7 @@
     Out-of-place.
 */
 void PLASMA_zcm2ccrb_band_Async(plasma_enum_t uplo,
-                                plasma_complex64_t *Af77, int lda, plasma_desc_t *A,
+                                plasma_complex64_t *pA, int lda, plasma_desc_t A,
                                 plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
@@ -36,7 +36,7 @@ void PLASMA_zcm2ccrb_band_Async(plasma_enum_t uplo,
     }
 
     // Check input arguments.
-    if (Af77 == NULL) {
+    if (pA == NULL) {
         plasma_error("NULL A");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
@@ -58,9 +58,9 @@ void PLASMA_zcm2ccrb_band_Async(plasma_enum_t uplo,
     }
 
     // quick return
-    if (A->m == 0 || A->n == 0)
+    if (A.m == 0 || A.n == 0)
         return;
 
     // Call the parallel function.
-    plasma_pzoocm2ccrb_band(uplo, Af77, lda, *A, sequence, request);
+    plasma_pzoocm2ccrb_band(uplo, pA, lda, A, sequence, request);
 }

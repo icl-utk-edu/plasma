@@ -85,8 +85,8 @@
  ******************************************************************************/
 int PLASMA_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                  int n, int k,
-                 double alpha, plasma_complex64_t *A, int lda,
-                 double beta,  plasma_complex64_t *C, int ldc)
+                 double alpha, plasma_complex64_t *pA, int lda,
+                 double beta,  plasma_complex64_t *pC, int ldc)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -142,20 +142,20 @@ int PLASMA_zherk(plasma_enum_t uplo, plasma_enum_t trans,
     int nb = plasma->nb;
 
     // Initialize tile matrix descriptors.
-    plasma_desc_t descA;
-    plasma_desc_t descC;
+    plasma_desc_t A;
+    plasma_desc_t C;
     int retval;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        am, an, 0, 0, am, an, &descA);
+                                        am, an, 0, 0, am, an, &A);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        n, n, 0, 0, n, n, &descC);
+                                        n, n, 0, 0, n, n, &C);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
-        plasma_desc_destroy(&descA);
+        plasma_desc_destroy(&A);
         return retval;
     }
 
@@ -175,23 +175,23 @@ int PLASMA_zherk(plasma_enum_t uplo, plasma_enum_t trans,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
-        PLASMA_zcm2ccrb_Async(C, ldc, &descC, sequence, &request);
+        PLASMA_zcm2ccrb_Async(pA, lda, A, sequence, &request);
+        PLASMA_zcm2ccrb_Async(pC, ldc, C, sequence, &request);
 
         // Call the tile async function.
         plasma_omp_zherk(uplo, trans,
-                         alpha, &descA,
-                         beta,  &descC,
+                         alpha, A,
+                         beta,  C,
                          sequence, &request);
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
+        PLASMA_zccrb2cm_Async(C, pC, ldc, sequence, &request);
     }
     // implicit synchronization
 
     // Free matrices in tile layout.
-    plasma_desc_destroy(&descA);
-    plasma_desc_destroy(&descC);
+    plasma_desc_destroy(&A);
+    plasma_desc_destroy(&C);
 
     // Return status.
     int status = sequence->status;
@@ -258,8 +258,8 @@ int PLASMA_zherk(plasma_enum_t uplo, plasma_enum_t trans,
  *
  ******************************************************************************/
 void plasma_omp_zherk(plasma_enum_t uplo, plasma_enum_t trans,
-                      double alpha, plasma_desc_t *A,
-                      double beta,  plasma_desc_t *C,
+                      double alpha, plasma_desc_t A,
+                      double beta,  plasma_desc_t C,
                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
@@ -305,13 +305,13 @@ void plasma_omp_zherk(plasma_enum_t uplo, plasma_enum_t trans,
     }
 
     // quick return
-    int k = trans == PlasmaNoTrans ? A->n : A->m;
-    if (C->m == 0 || ((alpha == 0.0 || k == 0) && beta == 1.0))
+    int k = trans == PlasmaNoTrans ? A.n : A.m;
+    if (C.m == 0 || ((alpha == 0.0 || k == 0) && beta == 1.0))
         return;
 
     // Call the parallel function.
     plasma_pzherk(uplo, trans,
-                  alpha, *A,
-                  beta, *C,
+                  alpha, A,
+                  beta,  C,
                   sequence, request);
 }

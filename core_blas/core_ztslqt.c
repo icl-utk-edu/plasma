@@ -204,7 +204,7 @@ void core_omp_ztslqt(int m, int n, int ib, int nb,
                      plasma_complex64_t *A1, int lda1,
                      plasma_complex64_t *A2, int lda2,
                      plasma_complex64_t *T,  int ldt,
-                     plasma_workspace_t *work,
+                     plasma_workspace_t work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // OpenMP depends assume m == n == lda1 == lda2 == nb, ldt == ib.
@@ -216,9 +216,9 @@ void core_omp_ztslqt(int m, int n, int ib, int nb,
             int tid = omp_get_thread_num();
             // split spaces into TAU and WORK
             int ltau = m;
-            plasma_complex64_t *TAU = ((plasma_complex64_t*)work->spaces[tid]);
+            plasma_complex64_t *TAU = ((plasma_complex64_t*)work.spaces[tid]);
             plasma_complex64_t *W   =
-                ((plasma_complex64_t*)work->spaces[tid]) + ltau;
+                ((plasma_complex64_t*)work.spaces[tid]) + ltau;
 
             // Call the kernel.
             int info = core_ztslqt(m, n, ib,

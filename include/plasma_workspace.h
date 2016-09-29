@@ -20,9 +20,9 @@ extern "C" {
 #endif
 
 typedef struct {
-    void **spaces;    ///< array of nthread pointers to workspaces
-    size_t lwork;     ///< length in elements of workspace on each core
-    int nthread;      ///< number of threads
+    void **spaces;      ///< array of nthread pointers to workspaces
+    size_t lwork;       ///< length in elements of workspace on each core
+    int nthread;        ///< number of threads
     plasma_enum_t dtyp; ///< precision of the workspace
 } plasma_workspace_t;
 

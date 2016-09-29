@@ -158,7 +158,7 @@ int core_zgeqrt(int m, int n, int ib,
 void core_omp_zgeqrt(int m, int n, int ib, int nb,
                      plasma_complex64_t *A, int lda,
                      plasma_complex64_t *T, int ldt,
-                     plasma_workspace_t *work,
+                     plasma_workspace_t work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // OpenMP depends assume lda == m == n == nb, ldt == ib.
@@ -169,10 +169,10 @@ void core_omp_zgeqrt(int m, int n, int ib, int nb,
             int tid = omp_get_thread_num();
             // split spaces into TAU and WORK
             int ltau = n;
-            int lwork = work->lwork - ltau;
-            plasma_complex64_t *TAU = ((plasma_complex64_t*)work->spaces[tid]);
+            int lwork = work.lwork - ltau;
+            plasma_complex64_t *TAU = ((plasma_complex64_t*)work.spaces[tid]);
             plasma_complex64_t *W   =
-                ((plasma_complex64_t*)work->spaces[tid]) + ltau;
+                ((plasma_complex64_t*)work.spaces[tid]) + ltau;
 
             // Call the kernel.
             int info = core_zgeqrt(m, n, ib,

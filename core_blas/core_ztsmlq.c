@@ -255,7 +255,7 @@ void core_omp_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
                            plasma_complex64_t *A2, int lda2,
                      const plasma_complex64_t *V,  int ldv,
                      const plasma_complex64_t *T,  int ldt,
-                     plasma_workspace_t *work,
+                     plasma_workspace_t work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // OpenMP depends assume m1 == n1 == m2 == n2 == lda1 == lda2 == ldv == nb,
@@ -268,7 +268,7 @@ void core_omp_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
         if (sequence->status == PlasmaSuccess) {
             int tid = omp_get_thread_num();
             plasma_complex64_t *W   =
-                ((plasma_complex64_t*)work->spaces[tid]);
+                ((plasma_complex64_t*)work.spaces[tid]);
 
             int ldwork = side == PlasmaLeft ? ib : nb;
 

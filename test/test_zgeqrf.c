@@ -114,15 +114,15 @@ void test_zgeqrf(param_value_t param[], char *info)
     //================================================================
     // Prepare the descriptor for matrix T.
     //================================================================
-    plasma_desc_t descT;
-    retval = plasma_descT_create(PlasmaComplexDouble, m, n, &descT);
+    plasma_desc_t T;
+    retval = plasma_descT_create(PlasmaComplexDouble, m, n, &T);
     assert(retval == PlasmaSuccess);
 
     //================================================================
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zgeqrf(m, n, A, lda, &descT);
+    PLASMA_zgeqrf(m, n, A, lda, T);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
@@ -143,7 +143,7 @@ void test_zgeqrf(param_value_t param[], char *info)
                                          sizeof(plasma_complex64_t));
 
         // Build Q.
-        PLASMA_zungqr(m, minmn, minmn, A, lda, &descT, Q, ldq);
+        PLASMA_zungqr(m, minmn, minmn, A, lda, T, Q, ldq);
 
         // Build the identity matrix
         plasma_complex64_t *Id =
@@ -182,7 +182,7 @@ void test_zgeqrf(param_value_t param[], char *info)
         LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'u', m, n, A, lda, R, m);
 
         // Compute Q * R.
-        PLASMA_zunmqr(PlasmaLeft, PlasmaNoTrans, m, n, minmn, A, lda, &descT,
+        PLASMA_zunmqr(PlasmaLeft, PlasmaNoTrans, m, n, minmn, A, lda, T,
                       R, m);
 
         // Compute the difference.
@@ -227,7 +227,7 @@ void test_zgeqrf(param_value_t param[], char *info)
     //================================================================
     // Free arrays.
     //================================================================
-    plasma_desc_destroy(&descT);
+    plasma_desc_destroy(&T);
     free(A);
     if (test)
         free(Aref);

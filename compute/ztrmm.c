@@ -109,9 +109,9 @@
  ******************************************************************************/
 int PLASMA_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
                  plasma_enum_t transA, plasma_enum_t diag,
-                 int m, int n, plasma_complex64_t alpha,
-                 plasma_complex64_t *A, int lda,
-                 plasma_complex64_t *B, int ldb)
+                 int m, int n,
+                 plasma_complex64_t alpha, plasma_complex64_t *pA, int lda,
+                                           plasma_complex64_t *pB, int ldb)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -172,20 +172,20 @@ int PLASMA_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
     int nb = plasma->nb;
 
     // Create tile matrices.
-    plasma_desc_t descA;
-    plasma_desc_t descB;
+    plasma_desc_t A;
+    plasma_desc_t B;
     int retval;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        na, na, 0, 0, na, na, &descA);
+                                        na, na, 0, 0, na, na, &A);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        m,  n,  0, 0, m,  n, &descB);
+                                        m,  n,  0, 0, m,  n, &B);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
-        plasma_desc_destroy(&descA);
+        plasma_desc_destroy(&A);
         return retval;
     }
 
@@ -205,24 +205,24 @@ int PLASMA_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
     #pragma omp master
     {
         // Translate matrices to tile layout.
-        PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
-        PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
+        PLASMA_zcm2ccrb_Async(pA, lda, A, sequence, &request);
+        PLASMA_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
 
         // Call tile async interface.
         plasma_omp_ztrmm(side, uplo, transA, diag,
-                         alpha, &descA,
-                                &descB,
+                         alpha, A,
+                                B,
                          sequence, &request);
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
-        PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
+        PLASMA_zccrb2cm_Async(A, pA, lda, sequence, &request);
+        PLASMA_zccrb2cm_Async(B, pB, ldb, sequence, &request);
     }
     // implicit synchronization
 
     // Free matrices in tile layout.
-    plasma_desc_destroy(&descA);
-    plasma_desc_destroy(&descB);
+    plasma_desc_destroy(&A);
+    plasma_desc_destroy(&B);
 
     // Return status.
     int status = sequence->status;
@@ -272,8 +272,8 @@ int PLASMA_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
  ******************************************************************************/
 void plasma_omp_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
                       plasma_enum_t transA, plasma_enum_t diag,
-                      plasma_complex64_t alpha, plasma_desc_t *A,
-                                                plasma_desc_t *B,
+                      plasma_complex64_t alpha, plasma_desc_t A,
+                                                plasma_desc_t B,
                       plasma_sequence_t *sequence, plasma_request_t  *request)
 {
     // Get PLASMA context.
@@ -329,11 +329,11 @@ void plasma_omp_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
     }
 
     // quick return
-    if (A->m == 0 || A->n == 0 || alpha == 0.0 || B->m == 0 || B->n == 0)
+    if (A.m == 0 || A.n == 0 || alpha == 0.0 || B.m == 0 || B.n == 0)
         return;
 
     // Call parallel function.
     plasma_pztrmm(side, uplo, transA, diag, alpha,
-                  *A, *B,
+                  A, B,
                   sequence, request);
 }

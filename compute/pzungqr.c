@@ -26,7 +26,7 @@
  *  Parallel construction of Q using tile V (application to identity)
  **/
 void plasma_pzungqr(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
-                    plasma_workspace_t *work,
+                    plasma_workspace_t work,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Check sequence status.

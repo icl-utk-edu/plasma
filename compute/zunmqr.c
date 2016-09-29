@@ -93,10 +93,11 @@
  * @sa PLASMA_zgeqrf
  *
  ******************************************************************************/
-int PLASMA_zunmqr(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
-                  plasma_complex64_t *A, int lda,
-                  plasma_desc_t *descT,
-                  plasma_complex64_t *C, int ldc)
+int PLASMA_zunmqr(plasma_enum_t side, plasma_enum_t trans,
+                  int m, int n, int k,
+                  plasma_complex64_t *pA, int lda,
+                  plasma_desc_t T,
+                  plasma_complex64_t *pC, int ldc)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -151,20 +152,20 @@ int PLASMA_zunmqr(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
     int nb = plasma->nb;
 
     // Create tile matrices.
-    plasma_desc_t descA;
-    plasma_desc_t descC;
+    plasma_desc_t A;
+    plasma_desc_t C;
     int retval;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        lda, k, 0, 0, am, k, &descA);
+                                        lda, k, 0, 0, am, k, &A);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        ldc, n, 0, 0, m, n, &descC);
+                                        ldc, n, 0, 0, m, n, &C);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
-        plasma_desc_destroy(&descA);
+        plasma_desc_destroy(&A);
         return retval;
     }
 
@@ -193,23 +194,24 @@ int PLASMA_zunmqr(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
-        PLASMA_zcm2ccrb_Async(C, ldc, &descC, sequence, &request);
+        PLASMA_zcm2ccrb_Async(pA, lda, A, sequence, &request);
+        PLASMA_zcm2ccrb_Async(pC, ldc, C, sequence, &request);
 
         // Call the tile async function.
-        plasma_omp_zunmqr(side, trans, &descA, descT, &descC,
-                          &work, sequence, &request);
+        plasma_omp_zunmqr(side, trans,
+                          A, T, C, work,
+                          sequence, &request);
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
+        PLASMA_zccrb2cm_Async(C, pC, ldc, sequence, &request);
     }
     // implicit synchronization
 
     plasma_workspace_free(&work);
 
     // Free matrices in tile layout.
-    plasma_desc_destroy(&descA);
-    plasma_desc_destroy(&descC);
+    plasma_desc_destroy(&A);
+    plasma_desc_destroy(&C);
 
     // Return status.
     int status = sequence->status;
@@ -279,8 +281,8 @@ int PLASMA_zunmqr(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
  *
  ******************************************************************************/
 void plasma_omp_zunmqr(plasma_enum_t side, plasma_enum_t trans,
-                       plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *C,
-                       plasma_workspace_t *work,
+                       plasma_desc_t A, plasma_desc_t T, plasma_desc_t C,
+                       plasma_workspace_t work,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
@@ -317,11 +319,6 @@ void plasma_omp_zunmqr(plasma_enum_t side, plasma_enum_t trans,
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-    if (work == NULL) {
-        plasma_error("NULL work");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
     if (sequence == NULL) {
         plasma_error("NULL sequence");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
@@ -334,11 +331,11 @@ void plasma_omp_zunmqr(plasma_enum_t side, plasma_enum_t trans,
     }
 
     // quick return
-    if (C->m == 0 || C->n == 0 || imin(A->m, A->n) == 0)
+    if (C.m == 0 || C.n == 0 || A.m == 0 || A.n == 0)
         return;
 
     // Call the parallel function.
     plasma_pzunmqr(side, trans,
-                   *A, *C, *T,
-                   work, sequence, request);
+                   A, C, T, work,
+                   sequence, request);
 }

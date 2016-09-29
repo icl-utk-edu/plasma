@@ -232,9 +232,9 @@ int plasma_desc_general_band_init(plasma_enum_t precision, plasma_enum_t uplo,
                                   int i, int j, int m, int n, int kl, int ku,
                                   plasma_desc_t *desc);
 
-int plasma_desc_check(plasma_desc_t *desc);
-int plasma_desc_general_check(plasma_desc_t *desc);
-int plasma_desc_general_band_check(plasma_desc_t *desc);
+int plasma_desc_check(plasma_desc_t desc);
+int plasma_desc_general_check(plasma_desc_t desc);
+int plasma_desc_general_band_check(plasma_desc_t desc);
 
 plasma_desc_t plasma_desc_view(plasma_desc_t descA, int i, int j, int m, int n);
 

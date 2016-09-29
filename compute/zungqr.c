@@ -70,9 +70,9 @@
  *
  ******************************************************************************/
 int PLASMA_zungqr(int m, int n, int k,
-                  plasma_complex64_t *A, int lda,
-                  plasma_desc_t *descT,
-                  plasma_complex64_t *Q, int ldq)
+                  plasma_complex64_t *pA, int lda,
+                  plasma_desc_t T,
+                  plasma_complex64_t *Qf77, int ldq)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -112,20 +112,20 @@ int PLASMA_zungqr(int m, int n, int k,
     int nb = plasma->nb;
 
     // Create tile matrices.
-    plasma_desc_t descA;
-    plasma_desc_t descQ;
+    plasma_desc_t A;
+    plasma_desc_t Q;
     int retval;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        lda, n, 0, 0, m, k, &descA);
+                                        lda, n, 0, 0, m, k, &A);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        ldq, n, 0, 0, m, n, &descQ);
+                                        ldq, n, 0, 0, m, n, &Q);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
-        plasma_desc_destroy(&descA);
+        plasma_desc_destroy(&A);
         return retval;
     }
 
@@ -154,22 +154,22 @@ int PLASMA_zungqr(int m, int n, int k,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
-        PLASMA_zcm2ccrb_Async(Q, ldq, &descQ, sequence, &request);
+        PLASMA_zcm2ccrb_Async(pA, lda, A, sequence, &request);
+        PLASMA_zcm2ccrb_Async(Qf77, ldq, Q, sequence, &request);
 
         // Call the tile async function.
-        plasma_omp_zungqr(&descA, descT, &descQ, &work, sequence, &request);
+        plasma_omp_zungqr(A, T, Q, work, sequence, &request);
 
         // Translate Q back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(&descQ, Q, ldq, sequence, &request);
+        PLASMA_zccrb2cm_Async(Q, Qf77, ldq, sequence, &request);
     }
     // implicit synchronization
 
     plasma_workspace_free(&work);
 
     // Free matrices in tile layout.
-    plasma_desc_destroy(&descA);
-    plasma_desc_destroy(&descQ);
+    plasma_desc_destroy(&A);
+    plasma_desc_destroy(&Q);
 
     // Return status.
     int status = sequence->status;
@@ -226,8 +226,8 @@ int PLASMA_zungqr(int m, int n, int k,
  * @sa plasma_omp_zgeqrf
  *
  ******************************************************************************/
-void plasma_omp_zungqr(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *Q,
-                       plasma_workspace_t *work,
+void plasma_omp_zungqr(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
+                       plasma_workspace_t work,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
@@ -254,11 +254,6 @@ void plasma_omp_zungqr(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *Q,
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-    if (work == NULL) {
-        plasma_error("NULL work");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
     if (sequence == NULL) {
         plasma_error("NULL sequence");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
@@ -271,12 +266,12 @@ void plasma_omp_zungqr(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *Q,
     }
 
     // quick return
-    if (Q->n <= 0)
+    if (Q.n <= 0)
         return;
 
     // Set Q to identity.
-    plasma_pzlaset(PlasmaGeneral, 0.0, 1.0, *Q, sequence, request);
+    plasma_pzlaset(PlasmaGeneral, 0.0, 1.0, Q, sequence, request);
 
     // Construct Q.
-    plasma_pzungqr(*A, *Q, *T, work, sequence, request);
+    plasma_pzungqr(A, Q, T, work, sequence, request);
 }

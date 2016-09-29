@@ -68,9 +68,9 @@
  *
  ******************************************************************************/
 int PLASMA_zgelqs(int m, int n, int nrhs,
-                  plasma_complex64_t *A, int lda,
-                  plasma_desc_t *descT,
-                  plasma_complex64_t *B, int ldb)
+                  plasma_complex64_t *pA, int lda,
+                  plasma_desc_t T,
+                  plasma_complex64_t *pB, int ldb)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -110,20 +110,20 @@ int PLASMA_zgelqs(int m, int n, int nrhs,
     int nb = plasma->nb;
 
     // Create tile matrices.
-    plasma_desc_t descA;
-    plasma_desc_t descB;
+    plasma_desc_t A;
+    plasma_desc_t B;
     int retval;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        lda, n, 0, 0, m, n, &descA);
+                                        lda, n, 0, 0, m, n, &A);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        ldb, nrhs, 0, 0, n, nrhs, &descB);
+                                        ldb, nrhs, 0, 0, n, nrhs, &B);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
-        plasma_desc_destroy(&descA);
+        plasma_desc_destroy(&A);
         return retval;
     }
 
@@ -152,25 +152,22 @@ int PLASMA_zgelqs(int m, int n, int nrhs,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
-        PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
+        PLASMA_zcm2ccrb_Async(pA, lda, A, sequence, &request);
+        PLASMA_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
 
         // Call the tile async function.
-        plasma_omp_zgelqs(&descA, descT, &descB, &work, sequence, &request);
+        plasma_omp_zgelqs(A, T, B, work, sequence, &request);
 
         // Translate back to LAPACK layout.
-        // It is not needed to translate the descriptor back
-        // for out-of-place storage.
-        //PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
-        PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
+        PLASMA_zccrb2cm_Async(B, pB, ldb, sequence, &request);
     }
     // implicit synchronization
 
     plasma_workspace_free(&work);
 
     // Free matrices in tile layout.
-    plasma_desc_destroy(&descA);
-    plasma_desc_destroy(&descB);
+    plasma_desc_destroy(&A);
+    plasma_desc_destroy(&B);
 
     // Return status.
     int status = sequence->status;
@@ -230,8 +227,8 @@ int PLASMA_zgelqs(int m, int n, int nrhs,
  * @sa plasma_omp_zgelqf
  *
  ******************************************************************************/
-void plasma_omp_zgelqs(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *B,
-                       plasma_workspace_t *work,
+void plasma_omp_zgelqs(plasma_desc_t A, plasma_desc_t T,
+                       plasma_desc_t B, plasma_workspace_t work,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
@@ -248,28 +245,13 @@ void plasma_omp_zgelqs(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *B,
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-    if (A->mb != plasma->nb || A->nb != plasma->nb) {
-        plasma_error("wrong tile dimensions of A");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
     if (plasma_desc_check(T) != PlasmaSuccess) {
         plasma_error("invalid descriptor T");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-    if (T->mb != plasma->ib || T->nb != plasma->nb) {
-        plasma_error("wrong tile dimensions of T");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
     if (plasma_desc_check(B) != PlasmaSuccess) {
         plasma_error("invalid descriptor B");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    if (B->mb != plasma->nb || B->nb != plasma->nb) {
-        plasma_error("wrong tile dimensions of B");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
@@ -284,33 +266,24 @@ void plasma_omp_zgelqs(plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *B,
         return;
     }
 
-    // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
-        return;
-    }
-
     // quick return
-    if (A->m == 0 || A->n == 0 || B->n == 0)
+    if (A.m == 0 || A.n == 0 || B.n == 0)
         return;
 
     // Zero the trailing block of the right-hand-side matrix.
     // B has less rows than X.
-    plasma_pzlaset(PlasmaGeneral, 0., 0.,
-                   plasma_desc_view(*B, A->m, 0,
-                                    A->n - A->m, B->n),
+    plasma_pzlaset(PlasmaGeneral, 0.0, 0.0,
+                   plasma_desc_view(B, A.m, 0, A.n - A.m, B.n),
                    sequence, request);
 
     // Solve L * Y = B.
-    plasma_complex64_t zone  =  1.0;
-    plasma_pztrsm(
-        PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaNonUnit,
-        zone, plasma_desc_view(*A, 0, 0, A->m, A->m),
-              plasma_desc_view(*B, 0, 0, A->m, B->n),
-        sequence, request);
+    plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaNonUnit,
+                  1.0, plasma_desc_view(A, 0, 0, A.m, A.m),
+                       plasma_desc_view(B, 0, 0, A.m, B.n),
+                  sequence, request);
 
     // Find X = Q^H * Y.
     plasma_pzunmlq(PlasmaLeft, Plasma_ConjTrans,
-                   *A, *B, *T,
-                   work, sequence, request);
+                   A, B, T, work,
+                   sequence, request);
 }

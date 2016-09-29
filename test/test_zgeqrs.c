@@ -135,8 +135,8 @@ void test_zgeqrs(param_value_t param[], char *info)
     //================================================================
     // Prepare the descriptor for matrix T.
     //================================================================
-    plasma_desc_t descT;
-    retval = plasma_descT_create(PlasmaComplexDouble, m, n, &descT);
+    plasma_desc_t T;
+    retval = plasma_descT_create(PlasmaComplexDouble, m, n, &T);
     assert(retval == PlasmaSuccess);
 
     //================================================================
@@ -144,13 +144,13 @@ void test_zgeqrs(param_value_t param[], char *info)
     //================================================================
     // prepare QR factorization of A - only auxiliary for this test,
     // time is not measured
-    PLASMA_zgeqrf(m, n, A, lda, &descT);
+    PLASMA_zgeqrf(m, n, A, lda, T);
 
     // perform solution of the system by the prepared QR factorization of A
     plasma_time_t start = omp_get_wtime();
     PLASMA_zgeqrs(m, n, nrhs,
                   A, lda,
-                  &descT,
+                  T,
                   B, ldb);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
@@ -202,7 +202,7 @@ void test_zgeqrs(param_value_t param[], char *info)
     //================================================================
     // Free arrays.
     //================================================================
-    plasma_desc_destroy(&descT);
+    plasma_desc_destroy(&T);
     free(A);
     free(B);
     if (test) {

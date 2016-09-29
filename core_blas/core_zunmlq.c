@@ -224,7 +224,7 @@ void core_omp_zunmlq(plasma_enum_t side, plasma_enum_t trans,
                      const plasma_complex64_t *A, int lda,
                      const plasma_complex64_t *T, int ldt,
                            plasma_complex64_t *C, int ldc,
-                     plasma_workspace_t *work,
+                     plasma_workspace_t work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // OpenMP depends assume lda == m == n == nb, ldc == nb, ldt == ib.
@@ -235,7 +235,7 @@ void core_omp_zunmlq(plasma_enum_t side, plasma_enum_t trans,
         if (sequence->status == PlasmaSuccess) {
             int tid = omp_get_thread_num();
             plasma_complex64_t *W   =
-                ((plasma_complex64_t*)work->spaces[tid]);
+                ((plasma_complex64_t*)work.spaces[tid]);
 
             int ldwork = nb;
 

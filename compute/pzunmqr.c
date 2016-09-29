@@ -28,7 +28,7 @@
  **/
 void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
                     plasma_desc_t A, plasma_desc_t B, plasma_desc_t T,
-                    plasma_workspace_t *work,
+                    plasma_workspace_t work,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Check sequence status.

@@ -26,7 +26,7 @@
  * @see plasma_omp_zgeqrf
  **/
 void plasma_pzgeqrf(plasma_desc_t A, plasma_desc_t T,
-                    plasma_workspace_t *work,
+                    plasma_workspace_t work,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Check sequence status.

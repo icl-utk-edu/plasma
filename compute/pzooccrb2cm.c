@@ -19,7 +19,7 @@
 #include "core_blas.h"
 
 /******************************************************************************/
-void plasma_pzooccrb2cm(plasma_desc_t A, plasma_complex64_t *Af77, int lda,
+void plasma_pzooccrb2cm(plasma_desc_t A, plasma_complex64_t *pA, int lda,
                         plasma_sequence_t *sequence, plasma_request_t *request)
 {
     plasma_complex64_t *f77;
@@ -43,7 +43,7 @@ void plasma_pzooccrb2cm(plasma_desc_t A, plasma_complex64_t *Af77, int lda,
             x2 = n == A.nt-1 ? (A.j+A.n-1)%A.nb+1 : A.nb;
             y2 = m == A.mt-1 ? (A.i+A.m-1)%A.mb+1 : A.mb;
 
-            f77 = &Af77[(size_t)A.nb*lda*n + (size_t)A.mb*m];
+            f77 = &pA[(size_t)A.nb*lda*n + (size_t)A.mb*m];
             bdl = (plasma_complex64_t*)plasma_tile_addr(A, m, n);
 
             core_omp_zlacpy(PlasmaGeneral,

@@ -77,9 +77,10 @@
  * @sa PLASMA_zpbtrf
  *
  ******************************************************************************/
-int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
-                  plasma_complex64_t *AB, int ldab,
-                  plasma_complex64_t *B, int ldb)
+int PLASMA_zpbtrs(plasma_enum_t uplo,
+                  int n, int kd, int nrhs,
+                  plasma_complex64_t *pAB, int ldab,
+                  plasma_complex64_t *pB,  int ldb)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -135,21 +136,21 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
     int ldab_desc = (tku+tkl+1)*nb;  
 
     // Create tile matrices.
-    plasma_desc_t descAB;
-    plasma_desc_t descB;
+    plasma_desc_t AB;
+    plasma_desc_t B;
     int retval;
     retval = plasma_desc_general_band_create(PlasmaComplexDouble, uplo, nb, nb,
                                              ldab_desc, n, 0, 0, n, n, kd, kd,
-                                             &descAB);
+                                             &AB);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_band_create() failed");
         return retval;
     }
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        n, nrhs, 0, 0, n, nrhs, &descB);
+                                        n, nrhs, 0, 0, n, nrhs, &B);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
-        plasma_desc_destroy(&descAB);
+        plasma_desc_destroy(&AB);
         return retval;
     }
 
@@ -169,25 +170,20 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_band_Async(uplo, AB, ldab, &descAB, sequence, &request);
-        if (sequence->status == PlasmaSuccess) {
-            PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
-        }
+        PLASMA_zcm2ccrb_band_Async(uplo, pAB, ldab, AB, sequence, &request);
+        PLASMA_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
 
         // Call the tile async function.
-        if (sequence->status == PlasmaSuccess) {
-            plasma_omp_zpbtrs(uplo, &descAB, &descB, sequence, &request);
-        }
+        plasma_omp_zpbtrs(uplo, AB, B, sequence, &request);
 
         // Translate back to LAPACK layout.
-        if (sequence->status == PlasmaSuccess)
-            PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
+        PLASMA_zccrb2cm_Async(B, pB, ldb, sequence, &request);
     }
     // implicit synchronization
 
     // Free matrix A in tile layout.
-    plasma_desc_destroy(&descAB);
-    plasma_desc_destroy(&descB);
+    plasma_desc_destroy(&AB);
+    plasma_desc_destroy(&B);
 
     // Return status.
     int status = sequence->status;
@@ -247,11 +243,8 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
  * @sa plasma_omp_zpbtrf
  *
  ******************************************************************************/
-void plasma_omp_zpbtrs(plasma_enum_t uplo,
-                       plasma_desc_t *AB,
-                       plasma_desc_t *B,
-                       plasma_sequence_t *sequence,
-                       plasma_request_t *request)
+void plasma_omp_zpbtrs(plasma_enum_t uplo, plasma_desc_t AB, plasma_desc_t B,
+                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -289,23 +282,23 @@ void plasma_omp_zpbtrs(plasma_enum_t uplo,
     }
 
     // quick return
-    if (AB->n == 0 || B->n == 0)
+    if (AB.n == 0 || B.n == 0)
         return;
 
     // Call the parallel functions.
     plasma_pztbsm(PlasmaLeft, uplo,
                   uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans,
                   PlasmaNonUnit,
-                  1.0, *AB,
-                       *B,
+                  1.0, AB,
+                       B,
                   NULL,
                   sequence, request);
 
     plasma_pztbsm(PlasmaLeft, uplo,
                   uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans,
                   PlasmaNonUnit,
-                  1.0, *AB,
-                       *B,
+                  1.0, AB,
+                       B,
                   NULL,
                   sequence, request);
 }

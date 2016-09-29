@@ -75,7 +75,7 @@
  ******************************************************************************/
 int PLASMA_zpbtrf(plasma_enum_t uplo,
                   int n, int kd,
-                  plasma_complex64_t *AB, int ldab)
+                  plasma_complex64_t *pAB, int ldab)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -112,11 +112,10 @@ int PLASMA_zpbtrf(plasma_enum_t uplo,
 
     // Initialize tile matrix descriptors.
     int lda = nb*(1+(kd+nb-1)/nb);
-    plasma_desc_t descAB;
+    plasma_desc_t AB;
     int retval;
     retval = plasma_desc_general_band_create(PlasmaComplexDouble, uplo, nb, nb,
-                                             lda, n, 0, 0, n, n, kd, kd,
-                                             &descAB);
+                                             lda, n, 0, 0, n, n, kd, kd, &AB);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_band_create() failed");
         return retval;
@@ -138,21 +137,18 @@ int PLASMA_zpbtrf(plasma_enum_t uplo,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_band_Async(uplo, AB, ldab, &descAB, sequence, &request);
+        PLASMA_zcm2ccrb_band_Async(uplo, pAB, ldab, AB, sequence, &request);
 
         // Call the tile async function.
-        if (sequence->status == PlasmaSuccess) {
-            plasma_omp_zpbtrf(uplo, &descAB, sequence, &request);
-        }
+        plasma_omp_zpbtrf(uplo, AB, sequence, &request);
 
         // Translate back to LAPACK layout.
-        if (sequence->status == PlasmaSuccess)
-            PLASMA_zccrb2cm_band_Async(uplo, &descAB, AB, ldab, sequence, &request);
+        PLASMA_zccrb2cm_band_Async(uplo, AB, pAB, ldab, sequence, &request);
     }
     // implicit synchronization
 
     // Free matrix A in tile layout.
-    plasma_desc_destroy(&descAB);
+    plasma_desc_destroy(&AB);
 
     // Return status.
     int status = sequence->status;
@@ -202,10 +198,8 @@ int PLASMA_zpbtrf(plasma_enum_t uplo,
  * @sa plasma_omp_spbtrf
  *
  ******************************************************************************/
-void plasma_omp_zpbtrf(plasma_enum_t uplo,
-                       plasma_desc_t *AB,
-                       plasma_sequence_t *sequence,
-                       plasma_request_t *request)
+void plasma_omp_zpbtrf(plasma_enum_t uplo, plasma_desc_t AB,
+                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -216,6 +210,11 @@ void plasma_omp_zpbtrf(plasma_enum_t uplo,
     }
 
     // Check input arguments.
+    if ((uplo != PlasmaUpper) &&
+        (uplo != PlasmaLower)) {
+        plasma_error("illegal value of uplo");
+        return;
+    }
     if (plasma_desc_check(AB) != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         plasma_error("invalid A");
@@ -233,9 +232,9 @@ void plasma_omp_zpbtrf(plasma_enum_t uplo,
     }
 
     // quick return
-    if (AB->m == 0)
+    if (AB.m == 0)
         return;
 
     // Call the parallel function.
-    plasma_pzpbtrf(uplo, *AB, sequence, request);
+    plasma_pzpbtrf(uplo, AB, sequence, request);
 }
