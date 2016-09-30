@@ -22,6 +22,21 @@ extern "C" {
 #endif
 
 /******************************************************************************/
+void plasma_pzdesc2ge(plasma_desc_t A,
+                      plasma_complex64_t *pA, int lda,
+                      plasma_sequence_t *sequence,
+                      plasma_request_t *request);
+
+void plasma_pzdesc2pb(plasma_desc_t A,
+                      plasma_complex64_t *pA, int lda,
+                      plasma_sequence_t *sequence,
+                      plasma_request_t *request);
+
+void plasma_pzge2desc(plasma_complex64_t *pA, int lda,
+                      plasma_desc_t A,
+                      plasma_sequence_t *sequence,
+                      plasma_request_t *request);
+
 void plasma_pzgelqf(plasma_desc_t A, plasma_desc_t T,
                     plasma_workspace_t work,
                     plasma_sequence_t *sequence, plasma_request_t *request);
@@ -57,21 +72,10 @@ void plasma_pzlaset(plasma_enum_t uplo,
                     plasma_desc_t A,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_pzooccrb2cm(plasma_desc_t A, plasma_complex64_t *pA, int lda,
-                        plasma_sequence_t *sequence, plasma_request_t *request);
-
-void plasma_pzooccrb2cm_band(plasma_enum_t uplo,
-                             plasma_desc_t A, plasma_complex64_t *pA, int lda,
-                             plasma_sequence_t *sequence,
-                             plasma_request_t  *request);
-
-void plasma_pzoocm2ccrb(plasma_complex64_t *pA, int lda, plasma_desc_t A,
-                        plasma_sequence_t *sequence, plasma_request_t *request);
-
-void plasma_pzoocm2ccrb_band(plasma_enum_t uplo,
-                             plasma_complex64_t *pA, int lda, plasma_desc_t A,
-                             plasma_sequence_t *sequence,
-                             plasma_request_t  *request);
+void plasma_pzpb2desc(plasma_complex64_t *pA, int lda,
+                      plasma_desc_t A,
+                      plasma_sequence_t *sequence,
+                      plasma_request_t *request);
 
 void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
                     plasma_sequence_t *sequence, plasma_request_t *request);

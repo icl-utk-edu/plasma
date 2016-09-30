@@ -158,28 +158,25 @@ int plasma_zunmqr(plasma_enum_t side, plasma_enum_t trans,
 /***************************************************************************//**
  *  Tile asynchronous interface.
  **/
+void plasma_omp_zdesc2ge(plasma_desc_t A,
+                         plasma_complex64_t *pA, int lda,
+                         plasma_sequence_t *sequence,
+                         plasma_request_t *request);
 
-void plasma_zccrb2cm_Async(plasma_desc_t A,
-                           plasma_complex64_t *pA, int lda,
-                           plasma_sequence_t *sequence,
-                           plasma_request_t *request);
+void plasma_omp_zdesc2pb(plasma_desc_t A,
+                         plasma_complex64_t *pA, int lda,
+                         plasma_sequence_t *sequence,
+                         plasma_request_t *request);
 
-void plasma_zccrb2cm_band_Async(plasma_enum_t uplo,
-                                plasma_desc_t A,
-                                plasma_complex64_t *pA, int lda,
-                                plasma_sequence_t *sequence,
-                                plasma_request_t *request);
+void plasma_omp_zge2desc(plasma_complex64_t *pA, int lda,
+                         plasma_desc_t A,
+                         plasma_sequence_t *sequence,
+                         plasma_request_t *request);
 
-void plasma_zcm2ccrb_Async(plasma_complex64_t *pA, int lda,
+void plasma_omp_zge2desc(plasma_complex64_t *pA, int lda,
                            plasma_desc_t A,
                            plasma_sequence_t *sequence,
                            plasma_request_t *request);
-
-void plasma_zcm2ccrb_band_Async(plasma_enum_t uplo,
-                                plasma_complex64_t *pA, int lda,
-                                plasma_desc_t A,
-                                plasma_sequence_t *sequence,
-                                plasma_request_t *request);
 
 void plasma_omp_zgelqf(plasma_desc_t A, plasma_desc_t T,
                        plasma_workspace_t work,
@@ -224,6 +221,11 @@ void plasma_omp_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                       double alpha, plasma_desc_t A,
                       double beta,  plasma_desc_t C,
                       plasma_sequence_t *sequence, plasma_request_t *request);
+
+void plasma_omp_zpb2desc(plasma_complex64_t *pA, int lda,
+                         plasma_desc_t A,
+                         plasma_sequence_t *sequence,
+                         plasma_request_t *request);
 
 void plasma_omp_zpbsv(plasma_enum_t uplo, plasma_desc_t AB, plasma_desc_t B,
                       plasma_sequence_t *sequence, plasma_request_t *request);

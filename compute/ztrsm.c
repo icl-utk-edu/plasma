@@ -200,8 +200,8 @@ int plasma_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
     #pragma omp master
     {
         // Translate to tile layout.
-        plasma_zcm2ccrb_Async(pA, lda, A, sequence, &request);
-        plasma_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
+        plasma_omp_zge2desc(pA, lda, A, sequence, &request);
+        plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
 
         // Call the tile async function.
         plasma_omp_ztrsm(side, uplo, transa, diag,
@@ -210,7 +210,7 @@ int plasma_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
                          sequence, &request);
 
         // Translate back to LAPACK layout.
-        plasma_zccrb2cm_Async(B, pB, ldb, sequence, &request);
+        plasma_omp_zdesc2ge(B, pB, ldb, sequence, &request);
     }
     // implicit synchronization
 

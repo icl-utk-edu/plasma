@@ -18,14 +18,15 @@
 #include "plasma_workspace.h"
 
 /***************************************************************************//**
-    @ingroup plasma_cm2ccrb
+    @ingroup plasma_ccrb2cm
 
-    Convert column-major (CM) to tiled (CCRB) layout for a band matrix.
+    Convert tiled (CCRB) to column-major (CM) matrix layout.
     Out-of-place.
 */
-void plasma_zcm2ccrb_band_Async(plasma_enum_t uplo,
-                                plasma_complex64_t *pA, int lda, plasma_desc_t A,
-                                plasma_sequence_t *sequence, plasma_request_t *request)
+void plasma_omp_zdesc2ge(plasma_desc_t A,
+                         plasma_complex64_t *pA, int lda,
+                         plasma_sequence_t *sequence,
+                         plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -36,13 +37,13 @@ void plasma_zcm2ccrb_band_Async(plasma_enum_t uplo,
     }
 
     // Check input arguments.
-    if (pA == NULL) {
-        plasma_error("NULL A");
+    if (plasma_desc_check(A) != PlasmaSuccess) {
+        plasma_error("invalid A");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-    if (plasma_desc_check(A) != PlasmaSuccess) {
-        plasma_error("invalid A");
+    if (pA == NULL) {
+        plasma_error("NULL A");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
@@ -62,5 +63,5 @@ void plasma_zcm2ccrb_band_Async(plasma_enum_t uplo,
         return;
 
     // Call the parallel function.
-    plasma_pzoocm2ccrb_band(uplo, pA, lda, A, sequence, request);
+    plasma_pzdesc2ge(A, pA, lda, sequence, request);
 }

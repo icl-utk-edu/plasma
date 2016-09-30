@@ -169,15 +169,15 @@ int plasma_zpbsv(plasma_enum_t uplo,
     #pragma omp master
     {
         // Translate to tile layout.
-        plasma_zcm2ccrb_band_Async(uplo, pAB, ldab, AB, sequence, &request);
-        plasma_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
+        plasma_omp_zpb2desc(pAB, ldab, AB, sequence, &request);
+        plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
 
         // Call the tile async function.
         plasma_omp_zpbsv(uplo, AB, B, sequence, &request);
 
         // Translate back to LAPACK layout.
-        plasma_zccrb2cm_Async(B, pB, ldb, sequence, &request);
-        plasma_zccrb2cm_band_Async(uplo, AB, pAB, ldab, sequence, &request);
+        plasma_omp_zdesc2ge(B, pB, ldb, sequence, &request);
+        plasma_omp_zdesc2pb(AB, pAB, ldab, sequence, &request);
     }
     // implicit synchronization
 

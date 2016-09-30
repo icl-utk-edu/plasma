@@ -356,10 +356,10 @@ subs = {
     ('float',                'plasma_complex32_t'  ),
 
     # ----- PLASMA / MAGMA functions, alphabetic order
-    ('dccrb2cm',             'zccrb2cm'            ),
-    ('dcm2ccrb',             'zcm2ccrb'            ),
-    ('sccrb2cm',             'cccrb2cm'            ),
-    ('scm2ccrb',             'ccm2ccrb'            ),
+    ('ddesc2ge',             'zdesc2ge'            ),
+    ('dge2desc',             'zge2desc'            ),
+    ('sdesc2ge',             'cdesc2ge'            ),
+    ('sge2desc',             'cge2desc'            ),
 
     # ----- header files
     (r'_ds\.h\b',           r'_zc\.h\b'            ),
@@ -442,10 +442,16 @@ subs = {
 
     # ----- PLASMA / MAGMA functions, alphabetic order
     ('sy2sb',                'sy2sb',                'he2hb',                'he2hb'               ),
-    ('psooccrb2cm',          'pdooccrb2cm',          'pcooccrb2cm',          'pzooccrb2cm'         ),
-    ('psoocm2ccrb',          'pdoocm2ccrb',          'pcoocm2ccrb',          'pzoocm2ccrb'         ),
-    ('sccrb2cm',             'dccrb2cm',             'cccrb2cm',             'zccrb2cm'            ),
-    ('scm2ccrb',             'dcm2ccrb',             'ccm2ccrb',             'zcm2ccrb'            ),
+
+    ('psdesc2ge',            'pddesc2ge',            'pcdesc2ge',            'pzdesc2ge'           ),
+    ('psge2desc',            'pdge2desc',            'pcge2desc',            'pzge2desc'           ),
+    ('sdesc2ge',             'ddesc2ge',             'cdesc2ge',             'zdesc2ge'            ),
+    ('sge2desc',             'dge2desc',             'cge2desc',             'zge2desc'            ),
+
+    ('psdesc2pb',            'pddesc2pb',            'pcdesc2pb',            'pzdesc2pb'           ),
+    ('pspb2desc',            'pdpb2desc',            'pcpb2desc',            'pzpb2desc'           ),
+    ('sdesc2pb',             'ddesc2pb',             'cdesc2pb',             'zdesc2pb'            ),
+    ('spb2desc',             'dpb2desc',             'cpb2desc',             'zpb2desc'            ),
 
     # ----- header files
     (r'_s\.h\b',            r'_d\.h\b',             r'_c\.h\b',             r'_z\.h\b'             ),

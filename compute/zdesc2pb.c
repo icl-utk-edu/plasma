@@ -20,11 +20,13 @@
 /***************************************************************************//**
     @ingroup plasma_ccrb2cm
 
-    Convert tiled (CCRB) to column-major (CM) matrix layout.
+    Convert tiled (CCRB) to column-major (CM) layout for a band matrix.
     Out-of-place.
 */
-void plasma_zccrb2cm_Async(plasma_desc_t A, plasma_complex64_t *pA, int lda,
-                           plasma_sequence_t *sequence, plasma_request_t *request)
+void plasma_omp_zdesc2pb(plasma_desc_t A,
+                         plasma_complex64_t *pA, int lda,
+                         plasma_sequence_t *sequence,
+                         plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -61,5 +63,5 @@ void plasma_zccrb2cm_Async(plasma_desc_t A, plasma_complex64_t *pA, int lda,
         return;
 
     // Call the parallel function.
-    plasma_pzooccrb2cm(A, pA, lda, sequence, request);
+    plasma_pzdesc2pb(A, pA, lda, sequence, request);
 }

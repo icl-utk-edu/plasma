@@ -154,14 +154,14 @@ int plasma_zunglq(int m, int n, int k,
     #pragma omp master
     {
         // Translate to tile layout.
-        plasma_zcm2ccrb_Async(pA, lda, A, sequence, &request);
-        plasma_zcm2ccrb_Async(Qf77, ldq, Q, sequence, &request);
+        plasma_omp_zge2desc(pA, lda, A, sequence, &request);
+        plasma_omp_zge2desc(Qf77, ldq, Q, sequence, &request);
 
         // Call the tile async function.
         plasma_omp_zunglq(A, T, Q, work, sequence, &request);
 
         // Translate Q back to LAPACK layout.
-        plasma_zccrb2cm_Async(Q, Qf77, ldq, sequence, &request);
+        plasma_omp_zdesc2ge(Q, Qf77, ldq, sequence, &request);
     }
     // implicit synchronization
 

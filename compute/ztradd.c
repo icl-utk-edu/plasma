@@ -196,8 +196,8 @@ int plasma_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
     #pragma omp master
     {
         // Translate to tile layout.
-        plasma_zcm2ccrb_Async(pA, lda, A, sequence, &request);
-        plasma_zcm2ccrb_Async(pB, ldb, B, sequence, &request);
+        plasma_omp_zge2desc(pA, lda, A, sequence, &request);
+        plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
 
         // Call tile async function.
         if (sequence->status == PlasmaSuccess) {
@@ -208,8 +208,8 @@ int plasma_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
         }
 
         // Translate back to LAPACK layout.
-        plasma_zccrb2cm_Async(A, pA, lda, sequence, &request);
-        plasma_zccrb2cm_Async(B, pB, ldb, sequence, &request);
+        plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
+        plasma_omp_zdesc2ge(B, pB, ldb, sequence, &request);
     }
     // implicit synchronization
 
