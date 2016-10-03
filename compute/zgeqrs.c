@@ -131,9 +131,9 @@ int plasma_zgeqrs(int m, int n, int nrhs,
     // Allocate workspace.
     plasma_workspace_t work;
     size_t lwork = ib*nb;  // unmqr: work
-    retval = plasma_workspace_alloc(&work, lwork, PlasmaComplexDouble);
+    retval = plasma_workspace_create(&work, lwork, PlasmaComplexDouble);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_workspace_alloc() failed");
+        plasma_error("plasma_workspace_create() failed");
         return retval;
     }
 
@@ -164,7 +164,7 @@ int plasma_zgeqrs(int m, int n, int nrhs,
     }
     // implicit synchronization
 
-    plasma_workspace_free(&work);
+    plasma_workspace_destroy(&work);
 
     // Free matrices in tile layout.
     plasma_desc_destroy(&A);
@@ -203,7 +203,7 @@ int plasma_zgeqrs(int m, int n, int nrhs,
  * @param[in] work
  *          Workspace for the auxiliary arrays needed by some coreblas kernels.
  *          For multiplication by Q contains preallocated space for WORK
- *          arrays. Allocated by the plasma_workspace_alloc function.
+ *          arrays. Allocated by the plasma_workspace_create function.
  *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to

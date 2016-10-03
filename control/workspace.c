@@ -13,7 +13,7 @@
 #include <omp.h>
 
 /******************************************************************************/
-int plasma_workspace_alloc(plasma_workspace_t *work, size_t lwork,
+int plasma_workspace_create(plasma_workspace_t *work, size_t lwork,
                            plasma_enum_t dtyp)
 {
     // Allocate array of pointers.
@@ -41,13 +41,13 @@ int plasma_workspace_alloc(plasma_workspace_t *work, size_t lwork,
         }
     }
     if (info != PlasmaSuccess) {
-        plasma_workspace_free(work);
+        plasma_workspace_destroy(work);
     }
     return info;
 }
 
 /******************************************************************************/
-int plasma_workspace_free(plasma_workspace_t *work)
+int plasma_workspace_destroy(plasma_workspace_t *work)
 {
     if (work->spaces != NULL) {
         for (int i = 0; i < work->nthread; ++i) {

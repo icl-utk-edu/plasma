@@ -170,9 +170,9 @@ int plasma_zgels(plasma_enum_t trans,
     // Allocate workspace.
     plasma_workspace_t work;
     size_t lwork = nb + ib*nb;  // geqrt/gelqt: tau + work
-    retval = plasma_workspace_alloc(&work, lwork, PlasmaComplexDouble);
+    retval = plasma_workspace_create(&work, lwork, PlasmaComplexDouble);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_workspace_alloc() failed");
+        plasma_error("plasma_workspace_create() failed");
         return retval;
     }
 
@@ -207,7 +207,7 @@ int plasma_zgels(plasma_enum_t trans,
     }
     // implicit synchronization
 
-    plasma_workspace_free(&work);
+    plasma_workspace_destroy(&work);
 
     // Free matrices in tile layout.
     plasma_desc_destroy(&A);
@@ -256,7 +256,7 @@ int plasma_zgels(plasma_enum_t trans,
  *          Workspace for the auxiliary arrays needed by some coreblas kernels.
  *          For QR/LQ factorizations used in GELS, it contains preallocated
  *          space for TAU and WORK arrays.
- *          Allocated by the plasma_workspace_alloc function.
+ *          Allocated by the plasma_workspace_create function.
  *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to
