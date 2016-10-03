@@ -278,10 +278,10 @@ int plasma_desc_general_band_check(plasma_desc_t A)
 plasma_desc_t plasma_desc_view(plasma_desc_t A, int i, int j, int m, int n)
 {
     if ((A.i+i+m) > A.gm)
-        plasma_error("rows out of bounds");
+        plasma_fatal_error("rows out of bound");
 
     if ((A.j+j+n) > A.gn)
-        plasma_error("columns out of bounds");
+        plasma_fatal_error("columns out of bound");
 
     plasma_desc_t B = A;
     int mb = A.mb;
