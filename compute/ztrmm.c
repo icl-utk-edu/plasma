@@ -215,7 +215,6 @@ int plasma_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
                          sequence, &request);
 
         // Translate back to LAPACK layout.
-        plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
         plasma_omp_zdesc2ge(B, pB, ldb, sequence, &request);
     }
     // implicit synchronization
