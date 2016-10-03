@@ -116,13 +116,13 @@ int plasma_zunglq(int m, int n, int k,
     plasma_desc_t Q;
     int retval;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        lda, n, 0, 0, k, n, &A);
+                                        m, n, 0, 0, k, n, &A);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        ldq, n, 0, 0, m, n, &Q);
+                                        m, n, 0, 0, k, n, &Q);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         plasma_desc_destroy(&A);

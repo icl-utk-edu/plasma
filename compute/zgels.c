@@ -153,13 +153,14 @@ int plasma_zgels(plasma_enum_t trans,
     plasma_desc_t B;
     int retval;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        lda, n, 0, 0, m, n, &A);
+                                        m, n, 0, 0, m, n, &A);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        ldb, nrhs, 0, 0, imax(m,n), nrhs, &B);
+                                        imax(m, n), nrhs, 0, 0, imax(m, n),
+                                        nrhs, &B);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         plasma_desc_destroy(&A);

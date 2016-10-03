@@ -133,13 +133,13 @@ int plasma_zposv(plasma_enum_t uplo,
     plasma_desc_t B;
     int retval;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        lda, n, 0, 0, n, n, &A);
+                                        n, n, 0, 0, n, n, &A);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        ldb, nrhs, 0, 0, n, nrhs, &B);
+                                        n, nrhs, 0, 0, n, nrhs, &B);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         plasma_desc_destroy(&A);
