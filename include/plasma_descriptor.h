@@ -54,10 +54,10 @@ typedef struct {
     int nb; ///< number of columns in a tile
 
     // main matrix parameters
-    int lm;  ///< number of rows of the entire matrix
-    int ln;  ///< number of columns of the entire matrix
-    int lmt; ///< number of tile rows of the entire matrix
-    int lnt; ///< number of tile columns of the entire matrix
+    int gm;  ///< number of rows of the entire matrix
+    int gn;  ///< number of columns of the entire matrix
+    int gmt; ///< number of tile rows of the entire matrix
+    int gnt; ///< number of tile columns of the entire matrix
 
     // submatrix parameters
     int i;  ///< row index to the beginning of the submatrix
@@ -97,17 +97,17 @@ static inline void *plasma_tile_addr_general(plasma_desc_t A, int m, int n)
     size_t eltsize = plasma_element_size(A.precision);
     size_t offset = 0;
 
-    int lm1 = A.lm/A.mb;
-    int ln1 = A.ln/A.nb;
+    int lm1 = A.gm/A.mb;
+    int ln1 = A.gn/A.nb;
 
     if (mm < lm1)
         if (nn < ln1)
             offset = A.mb*A.nb*(mm + (size_t)lm1 * nn);
         else
-            offset = A.A12 + ((size_t)A.mb * (A.ln%A.nb) * mm);
+            offset = A.A12 + ((size_t)A.mb * (A.gn%A.nb) * mm);
     else
         if (nn < ln1)
-            offset = A.A21 + ((size_t)A.nb * (A.lm%A.mb) * nn);
+            offset = A.A21 + ((size_t)A.nb * (A.gm%A.mb) * nn);
         else
             offset = A.A22;
 
@@ -148,10 +148,10 @@ static inline void *plasma_tile_addr(plasma_desc_t A, int m, int n)
  */
 static inline int plasma_tile_mmain(plasma_desc_t A, int k)
 {
-    if (A.i/A.mb+k < A.lm/A.mb)
+    if (A.i/A.mb+k < A.gm/A.mb)
         return A.mb;
     else
-        return A.lm%A.mb;
+        return A.gm%A.mb;
 }
 
 /***************************************************************************//**
@@ -161,10 +161,10 @@ static inline int plasma_tile_mmain(plasma_desc_t A, int k)
  */
 static inline int plasma_tile_nmain(plasma_desc_t A, int k)
 {
-    if (A.j/A.nb+k < A.ln/A.nb)
+    if (A.j/A.nb+k < A.gn/A.nb)
         return A.nb;
     else
-        return A.ln%A.nb;
+        return A.gn%A.nb;
 }
 
 /***************************************************************************//**

@@ -36,7 +36,7 @@ int plasma_desc_general_create(plasma_enum_t precision, int mb, int nb,
         return PlasmaErrorIllegalValue;
     }
     // Allocate the matrix.
-    size_t size = (size_t)desc->lm*desc->ln*
+    size_t size = (size_t)desc->gm*desc->gn*
                   plasma_element_size(desc->precision);
     desc->matrix = malloc(size);
     if (desc->matrix == NULL) {
@@ -72,7 +72,7 @@ int plasma_desc_general_band_create(plasma_enum_t precision, plasma_enum_t uplo,
         return PlasmaErrorIllegalValue;
     }
     // Allocate the matrix.
-    size_t size = (size_t)desc->lm*desc->ln*
+    size_t size = (size_t)desc->gm*desc->gn*
                   plasma_element_size(desc->precision);
     desc->matrix = malloc(size);
     if (desc->matrix == NULL) {
@@ -114,11 +114,11 @@ int plasma_desc_general_init(plasma_enum_t precision, void *matrix,
     desc->nb = nb;
 
     // main matrix parameters
-    desc->lm = lm;
-    desc->ln = ln;
+    desc->gm = lm;
+    desc->gn = ln;
 
-    desc->lmt = (lm%mb == 0) ? (lm/mb) : (lm/mb+1);
-    desc->lnt = (ln%nb == 0) ? (ln/nb) : (ln/nb+1);
+    desc->gmt = (lm%mb == 0) ? (lm/mb) : (lm/mb+1);
+    desc->gnt = (ln%nb == 0) ? (ln/nb) : (ln/nb+1);
 
     // submatrix parameters
     desc->i = i;
@@ -203,16 +203,16 @@ int plasma_desc_general_check(plasma_desc_t desc)
         plasma_error("negative matrix dimension");
         return PlasmaErrorIllegalValue;
     }
-    if ((desc.lm < desc.m) || (desc.ln < desc.n)) {
+    if ((desc.gm < desc.m) || (desc.gn < desc.n)) {
         plasma_error("invalid leading dimensions");
         return PlasmaErrorIllegalValue;
     }
-    if ((desc.i > 0 && desc.i >= desc.lm) ||
-        (desc.j > 0 && desc.j >= desc.ln)) {
+    if ((desc.i > 0 && desc.i >= desc.gm) ||
+        (desc.j > 0 && desc.j >= desc.gn)) {
         plasma_error("beginning of the matrix out of bounds");
         return PlasmaErrorIllegalValue;
     }
-    if (desc.i+desc.m > desc.lm || desc.j+desc.n > desc.ln) {
+    if (desc.i+desc.m > desc.gm || desc.j+desc.n > desc.gn) {
         plasma_error("submatrix out of bounds");
         return PlasmaErrorIllegalValue;
     }
@@ -241,25 +241,25 @@ int plasma_desc_general_band_check(plasma_desc_t desc)
         plasma_error("negative matrix dimension");
         return PlasmaErrorIllegalValue;
     }
-    if (desc.ln < desc.n) {
+    if (desc.gn < desc.n) {
         plasma_error("invalid leading column dimensions");
         return PlasmaErrorIllegalValue;
     }
     if ((desc.uplo == PlasmaGeneral &&
-         desc.lm < desc.mb*((2*desc.kl+desc.ku+desc.mb)/desc.mb)) ||
+         desc.gm < desc.mb*((2*desc.kl+desc.ku+desc.mb)/desc.mb)) ||
         (desc.uplo == PlasmaUpper &&
-         desc.lm < desc.mb*((desc.ku + desc.mb)/desc.mb)) ||
+         desc.gm < desc.mb*((desc.ku + desc.mb)/desc.mb)) ||
         (desc.uplo == PlasmaUpper &&
-         desc.lm < desc.mb*((desc.kl + desc.mb)/desc.mb))) {
+         desc.gm < desc.mb*((desc.kl + desc.mb)/desc.mb))) {
         plasma_error("invalid leading row dimensions");
         return PlasmaErrorIllegalValue;
     }
-    if ((desc.i > 0 && desc.i >= desc.lm) ||
-        (desc.j > 0 && desc.j >= desc.ln)) {
+    if ((desc.i > 0 && desc.i >= desc.gm) ||
+        (desc.j > 0 && desc.j >= desc.gn)) {
         plasma_error("beginning of the matrix out of bounds");
         return PlasmaErrorIllegalValue;
     }
-    if (desc.j+desc.n > desc.ln) {
+    if (desc.j+desc.n > desc.gn) {
         plasma_error("submatrix out of bounds");
         return PlasmaErrorIllegalValue;
     }
@@ -278,10 +278,10 @@ int plasma_desc_general_band_check(plasma_desc_t desc)
 /******************************************************************************/
 plasma_desc_t plasma_desc_view(plasma_desc_t descA, int i, int j, int m, int n)
 {
-    if ((descA.i+i+m) > descA.lm)
+    if ((descA.i+i+m) > descA.gm)
         plasma_error("rows out of bounds");
 
-    if ((descA.j+j+n) > descA.ln)
+    if ((descA.j+j+n) > descA.gn)
         plasma_error("columns out of bounds");
 
     plasma_desc_t descB = descA;
