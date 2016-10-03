@@ -176,8 +176,8 @@ int plasma_zpbsv(plasma_enum_t uplo,
         plasma_omp_zpbsv(uplo, AB, B, sequence, &request);
 
         // Translate back to LAPACK layout.
-        plasma_omp_zdesc2ge(B, pB, ldb, sequence, &request);
         plasma_omp_zdesc2pb(AB, pAB, ldab, sequence, &request);
+        plasma_omp_zdesc2ge(B, pB, ldb, sequence, &request);
     }
     // implicit synchronization
 
