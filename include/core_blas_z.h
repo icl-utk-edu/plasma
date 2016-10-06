@@ -21,11 +21,11 @@ extern "C" {
 #endif
 
 /******************************************************************************/
-void core_zgeadd(plasma_enum_t transa, int m, int n,
-                      plasma_complex64_t  alpha,
-                const plasma_complex64_t *A, int lda,
-                      plasma_complex64_t  beta,
-                      plasma_complex64_t *B, int ldb);
+int core_zgeadd(
+    plasma_enum_t transa,
+    int m, int n,
+    plasma_complex64_t  alpha, const plasma_complex64_t *A, int lda,
+    plasma_complex64_t  beta,        plasma_complex64_t *B, int ldb);
 
 int core_zgelqt(int m, int n, int ib,
                 plasma_complex64_t *A, int lda,

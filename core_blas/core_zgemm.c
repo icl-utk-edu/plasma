@@ -108,11 +108,21 @@ void core_omp_zgemm(
                               const plasma_complex64_t *B, int ldb,
     plasma_complex64_t beta,        plasma_complex64_t *C, int ldc)
 {
-    // omp depends assume lda == m or k, ldb == k or n, ldc == m,
-    // depending on transa and transb.
-    #pragma omp task depend(in:A[0:m*k]) \
-                     depend(in:B[0:k*n]) \
-                     depend(inout:C[0:m*n])
+    int ak;
+    if (transa == PlasmaNoTrans)
+        ak = k;
+    else
+        ak = m;
+
+    int bk;
+    if (transb == PlasmaNoTrans)
+        bk = n;
+    else
+        bk = k;
+
+    #pragma omp task depend(in:A[0:lda*ak]) \
+                     depend(in:B[0:ldb*bk]) \
+                     depend(inout:C[0:ldc*n])
     core_zgemm(transa, transb,
                m, n, k,
                alpha, A, lda,
