@@ -60,7 +60,7 @@ void core_zlacpy_lapack2tile_band(plasma_enum_t uplo,
     plasma_complex64_t zzero = 0.0;
 
     int j_start, j_end;
-    if (uplo == PlasmaFull) {
+    if (uplo == PlasmaGeneral) {
         j_start = 0; // pivot back and could fill in
         j_end = (jt <= it ? n : imin(n, (it-jt)*nb+m+ku+kl+1));
     }
@@ -80,7 +80,7 @@ void core_zlacpy_lapack2tile_band(plasma_enum_t uplo,
     }
     for (j = j_start; j < j_end; j++) {
         int i_start, i_end;
-        if (uplo == PlasmaFull) {
+        if (uplo == PlasmaGeneral) {
             i_start = (jt <= it ? 0 : imax(0, (jt-it)*nb+j-ku-kl));
             i_end = (jt >= it ? m : imin(m, (jt-it)*nb+j+kl+nb+1));
             // +nb because we use zgetrf on panel and pivot back within the panel.
@@ -167,7 +167,7 @@ void core_zlacpy_tile2lapack_band(plasma_enum_t uplo,
     int i, j;
     int j_start, j_end;
 
-    if (uplo == PlasmaFull) {
+    if (uplo == PlasmaGeneral) {
         j_start = 0; // pivot back and could fill in
         j_end = (jt <= it ? n : imin(n, (it-jt)*nb+m+ku+kl+1));
     }
@@ -183,7 +183,7 @@ void core_zlacpy_tile2lapack_band(plasma_enum_t uplo,
     for (j = j_start; j < j_end; j++) {
         int i_start, i_end;
 
-        if (uplo == PlasmaFull) {
+        if (uplo == PlasmaGeneral) {
             i_start = (jt <= it ? 0 : imax(0, (jt-it)*nb+j-ku-kl));
             i_end = (jt >= it ? m : imin(m, (jt-it)*nb+j+kl+nb+1));
             // +nb because we use zgetrf on panel and pivot back within the panel.

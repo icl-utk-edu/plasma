@@ -92,10 +92,10 @@ void test_ztrsm(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    plasma_enum_t side = PLASMA_side_const(param[PARAM_SIDE].c);
-    plasma_enum_t uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
-    plasma_enum_t transa = PLASMA_trans_const(param[PARAM_TRANSA].c);
-    plasma_enum_t diag = PLASMA_diag_const(param[PARAM_DIAG].c);
+    plasma_enum_t side = plasma_side_cons_t(param[PARAM_SIDE].c);
+    plasma_enum_t uplo = plasma_uplo_const_t(param[PARAM_UPLO].c);
+    plasma_enum_t transa = plasma_trans_const_t(param[PARAM_TRANSA].c);
+    plasma_enum_t diag = plasma_diag_const_t(param[PARAM_DIAG].c);
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
@@ -191,7 +191,7 @@ void test_ztrsm(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    PLASMA_ztrsm(
+    plasma_ztrsm(
         side, uplo,
         transa, diag,
         m, n,
@@ -209,7 +209,6 @@ void test_ztrsm(param_value_t param[], char *info)
     // ||alpha*B - A*X|| / (||A||*||X||)
     //================================================================
     if (test) {
-        plasma_complex64_t zzero =  0.0;
         plasma_complex64_t zone  =  1.0;
         plasma_complex64_t zmone = -1.0;
         double work[1];
@@ -220,11 +219,11 @@ void test_ztrsm(param_value_t param[], char *info)
         // See also test_ztrmm.c
         if (uplo == PlasmaLower) {
             LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'U', Am-1, Am-1,
-                                zzero, zzero, &A(0,1), lda);
+                                0.0, 0.0, &A(0,1), lda);
         }
         else {
             LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'L', Am-1, Am-1,
-                                zzero, zzero, &A(1,0), lda);
+                                0.0, 0.0, &A(1,0), lda);
         }
         if (diag == PlasmaUnit) {
             for (int i = 0; i < Am; ++i) {

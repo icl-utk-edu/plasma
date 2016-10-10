@@ -80,7 +80,7 @@ void test_zpotrs(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    plasma_enum_t uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
+    plasma_enum_t uplo = plasma_uplo_const_t(param[PARAM_UPLO].c);
 
     int n = param[PARAM_N].i;
     int nrhs = param[PARAM_NRHS].i;
@@ -147,13 +147,13 @@ void test_zpotrs(param_value_t param[], char *info)
     //================================================================
     // Run POTRF
     //================================================================
-    PLASMA_zpotrf(uplo, n, A, lda);
+    plasma_zpotrf(uplo, n, A, lda);
 
     //================================================================
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zpotrs(uplo, n, nrhs, A, lda, B, ldb);
+    plasma_zpotrs(uplo, n, nrhs, A, lda, B, ldb);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
     param[PARAM_TIME].d = time;

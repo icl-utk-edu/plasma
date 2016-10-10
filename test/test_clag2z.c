@@ -6,7 +6,7 @@
  *  University of Tennessee, US,
  *  University of Manchester, UK.
  *
- * @precisions normal z -> s d c
+ * @precisions mixed zc -> ds
  *
  **/
 
@@ -27,7 +27,7 @@
 
 /***************************************************************************//**
  *
- * @brief Tests ZLACPY
+ * @brief Tests CLAG2Z
  *
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
@@ -37,7 +37,7 @@
  * If param is non-NULL and info is non-NULL, set info to column values
  * and run test.
  ******************************************************************************/
-void test_zlacpy(param_value_t param[], char *info)
+void test_clag2z(param_value_t param[], char *info)
 {
     //================================================================
     // Print usage info or return column labels or values
@@ -45,7 +45,6 @@ void test_zlacpy(param_value_t param[], char *info)
     if (param == NULL) {
         if (info == NULL) {
             // Print usage info
-            print_usage(PARAM_UPLO);
             print_usage(PARAM_M);
             print_usage(PARAM_N);
             print_usage(PARAM_PADA);
@@ -55,8 +54,7 @@ void test_zlacpy(param_value_t param[], char *info)
         else {
             // Return column labels
             snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s %*s %*s",
-                     InfoSpacing, "UpLo",
+                     "%*s %*s %*s %*s %*s",
                      InfoSpacing, "m",
                      InfoSpacing, "n",
                      InfoSpacing, "PadA",
@@ -67,8 +65,7 @@ void test_zlacpy(param_value_t param[], char *info)
     }
     // Return column values
     snprintf(info, InfoLen,
-             "%*c %*d %*d %*d %*d %*d",
-             InfoSpacing, param[PARAM_UPLO].c,
+             "%*d %*d %*d %*d %*d",
              InfoSpacing, param[PARAM_M].i,
              InfoSpacing, param[PARAM_N].i,
              InfoSpacing, param[PARAM_PADA].i,
@@ -78,22 +75,11 @@ void test_zlacpy(param_value_t param[], char *info)
     //================================================================
     // Set parameters
     //================================================================
-    plasma_enum_t uplo   = PLASMA_uplo_const(param[PARAM_UPLO].c);
-
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
 
-    int Am, An;
-    int Bm, Bn;
-
-    Am = m;
-    An = n;
-
-    Bm = m;
-    Bn = n;
-
-    int lda = imax(1, Am + param[PARAM_PADA].i);
-    int ldb = imax(1, Bm + param[PARAM_PADB].i);
+    int ldas = imax(1, m + param[PARAM_PADA].i);
+    int lda  = imax(1, m + param[PARAM_PADB].i);
 
     int    test = param[PARAM_TEST].c == 'y';
     double eps  = LAPACKE_dlamch('E');
@@ -106,24 +92,24 @@ void test_zlacpy(param_value_t param[], char *info)
     //================================================================
     // Allocate and initialize arrays
     //================================================================
-    plasma_complex64_t *A =
-        (plasma_complex64_t*)malloc((size_t)lda*An*sizeof(plasma_complex64_t));
-    assert(A != NULL);
+    plasma_complex32_t *As =
+        (plasma_complex32_t*)malloc((size_t)ldas*n*sizeof(plasma_complex32_t));
+    assert(As != NULL);
 
-    plasma_complex64_t *B =
-        (plasma_complex64_t*)malloc((size_t)ldb*Bn*sizeof(plasma_complex64_t));
-    assert(B != NULL);
+    plasma_complex64_t *A =
+        (plasma_complex64_t*)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
+    assert(A != NULL);
 
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
-    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*An, A);
+    retval = LAPACKE_clarnv(1, seed, (size_t)ldas*n, As);
     assert(retval == 0);
 
-    plasma_complex64_t *Bref = NULL;
+    plasma_complex64_t *Aref = NULL;
     if (test) {
-        Bref = (plasma_complex64_t*)malloc(
-            (size_t)ldb*Bn*sizeof(plasma_complex64_t));
-        assert(Bref != NULL);
+        Aref = (plasma_complex64_t*)malloc(
+            (size_t)ldas*n*sizeof(plasma_complex64_t));
+        assert(Aref != NULL);
     }
 
     //================================================================
@@ -131,7 +117,7 @@ void test_zlacpy(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    PLASMA_zlacpy(uplo, m, n, A, lda, B, ldb);
+    PLASMA_clag2z(m, n, As, ldas, A, lda);
 
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
@@ -140,30 +126,30 @@ void test_zlacpy(param_value_t param[], char *info)
     param[PARAM_GFLOPS].d = NAN;
 
     //================================================================
-    // Test results by comparing to result of core_zlacpy function
+    // Test results by comparing to result of core_clag2z function
     //================================================================
     if (test) {
-        // Calculate relative error |B_ref - B|_F / |B_ref|_F < 3*eps
+        // Calculate relative error |A_ref - A|_F / |A_ref|_F < 3*eps
         // Using 3*eps covers complex arithmetic
 
-        core_zlacpy(uplo, m, n, A, lda, Bref, ldb);
+        core_clag2z(m, n, As, ldas, Aref, lda);
 
         double work[1];
 
-        // Calculate Frobenius norm of reference result B_ref
-        double BnormRef  = LAPACKE_zlange_work(
-                               LAPACK_COL_MAJOR, 'F', Bm, Bn, Bref, ldb, work);
+        // Calculate Frobenius norm of reference result A_ref
+        double AnormRef = LAPACKE_zlange_work(
+                               LAPACK_COL_MAJOR, 'F', lda, n, Aref, lda, work);
 
-        // Calculate difference B_ref-B
+        // Calculate difference A_ref-A
         plasma_complex64_t zmone = -1.0;
-        cblas_zaxpy((size_t)ldb*Bn, CBLAS_SADDR(zmone), B, 1, Bref, 1);
+        cblas_zaxpy((size_t)lda*n, CBLAS_SADDR(zmone), A, 1, Aref, 1);
 
-        // Calculate Frobenius norm of B_ref-B
-        double BnormDiff = LAPACKE_zlange_work(
-                               LAPACK_COL_MAJOR, 'F', Bm, Bn, Bref, ldb, work);
+        // Calculate Frobenius norm of A_ref-A
+        double AnormDiff = LAPACKE_zlange_work(
+                               LAPACK_COL_MAJOR, 'F', lda, n, Aref, lda, work);
 
-        // Calculate relative error |B_ref-B|_F / |B_ref|_F
-        double error = BnormDiff/BnormRef;
+        // Calculate relative error |A_ref-A|_F / |A_ref|_F
+        double error = AnormDiff/AnormRef;
 
         param[PARAM_ERROR].d   = error;
         param[PARAM_SUCCESS].i = error < 3*eps;
@@ -172,9 +158,9 @@ void test_zlacpy(param_value_t param[], char *info)
     //================================================================
     // Free arrays
     //================================================================
+    free(As);
     free(A);
-    free(B);
 
     if (test)
-        free(Bref);
+        free(Aref);
 }

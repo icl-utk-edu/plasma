@@ -80,7 +80,7 @@ void test_zposv(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    plasma_enum_t uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
+    plasma_enum_t uplo = plasma_uplo_const_t(param[PARAM_UPLO].c);
 
     int n = param[PARAM_N].i;
     int nrhs = param[PARAM_NRHS].i;
@@ -148,7 +148,7 @@ void test_zposv(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zposv(uplo, n, nrhs, A, lda, B, ldb);
+    plasma_zposv(uplo, n, nrhs, A, lda, B, ldb);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
     double flops = flops_zpotrf(n) + flops_zpotrs(n, nrhs);

@@ -11,13 +11,16 @@
  **/
 
 #include "plasma_async.h"
+#include "plasma_context.h"
 #include "plasma_descriptor.h"
-#include "plasma_types.h"
 #include "plasma_internal.h"
-#include "core_blas_z.h"
+#include "plasma_types.h"
+#include "plasma_workspace.h"
+#include "core_blas.h"
 
-#define A(m, n) ((plasma_complex64_t*) plasma_getaddr(A, m, n))
-#define C(m, n) ((plasma_complex64_t*) plasma_getaddr(C, m, n))
+#define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
+#define C(m, n) (plasma_complex64_t*)plasma_tile_addr(C, m, n)
+
 /***************************************************************************//**
  * Parallel tile Hermitian rank k update.
  * @see plasma_omp_zherk
@@ -27,70 +30,62 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
                    double beta,  plasma_desc_t C,
                    plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    int m, n, k;
-    int ldak, ldam, ldan, ldcm, ldcn;
-    int tempnn, tempmm, tempkn, tempkm;
-
-    plasma_complex64_t zbeta;
-    plasma_complex64_t zone = 1.0;
-    double dbeta;
-
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
     }
 
-    for (n = 0; n < C.nt; n++) {
-        tempnn = n == C.nt-1 ? C.n-n*C.nb : C.nb;
-        ldan = BLKLDD(A, n);
-        ldcn = BLKLDD(C, n);
-        //=======================================
+    for (int n = 0; n < C.nt; n++) {
+        int nvcn = plasma_tile_nview(C, n);
+        int ldan = plasma_tile_mmain(A, n);
+        int ldcn = plasma_tile_mmain(C, n);
+        //================
         // PlasmaNoTrans
-        //=======================================
+        //================
         if (trans == PlasmaNoTrans) {
-            for (k = 0; k < A.nt; k++) {
-                tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
-                dbeta = k == 0 ? beta : 1.0;
+            for (int k = 0; k < A.nt; k++) {
+                int nvak = plasma_tile_nview(A, k);
+                double dbeta = k == 0 ? beta : 1.0;
                 core_omp_zherk(
                     uplo, trans,
-                    tempnn, tempkn,
+                    nvcn, nvak,
                     alpha, A(n, k), ldan,
                     dbeta, C(n, n), ldcn);
             }
-            //=======================================
+            //==============================
             // PlasmaNoTrans / PlasmaLower
-            //=======================================
+            //==============================
             if (uplo == PlasmaLower) {
-                for (m = n+1; m < C.mt; m++) {
-                    tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
-                    ldam = BLKLDD(A, m);
-                    ldcm = BLKLDD(C, m);
-                    for (k = 0; k < A.nt; k++) {
-                        tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
-                        zbeta = k == 0 ? beta : zone;
+                for (int m = n+1; m < C.mt; m++) {
+                    int mvcm = plasma_tile_mview(C, m);
+                    int ldam = plasma_tile_mmain(A, m);
+                    int ldcm = plasma_tile_mmain(C, m);
+                    for (int k = 0; k < A.nt; k++) {
+                        int nvak = plasma_tile_nview(A, k);
+                        plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
                             trans, PlasmaConjTrans,
-                            tempmm, tempnn, tempkn,
+                            mvcm, nvcn, nvak,
                             alpha, A(m, k), ldam,
                                    A(n, k), ldan,
                             zbeta, C(m, n), ldcm);
                     }
                 }
             }
-            //=======================================
+            //==============================
             // PlasmaNoTrans / PlasmaUpper
-            //=======================================
+            //==============================
             else {
-                for (m = n+1; m < C.mt; m++) {
-                    tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
-                    ldam = BLKLDD(A, m);
-                    for (k = 0; k < A.nt; k++) {
-                        tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
-                        zbeta = k == 0 ? beta : zone;
+                for (int m = n+1; m < C.mt; m++) {
+                    int mvcm = plasma_tile_mview(C, m);
+                    int ldam = plasma_tile_mmain(A, m);
+                    for (int k = 0; k < A.nt; k++) {
+                        int nvak = plasma_tile_nview(A, k);
+                        plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
                             trans, PlasmaConjTrans,
-                            tempnn, tempmm, tempkn,
+                            nvcn, mvcm, nvak,
                             alpha, A(n, k), ldan,
                                    A(m, k), ldam,
                             zbeta, C(n, m), ldcn);
@@ -98,53 +93,53 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
                 }
             }
         }
-        //=======================================
-        // PlasmaConjTrans
-        //=======================================
+        //=====================
+        // Plasma[_Conj]Trans
+        //=====================
         else {
-            for (k = 0; k < A.mt; k++) {
-                tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
-                ldak = BLKLDD(A, k);
-                dbeta = k == 0 ? beta : 1.0;
+            for (int k = 0; k < A.mt; k++) {
+                int mvak = plasma_tile_mview(A, k);
+                int ldak = plasma_tile_mmain(A, k);
+                double dbeta = k == 0 ? beta : 1.0;
                 core_omp_zherk(
                     uplo, trans,
-                    tempnn, tempkm,
+                    nvcn, mvak,
                     alpha, A(k, n), ldak,
                     dbeta, C(n, n), ldcn);
             }
-            //=======================================
-            // PlasmaConjTrans / PlasmaLower
-            //=======================================
+            //===================================
+            // Plasma[_ConjTrans] / PlasmaLower
+            //===================================
             if (uplo == PlasmaLower) {
-                for (m = n+1; m < C.mt; m++) {
-                    tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
-                    ldcm = BLKLDD(C, m);
-                    for (k = 0; k < A.mt; k++) {
-                        tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
-                        ldak = BLKLDD(A, k);
-                        zbeta = k == 0 ? beta : zone;
+                for (int m = n+1; m < C.mt; m++) {
+                    int mvcm = plasma_tile_mview(C, m);
+                    int ldcm = plasma_tile_mmain(C, m);
+                    for (int k = 0; k < A.mt; k++) {
+                        int mvak = plasma_tile_mview(A, k);
+                        int ldak = plasma_tile_mmain(A, k);
+                        plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
                             trans, PlasmaNoTrans,
-                            tempmm, tempnn, tempkm,
+                            mvcm, nvcn, mvak,
                             alpha, A(k, m), ldak,
                                    A(k, n), ldak,
                             zbeta, C(m, n), ldcm);
                     }
                 }
             }
-            //=======================================
-            // PlasmaConjTrans / PlasmaUpper
-            //=======================================
+            //===================================
+            // Plasma[_ConjTrans] / PlasmaUpper
+            //===================================
             else {
-                for (m = n+1; m < C.mt; m++) {
-                    tempmm = m == C.mt-1 ? C.m-m*C.mb : C.mb;
-                    for (k = 0; k < A.mt; k++) {
-                        tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
-                        ldak = BLKLDD(A, k);
-                        zbeta = k == 0 ? beta : zone;
+                for (int m = n+1; m < C.mt; m++) {
+                    int mvcm = plasma_tile_mview(C, m);
+                    for (int k = 0; k < A.mt; k++) {
+                        int mvak = plasma_tile_mview(A, k);
+                        int ldak = plasma_tile_mmain(A, k);
+                        plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
                             trans, PlasmaNoTrans,
-                            tempnn, tempmm, tempkm,
+                            nvcn, mvcm, mvak,
                             alpha, A(k, n), ldak,
                                    A(k, m), ldak,
                             zbeta, C(n, m), ldcn);

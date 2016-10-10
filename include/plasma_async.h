@@ -21,7 +21,7 @@ typedef struct {
     plasma_enum_t status; ///< error code
 } plasma_request_t;
 
-static const plasma_request_t PLASMA_REQUEST_INITIALIZER = {PlasmaSuccess};
+static const plasma_request_t PlasmaRequestInitializer = {PlasmaSuccess};
 
 typedef struct {
     plasma_enum_t status;      ///< error code

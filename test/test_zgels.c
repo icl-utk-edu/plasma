@@ -133,28 +133,20 @@ void test_zgels(param_value_t param[], char *info)
         memcpy(Bref, B, (size_t)ldb*nrhs*sizeof(plasma_complex64_t));
     }
 
-    // Get PLASMA context.
-    plasma_context_t *plasma = plasma_context_self();
-
-    // Initialize tile matrix descriptor for matrix T
-    // using multiples of tile size.
-    int nb = plasma->nb;
-    int ib = nb;
-    int mt = (m%nb == 0) ? (m/nb) : (m/nb+1);
-    int nt = (n%nb == 0) ? (n/nb) : (n/nb+1);
-    plasma_desc_t descT = plasma_desc_init(PlasmaComplexDouble, ib, nb, ib*nb,
-                                           mt*ib, nt*nb, 0, 0, mt*ib, nt*nb);
-    // allocate memory for the matrix T
-    retval = plasma_desc_mat_alloc(&descT);
-    assert(retval == 0);
+    //================================================================
+    // Prepare the descriptor for matrix T.
+    //================================================================
+    plasma_desc_t T;
+    retval = plasma_descT_create(PlasmaComplexDouble, m, n, &T);
+    assert(retval == PlasmaSuccess);
 
     //================================================================
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zgels(PlasmaNoTrans, m, n, nrhs,
+    plasma_zgels(PlasmaNoTrans, m, n, nrhs,
                  A, lda,
-                 &descT,
+                 T,
                  B, ldb);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
@@ -218,7 +210,7 @@ void test_zgels(param_value_t param[], char *info)
     //================================================================
     // Free arrays.
     //================================================================
-    plasma_desc_mat_free(&descT);
+    plasma_desc_destroy(&T);
     free(A);
     free(B);
     if (test) {

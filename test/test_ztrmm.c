@@ -90,10 +90,10 @@ void test_ztrmm(param_value_t param[], char *info)
     //================================================================
     // Set parameters
     //================================================================
-    plasma_enum_t side = PLASMA_side_const(param[PARAM_SIDE].c);
-    plasma_enum_t uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
-    plasma_enum_t transa = PLASMA_trans_const(param[PARAM_TRANSA].c);
-    plasma_enum_t diag = PLASMA_diag_const(param[PARAM_DIAG].c);
+    plasma_enum_t side = plasma_side_cons_t(param[PARAM_SIDE].c);
+    plasma_enum_t uplo = plasma_uplo_const_t(param[PARAM_UPLO].c);
+    plasma_enum_t transa = plasma_trans_const_t(param[PARAM_TRANSA].c);
+    plasma_enum_t diag = plasma_diag_const_t(param[PARAM_DIAG].c);
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
@@ -158,7 +158,7 @@ void test_ztrmm(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    PLASMA_ztrmm(side, uplo,
+    plasma_ztrmm(side, uplo,
                  transa, diag,
                  m, n, alpha, A, lda, B, ldb);
 
@@ -173,8 +173,6 @@ void test_ztrmm(param_value_t param[], char *info)
     //================================================================
     if (test) {
         // see comments in test_zgemm.c
-        plasma_complex64_t zzero =  0.0;
-        plasma_complex64_t zone  =  1.0;
         plasma_complex64_t zmone = -1.0;
         double work[1];
 
@@ -184,15 +182,15 @@ void test_ztrmm(param_value_t param[], char *info)
         // See also test_ztrsm.c
         if (uplo == PlasmaLower) {
             LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'U', k-1, k-1,
-                                zzero, zzero, &A(0,1), lda);
+                                0.0, 0.0, &A(0,1), lda);
         }
         else {
             LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'L', k-1, k-1,
-                                zzero, zzero, &A(1,0), lda);
+                                0.0, 0.0, &A(1,0), lda);
         }
         if (diag == PlasmaUnit) {
             for (int i = 0; i < k; ++i) {
-                A(i,i) = zone;
+                A(i,i) = 1.0;
             }
         }
         double Anorm = LAPACKE_zlange_work(

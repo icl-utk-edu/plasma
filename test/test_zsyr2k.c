@@ -90,8 +90,8 @@ void test_zsyr2k(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    plasma_enum_t uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
-    plasma_enum_t trans = PLASMA_trans_const(param[PARAM_TRANS].c);
+    plasma_enum_t uplo = plasma_uplo_const_t(param[PARAM_UPLO].c);
+    plasma_enum_t trans = plasma_trans_const_t(param[PARAM_TRANS].c);
 
     int n = param[PARAM_N].i;
     int k = param[PARAM_K].i;
@@ -175,7 +175,7 @@ void test_zsyr2k(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    PLASMA_zsyr2k(
+    plasma_zsyr2k(
         uplo, trans,
         n, k,
         alpha, A, lda,

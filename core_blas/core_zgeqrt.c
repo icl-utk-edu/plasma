@@ -137,9 +137,6 @@ int core_zgeqrt(int m, int n, int ib,
             &T[ldt*i], ldt);
 
         if (n > i+sb) {
-            // Plasma_ConjTrans will be converted to PlasmaTrans in
-            // automatic datatype conversion, which is what we want here.
-            // PlasmaConjTrans is protected from this conversion.
             LAPACKE_zlarfb_work(
                 LAPACK_COL_MAJOR,
                 lapack_const(PlasmaLeft),
@@ -161,21 +158,21 @@ int core_zgeqrt(int m, int n, int ib,
 void core_omp_zgeqrt(int m, int n, int ib, int nb,
                      plasma_complex64_t *A, int lda,
                      plasma_complex64_t *T, int ldt,
-                     plasma_workspace_t *work,
+                     plasma_workspace_t work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // assuming lda == m and nb == n
-    #pragma omp task depend(inout:A[0:lda*nb]) \
-                     depend(out:T[0:ldt*nb])
+    // OpenMP depends assume lda == m == n == nb, ldt == ib.
+    #pragma omp task depend(inout:A[0:nb*nb]) \
+                     depend(out:T[0:ib*nb])
     {
         if (sequence->status == PlasmaSuccess) {
             int tid = omp_get_thread_num();
             // split spaces into TAU and WORK
             int ltau = n;
-            int lwork = work->lwork - ltau;
-            plasma_complex64_t *TAU = ((plasma_complex64_t*)work->spaces[tid]);
+            int lwork = work.lwork - ltau;
+            plasma_complex64_t *TAU = ((plasma_complex64_t*)work.spaces[tid]);
             plasma_complex64_t *W   =
-                ((plasma_complex64_t*)work->spaces[tid]) + ltau;
+                ((plasma_complex64_t*)work.spaces[tid]) + ltau;
 
             // Call the kernel.
             int info = core_zgeqrt(m, n, ib,

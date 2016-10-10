@@ -14,18 +14,19 @@
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
-#include "plasma_z.h"
 #include "plasma_types.h"
+#include "plasma_workspace.h"
 
 /***************************************************************************//**
-    @ingroup plasma_ccrb2cm
+    @ingroup plasma_cm2ccrb
 
-    Convert tiled (CCRB) to column-major (CM) layout for a band matrix.
+    Convert column-major (CM) to tiled (CCRB) layout for a band matrix.
     Out-of-place.
 */
-void PLASMA_zccrb2cm_band_Async(plasma_enum_t uplo,
-                                plasma_desc_t *A, plasma_complex64_t *Af77, int lda,
-                                plasma_sequence_t *sequence, plasma_request_t *request)
+void plasma_omp_zpb2desc(plasma_complex64_t *pA, int lda,
+                         plasma_desc_t A,
+                         plasma_sequence_t *sequence,
+                         plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -36,13 +37,13 @@ void PLASMA_zccrb2cm_band_Async(plasma_enum_t uplo,
     }
 
     // Check input arguments.
-    if (plasma_desc_band_check(uplo, A) != PlasmaSuccess) {
-        plasma_error("invalid A");
+    if (pA == NULL) {
+        plasma_error("NULL A");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-    if (Af77 == NULL) {
-        plasma_error("NULL A");
+    if (plasma_desc_check(A) != PlasmaSuccess) {
+        plasma_error("invalid A");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
@@ -57,18 +58,10 @@ void PLASMA_zccrb2cm_band_Async(plasma_enum_t uplo,
         return;
     }
 
-    // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
-        return;
-    }
-
-    // quick return with success
-    if (A->m == 0 || A->n == 0)
+    // quick return
+    if (A.m == 0 || A.n == 0)
         return;
 
     // Call the parallel function.
-    plasma_pzooccrb2cm_band(uplo, *A, Af77, lda, sequence, request);
-
-    return;
+    plasma_pzpb2desc(pA, lda, A, sequence, request);
 }

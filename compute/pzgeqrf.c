@@ -13,81 +13,69 @@
 #include "plasma_async.h"
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
-#include "plasma_types.h"
 #include "plasma_internal.h"
-#include "core_blas_z.h"
+#include "plasma_types.h"
+#include "plasma_workspace.h"
+#include "core_blas.h"
 
-#define A(m, n) ((plasma_complex64_t*) plasma_getaddr(A, m, n))
-#define T(m, n) ((plasma_complex64_t*) plasma_getaddr(T, m, n))
+#define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
+#define T(m, n) (plasma_complex64_t*)plasma_tile_addr(T, m, n)
+
 /***************************************************************************//**
  *  Parallel tile QR factorization - dynamic scheduling
  * @see plasma_omp_zgeqrf
  **/
 void plasma_pzgeqrf(plasma_desc_t A, plasma_desc_t T,
-                    plasma_workspace_t *work,
+                    plasma_workspace_t work,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    int k, m, n;
-    int ldak, ldam;
-    int tempkm, tempkn, tempnn, tempmm;
-
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
     }
 
-    // Set inner blocking from the plasma context
-    plasma_context_t *plasma = plasma_context_self();
-    if (plasma == NULL) {
-        plasma_error("PLASMA not initialized");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    int ib = plasma->ib;
+    // Set inner blocking from the T tile row-dimension.
+    int ib = T.mb;
 
-    for (k = 0; k < imin(A.mt, A.nt); k++) {
-        tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
-        tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
-        ldak = BLKLDD(A, k);
+    for (int k = 0; k < imin(A.mt, A.nt); k++) {
+        int mvak = plasma_tile_mview(A, k);
+        int nvak = plasma_tile_nview(A, k);
+        int ldak = plasma_tile_mmain(A, k);
         core_omp_zgeqrt(
-            tempkm, tempkn, ib, T.nb,
+            mvak, nvak, ib, T.nb,
             A(k, k), ldak,
             T(k, k), T.mb,
             work,
             sequence, request);
 
-        for (n = k+1; n < A.nt; n++) {
-            tempnn = n == A.nt-1 ? A.n-n*A.nb : A.nb;
-            // Plasma_ConjTrans will be converted to PlasmaTrans in
-            // automatic datatype conversion, which is what we
-            // want here.
-            // PlasmaConjTrans is protected from this conversion.
+        for (int n = k+1; n < A.nt; n++) {
+            int nvan = plasma_tile_nview(A, n);
             core_omp_zunmqr(
                 PlasmaLeft, Plasma_ConjTrans,
-                tempkm, tempnn, tempkm, ib, T.nb,
+                mvak, nvan, mvak, ib, T.nb,
                 A(k, k), ldak,
                 T(k, k), T.mb,
                 A(k, n), ldak,
                 work,
                 sequence, request);
         }
-        for (m = k+1; m < A.mt; m++) {
-            tempmm = m == A.mt-1 ? A.m-m*A.mb : A.mb;
-            ldam = BLKLDD(A, m);
+        for (int m = k+1; m < A.mt; m++) {
+            int mvam = plasma_tile_mview(A, m);
+            int ldam = plasma_tile_mmain(A, m);
             core_omp_ztsqrt(
-                tempmm, tempkn, ib, T.nb,
+                mvam, nvak, ib, T.nb,
                 A(k, k), ldak,
                 A(m, k), ldam,
                 T(m, k), T.mb,
                 work,
                 sequence, request);
 
-            for (n = k+1; n < A.nt; n++) {
-                tempnn = n == A.nt-1 ? A.n-n*A.nb : A.nb;
+            for (int n = k+1; n < A.nt; n++) {
+                int nvan = plasma_tile_nview(A, n);
                 core_omp_ztsmqr(
                     PlasmaLeft, Plasma_ConjTrans,
-                    A.mb, tempnn, tempmm, tempnn, A.nb, ib, T.nb,
+                    A.mb, nvan, mvam, nvan, A.nb, ib, T.nb,
                     A(k, n), ldak,
                     A(m, n), ldam,
                     A(m, k), ldam,

@@ -14,17 +14,19 @@
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
-#include "plasma_z.h"
 #include "plasma_types.h"
+#include "plasma_workspace.h"
 
 /***************************************************************************//**
-    @ingroup plasma_ccrb2cm
+    @ingroup plasma_cm2ccrb
 
-    Convert tiled (CCRB) to column-major (CM) matrix layout.
+    Convert column-major (CM) to tiled (CCRB) matrix layout.
     Out-of-place.
 */
-void PLASMA_zccrb2cm_Async(plasma_desc_t *A, plasma_complex64_t *Af77, int lda,
-                           plasma_sequence_t *sequence, plasma_request_t *request)
+void plasma_omp_zge2desc(plasma_complex64_t *pA, int lda,
+                         plasma_desc_t A,
+                         plasma_sequence_t *sequence,
+                         plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -35,13 +37,13 @@ void PLASMA_zccrb2cm_Async(plasma_desc_t *A, plasma_complex64_t *Af77, int lda,
     }
 
     // Check input arguments.
-    if (plasma_desc_check(A) != PlasmaSuccess) {
-        plasma_error("invalid A");
+    if (pA == NULL) {
+        plasma_error("NULL A");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-    if (Af77 == NULL) {
-        plasma_error("NULL A");
+    if (plasma_desc_check(A) != PlasmaSuccess) {
+        plasma_error("invalid A");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
@@ -57,9 +59,9 @@ void PLASMA_zccrb2cm_Async(plasma_desc_t *A, plasma_complex64_t *Af77, int lda,
     }
 
     // quick return
-    if (A->m == 0 || A->n == 0)
+    if (A.m == 0 || A.n == 0)
         return;
 
     // Call the parallel function.
-    plasma_pzooccrb2cm(*A, Af77, lda, sequence, request);
+    plasma_pzge2desc(pA, lda, A, sequence, request);
 }

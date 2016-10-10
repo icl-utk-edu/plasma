@@ -22,18 +22,33 @@ extern "C" {
 #endif
 
 /******************************************************************************/
+void plasma_pzdesc2ge(plasma_desc_t A,
+                      plasma_complex64_t *pA, int lda,
+                      plasma_sequence_t *sequence,
+                      plasma_request_t *request);
+
+void plasma_pzdesc2pb(plasma_desc_t A,
+                      plasma_complex64_t *pA, int lda,
+                      plasma_sequence_t *sequence,
+                      plasma_request_t *request);
+
+void plasma_pzge2desc(plasma_complex64_t *pA, int lda,
+                      plasma_desc_t A,
+                      plasma_sequence_t *sequence,
+                      plasma_request_t *request);
+
 void plasma_pzgelqf(plasma_desc_t A, plasma_desc_t T,
-                    plasma_workspace_t *work,
+                    plasma_workspace_t work,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_pzgemm(plasma_enum_t transA, plasma_enum_t transB,
+void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                    plasma_complex64_t alpha, plasma_desc_t A,
                                              plasma_desc_t B,
                    plasma_complex64_t beta,  plasma_desc_t C,
                    plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzgeqrf(plasma_desc_t A, plasma_desc_t T,
-                    plasma_workspace_t *work,
+                    plasma_workspace_t work,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
@@ -44,7 +59,8 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
 
 void plasma_pzher2k(plasma_enum_t uplo, plasma_enum_t trans,
                     plasma_complex64_t alpha, plasma_desc_t A,
-                    plasma_desc_t B, double beta,  plasma_desc_t C,
+                                              plasma_desc_t B,
+                    double beta,              plasma_desc_t C,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
@@ -52,29 +68,15 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
                    double beta,  plasma_desc_t C,
                    plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_pzlacpy(plasma_enum_t uplo, plasma_desc_t A, plasma_desc_t B,
-                    plasma_sequence_t *sequence, plasma_request_t *request);
-
 void plasma_pzlaset(plasma_enum_t uplo,
                     plasma_complex64_t alpha, plasma_complex64_t beta,
                     plasma_desc_t A,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_pzooccrb2cm(plasma_desc_t A, plasma_complex64_t *Af77, int lda,
-                        plasma_sequence_t *sequence, plasma_request_t *request);
-
-void plasma_pzooccrb2cm_band(plasma_enum_t uplo,
-                             plasma_desc_t A, plasma_complex64_t *Af77, int lda,
-                             plasma_sequence_t *sequence,
-                             plasma_request_t  *request);
-
-void plasma_pzoocm2ccrb(plasma_complex64_t *Af77, int lda, plasma_desc_t A,
-                        plasma_sequence_t *sequence, plasma_request_t *request);
-
-void plasma_pzoocm2ccrb_band(plasma_enum_t uplo,
-                             plasma_complex64_t *Af77, int lda, plasma_desc_t A,
-                             plasma_sequence_t *sequence,
-                             plasma_request_t  *request);
+void plasma_pzpb2desc(plasma_complex64_t *pA, int lda,
+                      plasma_desc_t A,
+                      plasma_sequence_t *sequence,
+                      plasma_request_t *request);
 
 void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
                     plasma_sequence_t *sequence, plasma_request_t *request);
@@ -90,7 +92,8 @@ void plasma_pzsymm(plasma_enum_t side, plasma_enum_t uplo,
 
 void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
                     plasma_complex64_t alpha, plasma_desc_t A,
-                    plasma_desc_t B, plasma_complex64_t beta,  plasma_desc_t C,
+                                              plasma_desc_t B,
+                    plasma_complex64_t beta,  plasma_desc_t C,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzsyrk(plasma_enum_t uplo, plasma_enum_t trans,
@@ -98,19 +101,22 @@ void plasma_pzsyrk(plasma_enum_t uplo, plasma_enum_t trans,
                    plasma_complex64_t beta,  plasma_desc_t C,
                    plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo, plasma_enum_t trans,
-                   plasma_enum_t diag, plasma_complex64_t alpha,
-                   plasma_desc_t A, plasma_desc_t B, const int *IPIV,
+void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
+                   plasma_enum_t trans, plasma_enum_t diag,
+                   plasma_complex64_t alpha, plasma_desc_t A,
+                                             plasma_desc_t B,
+                   const int *IPIV,
                    plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transA,
+void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transa,
                     plasma_complex64_t alpha,  plasma_desc_t A,
                     plasma_complex64_t beta,   plasma_desc_t B,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                    plasma_enum_t trans, plasma_enum_t diag,
-                   plasma_complex64_t alpha, plasma_desc_t A, plasma_desc_t B,
+                   plasma_complex64_t alpha, plasma_desc_t A,
+                                             plasma_desc_t B,
                    plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pztrsm(plasma_enum_t side, plasma_enum_t uplo,
@@ -120,21 +126,21 @@ void plasma_pztrsm(plasma_enum_t side, plasma_enum_t uplo,
                    plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzunglq(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
-                    plasma_workspace_t *work,
+                    plasma_workspace_t work,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzungqr(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
-                    plasma_workspace_t *work,
+                    plasma_workspace_t work,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                     plasma_desc_t A, plasma_desc_t B, plasma_desc_t T,
-                    plasma_workspace_t *work,
+                    plasma_workspace_t work,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
                     plasma_desc_t A, plasma_desc_t B, plasma_desc_t T,
-                    plasma_workspace_t *work,
+                    plasma_workspace_t work,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 #ifdef __cplusplus

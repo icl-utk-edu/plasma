@@ -305,7 +305,7 @@ static inline int core_zpamm_w(
 
             // W = A2_2
             LAPACKE_zlacpy_work(LAPACK_COL_MAJOR,
-                                lapack_const(PlasmaFull),
+                                lapack_const(PlasmaGeneral),
                                 l, n,
                                 &A2[k-l], lda2,
                                 W, ldw);
@@ -366,7 +366,7 @@ static inline int core_zpamm_w(
             if (l > 0) {
                 // W = A2_2
                 LAPACKE_zlacpy_work(LAPACK_COL_MAJOR,
-                                    lapack_const(PlasmaFull),
+                                    lapack_const(PlasmaGeneral),
                                     m, l,
                                     &A2[lda2*(k-l)], lda2,
                                     W, ldw);

@@ -145,9 +145,6 @@ int core_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
         nw = n1;
     }
 
-    // Plasma_ConjTrans will be converted to PlasmaTrans in
-    // automatic datatype conversion, which is what we want here.
-    // PlasmaConjTrans is protected from this conversion.
     if ((trans != PlasmaNoTrans) && (trans != Plasma_ConjTrans)) {
         coreblas_error("Illegal value of trans");
         return -2;
@@ -258,10 +255,11 @@ void core_omp_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
                            plasma_complex64_t *A2, int lda2,
                      const plasma_complex64_t *V,  int ldv,
                      const plasma_complex64_t *T,  int ldt,
-                     plasma_workspace_t *work,
+                     plasma_workspace_t work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // assuming m1 == nb, n1 == nb, m2 == nb, n2 == nb
+    // OpenMP depends assume m1 == n1 == m2 == n2 == lda1 == lda2 == ldv == nb,
+    //                       ldt == ib.
     #pragma omp task depend(inout:A1[0:nb*nb]) \
                      depend(inout:A2[0:nb*nb]) \
                      depend(in:V[0:nb*nb]) \
@@ -270,7 +268,7 @@ void core_omp_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
         if (sequence->status == PlasmaSuccess) {
             int tid = omp_get_thread_num();
             plasma_complex64_t *W   =
-                ((plasma_complex64_t*)work->spaces[tid]);
+                ((plasma_complex64_t*)work.spaces[tid]);
 
             int ldwork = side == PlasmaLeft ? ib : nb;
 

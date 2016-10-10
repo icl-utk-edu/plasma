@@ -84,7 +84,7 @@ void test_zpbtrf(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    plasma_enum_t uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
+    plasma_enum_t uplo = plasma_uplo_const_t(param[PARAM_UPLO].c);
     int pada = param[PARAM_PADA].i;
     int n    = param[PARAM_N].i;
     int lda  = imax(1, n + pada);
@@ -120,12 +120,11 @@ void test_zpbtrf(param_value_t param[], char *info)
         }
     }
     // zero out elements outside the band
-    plasma_complex64_t zzero = 0.0;
     for (i = 0; i < n; i++) {
-        for (j = i+kd+1; j < n; j++) A(i, j) = zzero;
+        for (j = i+kd+1; j < n; j++) A(i, j) = 0.0;
     }
     for (j = 0; j < n; j++) {
-        for (i = j+kd+1; i < n; i++) A(i, j) = zzero;
+        for (i = j+kd+1; i < n; i++) A(i, j) = 0.0;
     }
 
     // band matrix A in LAPACK storage
@@ -136,7 +135,7 @@ void test_zpbtrf(param_value_t param[], char *info)
 
     // convert into LAPACK's symmetric band storage
     for (j = 0; j < n; j++) {
-        for (i = 0; i < ldab; i++) AB[i + j*ldab] = zzero;
+        for (i = 0; i < ldab; i++) AB[i + j*ldab] = 0.0;
         if (uplo == PlasmaUpper) {
             for (i = imax(0, j-kd); i <= j; i++) AB[i-j+kd + j*ldab] = A(i, j);
         }
@@ -151,7 +150,7 @@ void test_zpbtrf(param_value_t param[], char *info)
     int iinfo;
 
     plasma_time_t start = omp_get_wtime();
-    iinfo = PLASMA_zpbtrf(uplo, n, kd, AB, ldab);
+    iinfo = plasma_zpbtrf(uplo, n, kd, AB, ldab);
     if (iinfo != 0) printf( " zpbtrf failed with info=%d\n", iinfo );
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
@@ -185,7 +184,7 @@ void test_zpbtrf(param_value_t param[], char *info)
         LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'F', n, nrhs, B, ldb, X, ldx);
 
         // solve for X
-        iinfo = PLASMA_zpbtrs(uplo, n, kd, nrhs, AB, ldab, X, ldb);
+        iinfo = plasma_zpbtrs(uplo, n, kd, nrhs, AB, ldab, X, ldb);
         if (iinfo != 0) printf( " zpbtrs failed with info = %d\n", iinfo );
 
         // compute residual vector

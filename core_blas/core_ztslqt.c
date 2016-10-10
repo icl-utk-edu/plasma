@@ -185,9 +185,6 @@ int core_ztslqt(int m, int n, int ib,
             T[ldt*(ii+i)+i] = TAU[ii+i];
         }
         if (m > ii+sb) {
-            // Plasma_ConjTrans will be converted to PlasmaTrans in
-            // automatic datatype conversion, which is what we want here.
-            // PlasmaConjTrans is protected from this conversion.
             core_ztsmlq(
                 PlasmaRight, Plasma_ConjTrans,
                 m-(ii+sb), sb, m-(ii+sb), n, ib, ib,
@@ -207,10 +204,10 @@ void core_omp_ztslqt(int m, int n, int ib, int nb,
                      plasma_complex64_t *A1, int lda1,
                      plasma_complex64_t *A2, int lda2,
                      plasma_complex64_t *T,  int ldt,
-                     plasma_workspace_t *work,
+                     plasma_workspace_t work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // assuming m == nb, n == nb
+    // OpenMP depends assume m == n == lda1 == lda2 == nb, ldt == ib.
     #pragma omp task depend(inout:A1[0:nb*nb]) \
                      depend(inout:A2[0:nb*nb]) \
                      depend(out:T[0:ib*nb])
@@ -219,10 +216,9 @@ void core_omp_ztslqt(int m, int n, int ib, int nb,
             int tid = omp_get_thread_num();
             // split spaces into TAU and WORK
             int ltau = m;
-            int lwork = work->lwork - ltau;
-            plasma_complex64_t *TAU = ((plasma_complex64_t*)work->spaces[tid]);
+            plasma_complex64_t *TAU = ((plasma_complex64_t*)work.spaces[tid]);
             plasma_complex64_t *W   =
-                ((plasma_complex64_t*)work->spaces[tid]) + ltau;
+                ((plasma_complex64_t*)work.spaces[tid]) + ltau;
 
             // Call the kernel.
             int info = core_ztslqt(m, n, ib,

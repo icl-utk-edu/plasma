@@ -10,12 +10,13 @@
  *
  **/
 
-#include "plasma_types.h"
+#include "plasma.h"
 #include "plasma_async.h"
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
-#include "plasma_z.h"
+#include "plasma_types.h"
+#include "plasma_workspace.h"
 
 /***************************************************************************//**
  *
@@ -64,21 +65,15 @@
  *******************************************************************************
  *
  * @sa plasma_omp_zpotrf
- * @sa PLASMA_cpotrf
- * @sa PLASMA_dpotrf
- * @sa PLASMA_spotrf
+ * @sa plasma_cpotrf
+ * @sa plasma_dpotrf
+ * @sa plasma_spotrf
  *
  ******************************************************************************/
-int PLASMA_zpotrf(plasma_enum_t uplo,
+int plasma_zpotrf(plasma_enum_t uplo,
                   int n,
-                  plasma_complex64_t *A, int lda)
+                  plasma_complex64_t *pA, int lda)
 {
-    int nb;
-    int retval;
-    int status;
-
-    plasma_desc_t descA;
-
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -86,7 +81,7 @@ int PLASMA_zpotrf(plasma_enum_t uplo,
         return PlasmaErrorNotInitialized;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
@@ -105,22 +100,16 @@ int PLASMA_zpotrf(plasma_enum_t uplo,
     if (imax(n, 0) == 0)
         return PlasmaSuccess;
 
-    // Tune
-    // status = plasma_tune(PLASMA_FUNC_ZPOSV, N, N, 0);
-    // if (status != PlasmaSuccess) {
-    //     plasma_error("plasma_tune() failed");
-    //     return status;
-    // }
-    nb = plasma->nb;
+    // Set tiling parameters.
+    int nb = plasma->nb;
 
-    // Initialize tile matrix descriptors.
-    descA = plasma_desc_init(PlasmaComplexDouble, nb, nb,
-                             nb*nb, n, n, 0, 0, n, n);
-
-    // Allocate matrices in tile layout.
-    retval = plasma_desc_mat_alloc(&descA);
+    // Create tile matrix.
+    plasma_desc_t A;
+    int retval;
+    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
+                                        n, n, 0, 0, n, n, &A);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_mat_alloc() failed");
+        plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
 
@@ -131,29 +120,30 @@ int PLASMA_zpotrf(plasma_enum_t uplo,
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
+
     // Initialize request.
-    plasma_request_t request = PLASMA_REQUEST_INITIALIZER;
+    plasma_request_t request = PlasmaRequestInitializer;
 
     // asynchronous block
     #pragma omp parallel
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
+        plasma_omp_zge2desc(pA, lda, A, sequence, &request);
 
         // Call the tile async function.
-        plasma_omp_zpotrf(uplo, &descA, sequence, &request);
+        plasma_omp_zpotrf(uplo, A, sequence, &request);
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
+        plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
     }
     // implicit synchronization
 
     // Free matrix A in tile layout.
-    plasma_desc_mat_free(&descA);
+    plasma_desc_destroy(&A);
 
     // Return status.
-    status = sequence->status;
+    int status = sequence->status;
     plasma_sequence_destroy(sequence);
     return status;
 }
@@ -164,7 +154,7 @@ int PLASMA_zpotrf(plasma_enum_t uplo,
  *
  *  Performs the Cholesky factorization of a Hermitian positive definite
  *  matrix.
- *  Non-blocking tile version of PLASMA_zpotrf().
+ *  Non-blocking tile version of plasma_zpotrf().
  *  May return before the computation is finished.
  *  Operates on matrices stored by tiles.
  *  All matrices are passed through descriptors.
@@ -205,17 +195,15 @@ int PLASMA_zpotrf(plasma_enum_t uplo,
  *
  *******************************************************************************
  *
- * @sa PLASMA_zpotrf
+ * @sa plasma_zpotrf
  * @sa plasma_omp_zpotrf
  * @sa plasma_omp_cpotrf
  * @sa plasma_omp_dpotrf
  * @sa plasma_omp_spotrf
  *
  ******************************************************************************/
-void plasma_omp_zpotrf(plasma_enum_t uplo,
-                       plasma_desc_t *A,
-                       plasma_sequence_t *sequence,
-                       plasma_request_t *request)
+void plasma_omp_zpotrf(plasma_enum_t uplo, plasma_desc_t A,
+                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -249,9 +237,9 @@ void plasma_omp_zpotrf(plasma_enum_t uplo,
     }
 
     // quick return
-    if (A->m == 0)
+    if (A.m == 0)
         return;
 
     // Call the parallel function.
-    plasma_pzpotrf(uplo, *A, sequence, request);
+    plasma_pzpotrf(uplo, A, sequence, request);
 }

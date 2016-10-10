@@ -30,7 +30,7 @@
  * @retval PlasmaTrans     if lapack_char = 'T'
  * @retval PlasmaConjTrans if lapack_char = 'C'
  ******************************************************************************/
-plasma_enum_t PLASMA_trans_const(char lapack_char)
+plasma_enum_t plasma_trans_const_t(char lapack_char)
 {
     switch (lapack_char) {
     case 'N': case 'n': return PlasmaNoTrans;
@@ -41,16 +41,16 @@ plasma_enum_t PLASMA_trans_const(char lapack_char)
 }
 
 /***************************************************************************//**
- * @retval PlasmaUpper if lapack_char = 'U'
- * @retval PlasmaLower if lapack_char = 'L'
- * @retval PlasmaFull  otherwise
+ * @retval PlasmaUpper   if lapack_char = 'U'
+ * @retval PlasmaLower   if lapack_char = 'L'
+ * @retval PlasmaGeneral otherwise
  ******************************************************************************/
-plasma_enum_t PLASMA_uplo_const(char lapack_char)
+plasma_enum_t plasma_uplo_const_t(char lapack_char)
 {
     switch (lapack_char) {
     case 'U': case 'u': return PlasmaUpper;
     case 'L': case 'l': return PlasmaLower;
-    default:            return PlasmaFull;
+    default:            return PlasmaGeneral;
     }
 }
 
@@ -58,7 +58,7 @@ plasma_enum_t PLASMA_uplo_const(char lapack_char)
  * @retval PlasmaNonUnit if lapack_char = 'N'
  * @retval PlasmaUnit    if lapack_char = 'U'
  ******************************************************************************/
-plasma_enum_t PLASMA_diag_const(char lapack_char)
+plasma_enum_t plasma_diag_const_t(char lapack_char)
 {
     switch (lapack_char) {
     case 'N': case 'n': return PlasmaNonUnit;
@@ -72,7 +72,7 @@ plasma_enum_t PLASMA_diag_const(char lapack_char)
  * @retval PlasmaRight     if lapack_char = 'R'
  ******************************************************************************/
 // @retval PlasmaBothSides if lapack_char = 'B'  // for trevc
-plasma_enum_t PLASMA_side_const(char lapack_char)
+plasma_enum_t plasma_side_cons_t(char lapack_char)
 {
     switch (lapack_char) {
     case 'L': case 'l': return PlasmaLeft;
@@ -86,7 +86,7 @@ plasma_enum_t PLASMA_side_const(char lapack_char)
  * @retval PlasmaForward  if lapack_char = 'F'
  * @retval PlasmaBackward if lapack_char = 'B'
  ******************************************************************************/
-plasma_enum_t PLASMA_direct_const(char lapack_char)
+plasma_enum_t plasma_direct_const_t(char lapack_char)
 {
     switch (lapack_char) {
     case 'F': case 'f': return PlasmaForward;
@@ -99,7 +99,7 @@ plasma_enum_t PLASMA_direct_const(char lapack_char)
  * @retval PlasmaColumnwise if lapack_char = 'C'
  * @retval PlasmaRowwise    if lapack_char = 'R'
  ******************************************************************************/
-plasma_enum_t PLASMA_storev_const(char lapack_char)
+plasma_enum_t plasma_storev_const_t(char lapack_char)
 {
     switch (lapack_char) {
     case 'C': case 'c': return PlasmaColumnwise;

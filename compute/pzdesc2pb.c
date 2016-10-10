@@ -11,32 +11,38 @@
  **/
 
 #include "plasma_async.h"
+#include "plasma_context.h"
 #include "plasma_descriptor.h"
-#include "plasma_types.h"
 #include "plasma_internal.h"
-#include "core_blas_z.h"
+#include "plasma_types.h"
+#include "plasma_workspace.h"
+#include "core_blas.h"
 
-#define tileA(m, n) ((plasma_complex64_t*)plasma_getaddr_band(uplo, A, (m), (n)))
-#define bandA(m, n) (&(Af77[lda*(A.nb*(n)) + (uplo == PlasmaUpper ? A.ku : 0)+A.mb*((m)-(n))]))
+#define tileA(m, n) ((plasma_complex64_t*)plasma_tile_addr(A, (m), (n)))
+#define bandA(m, n) (&(pA[lda*(A.nb*(n)) + (A.uplo == PlasmaUpper ? A.ku : 0)+A.mb*((m)-(n))]))
 
 /******************************************************************************/
-void plasma_pzooccrb2cm_band(plasma_enum_t uplo,
-                             plasma_desc_t A, plasma_complex64_t *Af77, int lda,
-                             plasma_sequence_t *sequence, plasma_request_t *request)
+void plasma_pzdesc2pb(plasma_desc_t A,
+                      plasma_complex64_t *pA, int lda,
+                      plasma_sequence_t *sequence,
+                      plasma_request_t *request)
 {
     int n, m;
 
-    if (sequence->status != PlasmaSuccess)
+    // Check sequence status.
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
+    }
 
     for (n = 0; n < A.nt; n++)
     {
         int m_start, m_end;
-        if (uplo == PlasmaFull) {
+        if (A.uplo == PlasmaGeneral) {
             m_start = (imax(0, n*A.nb-A.ku-A.kl)) / A.nb;
             m_end = (imin(A.m-1, (n+1)*A.nb+A.kl-1)) / A.nb;
         }
-        else if (uplo == PlasmaUpper) {
+        else if (A.uplo == PlasmaUpper) {
             m_start = (imax(0, n*A.nb-A.ku-A.kl)) / A.nb;
             m_end = (imin(A.m-1, (n+1)*A.nb-1)) / A.nb;
         }
@@ -49,9 +55,9 @@ void plasma_pzooccrb2cm_band(plasma_enum_t uplo,
             int mb = imin(A.mb, A.m-m*A.mb);
             int nb = imin(A.nb, A.n-n*A.nb);
             core_omp_zlacpy_tile2lapack_band(
-                   uplo, m, n,
+                   A.uplo, m, n,
                    mb, nb, A.mb, A.kl, A.ku,
-                   tileA(m, n), BLKLDD_BAND(uplo, A, m, n),
+                   tileA(m, n), BLKLDD_BAND(A.uplo, A, m, n),
                    bandA(m, n), lda-1);
                    //tileA(m_start,n), nb*nb, INOUT | GATHERV);
         }
