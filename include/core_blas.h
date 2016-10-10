@@ -103,9 +103,7 @@ static inline void coreblas_error_func_line_file(
 
 #include "core_blas_s.h"
 #include "core_blas_d.h"
-#include "core_blas_ds.h"
 #include "core_blas_c.h"
 #include "core_blas_z.h"
-#include "core_blas_zc.h"
 
 #endif // ICL_CORE_BLAS_H
