@@ -69,7 +69,7 @@ void core_omp_zlacpy(plasma_enum_t uplo,
                      const plasma_complex64_t *A, int lda,
                            plasma_complex64_t *B, int ldb)
 {
-    // omp depends assume lda == ldb == m.
+    // omp depends assume lda == ldb == m
     #pragma omp task depend(in:A[0:m*n]) depend(out:B[0:m*n])
     core_zlacpy(uplo,
                 m, n,
