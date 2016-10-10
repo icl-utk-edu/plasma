@@ -58,7 +58,7 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transa,
                     int ldam = plasma_tile_mmain(A, m);
                     int ldbm = plasma_tile_mmain(B, m);
                     core_omp_zgeadd(
-                        transa, 
+                        transa,
                         mvbm, nvbn,
                         alpha, A(m, n), ldam,
                         beta,  B(m, n), ldbm);
