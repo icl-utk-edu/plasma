@@ -93,7 +93,7 @@ void core_ztradd(plasma_enum_t uplo, plasma_enum_t transa, int m, int n,
 
     if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
-        plasma_error("illegal value of uplo");
+        coreblas_error("illegal value of uplo");
         return;
     }
 
@@ -101,39 +101,39 @@ void core_ztradd(plasma_enum_t uplo, plasma_enum_t transa, int m, int n,
         (transa != PlasmaTrans)   &&
         (transa != PlasmaConjTrans)) {
 
-        plasma_error("illegal value of transa");
+        coreblas_error("illegal value of transa");
         return;
     }
 
     if (m < 0) {
-        plasma_error("Illegal value of m");
+        coreblas_error("Illegal value of m");
         return;
     }
 
     if (n < 0) {
-        plasma_error("Illegal value of m");
+        coreblas_error("Illegal value of m");
         return;
     }
 
     if (A == NULL) {
-        plasma_error("NULL A");
+        coreblas_error("NULL A");
         return;
     }
 
     if ( ((transa == PlasmaNoTrans) && (lda < imax(1,m)) && (m > 0)) ||
          ((transa != PlasmaNoTrans) && (lda < imax(1,n)) && (n > 0)) ) {
 
-        plasma_error("Illegal value of lda");
+        coreblas_error("Illegal value of lda");
         return;
     }
 
     if (B == NULL) {
-        plasma_error("NULL B");
+        coreblas_error("NULL B");
         return;
     }
 
     if ( (ldb < imax(1,m)) && (m > 0) ) {
-        plasma_error("Illegal value of ldb");
+        coreblas_error("Illegal value of ldb");
         return;
     }
 
