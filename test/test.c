@@ -14,6 +14,120 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
+
+/******************************************************************************/
+typedef void (*test_func_ptr)(param_value_t param[], char *info);
+
+struct routines_t {
+    const char *name;
+    test_func_ptr func;
+};
+
+struct routines_t routines[] =
+{
+    { "zgelqf", test_zgelqf },
+    { "dgelqf", test_dgelqf },
+    { "cgelqf", test_cgelqf },
+    { "sgelqf", test_sgelqf },
+
+    { "zgelqs", test_zgelqs },
+    { "dgelqs", test_dgelqs },
+    { "cgelqs", test_cgelqs },
+    { "sgelqs", test_sgelqs },
+
+    { "zgels", test_zgels },
+    { "dgels", test_dgels },
+    { "cgels", test_cgels },
+    { "sgels", test_sgels },
+
+    { "zgemm", test_zgemm },
+    { "dgemm", test_dgemm },
+    { "cgemm", test_cgemm },
+    { "sgemm", test_sgemm },
+
+    { "zgeqrf", test_zgeqrf },
+    { "dgeqrf", test_dgeqrf },
+    { "cgeqrf", test_cgeqrf },
+    { "sgeqrf", test_sgeqrf },
+
+    { "zgeqrs", test_zgeqrs },
+    { "dgeqrs", test_dgeqrs },
+    { "cgeqrs", test_cgeqrs },
+    { "sgeqrs", test_sgeqrs },
+
+    { "zhemm", test_zherk },
+    { "", NULL },  // blank to keep test -h nicely aligned
+    { "chemm", test_cherk },
+    { "", NULL },
+
+    { "zher2k", test_zher2k },
+    { "", NULL },
+    { "cher2k", test_cher2k },
+    { "", NULL },
+
+    { "zherk", test_zherk },
+    { "", NULL },
+    { "cherk", test_cherk },
+    { "", NULL },
+
+    { "zpbsv", test_zpbsv },
+    { "dpbsv", test_dpbsv },
+    { "cpbsv", test_cpbsv },
+    { "spbsv", test_spbsv },
+
+    { "zpbtrf", test_zpbtrf },
+    { "dpbtrf", test_dpbtrf },
+    { "cpbtrf", test_cpbtrf },
+    { "spbtrf", test_spbtrf },
+
+    { "zposv", test_zpotrf },
+    { "dposv", test_dpotrf },
+    { "cposv", test_cpotrf },
+    { "sposv", test_spotrf },
+
+    { "zpotrf", test_zpotrf },
+    { "dpotrf", test_dpotrf },
+    { "cpotrf", test_cpotrf },
+    { "spotrf", test_spotrf },
+
+    { "zpotrs", test_zpotrf },
+    { "dpotrs", test_dpotrf },
+    { "cpotrs", test_cpotrf },
+    { "spotrs", test_spotrf },
+
+    { "zsymm", test_zsyrk },
+    { "dsymm", test_dsyrk },
+    { "csymm", test_csyrk },
+    { "ssymm", test_ssyrk },
+
+    { "zsyrk", test_zsyrk },
+    { "dsyrk", test_dsyrk },
+    { "csyrk", test_csyrk },
+    { "ssyrk", test_ssyrk },
+
+    { "zsyr2k", test_zsyr2k },
+    { "dsyr2k", test_dsyr2k },
+    { "csyr2k", test_csyr2k },
+    { "ssyr2k", test_ssyr2k },
+
+    { "ztradd", test_ztradd },
+    { "dtradd", test_dtradd },
+    { "ctradd", test_ctradd },
+    { "stradd", test_stradd },
+
+    { "ztrmm", test_ztrmm },
+    { "dtrmm", test_dtrmm },
+    { "ctrmm", test_ctrmm },
+    { "strmm", test_strmm },
+
+    { "ztrsm", test_ztrsm },
+    { "dtrsm", test_dtrsm },
+    { "ctrsm", test_ctrsm },
+    { "strsm", test_strsm },
+
+    { NULL, NULL }  // last entry
+};
 
 /***************************************************************************//**
  *
@@ -55,7 +169,7 @@ int main(int argc, char **argv)
     // Print labels.
     test_routine(test, routine, NULL);
 
-    PLASMA_Init();
+    plasma_init();
     if (outer) {
         // outer product iteration
         do {
@@ -82,7 +196,7 @@ int main(int argc, char **argv)
         }
         while (param_step_inner(param));
     }
-    PLASMA_Finalize();
+    plasma_finalize();
     printf("\n");
     return err;
 }
@@ -97,7 +211,16 @@ void print_main_usage()
     printf("Usage:\n"
            "\ttest [-h|--help]\n"
            "\ttest routine [-h|--help]\n"
-           "\ttest routine [parameter1, parameter2, ...]\n");
+           "\ttest routine [parameter1, parameter2, ...]\n"
+           "\n"
+           "Available routines:");
+    for (int i = 0; routines[i].name != NULL; ++i) {
+        if (i % 4 == 0) {
+            printf("\n\t");
+        }
+        printf("%-*s ", InfoSpacing, routines[i].name);
+    }
+    printf("\n");
 }
 
 /***************************************************************************//**
@@ -162,31 +285,31 @@ int test_routine(int test, const char *name, param_value_t pval[])
 
     if (pval == NULL) {
         printf("\n");
-        printf("%*s %*s %s %*s %*s\n",
+        printf("%*s %*s %*s %*s %s\n",
+            InfoSpacing, "Status",
+            InfoSpacing, "Error",
             InfoSpacing, "Seconds",
             InfoSpacing, "GFLOPS",
-                         info,
-            InfoSpacing, "Error",
-            InfoSpacing, "Status");
+                         info);
         printf("\n");
         return 0;
     }
     else if (test) {
-        printf("%*.4lf %*.4lf %s %*.2le %*s\n",
+        printf("%*s %*.2le %*.4lf %*.4lf %s\n",
+            InfoSpacing, pval[PARAM_SUCCESS].i ? "pass" : "FAILED",
+            InfoSpacing, pval[PARAM_ERROR].d,
             InfoSpacing, pval[PARAM_TIME].d,
             InfoSpacing, pval[PARAM_GFLOPS].d,
-                         info,
-            InfoSpacing, pval[PARAM_ERROR].d,
-            InfoSpacing, pval[PARAM_SUCCESS].i ? "pass" : "FAILED");
+                         info);
         return (pval[PARAM_SUCCESS].i == 0);
     }
     else {
-        printf("%*.4lf %*.4lf %s %*s %*s\n",
+        printf("%*s %*s %*.4lf %*.4lf %s\n",
+            InfoSpacing, "---",
+            InfoSpacing, "---",
             InfoSpacing, pval[PARAM_TIME].d,
             InfoSpacing, pval[PARAM_GFLOPS].d,
-                         info,
-            InfoSpacing, "---",
-            InfoSpacing, "---");
+                         info);
         return 0;
     }
 }
@@ -202,176 +325,15 @@ int test_routine(int test, const char *name, param_value_t pval[])
  ******************************************************************************/
 void run_routine(const char *name, param_value_t pval[], char *info)
 {
-
-    if      (strcmp(name, "zgelqf") == 0)
-        test_zgelqf(pval, info);
-    else if (strcmp(name, "dgelqf") == 0)
-        test_dgelqf(pval, info);
-    else if (strcmp(name, "cgelqf") == 0)
-        test_cgelqf(pval, info);
-    else if (strcmp(name, "sgelqf") == 0)
-        test_sgelqf(pval, info);
-
-    else if (strcmp(name, "zgelqs") == 0)
-        test_zgelqs(pval, info);
-    else if (strcmp(name, "dgelqs") == 0)
-        test_dgelqs(pval, info);
-    else if (strcmp(name, "cgelqs") == 0)
-        test_cgelqs(pval, info);
-    else if (strcmp(name, "sgelqs") == 0)
-        test_sgelqs(pval, info);
-
-    else if (strcmp(name, "zgels") == 0)
-        test_zgels(pval, info);
-    else if (strcmp(name, "dgels") == 0)
-        test_dgels(pval, info);
-    else if (strcmp(name, "cgels") == 0)
-        test_cgels(pval, info);
-    else if (strcmp(name, "sgels") == 0)
-        test_sgels(pval, info);
-
-    else if (strcmp(name, "zgemm") == 0)
-        test_zgemm(pval, info);
-    else if (strcmp(name, "dgemm") == 0)
-        test_dgemm(pval, info);
-    else if (strcmp(name, "cgemm") == 0)
-        test_cgemm(pval, info);
-    else if (strcmp(name, "sgemm") == 0)
-        test_sgemm(pval, info);
-
-    else if (strcmp(name, "zgeqrf") == 0)
-        test_zgeqrf(pval, info);
-    else if (strcmp(name, "dgeqrf") == 0)
-        test_dgeqrf(pval, info);
-    else if (strcmp(name, "cgeqrf") == 0)
-        test_cgeqrf(pval, info);
-    else if (strcmp(name, "sgeqrf") == 0)
-        test_sgeqrf(pval, info);
-
-    else if (strcmp(name, "zgeqrs") == 0)
-        test_zgeqrs(pval, info);
-    else if (strcmp(name, "dgeqrs") == 0)
-        test_dgeqrs(pval, info);
-    else if (strcmp(name, "cgeqrs") == 0)
-        test_cgeqrs(pval, info);
-    else if (strcmp(name, "sgeqrs") == 0)
-        test_sgeqrs(pval, info);
-
-    else if (strcmp(name, "zhemm") == 0)
-        test_zherk(pval, info);
-    else if (strcmp(name, "chemm") == 0)
-        test_cherk(pval, info);
-
-    else if (strcmp(name, "zher2k") == 0)
-        test_zher2k(pval, info);
-    else if (strcmp(name, "cher2k") == 0)
-        test_cher2k(pval, info);
-
-    else if (strcmp(name, "zherk") == 0)
-        test_zherk(pval, info);
-    else if (strcmp(name, "cherk") == 0)
-        test_cherk(pval, info);
-
-    else if (strcmp(name, "zpbsv") == 0)
-        test_zpbsv(pval, info);
-    else if (strcmp(name, "dpbsv") == 0)
-        test_dpbsv(pval, info);
-    else if (strcmp(name, "cpbsv") == 0)
-        test_cpbsv(pval, info);
-    else if (strcmp(name, "spbsv") == 0)
-        test_spbsv(pval, info);
-
-    else if (strcmp(name, "zpbtrf") == 0)
-        test_zpbtrf(pval, info);
-    else if (strcmp(name, "dpbtrf") == 0)
-        test_dpbtrf(pval, info);
-    else if (strcmp(name, "cpbtrf") == 0)
-        test_cpbtrf(pval, info);
-    else if (strcmp(name, "spbtrf") == 0)
-        test_spbtrf(pval, info);
-
-    else if (strcmp(name, "zposv") == 0)
-        test_zpotrf(pval, info);
-    else if (strcmp(name, "dposv") == 0)
-        test_dpotrf(pval, info);
-    else if (strcmp(name, "cposv") == 0)
-        test_cpotrf(pval, info);
-    else if (strcmp(name, "sposv") == 0)
-        test_spotrf(pval, info);
-
-    else if (strcmp(name, "zpotrf") == 0)
-        test_zpotrf(pval, info);
-    else if (strcmp(name, "dpotrf") == 0)
-        test_dpotrf(pval, info);
-    else if (strcmp(name, "cpotrf") == 0)
-        test_cpotrf(pval, info);
-    else if (strcmp(name, "spotrf") == 0)
-        test_spotrf(pval, info);
-
-    else if (strcmp(name, "zpotrs") == 0)
-        test_zpotrf(pval, info);
-    else if (strcmp(name, "dpotrs") == 0)
-        test_dpotrf(pval, info);
-    else if (strcmp(name, "cpotrs") == 0)
-        test_cpotrf(pval, info);
-    else if (strcmp(name, "spotrs") == 0)
-        test_spotrf(pval, info);
-
-    else if (strcmp(name, "zsymm") == 0)
-        test_zsyrk(pval, info);
-    else if (strcmp(name, "dsymm") == 0)
-        test_dsyrk(pval, info);
-    else if (strcmp(name, "csymm") == 0)
-        test_csyrk(pval, info);
-    else if (strcmp(name, "ssymm") == 0)
-        test_ssyrk(pval, info);
-
-    else if (strcmp(name, "zsyrk") == 0)
-        test_zsyrk(pval, info);
-    else if (strcmp(name, "dsyrk") == 0)
-        test_dsyrk(pval, info);
-    else if (strcmp(name, "csyrk") == 0)
-        test_csyrk(pval, info);
-    else if (strcmp(name, "ssyrk") == 0)
-        test_ssyrk(pval, info);
-
-    else if (strcmp(name, "zsyr2k") == 0)
-        test_zsyr2k(pval, info);
-    else if (strcmp(name, "dsyr2k") == 0)
-        test_dsyr2k(pval, info);
-    else if (strcmp(name, "csyr2k") == 0)
-        test_csyr2k(pval, info);
-    else if (strcmp(name, "ssyr2k") == 0)
-        test_ssyr2k(pval, info);
-
-    else if (strcmp(name, "ztradd") == 0)
-        test_ztradd(pval, info);
-    else if (strcmp(name, "dtradd") == 0)
-        test_dtradd(pval, info);
-    else if (strcmp(name, "ctradd") == 0)
-        test_ctradd(pval, info);
-    else if (strcmp(name, "stradd") == 0)
-        test_stradd(pval, info);
-
-    else if (strcmp(name, "ztrmm") == 0)
-        test_ztrmm(pval, info);
-    else if (strcmp(name, "dtrmm") == 0)
-        test_dtrmm(pval, info);
-    else if (strcmp(name, "ctrmm") == 0)
-        test_ctrmm(pval, info);
-    else if (strcmp(name, "strmm") == 0)
-        test_strmm(pval, info);
-
-    else if (strcmp(name, "ztrsm") == 0)
-        test_ztrsm(pval, info);
-    else if (strcmp(name, "dtrsm") == 0)
-        test_dtrsm(pval, info);
-    else if (strcmp(name, "ctrsm") == 0)
-        test_ctrsm(pval, info);
-    else if (strcmp(name, "strsm") == 0)
-        test_strsm(pval, info);
-
-    else {
+    bool found = false;
+    for (int i = 0; routines[i].name != NULL; ++i) {
+        if (strcmp(name, routines[i].name) == 0) {
+            routines[i].func(pval, info);
+            found = true;
+            break;
+        }
+    }
+    if (! found) {
         printf("unknown routine: %s\n", name);
         exit(EXIT_FAILURE);
     }
@@ -572,11 +534,11 @@ int param_read(int argc, char **argv, param_t param[])
     // Set complex parameters.
     //--------------------------------------------------
     if (param[PARAM_ALPHA].num == 0) {
-        PLASMA_Complex64_t z = 1.2345 + 2.3456*_Complex_I;
+        plasma_complex64_t z = 1.2345 + 2.3456*_Complex_I;
         param_add_complex(z, &param[PARAM_ALPHA]);
     }
     if (param[PARAM_BETA].num == 0) {
-        PLASMA_Complex64_t z = 6.7890 + 7.8901*_Complex_I;
+        plasma_complex64_t z = 6.7890 + 7.8901*_Complex_I;
         param_add_complex(z, &param[PARAM_BETA]);
     }
 
@@ -751,7 +713,7 @@ int param_scan_complex(const char *str, param_t *param)
             }
             endptr += 1;  // skip 'i'
         }
-        PLASMA_Complex64_t z = re + im*_Complex_I;
+        plasma_complex64_t z = re + im*_Complex_I;
         param_add_complex(z, param);
         str = endptr+1;
     }
@@ -827,7 +789,7 @@ void param_add_double(double dval, param_t *param)
  * @param[inout] param - parameter iterator
  *
  ******************************************************************************/
-void param_add_complex(PLASMA_Complex64_t zval, param_t *param)
+void param_add_complex(plasma_complex64_t zval, param_t *param)
 {
     param->val[param->num].z = zval;
     param->num++;

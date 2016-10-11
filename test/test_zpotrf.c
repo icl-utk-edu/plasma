@@ -74,7 +74,7 @@ void test_zpotrf(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    PLASMA_enum uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
+    plasma_enum_t uplo = plasma_uplo_const_t(param[PARAM_UPLO].c);
 
     int n = param[PARAM_N].i;
 
@@ -86,13 +86,13 @@ void test_zpotrf(param_value_t param[], char *info)
     //================================================================
     // Set tuning parameters.
     //================================================================
-    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_NB].i);
+    plasma_set(PlasmaNb, param[PARAM_NB].i);
 
     //================================================================
     // Allocate and initialize arrays.
     //================================================================
-    PLASMA_Complex64_t *A =
-        (PLASMA_Complex64_t*)malloc((size_t)lda*n*sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *A =
+        (plasma_complex64_t*)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
     int seed[] = {0, 0, 0, 1};
@@ -113,20 +113,20 @@ void test_zpotrf(param_value_t param[], char *info)
         }
     }
 
-    PLASMA_Complex64_t *Aref = NULL;
+    plasma_complex64_t *Aref = NULL;
     if (test) {
-        Aref = (PLASMA_Complex64_t*)malloc(
-            (size_t)lda*n*sizeof(PLASMA_Complex64_t));
+        Aref = (plasma_complex64_t*)malloc(
+            (size_t)lda*n*sizeof(plasma_complex64_t));
         assert(Aref != NULL);
 
-        memcpy(Aref, A, (size_t)lda*n*sizeof(PLASMA_Complex64_t));
+        memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
     }
 
     //================================================================
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zpotrf(uplo, n, A, lda);
+    plasma_zpotrf(uplo, n, A, lda);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
@@ -142,7 +142,7 @@ void test_zpotrf(param_value_t param[], char *info)
             lapack_const(uplo), n,
             Aref, lda);
 
-        PLASMA_Complex64_t zmone = -1.0;
+        plasma_complex64_t zmone = -1.0;
         cblas_zaxpy((size_t)lda*n, CBLAS_SADDR(zmone), Aref, 1, A, 1);
 
         double work[1];

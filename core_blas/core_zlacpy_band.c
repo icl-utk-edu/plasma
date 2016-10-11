@@ -17,9 +17,9 @@
 
 /*******************************************************************************
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_plasma_complex64_t
  *
- *  CORE_zlacpy copies a sub-block A of a band matrix stored in LAPACK's band format
+ *  core_zlacpy copies a sub-block A of a band matrix stored in LAPACK's band format
  *  to a corresponding sub-block B of a band matrix in PLASMA's band format
  *
  *******************************************************************************
@@ -50,17 +50,17 @@
  *          The leading dimension of the array B. ldb >= max(1,M).
  *
  ******************************************************************************/
-void CORE_zlacpy_lapack2tile_band(PLASMA_enum uplo,
+void core_zlacpy_lapack2tile_band(plasma_enum_t uplo,
                                   int it, int jt,
                                   int m, int n, int nb, int kl, int ku,
-                                  const PLASMA_Complex64_t *A, int lda,
-                                        PLASMA_Complex64_t *B, int ldb)
+                                  const plasma_complex64_t *A, int lda,
+                                        plasma_complex64_t *B, int ldb)
 {
     int i, j;
-    PLASMA_Complex64_t zzero = 0.0;
+    plasma_complex64_t zzero = 0.0;
 
     int j_start, j_end;
-    if (uplo == PlasmaFull) {
+    if (uplo == PlasmaGeneral) {
         j_start = 0; // pivot back and could fill in
         j_end = (jt <= it ? n : imin(n, (it-jt)*nb+m+ku+kl+1));
     }
@@ -80,7 +80,7 @@ void CORE_zlacpy_lapack2tile_band(PLASMA_enum uplo,
     }
     for (j = j_start; j < j_end; j++) {
         int i_start, i_end;
-        if (uplo == PlasmaFull) {
+        if (uplo == PlasmaGeneral) {
             i_start = (jt <= it ? 0 : imax(0, (jt-it)*nb+j-ku-kl));
             i_end = (jt >= it ? m : imin(m, (jt-it)*nb+j+kl+nb+1));
             // +nb because we use zgetrf on panel and pivot back within the panel.
@@ -113,21 +113,21 @@ void CORE_zlacpy_lapack2tile_band(PLASMA_enum uplo,
 }
 
 /******************************************************************************/
-void CORE_OMP_zlacpy_lapack2tile_band(PLASMA_enum uplo,
+void core_omp_zlacpy_lapack2tile_band(plasma_enum_t uplo,
                                       int it, int jt,
                                       int m, int n, int nb, int kl, int ku,
-                                      const PLASMA_Complex64_t *A, int lda,
-                                            PLASMA_Complex64_t *B, int ldb)
+                                      const plasma_complex64_t *A, int lda,
+                                            plasma_complex64_t *B, int ldb)
 {
     #pragma omp task depend(in:A[0:m*n]) depend(out:B[0:m*n])
-    CORE_zlacpy_lapack2tile_band(uplo, it, jt, m, n, nb, kl, ku, A, lda, B, ldb);
+    core_zlacpy_lapack2tile_band(uplo, it, jt, m, n, nb, kl, ku, A, lda, B, ldb);
 }
 
 /*******************************************************************************
  *
- * @ingroup CORE_PLASMA_Complex64_t
+ * @ingroup core_plasma_complex64_t
  *
- *  CORE_zlacpy copies all or part of a two-dimensional matrix A to another
+ *  core_zlacpy copies all or part of a two-dimensional matrix A to another
  *  matrix B
  *
  *******************************************************************************
@@ -158,16 +158,16 @@ void CORE_OMP_zlacpy_lapack2tile_band(PLASMA_enum uplo,
  *          The leading dimension of the array B. ldb >= max(1, m).
  *
  ******************************************************************************/
-void CORE_zlacpy_tile2lapack_band(PLASMA_enum uplo,
+void core_zlacpy_tile2lapack_band(plasma_enum_t uplo,
                                   int it, int jt,
                                   int m, int n, int nb, int kl, int ku,
-                                  const PLASMA_Complex64_t *B, int ldb,
-                                        PLASMA_Complex64_t *A, int lda)
+                                  const plasma_complex64_t *B, int ldb,
+                                        plasma_complex64_t *A, int lda)
 {
     int i, j;
     int j_start, j_end;
 
-    if (uplo == PlasmaFull) {
+    if (uplo == PlasmaGeneral) {
         j_start = 0; // pivot back and could fill in
         j_end = (jt <= it ? n : imin(n, (it-jt)*nb+m+ku+kl+1));
     }
@@ -183,7 +183,7 @@ void CORE_zlacpy_tile2lapack_band(PLASMA_enum uplo,
     for (j = j_start; j < j_end; j++) {
         int i_start, i_end;
 
-        if (uplo == PlasmaFull) {
+        if (uplo == PlasmaGeneral) {
             i_start = (jt <= it ? 0 : imax(0, (jt-it)*nb+j-ku-kl));
             i_end = (jt >= it ? m : imin(m, (jt-it)*nb+j+kl+nb+1));
             // +nb because we use zgetrf on panel and pivot back within the panel.
@@ -205,12 +205,12 @@ void CORE_zlacpy_tile2lapack_band(PLASMA_enum uplo,
 }
 
 /******************************************************************************/
-void CORE_OMP_zlacpy_tile2lapack_band(PLASMA_enum uplo,
+void core_omp_zlacpy_tile2lapack_band(plasma_enum_t uplo,
                                       int it, int jt,
                                       int m, int n, int nb, int kl, int ku,
-                                      const PLASMA_Complex64_t *B, int ldb,
-                                            PLASMA_Complex64_t *A, int lda)
+                                      const plasma_complex64_t *B, int ldb,
+                                            plasma_complex64_t *A, int lda)
 {
     #pragma omp task depend(in:B[0:m*n]) depend(out:A[0:m*n])
-    CORE_zlacpy_tile2lapack_band(uplo, it, jt, m, n, nb, kl, ku, B, ldb, A, lda);
+    core_zlacpy_tile2lapack_band(uplo, it, jt, m, n, nb, kl, ku, B, ldb, A, lda);
 }

@@ -87,8 +87,8 @@ void test_zherk(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    PLASMA_enum uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
-    PLASMA_enum trans = PLASMA_trans_const(param[PARAM_TRANS].c);
+    plasma_enum_t uplo = plasma_uplo_const_t(param[PARAM_UPLO].c);
+    plasma_enum_t trans = plasma_trans_const_t(param[PARAM_TRANS].c);
 
     int n = param[PARAM_N].i;
     int k = param[PARAM_K].i;
@@ -119,17 +119,17 @@ void test_zherk(param_value_t param[], char *info)
     //================================================================
     // Set tuning parameters.
     //================================================================
-    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_NB].i);
+    plasma_set(PlasmaNb, param[PARAM_NB].i);
 
     //================================================================
     // Allocate and initialize arrays.
     //================================================================
-    PLASMA_Complex64_t *A =
-        (PLASMA_Complex64_t*)malloc((size_t)lda*An*sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *A =
+        (plasma_complex64_t*)malloc((size_t)lda*An*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
-    PLASMA_Complex64_t *C =
-        (PLASMA_Complex64_t*)malloc((size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *C =
+        (plasma_complex64_t*)malloc((size_t)ldc*Cn*sizeof(plasma_complex64_t));
     assert(C != NULL);
 
     int seed[] = {0, 0, 0, 1};
@@ -140,13 +140,13 @@ void test_zherk(param_value_t param[], char *info)
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldc*Cn, C);
     assert(retval == 0);
 
-    PLASMA_Complex64_t *Cref = NULL;
+    plasma_complex64_t *Cref = NULL;
     if (test) {
-        Cref = (PLASMA_Complex64_t*)malloc(
-            (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
+        Cref = (plasma_complex64_t*)malloc(
+            (size_t)ldc*Cn*sizeof(plasma_complex64_t));
         assert(Cref != NULL);
 
-        memcpy(Cref, C, (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
+        memcpy(Cref, C, (size_t)ldc*Cn*sizeof(plasma_complex64_t));
     }
 
     //================================================================
@@ -154,7 +154,7 @@ void test_zherk(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    PLASMA_zherk(
+    plasma_zherk(
         uplo, trans,
         n, k,
         alpha, A, lda,
@@ -185,7 +185,7 @@ void test_zherk(param_value_t param[], char *info)
             alpha, A, lda,
             beta, Cref, ldc);
 
-        PLASMA_Complex64_t zmone = -1.0;
+        plasma_complex64_t zmone = -1.0;
         cblas_zaxpy((size_t)ldc*Cn, CBLAS_SADDR(zmone), Cref, 1, C, 1);
 
         double error = LAPACKE_zlanhe_work(

@@ -53,16 +53,13 @@
  *         The leading dimension of the array A.  lda >= max(1,m).
  *
  ******************************************************************************/
-void CORE_zlaset(PLASMA_enum uplo, int m, int n,
-                 PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
-                 PLASMA_Complex64_t *A, int lda)
+void core_zlaset(plasma_enum_t uplo, int m, int n,
+                 plasma_complex64_t alpha, plasma_complex64_t beta,
+                 plasma_complex64_t *A, int lda)
 {
-    if (alpha == (PLASMA_Complex64_t)0.0 &&
-        beta == (PLASMA_Complex64_t)0.0 &&
-        uplo == PlasmaFull &&
-        m == lda) {
+    if (alpha == 0.0 && beta == 0.0 && uplo == PlasmaGeneral && m == lda) {
         // Use memset to zero continuous memory.
-        memset((void*)A, 0, (size_t)m*n*sizeof(PLASMA_Complex64_t));
+        memset((void*)A, 0, (size_t)m*n*sizeof(plasma_complex64_t));
     }
     else {
         // Use LAPACKE_zlaset_work to initialize the matrix.
@@ -72,15 +69,15 @@ void CORE_zlaset(PLASMA_enum uplo, int m, int n,
 }
 
 /******************************************************************************/
-void CORE_OMP_zlaset(PLASMA_enum uplo,
+void core_omp_zlaset(plasma_enum_t uplo,
                      int mb, int nb,
                      int i, int j,
                      int m, int n,
-                     PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
-                     PLASMA_Complex64_t *A)
+                     plasma_complex64_t alpha, plasma_complex64_t beta,
+                     plasma_complex64_t *A)
 {
     #pragma omp task depend(out:A[0:mb*nb])
-    CORE_zlaset(uplo, m, n,
+    core_zlaset(uplo, m, n,
                 alpha, beta,
                 A+i+j*mb, mb);
 }

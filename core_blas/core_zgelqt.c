@@ -81,15 +81,15 @@
  *
  *******************************************************************************
  *
- * @retval PLASMA_SUCCESS successful exit
+ * @retval PlasmaSuccess successful exit
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int CORE_zgelqt(int m, int n, int ib,
-                PLASMA_Complex64_t *A, int lda,
-                PLASMA_Complex64_t *T, int ldt,
-                PLASMA_Complex64_t *TAU,
-                PLASMA_Complex64_t *WORK, int lwork)
+int core_zgelqt(int m, int n, int ib,
+                plasma_complex64_t *A, int lda,
+                plasma_complex64_t *T, int ldt,
+                plasma_complex64_t *TAU,
+                plasma_complex64_t *WORK, int lwork)
 {
     // Check input arguments
     if (m < 0) {
@@ -119,7 +119,7 @@ int CORE_zgelqt(int m, int n, int ib,
 
     // Quick return
     if ((m == 0) || (n == 0) || (ib == 0))
-        return PLASMA_SUCCESS;
+        return PlasmaSuccess;
 
     int k = imin(m, n);
     for (int i = 0; i < k; i += ib) {
@@ -150,41 +150,41 @@ int CORE_zgelqt(int m, int n, int ib,
         }
     }
 
-    return PLASMA_SUCCESS;
+    return PlasmaSuccess;
 }
 
 /******************************************************************************/
-void CORE_OMP_zgelqt(int m, int n, int ib, int nb,
-                     PLASMA_Complex64_t *A, int lda,
-                     PLASMA_Complex64_t *T, int ldt,
-                     PLASMA_workspace *work,
-                     PLASMA_sequence *sequence, PLASMA_request *request)
+void core_omp_zgelqt(int m, int n, int ib, int nb,
+                     plasma_complex64_t *A, int lda,
+                     plasma_complex64_t *T, int ldt,
+                     plasma_workspace_t work,
+                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // assuming lda == m and nb == n
-    #pragma omp task depend(inout:A[0:lda*nb]) \
-                     depend(out:T[0:ldt*nb])
+    // OpenMP depends assume lda == m == n == nb, ldt == ib.
+    #pragma omp task depend(inout:A[0:nb*nb]) \
+                     depend(out:T[0:ib*nb])
     {
-        if (sequence->status == PLASMA_SUCCESS) {
+        if (sequence->status == PlasmaSuccess) {
             int tid = omp_get_thread_num();
             // split spaces into TAU and WORK
             int ltau = m;
-            int lwork = work->lwork - ltau;
-            PLASMA_Complex64_t *TAU = ((PLASMA_Complex64_t*)work->spaces[tid]);
-            PLASMA_Complex64_t *W   =
-                ((PLASMA_Complex64_t*)work->spaces[tid]) + ltau;
+            int lwork = work.lwork - ltau;
+            plasma_complex64_t *TAU = ((plasma_complex64_t*)work.spaces[tid]);
+            plasma_complex64_t *W   =
+                ((plasma_complex64_t*)work.spaces[tid]) + ltau;
 
             // Call the kernel.
-            int info = CORE_zgelqt(m, n, ib,
+            int info = core_zgelqt(m, n, ib,
                                    A, lda,
                                    T, ldt,
                                    TAU,
                                    W, lwork);
 
-            if (info != PLASMA_SUCCESS) {
+            if (info != PlasmaSuccess) {
                 plasma_error_with_code("Error in call to COREBLAS in argument",
                                        -info);
                 plasma_request_fail(sequence, request,
-                                    PLASMA_ERR_ILLEGAL_VALUE);
+                                    PlasmaErrorIllegalValue);
             }
         }
     }

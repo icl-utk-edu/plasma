@@ -92,10 +92,10 @@ void test_ztrsm(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    PLASMA_enum side = PLASMA_side_const(param[PARAM_SIDE].c);
-    PLASMA_enum uplo = PLASMA_uplo_const(param[PARAM_UPLO].c);
-    PLASMA_enum transa = PLASMA_trans_const(param[PARAM_TRANSA].c);
-    PLASMA_enum diag = PLASMA_diag_const(param[PARAM_DIAG].c);
+    plasma_enum_t side = plasma_side_cons_t(param[PARAM_SIDE].c);
+    plasma_enum_t uplo = plasma_uplo_const_t(param[PARAM_UPLO].c);
+    plasma_enum_t transa = plasma_trans_const_t(param[PARAM_TRANSA].c);
+    plasma_enum_t diag = plasma_diag_const_t(param[PARAM_DIAG].c);
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
@@ -115,7 +115,7 @@ void test_ztrsm(param_value_t param[], char *info)
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
 
 #ifdef COMPLEX
-    PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
+    plasma_complex64_t alpha = param[PARAM_ALPHA].z;
 #else
     double alpha = creal(param[PARAM_ALPHA].z);
 #endif
@@ -123,17 +123,17 @@ void test_ztrsm(param_value_t param[], char *info)
     //================================================================
     // Set tuning parameters.
     //================================================================
-    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_NB].i);
+    plasma_set(PlasmaNb, param[PARAM_NB].i);
 
     //================================================================
     // Allocate and initialize arrays.
     //================================================================
-    PLASMA_Complex64_t *A =
-        (PLASMA_Complex64_t*)malloc((size_t)lda*lda*sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *A =
+        (plasma_complex64_t*)malloc((size_t)lda*lda*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
-    PLASMA_Complex64_t *B =
-        (PLASMA_Complex64_t*)malloc((size_t)ldb*n*sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *B =
+        (plasma_complex64_t*)malloc((size_t)ldb*n*sizeof(plasma_complex64_t));
     assert(B != NULL);
 
     int *ipiv;
@@ -177,13 +177,13 @@ void test_ztrsm(param_value_t param[], char *info)
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*n, B);
     assert(retval == 0);
 
-    PLASMA_Complex64_t *Bref = NULL;
+    plasma_complex64_t *Bref = NULL;
     if (test) {
-        Bref = (PLASMA_Complex64_t*)malloc(
-            (size_t)ldb*n*sizeof(PLASMA_Complex64_t));
+        Bref = (plasma_complex64_t*)malloc(
+            (size_t)ldb*n*sizeof(plasma_complex64_t));
         assert(Bref != NULL);
 
-        memcpy(Bref, B, (size_t)ldb*n*sizeof(PLASMA_Complex64_t));
+        memcpy(Bref, B, (size_t)ldb*n*sizeof(plasma_complex64_t));
     }
 
     //================================================================
@@ -191,7 +191,7 @@ void test_ztrsm(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    PLASMA_ztrsm(
+    plasma_ztrsm(
         side, uplo,
         transa, diag,
         m, n,
@@ -209,9 +209,8 @@ void test_ztrsm(param_value_t param[], char *info)
     // ||alpha*B - A*X|| / (||A||*||X||)
     //================================================================
     if (test) {
-        PLASMA_Complex64_t zzero =  0.0;
-        PLASMA_Complex64_t zone  =  1.0;
-        PLASMA_Complex64_t zmone = -1.0;
+        plasma_complex64_t zone  =  1.0;
+        plasma_complex64_t zmone = -1.0;
         double work[1];
 
         // LAPACKE_[ds]lantr_work has a bug (returns 0)
@@ -220,11 +219,11 @@ void test_ztrsm(param_value_t param[], char *info)
         // See also test_ztrmm.c
         if (uplo == PlasmaLower) {
             LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'U', Am-1, Am-1,
-                                zzero, zzero, &A(0,1), lda);
+                                0.0, 0.0, &A(0,1), lda);
         }
         else {
             LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'L', Am-1, Am-1,
-                                zzero, zzero, &A(1,0), lda);
+                                0.0, 0.0, &A(1,0), lda);
         }
         if (diag == PlasmaUnit) {
             for (int i = 0; i < Am; ++i) {

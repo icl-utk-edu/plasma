@@ -95,42 +95,42 @@ static double  flops_sgemm(double m, double n, double k)
     { return    fmuls_gemm(m, n, k) +    fadds_gemm(m, n, k); }
 
 //------------------------------------------------------------ symm/hemm
-static double fmuls_symm(PLASMA_enum side, double m, double n)
+static double fmuls_symm(plasma_enum_t side, double m, double n)
 {
     return (side == PlasmaLeft)
         ? fmuls_gemm(m, m, n)
         : fmuls_gemm(m, n, n);
 }
 
-static double fadds_symm(PLASMA_enum side, double m, double n)
+static double fadds_symm(plasma_enum_t side, double m, double n)
 {
     return (side == PlasmaLeft)
         ? fadds_gemm(m, m, n)
         : fadds_gemm(m, n, n);
 }
 
-static double fmuls_hemm(PLASMA_enum side, double m, double n)
+static double fmuls_hemm(plasma_enum_t side, double m, double n)
     { return fmuls_symm(side, m, n); }
 
-static double fadds_hemm(PLASMA_enum side, double m, double n)
+static double fadds_hemm(plasma_enum_t side, double m, double n)
     { return fadds_symm(side, m, n); }
 
-static double  flops_zhemm(PLASMA_enum side, double m, double n)
+static double  flops_zhemm(plasma_enum_t side, double m, double n)
     { return 6.*fmuls_hemm(side, m, n) + 2.*fadds_hemm(side, m, n); }
 
-static double  flops_chemm(PLASMA_enum side, double m, double n)
+static double  flops_chemm(plasma_enum_t side, double m, double n)
     { return 6.*fmuls_hemm(side, m, n) + 2.*fadds_hemm(side, m, n); }
 
-static double  flops_zsymm(PLASMA_enum side, double m, double n)
+static double  flops_zsymm(plasma_enum_t side, double m, double n)
     { return 6.*fmuls_symm(side, m, n) + 2.*fadds_symm(side, m, n); }
 
-static double  flops_csymm(PLASMA_enum side, double m, double n)
+static double  flops_csymm(plasma_enum_t side, double m, double n)
     { return 6.*fmuls_symm(side, m, n) + 2.*fadds_symm(side, m, n); }
 
-static double  flops_dsymm(PLASMA_enum side, double m, double n)
+static double  flops_dsymm(plasma_enum_t side, double m, double n)
     { return    fmuls_symm(side, m, n) +    fadds_symm(side, m, n); }
 
-static double  flops_ssymm(PLASMA_enum side, double m, double n)
+static double  flops_ssymm(plasma_enum_t side, double m, double n)
     { return    fmuls_symm(side, m, n) +    fadds_symm(side, m, n); }
 
 //------------------------------------------------------------ syrk/herk
@@ -202,49 +202,49 @@ static double fmuls_trmm_2(double m, double n)
 static double fadds_trmm_2(double m, double n)
     { return 0.5*n*m*(m - 1); }
 
-static double fmuls_trmm(PLASMA_enum side, double m, double n)
+static double fmuls_trmm(plasma_enum_t side, double m, double n)
 {
     return (side == PlasmaLeft)
         ? fmuls_trmm_2(m, n)
         : fmuls_trmm_2(n, m);
 }
 
-static double fadds_trmm(PLASMA_enum side, double m, double n)
+static double fadds_trmm(plasma_enum_t side, double m, double n)
 {
     return (side == PlasmaLeft)
         ? fadds_trmm_2(m, n)
         : fadds_trmm_2(n, m);
 }
 
-static double  flops_ztrmm(PLASMA_enum side, double m, double n)
+static double  flops_ztrmm(plasma_enum_t side, double m, double n)
     { return 6.*fmuls_trmm(side, m, n) + 2.*fadds_trmm(side, m, n); }
 
-static double  flops_ctrmm(PLASMA_enum side, double m, double n)
+static double  flops_ctrmm(plasma_enum_t side, double m, double n)
     { return 6.*fmuls_trmm(side, m, n) + 2.*fadds_trmm(side, m, n); }
 
-static double  flops_dtrmm(PLASMA_enum side, double m, double n)
+static double  flops_dtrmm(plasma_enum_t side, double m, double n)
     { return    fmuls_trmm(side, m, n) +    fadds_trmm(side, m, n); }
 
-static double  flops_strmm(PLASMA_enum side, double m, double n)
+static double  flops_strmm(plasma_enum_t side, double m, double n)
     { return    fmuls_trmm(side, m, n) +    fadds_trmm(side, m, n); }
 
 //------------------------------------------------------------ trsm
-static double fmuls_trsm(PLASMA_enum side, double m, double n)
+static double fmuls_trsm(plasma_enum_t side, double m, double n)
     { return fmuls_trmm(side, m, n); }
 
-static double fadds_trsm(PLASMA_enum side, double m, double n)
+static double fadds_trsm(plasma_enum_t side, double m, double n)
     { return fadds_trmm(side, m, n); }
 
-static double  flops_ztrsm(PLASMA_enum side, double m, double n)
+static double  flops_ztrsm(plasma_enum_t side, double m, double n)
     { return 6.*fmuls_trsm(side, m, n) + 2.*fadds_trsm(side, m, n); }
 
-static double  flops_ctrsm(PLASMA_enum side, double m, double n)
+static double  flops_ctrsm(plasma_enum_t side, double m, double n)
     { return 6.*fmuls_trsm(side, m, n) + 2.*fadds_trsm(side, m, n); }
 
-static double  flops_dtrsm(PLASMA_enum side, double m, double n)
+static double  flops_dtrsm(plasma_enum_t side, double m, double n)
     { return    fmuls_trsm(side, m, n) +    fadds_trsm(side, m, n); }
 
-static double  flops_strsm(PLASMA_enum side, double m, double n)
+static double  flops_strsm(plasma_enum_t side, double m, double n)
     { return    fmuls_trsm(side, m, n) +    fadds_trsm(side, m, n); }
 
 //==============================================================================
@@ -580,87 +580,87 @@ static double  flops_sgeqrs(double m, double n, double nrhs)
     { return    fmuls_geqrs(m, n, nrhs) +    fadds_geqrs(m, n, nrhs); }
 
 //------------------------------------------------------------ unmqr
-static double fmuls_unmqr(PLASMA_enum side, double m, double n, double k)
+static double fmuls_unmqr(plasma_enum_t side, double m, double n, double k)
 {
     return (side == PlasmaLeft)
         ? (2.*n*m*k - n*k*k + 2.*n*k)
         : (2.*n*m*k - m*k*k + m*k + n*k - 0.5*k*k + 0.5*k);
 }
 
-static double fadds_unmqr(PLASMA_enum side, double m, double n, double k)
+static double fadds_unmqr(plasma_enum_t side, double m, double n, double k)
 {
     return (side == PlasmaLeft)
         ? (2.*n*m*k - n*k*k + n*k)
         : (2.*n*m*k - m*k*k + m*k);
 }
 
-static double  flops_zunmqr(PLASMA_enum side, double m, double n, double k)
+static double  flops_zunmqr(plasma_enum_t side, double m, double n, double k)
     { return 6.*fmuls_unmqr(side, m, n, k) + 2.*fadds_unmqr(side, m, n, k); }
 
-static double  flops_cunmqr(PLASMA_enum side, double m, double n, double k)
+static double  flops_cunmqr(plasma_enum_t side, double m, double n, double k)
     { return 6.*fmuls_unmqr(side, m, n, k) + 2.*fadds_unmqr(side, m, n, k); }
 
-static double  flops_dormqr(PLASMA_enum side, double m, double n, double k)
+static double  flops_dormqr(plasma_enum_t side, double m, double n, double k)
     { return    fmuls_unmqr(side, m, n, k) +    fadds_unmqr(side, m, n, k); }
 
-static double  flops_sormqr(PLASMA_enum side, double m, double n, double k)
+static double  flops_sormqr(plasma_enum_t side, double m, double n, double k)
     { return    fmuls_unmqr(side, m, n, k) +    fadds_unmqr(side, m, n, k); }
 
 //------------------------------------------------------------ unmql
-static double fmuls_unmql(PLASMA_enum side, double m, double n, double k)
+static double fmuls_unmql(plasma_enum_t side, double m, double n, double k)
     { return fmuls_unmqr(side, m, n, k); }
 
-static double fadds_unmql(PLASMA_enum side, double m, double n, double k)
+static double fadds_unmql(plasma_enum_t side, double m, double n, double k)
     { return fadds_unmqr(side, m, n, k); }
 
-static double  flops_zunmql(PLASMA_enum side, double m, double n, double k)
+static double  flops_zunmql(plasma_enum_t side, double m, double n, double k)
     { return 6.*fmuls_unmql(side, m, n, k) + 2.*fadds_unmql(side, m, n, k); }
 
-static double  flops_cunmql(PLASMA_enum side, double m, double n, double k)
+static double  flops_cunmql(plasma_enum_t side, double m, double n, double k)
     { return 6.*fmuls_unmql(side, m, n, k) + 2.*fadds_unmql(side, m, n, k); }
 
-static double  flops_dormql(PLASMA_enum side, double m, double n, double k)
+static double  flops_dormql(plasma_enum_t side, double m, double n, double k)
     { return    fmuls_unmql(side, m, n, k) +    fadds_unmql(side, m, n, k); }
 
-static double  flops_sormql(PLASMA_enum side, double m, double n, double k)
+static double  flops_sormql(plasma_enum_t side, double m, double n, double k)
     { return    fmuls_unmql(side, m, n, k) +    fadds_unmql(side, m, n, k); }
 
 //------------------------------------------------------------ unmrq
-static double fmuls_unmrq(PLASMA_enum side, double m, double n, double k)
+static double fmuls_unmrq(plasma_enum_t side, double m, double n, double k)
     { return fmuls_unmqr(side, m, n, k); }
 
-static double fadds_unmrq(PLASMA_enum side, double m, double n, double k)
+static double fadds_unmrq(plasma_enum_t side, double m, double n, double k)
     { return fadds_unmqr(side, m, n, k); }
 
-static double  flops_zunmrq(PLASMA_enum side, double m, double n, double k)
+static double  flops_zunmrq(plasma_enum_t side, double m, double n, double k)
     { return 6.*fmuls_unmrq(side, m, n, k) + 2.*fadds_unmrq(side, m, n, k); }
 
-static double  flops_cunmrq(PLASMA_enum side, double m, double n, double k)
+static double  flops_cunmrq(plasma_enum_t side, double m, double n, double k)
     { return 6.*fmuls_unmrq(side, m, n, k) + 2.*fadds_unmrq(side, m, n, k); }
 
-static double  flops_dormrq(PLASMA_enum side, double m, double n, double k)
+static double  flops_dormrq(plasma_enum_t side, double m, double n, double k)
     { return    fmuls_unmrq(side, m, n, k) +    fadds_unmrq(side, m, n, k); }
 
-static double  flops_sormrq(PLASMA_enum side, double m, double n, double k)
+static double  flops_sormrq(plasma_enum_t side, double m, double n, double k)
     { return    fmuls_unmrq(side, m, n, k) +    fadds_unmrq(side, m, n, k); }
 
 //------------------------------------------------------------ unmlq
-static double fmuls_unmlq(PLASMA_enum side, double m, double n, double k)
+static double fmuls_unmlq(plasma_enum_t side, double m, double n, double k)
     { return fmuls_unmqr(side, m, n, k); }
 
-static double fadds_unmlq(PLASMA_enum side, double m, double n, double k)
+static double fadds_unmlq(plasma_enum_t side, double m, double n, double k)
     { return fadds_unmqr(side, m, n, k); }
 
-static double  flops_zunmlq(PLASMA_enum side, double m, double n, double k)
+static double  flops_zunmlq(plasma_enum_t side, double m, double n, double k)
     { return 6.*fmuls_unmlq(side, m, n, k) + 2.*fadds_unmlq(side, m, n, k); }
 
-static double  flops_cunmlq(PLASMA_enum side, double m, double n, double k)
+static double  flops_cunmlq(plasma_enum_t side, double m, double n, double k)
     { return 6.*fmuls_unmlq(side, m, n, k) + 2.*fadds_unmlq(side, m, n, k); }
 
-static double  flops_dormlq(PLASMA_enum side, double m, double n, double k)
+static double  flops_dormlq(plasma_enum_t side, double m, double n, double k)
     { return    fmuls_unmlq(side, m, n, k) +    fadds_unmlq(side, m, n, k); }
 
-static double  flops_sormlq(PLASMA_enum side, double m, double n, double k)
+static double  flops_sormlq(plasma_enum_t side, double m, double n, double k)
     { return    fmuls_unmlq(side, m, n, k) +    fadds_unmlq(side, m, n, k); }
 
 //------------------------------------------------------------ trtri

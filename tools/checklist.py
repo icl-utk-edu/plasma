@@ -125,11 +125,11 @@ def process( fname ):
         grep( lines, r';[^ \n]',
               help="Missing space after semicolon" )
 
-        grep( lines, r'^ +(if|for|while)\(',
-              help="Missing space after if, for, while" )
+        grep( lines, r'^ +(if|for|while|switch)\(',
+              help="Missing space after if, for, while, switch" )
 
-        grep( lines, r'^ +(if|for|while) *\( ',
-              help="Extra space inside if, for, while condition" )
+        grep( lines, r'^ +(if|for|while|switch) *\( ',
+              help="Extra space inside if, for, while, switch condition" )
 
         # Relational (==, !=, <=, >=, <, >), assignment (+=, -=, *=, /=),"
         # and boolean (&&, ||) operators should have spaces on both sides."

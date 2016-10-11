@@ -11,25 +11,37 @@
  **/
 
 #include "plasma_async.h"
+#include "plasma_context.h"
 #include "plasma_descriptor.h"
-#include "plasma_types.h"
 #include "plasma_internal.h"
-#include "core_blas_z.h"
+#include "plasma_types.h"
+#include "plasma_workspace.h"
+#include "core_blas.h"
 
-#define A(m, n) ((PLASMA_Complex64_t*)plasma_getaddr(A, m, n))
+#define A(m, n) ((plasma_complex64_t*)plasma_tile_addr(A, m, n))
+ 
 /***************************************************************************//**
  *  Initializes the matrix A to beta on the diagonal and alpha on the
  *  offdiagonals. Applies alpha correctly for any shape of the submatrix
- *  described by A, but applies beta correctly on for submatrices aligned
+ *  described by A, but applies beta correctly only for submatrices aligned
  *  with the diagonal of the main matrix (A.i = A.j).
  **/
-void plasma_pzlaset(PLASMA_enum uplo,
-                    PLASMA_Complex64_t alpha, PLASMA_Complex64_t beta,
-                    PLASMA_desc A,
-                    PLASMA_sequence *sequence, PLASMA_request *request)
+void plasma_pzlaset(plasma_enum_t uplo,
+                    plasma_complex64_t alpha, plasma_complex64_t beta,
+                    plasma_desc_t A,
+                    plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int i, j;
     int m, n;
+
+    // Check sequence status.
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
+        return;
+    }
+
+    int lm1 = A.gm/A.mb;
+    int ln1 = A.gn/A.nb;
 
     for (i = 0; i < A.mt; i++) {
         if (i == 0 && i == A.mt-1)
@@ -51,12 +63,12 @@ void plasma_pzlaset(PLASMA_enum uplo,
             else
                 n = A.nb;
 
-            if (uplo == PlasmaFull ||
+            if (uplo == PlasmaGeneral ||
                 (uplo == PlasmaLower && i >= j) ||
                 (uplo == PlasmaUpper && i <= j))
-                CORE_OMP_zlaset(i == j ? uplo : PlasmaFull,
-                                A.i/A.mb+i == A.lm1 ? A.lm-A.lm1*A.mb : A.mb,
-                                A.j/A.nb+j == A.ln1 ? A.ln-A.ln1*A.nb : A.nb,
+                core_omp_zlaset(i == j ? uplo : PlasmaGeneral,
+                                A.i/A.mb+i == lm1 ? A.gm-lm1*A.mb : A.mb,
+                                A.j/A.nb+j == ln1 ? A.gn-ln1*A.nb : A.nb,
                                 i == 0 ? A.i%A.mb : 0,
                                 j == 0 ? A.j%A.nb : 0,
                                 m,

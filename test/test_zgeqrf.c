@@ -87,14 +87,14 @@ void test_zgeqrf(param_value_t param[], char *info)
     //================================================================
     // Set tuning parameters.
     //================================================================
-    PLASMA_Set(PLASMA_TILE_SIZE,        param[PARAM_NB].i);
-    PLASMA_Set(PLASMA_INNER_BLOCK_SIZE, param[PARAM_IB].i);
+    plasma_set(PlasmaNb, param[PARAM_NB].i);
+    plasma_set(PlasmaIb, param[PARAM_IB].i);
 
     //================================================================
     // Allocate and initialize arrays.
     //================================================================
-    PLASMA_Complex64_t *A =
-        (PLASMA_Complex64_t*)malloc((size_t)lda*n*sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *A =
+        (plasma_complex64_t*)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
     int seed[] = {0, 0, 0, 1};
@@ -102,36 +102,27 @@ void test_zgeqrf(param_value_t param[], char *info)
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
 
-    PLASMA_Complex64_t *Aref = NULL;
+    plasma_complex64_t *Aref = NULL;
     if (test) {
-        Aref = (PLASMA_Complex64_t*)malloc(
-            (size_t)lda*n*sizeof(PLASMA_Complex64_t));
+        Aref = (plasma_complex64_t*)malloc(
+            (size_t)lda*n*sizeof(plasma_complex64_t));
         assert(Aref != NULL);
 
-        memcpy(Aref, A, (size_t)lda*n*sizeof(PLASMA_Complex64_t));
+        memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
     }
 
-    // Get PLASMA context.
-    plasma_context_t *plasma = plasma_context_self();
-    // Initialize tile matrix descriptor for matrix T
-    // using multiples of tile size.
-    int nb = plasma->nb;
-    int ib = plasma->ib;
-    int mt = (m%nb == 0) ? (m/nb) : (m/nb+1);
-    int nt = (n%nb == 0) ? (n/nb) : (n/nb+1);
-    // nt should be doubled if tree-reduction QR is performed,
-    // not implemented now
-    PLASMA_desc descT = plasma_desc_init(PlasmaComplexDouble, ib, nb, ib*nb,
-                                         mt*ib, nt*nb, 0, 0, mt*ib, nt*nb);
-    // allocate memory for the matrix T
-    retval = plasma_desc_mat_alloc(&descT);
-    assert(retval == 0);
+    //================================================================
+    // Prepare the descriptor for matrix T.
+    //================================================================
+    plasma_desc_t T;
+    retval = plasma_descT_create(PlasmaComplexDouble, m, n, &T);
+    assert(retval == PlasmaSuccess);
 
     //================================================================
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zgeqrf(m, n, A, lda, &descT);
+    plasma_zgeqrf(m, n, A, lda, T);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
@@ -143,31 +134,27 @@ void test_zgeqrf(param_value_t param[], char *info)
     //=================================================================
     if (test) {
         // Check the orthogonality of Q
-        PLASMA_Complex64_t zzero =  0.0;
-        PLASMA_Complex64_t zone  =  1.0;
-        double one  =  1.0;
-        double mone = -1.0;
         int minmn = imin(m, n);
 
         // Allocate space for Q.
         int ldq = m;
-        PLASMA_Complex64_t *Q =
-            (PLASMA_Complex64_t *)malloc((size_t)ldq*minmn*
-                                         sizeof(PLASMA_Complex64_t));
+        plasma_complex64_t *Q =
+            (plasma_complex64_t *)malloc((size_t)ldq*minmn*
+                                         sizeof(plasma_complex64_t));
 
         // Build Q.
-        PLASMA_zungqr(m, minmn, minmn, A, lda, &descT, Q, ldq);
+        plasma_zungqr(m, minmn, minmn, A, lda, T, Q, ldq);
 
         // Build the identity matrix
-        PLASMA_Complex64_t *Id =
-            (PLASMA_Complex64_t *) malloc((size_t)minmn*minmn*
-                                          sizeof(PLASMA_Complex64_t));
+        plasma_complex64_t *Id =
+            (plasma_complex64_t *) malloc((size_t)minmn*minmn*
+                                          sizeof(plasma_complex64_t));
         LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'g', minmn, minmn,
-                            zzero, zone, Id, minmn);
+                            0.0, 1.0, Id, minmn);
 
         // Perform Id - Q^H * Q
         cblas_zherk(CblasColMajor, CblasUpper, CblasConjTrans, minmn, m,
-                    mone, Q, ldq, one, Id, minmn);
+                    -1.0, Q, ldq, 1.0, Id, minmn);
 
         // WORK array of size m is needed for computing L_oo norm
         double *WORK = (double *) malloc((size_t)m*sizeof(double));
@@ -187,15 +174,15 @@ void test_zgeqrf(param_value_t param[], char *info)
         // LAPACK version does not construct Q, it uses only application of it
 
         // Extract the R.
-        PLASMA_Complex64_t *R =
-            (PLASMA_Complex64_t *)malloc((size_t)m*n*
-                                         sizeof(PLASMA_Complex64_t));
+        plasma_complex64_t *R =
+            (plasma_complex64_t *)malloc((size_t)m*n*
+                                         sizeof(plasma_complex64_t));
         LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'l', m, n,
-                            zzero, zzero, R, m);
+                            0.0, 0.0, R, m);
         LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'u', m, n, A, lda, R, m);
 
         // Compute Q * R.
-        PLASMA_zunmqr(PlasmaLeft, PlasmaNoTrans, m, n, minmn, A, lda, &descT,
+        plasma_zunmqr(PlasmaLeft, PlasmaNoTrans, m, n, minmn, A, lda, T,
                       R, m);
 
         // Compute the difference.
@@ -240,7 +227,7 @@ void test_zgeqrf(param_value_t param[], char *info)
     //================================================================
     // Free arrays.
     //================================================================
-    plasma_desc_mat_free(&descT);
+    plasma_desc_destroy(&T);
     free(A);
     if (test)
         free(Aref);

@@ -93,8 +93,8 @@ void test_zgemm(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    PLASMA_enum transa = PLASMA_trans_const(param[PARAM_TRANSA].c);
-    PLASMA_enum transb = PLASMA_trans_const(param[PARAM_TRANSB].c);
+    plasma_enum_t transa = plasma_trans_const_t(param[PARAM_TRANSA].c);
+    plasma_enum_t transb = plasma_trans_const_t(param[PARAM_TRANSB].c);
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
@@ -131,8 +131,8 @@ void test_zgemm(param_value_t param[], char *info)
     double eps = LAPACKE_dlamch('E');
 
 #ifdef COMPLEX
-    PLASMA_Complex64_t alpha = param[PARAM_ALPHA].z;
-    PLASMA_Complex64_t beta  = param[PARAM_BETA].z;
+    plasma_complex64_t alpha = param[PARAM_ALPHA].z;
+    plasma_complex64_t beta  = param[PARAM_BETA].z;
 #else
     double alpha = creal(param[PARAM_ALPHA].z);
     double beta  = creal(param[PARAM_BETA].z);
@@ -141,21 +141,21 @@ void test_zgemm(param_value_t param[], char *info)
     //================================================================
     // Set tuning parameters.
     //================================================================
-    PLASMA_Set(PLASMA_TILE_SIZE, param[PARAM_NB].i);
+    plasma_set(PlasmaNb, param[PARAM_NB].i);
 
     //================================================================
     // Allocate and initialize arrays.
     //================================================================
-    PLASMA_Complex64_t *A =
-        (PLASMA_Complex64_t*)malloc((size_t)lda*An*sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *A =
+        (plasma_complex64_t*)malloc((size_t)lda*An*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
-    PLASMA_Complex64_t *B =
-        (PLASMA_Complex64_t*)malloc((size_t)ldb*Bn*sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *B =
+        (plasma_complex64_t*)malloc((size_t)ldb*Bn*sizeof(plasma_complex64_t));
     assert(B != NULL);
 
-    PLASMA_Complex64_t *C =
-        (PLASMA_Complex64_t*)malloc((size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *C =
+        (plasma_complex64_t*)malloc((size_t)ldc*Cn*sizeof(plasma_complex64_t));
     assert(C != NULL);
 
     int seed[] = {0, 0, 0, 1};
@@ -169,13 +169,13 @@ void test_zgemm(param_value_t param[], char *info)
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldc*Cn, C);
     assert(retval == 0);
 
-    PLASMA_Complex64_t *Cref = NULL;
+    plasma_complex64_t *Cref = NULL;
     if (test) {
-        Cref = (PLASMA_Complex64_t*)malloc(
-            (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
+        Cref = (plasma_complex64_t*)malloc(
+            (size_t)ldc*Cn*sizeof(plasma_complex64_t));
         assert(Cref != NULL);
 
-        memcpy(Cref, C, (size_t)ldc*Cn*sizeof(PLASMA_Complex64_t));
+        memcpy(Cref, C, (size_t)ldc*Cn*sizeof(plasma_complex64_t));
     }
 
     //================================================================
@@ -183,7 +183,7 @@ void test_zgemm(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    PLASMA_zgemm(
+    plasma_zgemm(
         transa, transb,
         m, n, k,
         alpha, A, lda,
@@ -223,7 +223,7 @@ void test_zgemm(param_value_t param[], char *info)
                                 B, ldb,
              CBLAS_SADDR(beta), Cref, ldc);
 
-        PLASMA_Complex64_t zmone = -1.0;
+        plasma_complex64_t zmone = -1.0;
         cblas_zaxpy((size_t)ldc*Cn, CBLAS_SADDR(zmone), Cref, 1, C, 1);
 
         double error = LAPACKE_zlange_work(

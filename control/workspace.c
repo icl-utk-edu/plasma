@@ -13,8 +13,8 @@
 #include <omp.h>
 
 /******************************************************************************/
-int plasma_workspace_alloc(PLASMA_workspace *work, size_t lwork,
-                           PLASMA_enum dtyp)
+int plasma_workspace_create(plasma_workspace_t *work, size_t lwork,
+                           plasma_enum_t dtyp)
 {
     // Allocate array of pointers.
     #pragma omp parallel
@@ -27,27 +27,27 @@ int plasma_workspace_alloc(PLASMA_workspace *work, size_t lwork,
     if ((work->spaces = (void**)calloc(work->nthread, sizeof(void*))) == NULL) {
         free(work->spaces);
         plasma_error("malloc() failed");
-        return PLASMA_ERR_OUT_OF_RESOURCES;
+        return PlasmaErrorOutOfMemory;
     }
 
     // Each thread allocates its workspace.
     size_t size = (size_t)lwork * plasma_element_size(work->dtyp);
-    int info = PLASMA_SUCCESS;
+    int info = PlasmaSuccess;
     #pragma omp parallel
     {
         int tid = omp_get_thread_num();
         if ((work->spaces[tid] = (void*)malloc(size)) == NULL) {
-            info = PLASMA_ERR_OUT_OF_RESOURCES;
+            info = PlasmaErrorOutOfMemory;
         }
     }
-    if (info != PLASMA_SUCCESS) {
-        plasma_workspace_free(work);
+    if (info != PlasmaSuccess) {
+        plasma_workspace_destroy(work);
     }
     return info;
 }
 
 /******************************************************************************/
-int plasma_workspace_free(PLASMA_workspace *work)
+int plasma_workspace_destroy(plasma_workspace_t *work)
 {
     if (work->spaces != NULL) {
         for (int i = 0; i < work->nthread; ++i) {
@@ -59,5 +59,5 @@ int plasma_workspace_free(PLASMA_workspace *work)
         work->nthread = 0;
         work->lwork   = 0;
     }
-    return PLASMA_SUCCESS;
+    return PlasmaSuccess;
 }

@@ -13,58 +13,46 @@
 #include "plasma_async.h"
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
-#include "plasma_types.h"
 #include "plasma_internal.h"
-#include "core_blas_z.h"
+#include "plasma_types.h"
+#include "plasma_workspace.h"
+#include "core_blas.h"
 
-#define A(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(A, m, n))
-#define Q(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(Q, m, n))
-#define T(m, n) ((PLASMA_Complex64_t*) plasma_getaddr(T, m, n))
+#define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
+#define Q(m, n) (plasma_complex64_t*)plasma_tile_addr(Q, m, n)
+#define T(m, n) (plasma_complex64_t*)plasma_tile_addr(T, m, n)
+
 /***************************************************************************//**
  *  Parallel construction of Q using tile V (application to identity)
  **/
-void plasma_pzungqr(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
-                    PLASMA_workspace *work,
-                    PLASMA_sequence *sequence, PLASMA_request *request)
+void plasma_pzungqr(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
+                    plasma_workspace_t work,
+                    plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    int k, m, n;
-    int ldak, ldqk, ldam, ldqm;
-    int tempmm, tempnn, tempkmin, tempkm;
-    int tempAkm, tempAkn;
-    int minmnt;
-
     // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
     }
 
-    // Set inner blocking from the plasma context
-    plasma_context_t *plasma = plasma_context_self();
-    if (plasma == NULL) {
-        plasma_error("PLASMA not initialized");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-    int ib = plasma->ib;
+    // Set inner blocking from the T tile row-dimension.
+    int ib = T.mb;
 
-    minmnt = imin(A.mt, A.nt);
-    for (k = minmnt-1; k >= 0; k--) {
-        tempAkm  = k == A.mt-1 ? A.m-k*A.mb : A.mb;
-        tempAkn  = k == A.nt-1 ? A.n-k*A.nb : A.nb;
-        tempkmin = imin(tempAkn, tempAkm);
-        tempkm   = k == Q.mt-1 ? Q.m-k*Q.mb : Q.mb;
-        ldak = BLKLDD(A, k);
-        ldqk = BLKLDD(Q, k);
-        for (m = Q.mt - 1; m > k; m--) {
-            tempmm = m == Q.mt-1 ? Q.m-m*Q.mb : Q.mb;
-            ldam = BLKLDD(A, m);
-            ldqm = BLKLDD(Q, m);
-            for (n = k; n < Q.nt; n++) {
-                tempnn = n == Q.nt-1 ? Q.n-n*Q.nb : Q.nb;
-                CORE_OMP_ztsmqr(
+    for (int k = imin(A.mt, A.nt)-1; k >= 0; k--) {
+        int mvak  = plasma_tile_mview(A, k);
+        int nvak  = plasma_tile_nview(A, k);
+        int mvqk  = plasma_tile_mview(Q, k);
+        int ldak  = plasma_tile_mmain(A, k);
+        int ldqk  = plasma_tile_mmain(Q, k);
+        for (int m = Q.mt - 1; m > k; m--) {
+            int mvqm = plasma_tile_mview(Q, m);
+            int ldam = plasma_tile_mmain(A, m);
+            int ldqm = plasma_tile_mmain(Q, m);
+            for (int n = k; n < Q.nt; n++) {
+                int nvqn = plasma_tile_nview(Q, n);
+                core_omp_ztsmqr(
                     PlasmaLeft, PlasmaNoTrans,
-                    Q.mb, tempnn, tempmm, tempnn, tempAkn, ib, T.nb,
+                    Q.mb, nvqn, mvqm, nvqn, nvak, ib, T.nb,
                     Q(k, n), ldqk,
                     Q(m, n), ldqm,
                     A(m, k), ldam,
@@ -73,11 +61,11 @@ void plasma_pzungqr(PLASMA_desc A, PLASMA_desc Q, PLASMA_desc T,
                     sequence, request);
             }
         }
-        for (n = k; n < Q.nt; n++) {
-            tempnn = n == Q.nt-1 ? Q.n-n*Q.nb : Q.nb;
-            CORE_OMP_zunmqr(
+        for (int n = k; n < Q.nt; n++) {
+            int nvqn = plasma_tile_nview(Q, n);
+            core_omp_zunmqr(
                 PlasmaLeft, PlasmaNoTrans,
-                tempkm, tempnn, tempkmin, ib, T.nb,
+                mvqk, nvqn, imin(nvak, mvak), ib, T.nb,
                 A(k, k), ldak,
                 T(k, k), T.mb,
                 Q(k, n), ldqk,

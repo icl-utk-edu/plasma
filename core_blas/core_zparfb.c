@@ -121,21 +121,21 @@
  *
  *******************************************************************************
  *
- * @retval PLASMA_SUCCESS successful exit
+ * @retval PlasmaSuccess successful exit
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
-                PLASMA_enum direct, PLASMA_enum storev,
+int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
+                plasma_enum_t direct, plasma_enum_t storev,
                 int m1, int n1, int m2, int n2, int k, int l,
-                      PLASMA_Complex64_t *A1, int lda1,
-                      PLASMA_Complex64_t *A2, int lda2,
-                const PLASMA_Complex64_t *V,  int ldv,
-                const PLASMA_Complex64_t *T,  int ldt,
-                      PLASMA_Complex64_t *WORK, int ldwork)
+                      plasma_complex64_t *A1, int lda1,
+                      plasma_complex64_t *A2, int lda2,
+                const plasma_complex64_t *V,  int ldv,
+                const plasma_complex64_t *T,  int ldt,
+                      plasma_complex64_t *WORK, int ldwork)
 {
-    static PLASMA_Complex64_t zone  =  1.0;
-    static PLASMA_Complex64_t mzone = -1.0;
+    static plasma_complex64_t zone  =  1.0;
+    static plasma_complex64_t mzone = -1.0;
 
     int j;
 
@@ -144,9 +144,6 @@ int CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
         coreblas_error("Illegal value of side");
         return -1;
     }
-    // Plasma_ConjTrans will be converted to PlasmaTrans in
-    // automatic datatype conversion, which is what we want here.
-    // PlasmaConjTrans is protected from this conversion.
     if ((trans != PlasmaNoTrans) && (trans != Plasma_ConjTrans)) {
         coreblas_error("Illegal value of trans");
         return -2;
@@ -184,7 +181,7 @@ int CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
 
     // quick return
     if ((m1 == 0) || (n1 == 0) || (m2 == 0) || (n2 == 0) || (k == 0))
-        return PLASMA_SUCCESS;
+        return PlasmaSuccess;
 
     if (direct == PlasmaForward) {
         if (side == PlasmaLeft) {
@@ -195,7 +192,7 @@ int CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
             //                                      ( A2 )
 
             // W = A1 + op(V) * A2
-            CORE_zpamm(PlasmaW, PlasmaLeft, storev,
+            core_zpamm(PlasmaW, PlasmaLeft, storev,
                        k, n1, m2, l,
                        A1, lda1,
                        A2, lda2,
@@ -219,7 +216,7 @@ int CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
 
             // A2 = A2 - op(V) * W
             // W also changes: W = V * W, A2 = A2 - W
-            CORE_zpamm(PlasmaA2, PlasmaLeft, storev,
+            core_zpamm(PlasmaA2, PlasmaLeft, storev,
                        m2, n2, k, l,
                        A1, lda1,
                        A2, lda2,
@@ -233,7 +230,7 @@ int CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
             // Form  H * A  or  H^H * A  where A  = ( A1 A2 )
 
             // W = A1 + A2 * op(V)
-            CORE_zpamm(PlasmaW, PlasmaRight, storev,
+            core_zpamm(PlasmaW, PlasmaRight, storev,
                        m1, k, n2, l,
                        A1, lda1,
                        A2, lda2,
@@ -257,7 +254,7 @@ int CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
 
             // A2 = A2 - W * op(V)
             // W also changes: W = W * V^H, A2 = A2 - W
-            CORE_zpamm(PlasmaA2, PlasmaRight, storev,
+            core_zpamm(PlasmaA2, PlasmaRight, storev,
                        m2, n2, k, l,
                        A1, lda1,
                        A2, lda2,
@@ -267,8 +264,8 @@ int CORE_zparfb(PLASMA_enum side, PLASMA_enum trans,
     }
     else {
         coreblas_error("Not implemented (Backward / Left or Right)");
-        return PLASMA_ERR_NOT_SUPPORTED;
+        return PlasmaErrorNotSupported;
     }
 
-    return PLASMA_SUCCESS;
+    return PlasmaSuccess;
 }

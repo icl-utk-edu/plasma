@@ -10,13 +10,13 @@
  *
  **/
 
-#include "plasma_types.h"
+#include "plasma.h"
 #include "plasma_async.h"
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
-#include "plasma_z.h"
-
+#include "plasma_types.h"
+#include "plasma_workspace.h"
 
 /***************************************************************************//**
  *
@@ -59,7 +59,7 @@
  *
  *******************************************************************************
  *
- * @retval PLASMA_SUCCESS successful exit
+ * @retval PlasmaSuccess successful exit
  * @retval  < 0 if -i, the i-th argument had an illegal value
  * @retval  > 0 if i, the leading minor of order i of A is not
  *          positive definite, so the factorization could not
@@ -67,30 +67,24 @@
  *
  *******************************************************************************
  *
- * @sa PLASMA_zpbtrf_Tile_Async
- * @sa PLASMA_cpbtrf
- * @sa PLASMA_dpbtrf
- * @sa PLASMA_spbtrf
+ * @sa plasma_omp_zpbtrf
+ * @sa plasma_cpbtrf
+ * @sa plasma_dpbtrf
+ * @sa plasma_spbtrf
  *
  ******************************************************************************/
-int PLASMA_zpbtrf(PLASMA_enum uplo,
+int plasma_zpbtrf(plasma_enum_t uplo,
                   int n, int kd,
-                  PLASMA_Complex64_t *AB, int ldab)
+                  plasma_complex64_t *pAB, int ldab)
 {
-    int nb;
-    int retval;
-    int status;
-
-    PLASMA_desc descAB;
-
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_fatal_error("PLASMA not initialized");
-        return PLASMA_ERR_NOT_INITIALIZED;
+        return PlasmaErrorNotInitialized;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
@@ -111,69 +105,53 @@ int PLASMA_zpbtrf(PLASMA_enum uplo,
 
     // quick return
     if (imax(n, 0) == 0)
-        return PLASMA_SUCCESS;
+        return PlasmaSuccess;
 
-    // Tune
-    // status = plasma_tune(PLASMA_FUNC_ZGBSV, N, N, 0);
-    // if (status != PLASMA_SUCCESS) {
-    //     plasma_error("plasma_tune() failed");
-    //     return status;
-    // }
+    // Set tiling parameters.
+    int nb = plasma->nb;
 
-    nb = plasma->nb;
     // Initialize tile matrix descriptors.
     int lda = nb*(1+(kd+nb-1)/nb);
-    descAB = plasma_desc_band_init(PlasmaComplexDouble, uplo, nb, nb,
-                                   nb*nb, lda, n, 0, 0, n, n, kd, kd);
-
-    // Allocate matrices in tile layout.
-    retval = plasma_desc_mat_alloc(&descAB);
-    if (retval != PLASMA_SUCCESS) {
-        plasma_error("plasma_desc_mat_alloc() failed");
+    plasma_desc_t AB;
+    int retval;
+    retval = plasma_desc_general_band_create(PlasmaComplexDouble, uplo, nb, nb,
+                                             lda, n, 0, 0, n, n, kd, kd, &AB);
+    if (retval != PlasmaSuccess) {
+        plasma_error("plasma_desc_general_band_create() failed");
         return retval;
     }
 
     // Create sequence.
-    PLASMA_sequence *sequence = NULL;
+    plasma_sequence_t *sequence = NULL;
     retval = plasma_sequence_create(&sequence);
-    if (retval != PLASMA_SUCCESS) {
+    if (retval != PlasmaSuccess) {
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
-    // Initialize request.
-    PLASMA_request request = PLASMA_REQUEST_INITIALIZER;
 
-    // The Async functions are submitted here.  If an error occurs
-    // (at submission time or at run time) the sequence->status
-    // will be marked with an error.  After an error, the next
-    // Async will not _insert_ more tasks into the runtime.  The
-    // sequence->status can be checked after each call to _Async
-    // or at the end of the parallel region.
-    //
-    // Storage translation and factorization are split because
-    // LU panel/pivot need synch on tiles in each column from/to
-    // translation
+    // Initialize request.
+    plasma_request_t request = PlasmaRequestInitializer;
+
+    // asynchronous block
     #pragma omp parallel
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_band_Async(uplo, AB, ldab, &descAB, sequence, &request);
+        plasma_omp_zpb2desc(pAB, ldab, AB, sequence, &request);
 
         // Call the tile async function.
-        if (sequence->status == PLASMA_SUCCESS) {
-            PLASMA_zpbtrf_Tile_Async(uplo, &descAB, sequence, &request);
-        }
+        plasma_omp_zpbtrf(uplo, AB, sequence, &request);
 
         // Translate back to LAPACK layout.
-        if (sequence->status == PLASMA_SUCCESS)
-            PLASMA_zccrb2cm_band_Async(uplo, &descAB, AB, ldab, sequence, &request);
-    } // pragma omp parallel block closed
+        plasma_omp_zdesc2pb(AB, pAB, ldab, sequence, &request);
+    }
+    // implicit synchronization
 
     // Free matrix A in tile layout.
-    plasma_desc_mat_free(&descAB);
+    plasma_desc_destroy(&AB);
 
     // Return status.
-    status = sequence->status;
+    int status = sequence->status;
     plasma_sequence_destroy(sequence);
     return status;
 }
@@ -184,7 +162,7 @@ int PLASMA_zpbtrf(PLASMA_enum uplo,
  *
  *  Performs the Cholesky factorization of a Hermitian positive definite
  *  matrix.
- *  Non-blocking tile version of PLASMA_zpbtrf().
+ *  Non-blocking tile version of plasma_zpbtrf().
  *  May return before the computation is finished.
  *  Operates on matrices stored by tiles.
  *  All matrices are passed through descriptors.
@@ -207,67 +185,56 @@ int PLASMA_zpbtrf(PLASMA_enum uplo,
  * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
- *          request->status should never be set to PLASMA_SUCCESS (the
+ *          request->status should never be set to PlasmaSuccess (the
  *          initial values) since another async call may be setting a
  *          failure value at the same time.
  *
  *******************************************************************************
  *
- * @sa PLASMA_zpbtrf
- * @sa PLASMA_zpbtrf_Tile_Async
- * @sa PLASMA_cpbtrf_Tile_Async
- * @sa PLASMA_dpbtrf_Tile_Async
- * @sa PLASMA_spbtrf_Tile_Async
+ * @sa plasma_zpbtrf
+ * @sa plasma_omp_zpbtrf
+ * @sa plasma_omp_cpbtrf
+ * @sa plasma_omp_dpbtrf
+ * @sa plasma_omp_spbtrf
  *
  ******************************************************************************/
-void PLASMA_zpbtrf_Tile_Async(PLASMA_enum uplo,
-                              PLASMA_desc *AB,
-                              PLASMA_sequence *sequence,
-                              PLASMA_request *request)
+void plasma_omp_zpbtrf(plasma_enum_t uplo, plasma_desc_t AB,
+                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_fatal_error("PLASMA not initialized");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
 
     // Check input arguments.
-    if (plasma_desc_band_check(uplo, AB) != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+    if ((uplo != PlasmaUpper) &&
+        (uplo != PlasmaLower)) {
+        plasma_error("illegal value of uplo");
+        return;
+    }
+    if (plasma_desc_check(AB) != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         plasma_error("invalid A");
         return;
     }
     if (sequence == NULL) {
         plasma_fatal_error("NULL sequence");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if (request == NULL) {
         plasma_fatal_error("NULL request");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-
-    if (AB->mb != AB->nb) {
-        plasma_error("only square tiles supported");
-        plasma_request_fail(sequence, request, PLASMA_ERR_ILLEGAL_VALUE);
-        return;
-    }
-
-    // Check sequence status.
-    if (sequence->status != PLASMA_SUCCESS) {
-        plasma_request_fail(sequence, request, PLASMA_ERR_SEQUENCE_FLUSHED);
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
 
     // quick return
-    if (AB->m == 0)
+    if (AB.m == 0)
         return;
 
     // Call the parallel function.
-    plasma_pzpbtrf(uplo, *AB, sequence, request);
-
-    return;
+    plasma_pzpbtrf(uplo, AB, sequence, request);
 }

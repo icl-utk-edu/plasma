@@ -18,11 +18,17 @@ extern "C" {
 
 /******************************************************************************/
 #ifdef PLASMA_WITH_MKL
-#define lapack_complex_float PLASMA_Complex32_t
-#define lapack_complex_double PLASMA_Complex64_t
+#define lapack_complex_float plasma_complex32_t
+#define lapack_complex_double plasma_complex64_t
 #endif
 
-/******************************************************************************/
+/***************************************************************************//**
+ *
+ *  Some CBLAS routines take scalars by value in real arithmetic
+ *  and by pointer in complex arithmetic.
+ *  In precision generation, CBLAS_SADDR is removed from real arithmetic files.
+ *
+ **/
 #ifndef CBLAS_SADDR
 #define CBLAS_SADDR(var) &(var)
 #endif
@@ -39,81 +45,80 @@ enum {
 
 /***************************************************************************//**
  *
- *  PLASMA constants - CBLAS & LAPACK
+ *  PLASMA constants - CBLAS & LAPACK.
  *  The naming and numbering is consistent with:
  *
- *    1) CBLAS from Netlib (http://www.netlib.org/blas/blast-forum/cblas.tgz),
- *    2) C Interface to LAPACK from Netlib (http://www.netlib.org/lapack/lapwrapc/).
+ *    - CBLAS - http://www.netlib.org/blas/blast-forum/cblas.tgz,
+ *    - LAPACKE - http://www.netlib.org/lapack/lapwrapc/.
+ *
+ *  During precision generation, Plasma_ConjTrans is conveted to PlasmaTrans,
+ *  while PlasmaConjTrans is preserved.
  *
  **/
 enum {
-    PlasmaInvalid    = -1,
+    PlasmaInvalid     = -1,
 
-    PlasmaNoTrans    = 111,
-    PlasmaTrans      = 112,
-    PlasmaConjTrans  = 113,
-    Plasma_ConjTrans = PlasmaConjTrans,
+    PlasmaNoTrans     = 111,
+    PlasmaTrans       = 112,
+    PlasmaConjTrans   = 113,
+    Plasma_ConjTrans  = PlasmaConjTrans,
 
-    PlasmaUpper      = 121,
-    PlasmaLower      = 122,
-    PlasmaFull       = 123,  // formerly PlasmaUpperLower
+    PlasmaUpper       = 121,
+    PlasmaLower       = 122,
+    PlasmaGeneral     = 123,
+    PlasmaGeneralBand = 124,
 
-    PlasmaNonUnit    = 131,
-    PlasmaUnit       = 132,
+    PlasmaNonUnit     = 131,
+    PlasmaUnit        = 132,
 
-    PlasmaLeft       = 141,
-    PlasmaRight      = 142,
+    PlasmaLeft        = 141,
+    PlasmaRight       = 142,
 
-    PlasmaForward    = 391,
-    PlasmaBackward   = 392,
+    PlasmaForward     = 391,
+    PlasmaBackward    = 392,
 
-    PlasmaColumnwise = 401,
-    PlasmaRowwise    = 402,
+    PlasmaColumnwise  = 401,
+    PlasmaRowwise     = 402,
 
-    PlasmaW          = 501,
-    PlasmaA2         = 502
+    PlasmaW           = 501,
+    PlasmaA2          = 502
 };
 
 enum {
-    PLASMA_SUCCESS              =    0,
-    PLASMA_ERR_NOT_INITIALIZED  = -101,
-    PLASMA_ERR_REINITIALIZED    = -102,
-    PLASMA_ERR_NOT_SUPPORTED    = -103,
-    PLASMA_ERR_ILLEGAL_VALUE    = -104,
-    PLASMA_ERR_NOT_FOUND        = -105,
-    PLASMA_ERR_OUT_OF_RESOURCES = -106,
-    PLASMA_ERR_INTERNAL_LIMIT   = -107,
-    PLASMA_ERR_UNALLOCATED      = -108,
-    PLASMA_ERR_FILESYSTEM       = -109,
-    PLASMA_ERR_UNEXPECTED       = -110,
-    PLASMA_ERR_SEQUENCE_FLUSHED = -111
+    PlasmaSuccess = 0,
+    PlasmaErrorNotInitialized,
+    PlasmaErrorNotSupported,
+    PlasmaErrorIllegalValue,
+    PlasmaErrorOutOfMemory,
+    PlasmaErrorNullParameter,
+    PlasmaErrorInternal,
+    PlasmaErrorSequence
 };
 
 enum {
-    PLASMA_INPLACE,
-    PLASMA_OUTOFPLACE
+    PlasmaInplace,
+    PlasmaOutplace
 };
 
 enum {
-    PLASMA_TILE_SIZE,
-    PLASMA_INNER_BLOCK_SIZE,
-    PLASMA_TRANSLATION_MODE
+    PlasmaNb,
+    PlasmaIb,
+    PlasmaInplaceOutplace
 };
 
 /******************************************************************************/
-typedef int PLASMA_enum;
-typedef int PLASMA_bool;
+typedef int plasma_enum_t;
 
-typedef float  _Complex PLASMA_Complex32_t;
-typedef double _Complex PLASMA_Complex64_t;
+typedef float  _Complex plasma_complex32_t;
+typedef double _Complex plasma_complex64_t;
 
 /******************************************************************************/
-PLASMA_enum PLASMA_trans_const(char lapack_char);
-PLASMA_enum PLASMA_uplo_const(char lapack_char);
-PLASMA_enum PLASMA_diag_const(char lapack_char);
-PLASMA_enum PLASMA_side_const(char lapack_char);
-PLASMA_enum PLASMA_direct_const(char lapack_char);
-PLASMA_enum PLASMA_storev_const(char lapack_char);
+plasma_enum_t plasma_trans_const_t(char lapack_char);
+plasma_enum_t plasma_uplo_const_t(char lapack_char);
+plasma_enum_t plasma_diag_const_t(char lapack_char);
+plasma_enum_t plasma_side_cons_t(char lapack_char);
+plasma_enum_t plasma_direct_const_t(char lapack_char);
+plasma_enum_t plasma_storev_const_t(char lapack_char);
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -36,7 +36,7 @@
  *
  *    Q = H(k)^H . . . H(2)^H H(1)^H
  *
- *  as returned by CORE_ztslqt.
+ *  as returned by core_ztslqt.
  *
  *******************************************************************************
  *
@@ -86,7 +86,7 @@
  * @param[in] V
  *         The i-th row must contain the vector which defines the
  *         elementary reflector H(i), for i = 1,2,...,k, as returned by
- *         CORE_ztslqt in the first k rows of its array argument V.
+ *         core_ztslqt in the first k rows of its array argument V.
  *
  * @param[in] ldv
  *         The leading dimension of the array V. ldv >= max(1,k).
@@ -111,17 +111,17 @@
  *
  *******************************************************************************
  *
- * @retval PLASMA_SUCCESS successful exit
+ * @retval PlasmaSuccess successful exit
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int CORE_ztsmlq(PLASMA_enum side, PLASMA_enum trans,
+int core_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
                 int m1, int n1, int m2, int n2, int k, int ib,
-                      PLASMA_Complex64_t *A1, int lda1,
-                      PLASMA_Complex64_t *A2, int lda2,
-                const PLASMA_Complex64_t *V, int ldv,
-                const PLASMA_Complex64_t *T, int ldt,
-                      PLASMA_Complex64_t *WORK, int ldwork)
+                      plasma_complex64_t *A1, int lda1,
+                      plasma_complex64_t *A2, int lda2,
+                const plasma_complex64_t *V, int ldv,
+                const plasma_complex64_t *T, int ldt,
+                      plasma_complex64_t *WORK, int ldwork)
 {
     int i, i1, i3;
     int nw;
@@ -145,9 +145,6 @@ int CORE_ztsmlq(PLASMA_enum side, PLASMA_enum trans,
         nw = n1;
     }
 
-    // Plasma_ConjTrans will be converted to PlasmaTrans in
-    // automatic datatype conversion, which is what we want here.
-    // PlasmaConjTrans is protected from this conversion.
     if ((trans != PlasmaNoTrans) && (trans != Plasma_ConjTrans)) {
         coreblas_error("Illegal value of trans");
         return -2;
@@ -205,7 +202,7 @@ int CORE_ztsmlq(PLASMA_enum side, PLASMA_enum trans,
     if ((m1 == 0) || (n1 == 0) ||
         (m2 == 0) || (n2 == 0) ||
         (k == 0)  || (ib == 0))
-        return PLASMA_SUCCESS;
+        return PlasmaSuccess;
 
     if (((side == PlasmaLeft) && (trans == PlasmaNoTrans))
         || ((side == PlasmaRight) && (trans != PlasmaNoTrans))) {
@@ -237,8 +234,8 @@ int CORE_ztsmlq(PLASMA_enum side, PLASMA_enum trans,
             ni = n1 - i;
             jc = i;
         }
-        // Apply H or H^H (NOTE: CORE_zparfb used to be CORE_ztsrfb)
-        CORE_zparfb(
+        // Apply H or H^H (NOTE: core_zparfb used to be core_ztsrfb)
+        core_zparfb(
             side, trans, PlasmaForward, PlasmaRowwise,
             mi, ni, m2, n2, kb, 0,
             &A1[lda1*jc+ic], lda1,
@@ -248,34 +245,35 @@ int CORE_ztsmlq(PLASMA_enum side, PLASMA_enum trans,
             WORK, ldwork);
     }
 
-    return PLASMA_SUCCESS;
+    return PlasmaSuccess;
 }
 
 /******************************************************************************/
-void CORE_OMP_ztsmlq(PLASMA_enum side, PLASMA_enum trans,
+void core_omp_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
                      int m1, int n1, int m2, int n2, int k, int ib, int nb,
-                           PLASMA_Complex64_t *A1, int lda1,
-                           PLASMA_Complex64_t *A2, int lda2,
-                     const PLASMA_Complex64_t *V,  int ldv,
-                     const PLASMA_Complex64_t *T,  int ldt,
-                     PLASMA_workspace *work,
-                     PLASMA_sequence *sequence, PLASMA_request *request)
+                           plasma_complex64_t *A1, int lda1,
+                           plasma_complex64_t *A2, int lda2,
+                     const plasma_complex64_t *V,  int ldv,
+                     const plasma_complex64_t *T,  int ldt,
+                     plasma_workspace_t work,
+                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // assuming m1 == nb, n1 == nb, m2 == nb, n2 == nb
+    // OpenMP depends assume m1 == n1 == m2 == n2 == lda1 == lda2 == ldv == nb,
+    //                       ldt == ib.
     #pragma omp task depend(inout:A1[0:nb*nb]) \
                      depend(inout:A2[0:nb*nb]) \
                      depend(in:V[0:nb*nb]) \
                      depend(in:T[0:ib*nb])
     {
-        if (sequence->status == PLASMA_SUCCESS) {
+        if (sequence->status == PlasmaSuccess) {
             int tid = omp_get_thread_num();
-            PLASMA_Complex64_t *W   =
-                ((PLASMA_Complex64_t*)work->spaces[tid]);
+            plasma_complex64_t *W   =
+                ((plasma_complex64_t*)work.spaces[tid]);
 
             int ldwork = side == PlasmaLeft ? ib : nb;
 
             // call the kernel
-            int info = CORE_ztsmlq(side, trans,
+            int info = core_ztsmlq(side, trans,
                                    m1, n1, m2, n2, k, ib,
                                    A1, lda1,
                                    A2, lda2,
@@ -283,11 +281,11 @@ void CORE_OMP_ztsmlq(PLASMA_enum side, PLASMA_enum trans,
                                    T, ldt,
                                    W, ldwork);
 
-            if (info != PLASMA_SUCCESS) {
+            if (info != PlasmaSuccess) {
                 plasma_error_with_code("Error in call to COREBLAS in argument",
                                        -info);
                 plasma_request_fail(sequence, request,
-                                    PLASMA_ERR_ILLEGAL_VALUE);
+                                    PlasmaErrorIllegalValue);
             }
         }
     }

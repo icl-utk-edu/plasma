@@ -42,7 +42,7 @@
  *          - PlasmaUpper: A is upper triangular,
  *          - PlasmaLower: A is lower triangular.
  *
- * @param[in] transA
+ * @param[in] transa
  *          - PlasmaNoTrans:   A is not transposed,
  *          - PlasmaTrans:     A is transposed,
  *          - PlasmaConjTrans: A is conjugate transposed.
@@ -84,33 +84,33 @@
  *          The leading dimension of the array B. ldb >= max(1,m).
  *
  ******************************************************************************/
-void CORE_ztrsm(PLASMA_enum side, PLASMA_enum uplo,
-                PLASMA_enum transA, PLASMA_enum diag,
+void core_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
+                plasma_enum_t transa, plasma_enum_t diag,
                 int m, int n,
-                PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
-                                                PLASMA_Complex64_t *B, int ldb)
+                plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+                                                plasma_complex64_t *B, int ldb)
 {
     cblas_ztrsm(CblasColMajor,
                 (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
-                (CBLAS_TRANSPOSE)transA, (CBLAS_DIAG)diag,
+                (CBLAS_TRANSPOSE)transa, (CBLAS_DIAG)diag,
                 m, n,
                 CBLAS_SADDR(alpha), A, lda,
                                     B, ldb);
 }
 
 /******************************************************************************/
-void CORE_OMP_ztrsm(
-    PLASMA_enum side, PLASMA_enum uplo,
-    PLASMA_enum transA, PLASMA_enum diag,
+void core_omp_ztrsm(
+    plasma_enum_t side, plasma_enum_t uplo,
+    plasma_enum_t transa, plasma_enum_t diag,
     int m, int n,
-    PLASMA_Complex64_t alpha, const PLASMA_Complex64_t *A, int lda,
-                                    PLASMA_Complex64_t *B, int ldb)
+    plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+                                    plasma_complex64_t *B, int ldb)
 {
     // omp depends assume lda == m or n, ldb == m,
     // depending on side.
     #pragma omp task depend(in:A[0:m*m]) depend(inout:B[0:m*n])
-    CORE_ztrsm(side, uplo,
-               transA, diag,
+    core_ztrsm(side, uplo,
+               transa, diag,
                m, n,
                alpha, A, lda,
                       B, ldb);

@@ -93,19 +93,19 @@ void test_zgels(param_value_t param[], char *info)
     //================================================================
     // Set tuning parameters.
     //================================================================
-    PLASMA_Set(PLASMA_TILE_SIZE,        param[PARAM_NB].i);
-    PLASMA_Set(PLASMA_INNER_BLOCK_SIZE, param[PARAM_IB].i);
+    plasma_set(PlasmaNb, param[PARAM_NB].i);
+    plasma_set(PlasmaIb, param[PARAM_IB].i);
 
     //================================================================
     // Allocate and initialize arrays.
     //================================================================
-    PLASMA_Complex64_t *A =
-        (PLASMA_Complex64_t*)malloc((size_t)lda*n*sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *A =
+        (plasma_complex64_t*)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
-    PLASMA_Complex64_t *B =
-        (PLASMA_Complex64_t*)malloc((size_t)ldb*nrhs*
-                                    sizeof(PLASMA_Complex64_t));
+    plasma_complex64_t *B =
+        (plasma_complex64_t*)malloc((size_t)ldb*nrhs*
+                                    sizeof(plasma_complex64_t));
     assert(B != NULL);
 
     int seed[] = {0, 0, 0, 1};
@@ -117,44 +117,36 @@ void test_zgels(param_value_t param[], char *info)
     assert(retval == 0);
 
     // store the original arrays if residual is to be evaluated
-    PLASMA_Complex64_t *Aref = NULL;
-    PLASMA_Complex64_t *Bref = NULL;
+    plasma_complex64_t *Aref = NULL;
+    plasma_complex64_t *Bref = NULL;
     if (test) {
-        Aref = (PLASMA_Complex64_t*)malloc(
-            (size_t)lda*n*sizeof(PLASMA_Complex64_t));
+        Aref = (plasma_complex64_t*)malloc(
+            (size_t)lda*n*sizeof(plasma_complex64_t));
         assert(Aref != NULL);
 
-        memcpy(Aref, A, (size_t)lda*n*sizeof(PLASMA_Complex64_t));
+        memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
 
-        Bref = (PLASMA_Complex64_t*)malloc(
-            (size_t)ldb*nrhs*sizeof(PLASMA_Complex64_t));
+        Bref = (plasma_complex64_t*)malloc(
+            (size_t)ldb*nrhs*sizeof(plasma_complex64_t));
         assert(Bref != NULL);
 
-        memcpy(Bref, B, (size_t)ldb*nrhs*sizeof(PLASMA_Complex64_t));
+        memcpy(Bref, B, (size_t)ldb*nrhs*sizeof(plasma_complex64_t));
     }
 
-    // Get PLASMA context.
-    plasma_context_t *plasma = plasma_context_self();
-
-    // Initialize tile matrix descriptor for matrix T
-    // using multiples of tile size.
-    int nb = plasma->nb;
-    int ib = nb;
-    int mt = (m%nb == 0) ? (m/nb) : (m/nb+1);
-    int nt = (n%nb == 0) ? (n/nb) : (n/nb+1);
-    PLASMA_desc descT = plasma_desc_init(PlasmaComplexDouble, ib, nb, ib*nb,
-                                         mt*ib, nt*nb, 0, 0, mt*ib, nt*nb);
-    // allocate memory for the matrix T
-    retval = plasma_desc_mat_alloc(&descT);
-    assert(retval == 0);
+    //================================================================
+    // Prepare the descriptor for matrix T.
+    //================================================================
+    plasma_desc_t T;
+    retval = plasma_descT_create(PlasmaComplexDouble, m, n, &T);
+    assert(retval == PlasmaSuccess);
 
     //================================================================
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zgels(PlasmaNoTrans, m, n, nrhs,
+    plasma_zgels(PlasmaNoTrans, m, n, nrhs,
                  A, lda,
-                 &descT,
+                 T,
                  B, ldb);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
@@ -192,9 +184,9 @@ void test_zgels(param_value_t param[], char *info)
                                            B, ldb, work);
 
         // compute residual and store it in B = A*X - B
-        PLASMA_Complex64_t zone  =  1.0;
-        PLASMA_Complex64_t mzone = -1.0;
-        PLASMA_Complex64_t zzero =  0.0;
+        plasma_complex64_t zone  =  1.0;
+        plasma_complex64_t mzone = -1.0;
+        plasma_complex64_t zzero =  0.0;
         cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, nrhs, n,
                     CBLAS_SADDR(zone), Aref, lda, B, ldb,
                     CBLAS_SADDR(mzone), Bref, ldb);
@@ -218,7 +210,7 @@ void test_zgels(param_value_t param[], char *info)
     //================================================================
     // Free arrays.
     //================================================================
-    plasma_desc_mat_free(&descT);
+    plasma_desc_destroy(&T);
     free(A);
     free(B);
     if (test) {
