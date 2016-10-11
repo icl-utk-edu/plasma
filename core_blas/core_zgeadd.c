@@ -71,14 +71,13 @@
  *          ldb >= max(1,m)
  *
  ******************************************************************************/
-int core_zgeadd(
-    plasma_enum_t transa,
-    int m, int n,
-    plasma_complex64_t  alpha, const plasma_complex64_t *A, int lda,
-    plasma_complex64_t  beta,        plasma_complex64_t *B, int ldb)
+int core_zgeadd(plasma_enum_t transa,
+                int m, int n,
+                plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+                plasma_complex64_t beta,        plasma_complex64_t *B, int ldb)
 {
     if ((transa != PlasmaNoTrans) &&
-        (transa != PlasmaTrans)   &&
+        (transa != PlasmaTrans) &&
         (transa != PlasmaConjTrans)) {
         coreblas_error("illegal value of transa");
         return -1;
@@ -93,20 +92,20 @@ int core_zgeadd(
     }
     if (A == NULL) {
         coreblas_error("NULL A");
-        return -4;
+        return -5;
     }
     if (((transa == PlasmaNoTrans) && (lda < imax(1, m)) && (m > 0)) ||
         ((transa != PlasmaNoTrans) && (lda < imax(1, n)) && (n > 0))) {
         coreblas_error("illegal value of lda");
-        return -5;
+        return -6;
     }
     if (B == NULL) {
         coreblas_error("NULL B");
-        return -6;
+        return -8;
     }
     if ((ldb < imax(1, m)) && (m > 0)) {
         coreblas_error("illegal value of ldb");
-        return -7;
+        return -9;
     }
 
     switch (transa) {
@@ -127,6 +126,8 @@ int core_zgeadd(
             for (int i = 0; i < m; i++)
                 B[ldb*j+i] = beta * B[ldb*j+i] + alpha * A[lda*j+i];
     }
+
+    return 0;
 }
 
 /******************************************************************************/
@@ -151,7 +152,7 @@ void core_omp_zgeadd(
                                      m , n,
                                      alpha, A, lda,
                                      beta,  B, ldb);
-            if (retval != PlasmaSuccess) {
+            if (retval != 0) {
                 plasma_error("core_zgeadd() failed");
                 plasma_request_fail(sequence, request, PlasmaErrorInternal);
             }

@@ -78,145 +78,126 @@
  *          ldb >= max(1,m).
  *
  ******************************************************************************/
-void core_ztradd(plasma_enum_t uplo, plasma_enum_t transa, int m, int n,
-                       plasma_complex64_t  alpha,
-                 const plasma_complex64_t *A, int lda,
-                       plasma_complex64_t  beta,
-                       plasma_complex64_t *B, int ldb)
+int core_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
+                int m, int n,
+                plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+                plasma_complex64_t beta,        plasma_complex64_t *B, int ldb)
 {
-    int i, j;
-
-    if (uplo == PlasmaGeneral) {
-        core_zgeadd(transa, m, n, alpha, A, lda, beta, B, ldb);
-        return;
-    }
-
     if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
-        plasma_error("illegal value of uplo");
-        return;
+        coreblas_error("illegal value of uplo");
+        return -1;
     }
-
     if ((transa != PlasmaNoTrans) &&
-        (transa != PlasmaTrans)   &&
+        (transa != PlasmaTrans) &&
         (transa != PlasmaConjTrans)) {
-
-        plasma_error("illegal value of transa");
-        return;
+        coreblas_error("illegal value of transa");
+        return -2;
     }
-
     if (m < 0) {
-        plasma_error("Illegal value of m");
-        return;
+        coreblas_error("illegal value of m");
+        return -3;
     }
-
     if (n < 0) {
-        plasma_error("Illegal value of m");
-        return;
+        coreblas_error("illegal value of n");
+        return -4;
     }
-
     if (A == NULL) {
-        plasma_error("NULL A");
-        return;
+        coreblas_error("NULL A");
+        return -6;
     }
-
-    if ( ((transa == PlasmaNoTrans) && (lda < imax(1,m)) && (m > 0)) ||
-         ((transa != PlasmaNoTrans) && (lda < imax(1,n)) && (n > 0)) ) {
-
-        plasma_error("Illegal value of lda");
-        return;
+    if (((transa == PlasmaNoTrans) && (lda < imax(1,m)) && (m > 0)) ||
+        ((transa != PlasmaNoTrans) && (lda < imax(1,n)) && (n > 0))) {
+        coreblas_error("illegal value of lda");
+        return -7;
     }
-
     if (B == NULL) {
-        plasma_error("NULL B");
-        return;
+        coreblas_error("NULL B");
+        return -9;
+    }
+    if (ldb < imax(1, m) && (m > 0)) {
+        coreblas_error("illegal value of ldb");
+        return -10;
     }
 
-    if ( (ldb < imax(1,m)) && (m > 0) ) {
-        plasma_error("Illegal value of ldb");
-        return;
-    }
-
-    //=============
+    //==============
     // PlasmaLower
-    //=============
+    //==============
     if (uplo == PlasmaLower) {
         switch (transa) {
         case PlasmaConjTrans:
-            for (j = 0; j < n; j++, A++) {
-                for (i = j; i < m; i++, B++) {
-                    *B = beta * (*B) + alpha * conj(A[lda*i]);
-                }
-                B += ldb-m+j+1;
-            }
+            for (int j = 0; j < n; j++)
+                for (int i = j; i < m; i++)
+                    B[ldb*j+i] = beta * B[ldb*j+i] + alpha * conj(A[lda*i+j]);
             break;
 
         case PlasmaTrans:
-            for (j = 0; j < n; j++, A++) {
-                for (i = j; i < m; i++, B++) {
-                    *B = beta * (*B) + alpha * A[lda*i];
-                }
-                B += ldb-m+j+1;
-            }
+            for (int j = 0; j < n; j++)
+                for (int i = j; i < m; i++)
+                    B[ldb*j+i] = beta * B[ldb*j+i] + alpha * A[lda*i+j];
             break;
 
         case PlasmaNoTrans:
         default:
-            for (j = 0; j < n; j++) {
-                for (i = j; i < m; i++, B++, A++) {
-                    *B = beta * (*B) + alpha * (*A);
-                }
-                B += ldb-m+j+1;
-                A += lda-m+j+1;
-            }
+            for (int j = 0; j < n; j++)
+                for (int i = j; i < m; i++)
+                    B[ldb*j+i] = beta * B[ldb*j+i] + alpha * A[lda*j+i];
         }
     }
-    //=============
+    //==============
     // PlasmaUpper
-    //=============
+    //==============
     else {
         switch (transa) {
         case PlasmaConjTrans:
-            for (j = 0; j < n; j++, A++) {
-                int mm = imin( j+1, m );
-                for (i = 0; i < mm; i++, B++) {
-                    *B = beta * (*B) + alpha * conj(A[lda*i]);
-                }
-                B += ldb-mm;
-            }
+            for (int j = 0; j < n; j++)
+                for (int i = 0; i < imin(j+1, m); i++)
+                    B[ldb*j+i] = beta * B[ldb*j+i] + alpha * conj(A[lda*i+j]);
             break;
 
         case PlasmaTrans:
-            for (j = 0; j < n; j++, A++) {
-                int mm = imin( j+1, m );
-                for (i = 0; i < mm; i++, B++) {
-                    *B = beta * (*B) + alpha * (A[lda*i]);
-                }
-                B += ldb-mm;
-            }
+            for (int j = 0; j < n; j++)
+                for (int i = 0; i < imin(j+1, m); i++)
+                    B[ldb*j+i] = beta * B[ldb*j+i] + alpha * A[lda*i+j];
             break;
 
         case PlasmaNoTrans:
         default:
-            for (j = 0; j < n; j++) {
-                int mm = imin( j+1, m );
-                for (i = 0; i < mm; i++, B++, A++) {
-                    *B = beta * (*B) + alpha * (*A);
-                }
-                B += ldb-mm;
-                A += lda-mm;
-            }
+            for (int j = 0; j < n; j++)
+                for (int i = 0; i < imin(j+1, m); i++)
+                    B[ldb*j+i] = beta * B[ldb*j+i] + alpha * A[lda*j+i];
         }
     }
+
+    return 0;
 }
 
 /******************************************************************************/
 void core_omp_ztradd(
-    plasma_enum_t uplo, plasma_enum_t transa, int m, int n,
+    plasma_enum_t uplo, plasma_enum_t transa,
+    int m, int n,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
-    plasma_complex64_t beta,        plasma_complex64_t *B, int ldb)
+    plasma_complex64_t beta,        plasma_complex64_t *B, int ldb,
+    plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // omp depend assumes lda = PlasmaNoTrans ? m : n; ldb = m
-    #pragma omp task depend(in:A[0:m*n]) depend(inout:B[0:m*n])
-    core_ztradd(uplo, transa, m, n, alpha, A, lda, beta, B, ldb);
+    int an;
+    if (transa == PlasmaNoTrans)
+        an = n;
+    else
+        an = m;
+
+    #pragma omp task depend(in:A[0:lda*an]) \
+                     depend(inout:B[0:ldb*n])
+    {
+        if (sequence->status == PlasmaSuccess) {
+            int retval = core_ztradd(uplo, transa,
+                                     m, n,
+                                     alpha, A, lda,
+                                     beta, B, ldb);
+            if (retval != 0) {
+                plasma_error("core_ztradd() failed");
+                plasma_request_fail(sequence, request, PlasmaErrorInternal);
+            }
+        }
+    }
 }

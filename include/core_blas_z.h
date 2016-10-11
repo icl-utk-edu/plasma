@@ -21,11 +21,10 @@ extern "C" {
 #endif
 
 /******************************************************************************/
-int core_zgeadd(
-    plasma_enum_t transa,
-    int m, int n,
-    plasma_complex64_t  alpha, const plasma_complex64_t *A, int lda,
-    plasma_complex64_t  beta,        plasma_complex64_t *B, int ldb);
+int core_zgeadd(plasma_enum_t transa,
+                int m, int n,
+                plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+                plasma_complex64_t beta,        plasma_complex64_t *B, int ldb);
 
 int core_zgelqt(int m, int n, int ib,
                 plasma_complex64_t *A, int lda,
@@ -125,11 +124,10 @@ void core_zsyrk(plasma_enum_t uplo, plasma_enum_t trans,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                 plasma_complex64_t beta,        plasma_complex64_t *C, int ldc);
 
-void core_ztradd(plasma_enum_t uplo, plasma_enum_t transa, int m, int n,
-                       plasma_complex64_t  alpha,
-                 const plasma_complex64_t *A, int lda,
-                       plasma_complex64_t  beta,
-                       plasma_complex64_t *B, int ldb);
+int core_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
+                int m, int n,
+                plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+                plasma_complex64_t beta,        plasma_complex64_t *B, int ldb);
 
 void core_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
                 plasma_enum_t transa, plasma_enum_t diag,
@@ -288,7 +286,8 @@ void core_omp_zsyrk(
 void core_omp_ztradd(
     plasma_enum_t uplo, plasma_enum_t transa, int m, int n,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
-    plasma_complex64_t beta,        plasma_complex64_t *B, int ldb);
+    plasma_complex64_t beta,        plasma_complex64_t *B, int ldb,
+    plasma_sequence_t *sequence, plasma_request_t *request);
 
 void core_omp_ztrmm(
     plasma_enum_t side, plasma_enum_t uplo,
