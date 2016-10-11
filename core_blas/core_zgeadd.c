@@ -76,6 +76,7 @@ int core_zgeadd(plasma_enum_t transa,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                 plasma_complex64_t beta,        plasma_complex64_t *B, int ldb)
 {
+    // Check input arguments.
     if ((transa != PlasmaNoTrans) &&
         (transa != PlasmaTrans) &&
         (transa != PlasmaConjTrans)) {
@@ -108,6 +109,8 @@ int core_zgeadd(plasma_enum_t transa,
         return -9;
     }
 
+    // TODO: quick return
+
     switch (transa) {
     case PlasmaConjTrans:
         for (int j = 0; j < n; j++)
@@ -127,7 +130,7 @@ int core_zgeadd(plasma_enum_t transa,
                 B[ldb*j+i] = beta * B[ldb*j+i] + alpha * A[lda*j+i];
     }
 
-    return 0;
+    return PlasmaSuccess;
 }
 
 /******************************************************************************/
@@ -152,7 +155,7 @@ void core_omp_zgeadd(
                                      m , n,
                                      alpha, A, lda,
                                      beta,  B, ldb);
-            if (retval != 0) {
+            if (retval != PlasmaSuccess) {
                 plasma_error("core_zgeadd() failed");
                 plasma_request_fail(sequence, request, PlasmaErrorInternal);
             }

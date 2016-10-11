@@ -83,6 +83,7 @@ int core_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                 plasma_complex64_t beta,        plasma_complex64_t *B, int ldb)
 {
+    // Check input arguments.
     if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
         coreblas_error("illegal value of uplo");
@@ -119,6 +120,8 @@ int core_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
         coreblas_error("illegal value of ldb");
         return -10;
     }
+
+    // TODO: quick return
 
     //==============
     // PlasmaLower
@@ -169,7 +172,7 @@ int core_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
         }
     }
 
-    return 0;
+    return PlasmaSuccess;
 }
 
 /******************************************************************************/
@@ -194,7 +197,7 @@ void core_omp_ztradd(
                                      m, n,
                                      alpha, A, lda,
                                      beta, B, ldb);
-            if (retval != 0) {
+            if (retval != PlasmaSuccess) {
                 plasma_error("core_ztradd() failed");
                 plasma_request_fail(sequence, request, PlasmaErrorInternal);
             }

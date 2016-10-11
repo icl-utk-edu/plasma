@@ -192,7 +192,7 @@ void core_omp_zgeadd(
     plasma_complex64_t beta,        plasma_complex64_t *B, int ldb,
     plasma_sequence_t *sequence, plasma_request_t *request);
 
-void core_omp_zgelqt(int m, int n, int ib, int nb,
+void core_omp_zgelqt(int m, int n, int ib,
                      plasma_complex64_t *A, int lda,
                      plasma_complex64_t *T, int ldt,
                      plasma_workspace_t work,
