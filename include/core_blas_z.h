@@ -260,8 +260,8 @@ void core_omp_zlaset(plasma_enum_t uplo,
 void core_omp_zpotrf(plasma_enum_t uplo,
                      int n,
                      plasma_complex64_t *A, int lda,
-                     plasma_sequence_t *sequence, plasma_request_t *request,
-                     int iinfo);
+                     int iinfo,
+                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void core_omp_zsymm(
     plasma_enum_t side, plasma_enum_t uplo,
