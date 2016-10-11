@@ -487,7 +487,7 @@ static inline int core_zpamm_a2(
                                             W,      ldw);
 
             // A2_2 = A2_2 - W_1
-            for (j = 0; j < n; j++) {
+            for (int j = 0; j < n; j++) {
                 cblas_zaxpy(l, CBLAS_SADDR(mzone),
                             &W[ldw*j], 1,
                             &A2[lda2*j+(m-l)], 1);
@@ -541,7 +541,7 @@ static inline int core_zpamm_a2(
                             CBLAS_SADDR(mzone), &V[vi2], ldv,
                                                  W,      ldw);
 
-                for (j = 0; j < l; j++) {
+                for (int j = 0; j < l; j++) {
                     cblas_zaxpy(m, CBLAS_SADDR(zone),
                                 &W[ldw*j], 1,
                                 &A2[lda2*(n-l+j)], 1);
