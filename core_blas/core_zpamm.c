@@ -17,16 +17,14 @@
 
 static inline int core_zpamm_a2(plasma_enum_t side, plasma_enum_t trans,
                                 plasma_enum_t uplo,
-                                int m, int n, int k, int l,
-                                int vi2, int vi3,
+                                int m, int n, int k, int l, int vi2, int vi3,
                                       plasma_complex64_t *A2, int lda2,
                                 const plasma_complex64_t *V,  int ldv,
                                       plasma_complex64_t *W,  int ldw);
 
 static inline int core_zpamm_w(plasma_enum_t side, plasma_enum_t trans,
                                plasma_enum_t uplo,
-                               int m, int n, int k, int l,
-                               int vi2, int vi3,
+                               int m, int n, int k, int l, int vi2, int vi3,
                                const plasma_complex64_t *A1, int lda1,
                                      plasma_complex64_t *A2, int lda2,
                                const plasma_complex64_t *V,  int ldv,
@@ -178,51 +176,65 @@ int core_zpamm(int op, plasma_enum_t side, plasma_enum_t storev,
                const plasma_complex64_t *V,  int ldv,
                      plasma_complex64_t *W,  int ldw)
 {
-    int vi2, vi3, uplo, trans;
-
     // Check input arguments.
     if ((op != PlasmaW) && (op != PlasmaA2)) {
-        coreblas_error("Illegal value of op");
+        coreblas_error("illegal value of op");
         return -1;
     }
     if ((side != PlasmaLeft) && (side != PlasmaRight)) {
-        coreblas_error("Illegal value of side");
+        coreblas_error("illegal value of side");
         return -2;
     }
     if ((storev != PlasmaColumnwise) && (storev != PlasmaRowwise)) {
-        coreblas_error("Illegal value of storev");
+        coreblas_error("illegal value of storev");
         return -3;
     }
     if (m < 0) {
-        coreblas_error("Illegal value of m");
+        coreblas_error("illegal value of m");
         return -4;
     }
     if (n < 0) {
-        coreblas_error("Illegal value of n");
+        coreblas_error("illegal value of n");
         return -5;
     }
     if (k < 0) {
-        coreblas_error("Illegal value of k");
+        coreblas_error("illegal value of k");
         return -6;
     }
     if (l < 0) {
-        coreblas_error("Illegal value of l");
+        coreblas_error("illegal value of l");
         return -7;
     }
+    if (A1 == NULL) {
+        coreblas_error("NULL A1");
+        return -8;
+    }
     if (lda1 < 0) {
-        coreblas_error("Illegal value of lda1");
+        coreblas_error("illegal value of lda1");
         return -9;
     }
+    if (A2 == NULL) {
+        coreblas_error("NULL A2");
+        return -10;
+    }
     if (lda2 < 0) {
-        coreblas_error("Illegal value of lda2");
+        coreblas_error("illegal value of lda2");
         return -11;
     }
+    if (V == NULL) {
+        coreblas_error("NULL V");
+        return -12;
+    }
     if (ldv < 0) {
-        coreblas_error("Illegal value of ldv");
+        coreblas_error("illegal value of ldv");
         return -13;
     }
+    if (W == NULL) {
+        coreblas_error("NULL W");
+        return -14;
+    }
     if (ldw < 0) {
-        coreblas_error("Illegal value of ldw");
+        coreblas_error("illegal value of ldw");
         return -15;
     }
 
@@ -241,7 +253,13 @@ int core_zpamm(int op, plasma_enum_t side, plasma_enum_t storev,
     //                rowwise       T        N
     //        -------------------------------------
 
-    // columnwise
+    int uplo;
+    int trans;
+    int vi2, vi3;
+
+    //===================
+    // PlasmaColumnwise
+    //===================
     if (storev == PlasmaColumnwise) {
         uplo = CblasUpper;
         if (side == PlasmaLeft) {
@@ -254,8 +272,9 @@ int core_zpamm(int op, plasma_enum_t side, plasma_enum_t storev,
         }
         vi3 = ldv * l;
     }
-
-    // rowwise
+    //================
+    // PlasmaRowwise
+    //================
     else {
         uplo = CblasLower;
         if (side == PlasmaLeft) {
@@ -271,12 +290,19 @@ int core_zpamm(int op, plasma_enum_t side, plasma_enum_t storev,
     }
 
     if (op == PlasmaW) {
-        core_zpamm_w(side, trans, uplo, m, n, k, l, vi2, vi3,
-                     A1, lda1, A2, lda2, V, ldv, W, ldw);
+        core_zpamm_w(side, trans, uplo,
+                     m, n, k, l, vi2, vi3,
+                     A1, lda1,
+                     A2, lda2,
+                     V, ldv,
+                     W, ldw);
     }
     else if (op == PlasmaA2) {
-        core_zpamm_a2(side, trans, uplo, m, n, k, l, vi2, vi3,
-                      A2, lda2, V, ldv, W, ldw);
+        core_zpamm_a2(side, trans, uplo,
+                      m, n, k, l, vi2, vi3,
+                      A2, lda2,
+                      V,  ldv,
+                      W,  ldw);
     }
 
     return PlasmaSuccess;
@@ -285,8 +311,7 @@ int core_zpamm(int op, plasma_enum_t side, plasma_enum_t storev,
 /******************************************************************************/
 static inline int core_zpamm_w(
         plasma_enum_t side, plasma_enum_t trans, plasma_enum_t uplo,
-        int m, int n, int k, int l,
-        int vi2, int vi3,
+        int m, int n, int k, int l, int vi2, int vi3,
         const plasma_complex64_t *A1, int lda1,
               plasma_complex64_t *A2, int lda2,
         const plasma_complex64_t *V,  int ldv,
@@ -294,13 +319,15 @@ static inline int core_zpamm_w(
 {
     // W = A1 + op(V) * A2  or  W = A1 + A2 * op(V)
 
-    int j;
-    static plasma_complex64_t zone  =  1.0;
-    static plasma_complex64_t zzero =  0.0;
+    static plasma_complex64_t zone  = 1.0;
+    static plasma_complex64_t zzero = 0.0;
 
+    //=============
+    // PlasmaLeft
+    //=============
     if (side == PlasmaLeft) {
-        if (((trans == Plasma_ConjTrans) && (uplo == CblasUpper)) ||
-            ((trans == PlasmaNoTrans) && (uplo == CblasLower))) {
+        if ((trans == Plasma_ConjTrans && uplo == CblasUpper) ||
+            (trans == PlasmaNoTrans && uplo == CblasLower)) {
             // W = A1 + V^H * A2
 
             // W = A2_2
@@ -308,7 +335,7 @@ static inline int core_zpamm_w(
                                 lapack_const(PlasmaGeneral),
                                 l, n,
                                 &A2[k-l], lda2,
-                                W, ldw);
+                                 W,       ldw);
 
             // W = V_2^H * W + V_1^H * A2_1 (ge+tr, top L rows of V^H)
             if (l > 0) {
@@ -318,16 +345,16 @@ static inline int core_zpamm_w(
                             (CBLAS_TRANSPOSE)trans, CblasNonUnit,
                             l, n,
                             CBLAS_SADDR(zone), &V[vi2], ldv,
-                            W, ldw);
+                                                W,      ldw);
 
                 // W = W + V_1^H * A2_1
                 if (k > l) {
                     cblas_zgemm(CblasColMajor,
                                 (CBLAS_TRANSPOSE)trans, CblasNoTrans,
                                 l, n, k-l,
-                                CBLAS_SADDR(zone), V, ldv,
-                                A2, lda2,
-                                CBLAS_SADDR(zone), W, ldw);
+                                CBLAS_SADDR(zone), V,  ldv,
+                                                   A2, lda2,
+                                CBLAS_SADDR(zone), W,  ldw);
                 }
             }
 
@@ -336,13 +363,13 @@ static inline int core_zpamm_w(
                 cblas_zgemm(CblasColMajor,
                             (CBLAS_TRANSPOSE)trans, CblasNoTrans,
                             (m-l), n, k,
-                            CBLAS_SADDR(zone), &V[vi3], ldv,
-                            A2, lda2,
-                            CBLAS_SADDR(zzero), &W[l], ldw);
+                            CBLAS_SADDR(zone),  &V[vi3], ldv,
+                                                 A2,     lda2,
+                            CBLAS_SADDR(zzero), &W[l],   ldw);
             }
 
             // W = A1 + W
-            for (j = 0; j < n; j++) {
+            for (int j = 0; j < n; j++) {
                 cblas_zaxpy(m, CBLAS_SADDR(zone),
                             &A1[lda1*j], 1,
                             &W[ldw*j], 1);
@@ -354,9 +381,12 @@ static inline int core_zpamm_w(
             return PlasmaErrorNotSupported;
         }
     }
-    else { //side right
-        if (((trans == Plasma_ConjTrans) && (uplo == CblasUpper)) ||
-            ((trans == PlasmaNoTrans) && (uplo == CblasLower))) {
+    //==============
+    // PlasmaRight
+    //==============
+    else {
+        if ((trans == Plasma_ConjTrans && uplo == CblasUpper) ||
+            (trans == PlasmaNoTrans && uplo == CblasLower)) {
             coreblas_error(
                 "Right Upper/[Conj]Trans & Lower/NoTrans not implemented");
             return PlasmaErrorNotSupported;
@@ -369,7 +399,7 @@ static inline int core_zpamm_w(
                                     lapack_const(PlasmaGeneral),
                                     m, l,
                                     &A2[lda2*(k-l)], lda2,
-                                    W, ldw);
+                                     W,              ldw);
 
                 // W = W * V_2 --> W = A2_2 * V_2
                 cblas_ztrmm(CblasColMajor,
@@ -377,7 +407,7 @@ static inline int core_zpamm_w(
                             (CBLAS_TRANSPOSE)trans, CblasNonUnit,
                             m, l,
                             CBLAS_SADDR(zone), &V[vi2], ldv,
-                            W, ldw);
+                                                W,      ldw);
 
                 // W = W + A2_1 * V_1
                 if (k > l) {
@@ -385,8 +415,8 @@ static inline int core_zpamm_w(
                                 CblasNoTrans, (CBLAS_TRANSPOSE)trans,
                                 m, l, k-l,
                                 CBLAS_SADDR(zone), A2, lda2,
-                                V, ldv,
-                                CBLAS_SADDR(zone), W, ldw);
+                                                   V,  ldv,
+                                CBLAS_SADDR(zone), W,  ldw);
                 }
             }
 
@@ -395,16 +425,16 @@ static inline int core_zpamm_w(
                 cblas_zgemm(CblasColMajor,
                             CblasNoTrans, (CBLAS_TRANSPOSE)trans,
                             m, n-l, k,
-                            CBLAS_SADDR(zone), A2, lda2,
-                            &V[vi3], ldv,
+                            CBLAS_SADDR(zone),   A2,       lda2,
+                                                &V[vi3],   ldv,
                             CBLAS_SADDR(zzero), &W[ldw*l], ldw);
             }
 
             // W = A1 + W
-            for (j = 0; j < n; j++) {
+            for (int j = 0; j < n; j++) {
                 cblas_zaxpy(m, CBLAS_SADDR(zone),
                             &A1[lda1*j], 1,
-                            &W[ldw*j], 1);
+                            &W[ldw*j],   1);
             }
         }
     }
@@ -415,26 +445,27 @@ static inline int core_zpamm_w(
 /******************************************************************************/
 static inline int core_zpamm_a2(
         plasma_enum_t side, plasma_enum_t trans, plasma_enum_t uplo,
-        int m, int n, int k, int l,
-        int vi2, int vi3,
+        int m, int n, int k, int l, int vi2, int vi3,
               plasma_complex64_t *A2, int lda2,
         const plasma_complex64_t *V,  int ldv,
               plasma_complex64_t *W,  int ldw)
 {
-   // A2 = A2 + op(V) * W  or  A2 = A2 + W * op(V)
+    // A2 = A2 + op(V) * W  or  A2 = A2 + W * op(V)
 
-    int j;
     static plasma_complex64_t zone  =  1.0;
-    static plasma_complex64_t mzone  =  -1.0;
+    static plasma_complex64_t mzone = -1.0;
 
+    //=============
+    // PlasmaLeft
+    //=============
     if (side == PlasmaLeft) {
-        if (((trans == Plasma_ConjTrans) && (uplo == CblasUpper)) ||
-            ((trans == PlasmaNoTrans) && (uplo == CblasLower))) {
+        if ((trans == Plasma_ConjTrans && uplo == CblasUpper) ||
+            (trans == PlasmaNoTrans && uplo == CblasLower)) {
             coreblas_error(
                 "Left Upper/[Conj]Trans & Lower/NoTrans not implemented");
             return PlasmaErrorNotSupported;
         }
-        else {  //trans
+        else {
             // A2 = A2 - V * W
 
             // A2_1 = A2_1 - V_1  * W_1
@@ -442,9 +473,9 @@ static inline int core_zpamm_a2(
                 cblas_zgemm(CblasColMajor,
                             (CBLAS_TRANSPOSE)trans, CblasNoTrans,
                             m-l, n, l,
-                            CBLAS_SADDR(mzone), V, ldv,
-                            W, ldw,
-                            CBLAS_SADDR(zone), A2, lda2);
+                            CBLAS_SADDR(mzone), V,  ldv,
+                                                W,  ldw,
+                            CBLAS_SADDR(zone),  A2, lda2);
             }
 
             // W_1 = V_2 * W_1
@@ -453,7 +484,7 @@ static inline int core_zpamm_a2(
                         (CBLAS_TRANSPOSE)trans, CblasNonUnit,
                         l, n,
                         CBLAS_SADDR(zone), &V[vi2], ldv,
-                        W, ldw);
+                                            W,      ldw);
 
             // A2_2 = A2_2 - W_1
             for (j = 0; j < n; j++) {
@@ -468,14 +499,17 @@ static inline int core_zpamm_a2(
                             (CBLAS_TRANSPOSE)trans, CblasNoTrans,
                             m, n, (k-l),
                             CBLAS_SADDR(mzone), &V[vi3], ldv,
-                            &W[l], ldw,
-                            CBLAS_SADDR(zone), A2, lda2);
+                                                &W[l],   ldw,
+                            CBLAS_SADDR(zone),   A2,     lda2);
             }
         }
     }
-    else { //side right
-        if (((trans == Plasma_ConjTrans) && (uplo == CblasUpper)) ||
-            ((trans == PlasmaNoTrans) && (uplo == CblasLower))) {
+    //==============
+    // PlasmaRight
+    //==============
+    else {
+        if ((trans == Plasma_ConjTrans && uplo == CblasUpper) ||
+            (trans == PlasmaNoTrans && uplo == CblasLower)) {
             // A2 = A2 - W * V^H
 
             // A2 = A2 - W_2 * V_3^H
@@ -484,8 +518,8 @@ static inline int core_zpamm_a2(
                             CblasNoTrans, (CBLAS_TRANSPOSE)trans,
                             m, n, k-l,
                             CBLAS_SADDR(mzone), &W[ldw*l], ldw,
-                            &V[vi3], ldv,
-                            CBLAS_SADDR(zone), A2, lda2);
+                                                &V[vi3],   ldv,
+                            CBLAS_SADDR(zone),   A2,       lda2);
             }
 
             // A2_1 = A2_1 - W_1 * V_1^H
@@ -493,18 +527,19 @@ static inline int core_zpamm_a2(
                 cblas_zgemm(CblasColMajor,
                             CblasNoTrans, (CBLAS_TRANSPOSE)trans,
                             m, n-l, l,
-                            CBLAS_SADDR(mzone), W, ldw,
-                            V, ldv,
-                            CBLAS_SADDR(zone), A2, lda2);
+                            CBLAS_SADDR(mzone), W,  ldw,
+                                                V,  ldv,
+                            CBLAS_SADDR(zone),  A2, lda2);
             }
 
             // A2_2 =  A2_2 -  W_1 * V_2^H
             if (l > 0) {
                 cblas_ztrmm(CblasColMajor,
                             CblasRight, (CBLAS_UPLO)uplo,
-                            (CBLAS_TRANSPOSE)trans, CblasNonUnit, m, l,
+                            (CBLAS_TRANSPOSE)trans, CblasNonUnit,
+                            m, l,
                             CBLAS_SADDR(mzone), &V[vi2], ldv,
-                            W, ldw);
+                                                 W,      ldw);
 
                 for (j = 0; j < l; j++) {
                     cblas_zaxpy(m, CBLAS_SADDR(zone),
