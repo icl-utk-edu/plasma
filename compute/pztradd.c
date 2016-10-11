@@ -61,7 +61,8 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transa,
                         transa, 
                         mvbm, nvbn,
                         alpha, A(m, n), ldam,
-                        beta,  B(m, n), ldbm);
+                        beta,  B(m, n), ldbm,
+                        sequence, request);
                 }
             }
         }
@@ -87,7 +88,8 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transa,
                         transa,
                         mvbm, nvbn,
                         alpha, A(n, m), ldan,
-                        beta,  B(m, n), ldbm);
+                        beta,  B(m, n), ldbm,
+                        sequence, request);
                 }
             }
         }
@@ -114,7 +116,8 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transa,
                         transa,
                         mvbm, nvbn,
                         alpha, A(m, n), ldam,
-                        beta,  B(m, n), ldbm);
+                        beta,  B(m, n), ldbm,
+                        sequence, request);
                 }
             }
         }
@@ -140,7 +143,8 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transa,
                         transa,
                         mvbm, nvbn,
                         alpha, A(n, m), ldan,
-                        beta,  B(m, n), ldbm);
+                        beta,  B(m, n), ldbm,
+                        sequence, request);
                 }
             }
         }
@@ -160,7 +164,8 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transa,
                     core_omp_zgeadd(
                         transa, mvbm, nvbn,
                         alpha, A(m, n), ldam,
-                        beta,  B(m, n), ldbm);
+                        beta,  B(m, n), ldbm,
+                        sequence, request);
                 }
             }
         }
@@ -178,7 +183,8 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transa,
                     core_omp_zgeadd(
                         transa, mvbm, nvbn,
                         alpha, A(n, m), ldan,
-                        beta,  B(m, n), ldbm);
+                        beta,  B(m, n), ldbm,
+                        sequence, request);
                 }
             }
         }

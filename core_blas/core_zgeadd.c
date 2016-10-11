@@ -134,7 +134,8 @@ void core_omp_zgeadd(
     plasma_enum_t transa,
     int m, int n,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
-    plasma_complex64_t beta,        plasma_complex64_t *B, int ldb)
+    plasma_complex64_t beta,        plasma_complex64_t *B, int ldb,
+    plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int an;
     if (transa == PlasmaNoTrans)
@@ -145,14 +146,15 @@ void core_omp_zgeadd(
     #pragma omp task depend(in:A[0:lda*an]) \
                      depend(inout:B[0:ldb*n])
     {
-        int retval = core_zgeadd(transa,
-                                 m , n,
-                                 alpha, A, lda,
-                                 beta,  B, ldb);
-
-        if (retval != PlasmaSuccess) {
-            plasma_error("core_zgeadd() failed");
-            plasma_request_fail(sequence, request, PlasmaErrorInternal);
+        if (sequence->status == PlasmaSuccess) {
+            int retval = core_zgeadd(transa,
+                                     m , n,
+                                     alpha, A, lda,
+                                     beta,  B, ldb);
+            if (retval != PlasmaSuccess) {
+                plasma_error("core_zgeadd() failed");
+                plasma_request_fail(sequence, request, PlasmaErrorInternal);
+            }
         }
     }
 }
