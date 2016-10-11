@@ -319,8 +319,8 @@ static inline int core_zpamm_w(
 {
     // W = A1 + op(V) * A2  or  W = A1 + A2 * op(V)
 
-    static plasma_complex64_t zone  = 1.0;
-    static plasma_complex64_t zzero = 0.0;
+    plasma_complex64_t zone  = 1.0;
+    plasma_complex64_t zzero = 0.0;
 
     //=============
     // PlasmaLeft
@@ -452,8 +452,8 @@ static inline int core_zpamm_a2(
 {
     // A2 = A2 + op(V) * W  or  A2 = A2 + W * op(V)
 
-    static plasma_complex64_t zone  =  1.0;
-    static plasma_complex64_t mzone = -1.0;
+    plasma_complex64_t zone  =  1.0;
+    plasma_complex64_t mzone = -1.0;
 
     //=============
     // PlasmaLeft
