@@ -205,7 +205,7 @@ void core_omp_zgemm(
                               const plasma_complex64_t *B, int ldb,
     plasma_complex64_t beta,        plasma_complex64_t *C, int ldc);
 
-void core_omp_zgeqrt(int m, int n, int ib, int nb,
+void core_omp_zgeqrt(int m, int n, int ib,
                      plasma_complex64_t *A, int lda,
                      plasma_complex64_t *T, int ldt,
                      plasma_workspace_t work,
