@@ -50,7 +50,7 @@ void plasma_pzunglq(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
                 int ldqm = plasma_tile_mmain(Q, m);
                 core_omp_ztsmlq(
                     PlasmaRight, PlasmaNoTrans,
-                    mvqm, Q.nb, mvqm, nvqn, mvak, ib, T.nb,
+                    mvqm, Q.nb, mvqm, nvqn, mvak, ib,
                     Q(m, k), ldqm,
                     Q(m, n), ldqm,
                     A(k, n), ldak,
@@ -64,7 +64,7 @@ void plasma_pzunglq(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
             int ldqm = plasma_tile_mmain(Q, m);
             core_omp_zunmlq(
                 PlasmaRight, PlasmaNoTrans,
-                mvqm, nvqk, imin(nvak, mvak), ib, T.nb,
+                mvqm, nvqk, imin(nvak, mvak), ib,
                 A(k, k), ldak,
                 T(k, k), T.mb,
                 Q(m, k), ldqm,

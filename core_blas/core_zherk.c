@@ -86,7 +86,8 @@ void core_zherk(plasma_enum_t uplo, plasma_enum_t trans,
 void core_omp_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                     int n, int k,
                     double alpha, const plasma_complex64_t *A, int lda,
-                    double beta,        plasma_complex64_t *C, int ldc)
+                    double beta,        plasma_complex64_t *C, int ldc,
+                    plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int ak;
     if (trans == PlasmaNoTrans)
@@ -96,8 +97,11 @@ void core_omp_zherk(plasma_enum_t uplo, plasma_enum_t trans,
 
     #pragma omp task depend(in:A[0:lda*ak]) \
                      depend(inout:C[0:ldc*n])
-    core_zherk(uplo, trans,
-               n, k,
-               alpha, A, lda,
-               beta,  C, ldc);
+    {
+        if (sequence->status == PlasmaSuccess)
+            core_zherk(uplo, trans,
+                       n, k,
+                       alpha, A, lda,
+                       beta,  C, ldc);
+    }
 }

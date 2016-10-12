@@ -77,9 +77,9 @@ int core_zgeadd(plasma_enum_t transa,
                 plasma_complex64_t beta,        plasma_complex64_t *B, int ldb)
 {
     // Check input arguments.
-    if ((transa != PlasmaNoTrans) &&
-        (transa != PlasmaTrans) &&
-        (transa != PlasmaConjTrans)) {
+    if (transa != PlasmaNoTrans &&
+        transa != PlasmaTrans &&
+        transa != PlasmaConjTrans) {
         coreblas_error("illegal value of transa");
         return -1;
     }
@@ -95,8 +95,8 @@ int core_zgeadd(plasma_enum_t transa,
         coreblas_error("NULL A");
         return -5;
     }
-    if (((transa == PlasmaNoTrans) && (lda < imax(1, m)) && (m > 0)) ||
-        ((transa != PlasmaNoTrans) && (lda < imax(1, n)) && (n > 0))) {
+    if ((transa == PlasmaNoTrans && lda < imax(1, m) && (m > 0)) ||
+        (transa != PlasmaNoTrans && lda < imax(1, n) && (n > 0))) {
         coreblas_error("illegal value of lda");
         return -6;
     }

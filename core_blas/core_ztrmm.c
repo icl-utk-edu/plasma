@@ -93,7 +93,8 @@
  *
  ******************************************************************************/
 void core_ztrmm(
-    plasma_enum_t side, plasma_enum_t uplo, plasma_enum_t transa, plasma_enum_t diag,
+    plasma_enum_t side, plasma_enum_t uplo,
+    plasma_enum_t transa, plasma_enum_t diag,
     int m, int n,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                                     plasma_complex64_t *B, int ldb)
@@ -104,23 +105,32 @@ void core_ztrmm(
         (CBLAS_TRANSPOSE)transa, (CBLAS_DIAG)diag,
         m, n,
         CBLAS_SADDR(alpha), A, lda,
-        B, ldb);
+                            B, ldb);
 }
 
 /******************************************************************************/
 void core_omp_ztrmm(
-    plasma_enum_t side, plasma_enum_t uplo, plasma_enum_t transa, plasma_enum_t diag,
+    plasma_enum_t side, plasma_enum_t uplo,
+    plasma_enum_t transa, plasma_enum_t diag,
     int m, int n,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
-                                    plasma_complex64_t *B, int ldb)
+                                    plasma_complex64_t *B, int ldb,
+    plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // OpenMP depends assume lda == m or n, ldb == n or m
-    // depending on transpose parameter transa
-    #pragma omp task depend(in:A[0:m*n]) \
-                     depend(inout:B[0:n*m])
-    core_ztrmm(side, uplo,
-               transa, diag,
-               m, n,
-               alpha, A, lda,
-                      B, ldb);
+    int ak;
+    if (side == PlasmaLower)
+        ak = m;
+    else
+        ak = n;
+
+    #pragma omp task depend(in:A[0:lda*ak]) \
+                     depend(inout:B[0:ldb*m])
+    {
+        if (sequence->status == PlasmaSuccess)
+            core_ztrmm(side, uplo,
+                       transa, diag,
+                       m, n,
+                       alpha, A, lda,
+                              B, ldb);
+    }
 }

@@ -218,7 +218,7 @@ int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
     }
 
     // quick return
-    if ((m1 == 0) || (n1 == 0) || (m2 == 0) || (n2 == 0) || (k == 0))
+    if (m1 == 0 || n1 == 0 || m2 == 0 || n2 == 0 || k == 0)
         return PlasmaSuccess;
 
     plasma_complex64_t zone  =  1.0;

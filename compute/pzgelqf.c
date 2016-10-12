@@ -54,7 +54,7 @@ void plasma_pzgelqf(plasma_desc_t A, plasma_desc_t T,
             int ldam = plasma_tile_mmain(A, m);
             core_omp_zunmlq(
                 PlasmaRight, Plasma_ConjTrans,
-                mvam, nvak, nvak, ib, T.nb,
+                mvam, nvak, nvak, ib,
                 A(k, k), ldak,
                 T(k, k), T.mb,
                 A(m, k), ldam,
@@ -64,7 +64,7 @@ void plasma_pzgelqf(plasma_desc_t A, plasma_desc_t T,
         for (int n = k+1; n < A.nt; n++) {
             int nvan = plasma_tile_nview(A, n);
             core_omp_ztslqt(
-                mvak, nvan, ib, T.nb,
+                mvak, nvan, ib,
                 A(k, k), ldak,
                 A(k, n), ldak,
                 T(k, n), T.mb,
@@ -76,7 +76,7 @@ void plasma_pzgelqf(plasma_desc_t A, plasma_desc_t T,
                 int ldam = plasma_tile_mmain(A, m);
                 core_omp_ztsmlq(
                     PlasmaRight, Plasma_ConjTrans,
-                    mvam, A.nb, mvam, nvan, A.mb, ib, T.nb,
+                    mvam, A.nb, mvam, nvan, A.mb, ib,
                     A(m, k), ldam,
                     A(m, n), ldam,
                     A(k, n), ldak,

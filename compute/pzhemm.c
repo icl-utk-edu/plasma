@@ -60,7 +60,8 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                                 mvcm, nvcn, mvck,
                                 alpha, A(m, k), ldam,
                                        B(k, n), ldbk,
-                                zbeta, C(m, n), ldcm);
+                                zbeta, C(m, n), ldcm,
+                                sequence, request);
                         }
                         else {
                             if (k == m) {
@@ -69,7 +70,8 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                                     mvcm, nvcn,
                                     alpha, A(k, k), ldak,
                                            B(k, n), ldbk,
-                                    zbeta, C(m, n), ldcm);
+                                    zbeta, C(m, n), ldcm,
+                                    sequence, request);
                             }
                             else {
                                 core_omp_zgemm(
@@ -77,7 +79,8 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                                     mvcm, nvcn, mvck,
                                     alpha, A(k, m), ldak,
                                            B(k, n), ldbk,
-                                    zbeta, C(m, n), ldcm);
+                                    zbeta, C(m, n), ldcm,
+                                    sequence, request);
                             }
                         }
                     }
@@ -97,7 +100,8 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                                 mvcm, nvcn, mvck,
                                 alpha, A(k, m), ldak,
                                        B(k, n), ldbk,
-                                zbeta, C(m, n), ldcm);
+                                zbeta, C(m, n), ldcm,
+                                sequence, request);
                         }
                         else {
                             if (k == m) {
@@ -106,7 +110,8 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                                     mvcm, nvcn,
                                     alpha, A(k, k), ldak,
                                            B(k, n), ldbk,
-                                    zbeta, C(m, n), ldcm);
+                                    zbeta, C(m, n), ldcm,
+                                    sequence, request);
                             }
                             else {
                                 core_omp_zgemm(
@@ -114,7 +119,8 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                                     mvcm, nvcn, mvck,
                                     alpha, A(m, k), ldam,
                                            B(k, n), ldbk,
-                                    zbeta, C(m, n), ldcm);
+                                    zbeta, C(m, n), ldcm,
+                                    sequence, request);
                             }
                         }
                     }
@@ -137,7 +143,8 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                                 mvcm, nvcn, nvck,
                                 alpha, B(m, k), ldbm,
                                        A(n, k), ldan,
-                                zbeta, C(m, n), ldcm);
+                                zbeta, C(m, n), ldcm,
+                                sequence, request);
                         }
                         else {
                             if (n == k) {
@@ -146,7 +153,8 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                                     mvcm, nvcn,
                                     alpha, A(k, k), ldak,
                                            B(m, k), ldbm,
-                                    zbeta, C(m, n), ldcm);
+                                    zbeta, C(m, n), ldcm,
+                                    sequence, request);
                             }
                             else {
                                 core_omp_zgemm(
@@ -154,7 +162,8 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                                     mvcm, nvcn, nvck,
                                     alpha, B(m, k), ldbm,
                                            A(k, n), ldak,
-                                    zbeta, C(m, n), ldcm);
+                                    zbeta, C(m, n), ldcm,
+                                    sequence, request);
                             }
                         }
                     }
@@ -173,7 +182,8 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                                 mvcm, nvcn, nvck,
                                 alpha, B(m, k), ldbm,
                                        A(k, n), ldak,
-                                zbeta, C(m, n), ldcm);
+                                zbeta, C(m, n), ldcm,
+                                sequence, request);
                         }
                         else {
                             if (n == k) {
@@ -182,7 +192,8 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                                     mvcm, nvcn,
                                     alpha, A(k, k), ldak,
                                            B(m, k), ldbm,
-                                    zbeta, C(m, n), ldcm);
+                                    zbeta, C(m, n), ldcm,
+                                    sequence, request);
                             }
                             else {
                                 core_omp_zgemm(
@@ -190,7 +201,8 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                                     mvcm, nvcn, nvck,
                                     alpha, B(m, k), ldbm,
                                            A(n, k), ldan,
-                                    zbeta, C(m, n), ldcm);
+                                    zbeta, C(m, n), ldcm,
+                                    sequence, request);
                             }
                         }
                     }

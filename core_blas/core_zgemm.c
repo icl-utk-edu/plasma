@@ -106,7 +106,8 @@ void core_omp_zgemm(
     int m, int n, int k,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                               const plasma_complex64_t *B, int ldb,
-    plasma_complex64_t beta,        plasma_complex64_t *C, int ldc)
+    plasma_complex64_t beta,        plasma_complex64_t *C, int ldc,
+    plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int ak;
     if (transa == PlasmaNoTrans)
@@ -123,9 +124,12 @@ void core_omp_zgemm(
     #pragma omp task depend(in:A[0:lda*ak]) \
                      depend(in:B[0:ldb*bk]) \
                      depend(inout:C[0:ldc*n])
-    core_zgemm(transa, transb,
-               m, n, k,
-               alpha, A, lda,
-                      B, ldb,
-               beta,  C, ldc);
+    {
+        if (sequence->status == PlasmaSuccess)
+            core_zgemm(transa, transb,
+                       m, n, k,
+                       alpha, A, lda,
+                              B, ldb,
+                       beta,  C, ldc);
+    }
 }

@@ -89,9 +89,9 @@ int core_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
         coreblas_error("illegal value of uplo");
         return -1;
     }
-    if ((transa != PlasmaNoTrans) &&
-        (transa != PlasmaTrans) &&
-        (transa != PlasmaConjTrans)) {
+    if (transa != PlasmaNoTrans &&
+        transa != PlasmaTrans &&
+        transa != PlasmaConjTrans) {
         coreblas_error("illegal value of transa");
         return -2;
     }
@@ -107,8 +107,8 @@ int core_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
         coreblas_error("NULL A");
         return -6;
     }
-    if (((transa == PlasmaNoTrans) && (lda < imax(1,m)) && (m > 0)) ||
-        ((transa != PlasmaNoTrans) && (lda < imax(1,n)) && (n > 0))) {
+    if ((transa == PlasmaNoTrans && lda < imax(1, m) && m > 0) ||
+        (transa != PlasmaNoTrans && lda < imax(1, n) && n > 0)) {
         coreblas_error("illegal value of lda");
         return -7;
     }

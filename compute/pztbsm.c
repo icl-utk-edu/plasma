@@ -55,7 +55,8 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                             side, uplo, trans, diag,
                             tempkm, tempnn,
                             lalpha, A(B.mt-1-k, B.mt-1-k), BLKLDD_BAND(uplo, A, B.mt-1-k, B.mt-1-k),
-                                    B(B.mt-1-k,        n), plasma_tile_mmain(B, B.mt-1-k));
+                                    B(B.mt-1-k,        n), plasma_tile_mmain(B, B.mt-1-k),
+                            sequence, request);
                     }
                     for (m = imax(0, (B.mt-1-k)-A.kut+1); m < B.mt-1-k; m++) {
                         for (n = 0; n < B.nt; n++) {
@@ -65,7 +66,8 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                                 B.mb, tempnn, tempkm,
                                 -1.0,  A(m, B.mt-1-k), BLKLDD_BAND(uplo, A, m, B.mt-1-k),
                                         B(B.mt-1-k, n), plasma_tile_mmain(B, B.mt-1-k),
-                                lalpha, B(m, n       ), plasma_tile_mmain(B, m));
+                                lalpha, B(m, n       ), plasma_tile_mmain(B, m),
+                                sequence, request);
                         }
                     }
                 }
@@ -83,7 +85,8 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                             side, uplo, trans, diag,
                             tempkm, tempnn,
                             lalpha, A(k, k), BLKLDD_BAND(uplo, A, k, k),
-                                    B(k, n), plasma_tile_mmain(B, k));
+                                    B(k, n), plasma_tile_mmain(B, k),
+                            sequence, request);
                     }
                     for (m = k+1; m < imin(A.mt, k+A.kut); m++) {
                         tempmm = m == B.mt-1 ? B.m-m*B.mb : B.mb;
@@ -94,7 +97,8 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                                 tempmm, tempnn, B.mb,
                                 -1.0,  A(k, m), BLKLDD_BAND(uplo, A, k, m),
                                         B(k, n), plasma_tile_mmain(B, k),
-                                lalpha, B(m, n), plasma_tile_mmain(B, m));
+                                lalpha, B(m, n), plasma_tile_mmain(B, m),
+                                sequence, request);
                         }
                     }
                 }
@@ -124,7 +128,8 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                             side, uplo, trans, diag,
                             tempkm, tempnn,
                             lalpha, A(k, k), BLKLDD_BAND(uplo, A, B.mt-1-k, B.mt-1-k),
-                                    B(k, n), plasma_tile_mmain(B, k));
+                                    B(k, n), plasma_tile_mmain(B, k),
+                            sequence, request);
                     }
                     for (m = k+1; m < imin(k+A.klt, A.mt); m++) {
                         tempmm = m == B.mt-1 ? B.m-m*B.mb : B.mb;
@@ -135,7 +140,8 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                                 tempmm, tempnn, B.mb,
                                 -1.0,  A(m, k), BLKLDD_BAND(uplo, A, m, k),
                                         B(k, n), plasma_tile_mmain(B, k),
-                                lalpha, B(m, n), plasma_tile_mmain(B, m));
+                                lalpha, B(m, n), plasma_tile_mmain(B, m),
+                                sequence, request);
                         }
                     }
                 }
@@ -156,7 +162,8 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                                 tempkm, tempnn, tempmm,
                                 -1.0,  A(m, B.mt-1-k), BLKLDD_BAND(uplo, A, m, B.mt-1-k),
                                         B(m, n       ), plasma_tile_mmain(B, m),
-                                lalpha, B(B.mt-1-k, n), plasma_tile_mmain(B, B.mt-1-k));
+                                lalpha, B(B.mt-1-k, n), plasma_tile_mmain(B, B.mt-1-k),
+                                sequence, request);
                         }
                     }
                     for (n = 0; n < B.nt; n++) {
@@ -165,7 +172,8 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                             side, uplo, trans, diag,
                             tempkm, tempnn,
                             lalpha, A(B.mt-1-k, B.mt-1-k), BLKLDD_BAND(uplo, A, B.mt-1-k, B.mt-1-k),
-                                    B(B.mt-1-k,        n), plasma_tile_mmain(B, B.mt-1-k));
+                                    B(B.mt-1-k,        n), plasma_tile_mmain(B, B.mt-1-k),
+                            sequence, request);
                         if (IPIV != NULL) {
                             #ifdef ZLASWP_ONTILE
                             // commented out because it takes descriptor
