@@ -45,7 +45,8 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
             core_omp_zpotrf(
                 PlasmaLower, tempkm,
                 A(k, k), BLKLDD_BAND(uplo, A, k, k),
-                sequence, request, A.nb*k);
+                A.nb*k,
+                sequence, request);
 
             for (m = k+1; m < imin(A.nt, k+A.klt); m++) {
                 tempmm = m == A.mt-1 ? A.m-m*A.mb : A.mb;
@@ -82,7 +83,8 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
             core_omp_zpotrf(
                 PlasmaUpper, tempkm,
                 A(k, k), BLKLDD_BAND(uplo, A, k, k),
-                sequence, request, A.nb*k);
+                A.nb*k,
+                sequence, request);
 
             for (m = k+1; m < imin(A.nt, k+A.kut); m++) {
                 tempmm = m == A.nt-1 ? A.n-m*A.nb : A.nb;

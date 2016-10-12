@@ -108,11 +108,20 @@ void core_omp_zher2k(
                               const plasma_complex64_t *B, int ldb,
     double beta,                    plasma_complex64_t *C, int ldc)
 {
-    // omp depends assume lda == n or k, ldb == n or k, and ldc == n,
-    // depending on trans.
-    #pragma omp task depend(in:A[0:n*k]) \
-                     depend(in:B[0:n*k]) \
-                     depend(inout:C[0:n*n])
+    int ak;
+    int bk;
+    if (trans == PlasmaNoTrans) {
+        ak = k;
+        bk = k;
+    }
+    else {
+        ak = n;
+        bk = n;
+    }
+
+    #pragma omp task depend(in:A[0:lda*ak]) \
+                     depend(in:B[0:ldb*bk]) \
+                     depend(inout:C[0:ldc*n])
     core_zher2k(uplo, trans,
                 n, k,
                 alpha, A, lda,

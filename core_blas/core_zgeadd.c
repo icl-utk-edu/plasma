@@ -71,70 +71,72 @@
  *          ldb >= max(1,m)
  *
  ******************************************************************************/
-void core_zgeadd(
-    plasma_enum_t transa,
-    int m, int n,
-    plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
-    plasma_complex64_t beta,        plasma_complex64_t *B, int ldb)
+int core_zgeadd(plasma_enum_t transa,
+                int m, int n,
+                plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+                plasma_complex64_t beta,        plasma_complex64_t *B, int ldb)
 {
-    int i, j;
-
+    // Check input arguments
     if ((transa != PlasmaNoTrans) &&
         (transa != PlasmaTrans)   &&
         (transa != PlasmaConjTrans)) {
         coreblas_error("illegal value of transa");
-        return;
+        return -1;
     }
 
     if (m < 0) {
         coreblas_error("illegal value of m");
-        return;
+        return -2;
     }
 
     if (n < 0) {
         coreblas_error("illegal value of n");
-        return;
+        return -3;
     }
 
     if (A == NULL) {
         coreblas_error("NULL A");
-        return;
+        return -5;
     }
 
     if (((transa == PlasmaNoTrans) && (lda < imax(1, m)) && (m > 0)) ||
         ((transa != PlasmaNoTrans) && (lda < imax(1, n)) && (n > 0))) {
         coreblas_error("illegal value of lda");
-        return;
+        return -6;
     }
 
     if (B == NULL) {
         coreblas_error("NULL B");
-        return;
+        return -8;
     }
 
     if ((ldb < imax(1, m)) && (m > 0)) {
         coreblas_error("illegal value of ldb");
-        return;
+        return -9;
     }
+
+    // @todo quick return
 
     switch (transa) {
     case PlasmaConjTrans:
-        for (j = 0; j < n; j++)
-            for (i = 0; i < m; i++)
+        for (int j = 0; j < n; j++)
+            for (int i = 0; i < m; i++)
                 B[ldb*j+i] = beta * B[ldb*j+i] + alpha * conj(A[lda*i+j]);
         break;
 
     case PlasmaTrans:
-        for (j = 0; j < n; j++)
-            for (i = 0; i < m; i++)
+        for (int j = 0; j < n; j++)
+            for (int i = 0; i < m; i++)
                 B[ldb*j+i] = beta * B[ldb*j+i] + alpha * A[lda*i+j];
         break;
 
     case PlasmaNoTrans:
-        for (j = 0; j < n; j++)
-            for (i = 0; i < m; i++)
+        for (int j = 0; j < n; j++)
+            for (int i = 0; i < m; i++)
                 B[ldb*j+i] = beta * B[ldb*j+i] + alpha * A[lda*j+i];
     }
+
+    return PlasmaSuccess;
 }
 
 /******************************************************************************/
@@ -142,10 +144,23 @@ void core_omp_zgeadd(
     plasma_enum_t transa,
     int m, int n,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
-    plasma_complex64_t beta,        plasma_complex64_t *B, int ldb)
+    plasma_complex64_t beta,        plasma_complex64_t *B, int ldb,
+    plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    int an = transa == PlasmaNoTrans ? n : m;
+    int k = (transa == PlasmaNoTrans) ? n : m;
 
-    #pragma omp task depend(in:A[0:lda*an]) depend(inout:B[0:ldb*n])
-    core_zgeadd(transa, m, n, alpha, A, lda, beta, B, ldb);
+    #pragma omp task depend(in:A[0:lda*k]) \
+                     depend(inout:B[0:ldb*n])
+    {
+        if (sequence->status == PlasmaSuccess) {
+            int retval = core_zgeadd(transa,
+                                     m , n,
+                                     alpha, A, lda,
+                                     beta,  B, ldb);
+            if (retval != PlasmaSuccess) {
+                plasma_error("core_zgeadd() failed");
+                plasma_request_fail(sequence, request, PlasmaErrorInternal);
+            }
+        }
+    }
 }

@@ -43,7 +43,7 @@ void plasma_pzgeqrf(plasma_desc_t A, plasma_desc_t T,
         int nvak = plasma_tile_nview(A, k);
         int ldak = plasma_tile_mmain(A, k);
         core_omp_zgeqrt(
-            mvak, nvak, ib, T.nb,
+            mvak, nvak, ib,
             A(k, k), ldak,
             T(k, k), T.mb,
             work,
