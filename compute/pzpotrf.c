@@ -43,7 +43,8 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
             core_omp_zpotrf(
                 PlasmaLower, mvak,
                 A(k, k), ldak,
-                sequence, request, A.nb*k);
+                A.nb*k,
+                sequence, request);
 
             for (int m = k+1; m < A.mt; m++) {
                 int mvam = plasma_tile_mview(A, m);
@@ -86,7 +87,8 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
             core_omp_zpotrf(
                 PlasmaUpper, nvak,
                 A(k, k), ldak,
-                sequence, request, A.nb*k);
+                A.nb*k,
+                sequence, request);
 
             for (int m = k+1; m < A.nt; m++) {
                 int nvam = plasma_tile_nview(A, m);

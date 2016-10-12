@@ -119,8 +119,12 @@ void core_omp_zlacpy_lapack2tile_band(plasma_enum_t uplo,
                                       const plasma_complex64_t *A, int lda,
                                             plasma_complex64_t *B, int ldb)
 {
-    #pragma omp task depend(in:A[0:m*n]) depend(out:B[0:m*n])
-    core_zlacpy_lapack2tile_band(uplo, it, jt, m, n, nb, kl, ku, A, lda, B, ldb);
+    #pragma omp task depend(in:A[0:lda*n]) \
+                     depend(out:B[0:ldb*n])
+    core_zlacpy_lapack2tile_band(uplo,
+                                 it, jt, m, n, nb, kl, ku,
+                                 A, lda,
+                                 B, ldb);
 }
 
 /*******************************************************************************
@@ -145,13 +149,13 @@ void core_omp_zlacpy_lapack2tile_band(plasma_enum_t uplo,
  *          The number of columns of the matrices A and B. n >= 0.
  *
  * @param[in] A
- *          The M-by-N matrix to copy.
+ *          The m-by-n matrix to copy.
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1, m).
  *
  * @param[out] B
- *          The M-by-N copy of the matrix A.
+ *          The m-by-n copy of the matrix A.
  *          On exit, B = A ONLY in the locations specified by uplo.
  *
  * @param[in] ldb
@@ -211,6 +215,10 @@ void core_omp_zlacpy_tile2lapack_band(plasma_enum_t uplo,
                                       const plasma_complex64_t *B, int ldb,
                                             plasma_complex64_t *A, int lda)
 {
-    #pragma omp task depend(in:B[0:m*n]) depend(out:A[0:m*n])
-    core_zlacpy_tile2lapack_band(uplo, it, jt, m, n, nb, kl, ku, B, ldb, A, lda);
+    #pragma omp task depend(in:B[0:ldb*n]) \
+                     depend(out:A[0:lda*n])
+    core_zlacpy_tile2lapack_band(uplo,
+                                 it, jt, m, n, nb, kl, ku,
+                                 B, ldb,
+                                 A, lda);
 }

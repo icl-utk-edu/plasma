@@ -88,9 +88,14 @@ void core_omp_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                     double alpha, const plasma_complex64_t *A, int lda,
                     double beta,        plasma_complex64_t *C, int ldc)
 {
-    // omp depends assume lda == n or k, and ldc == n,
-    // depending on trans.
-    #pragma omp task depend(in:A[0:n*k]) depend(inout:C[0:n*n])
+    int ak;
+    if (trans == PlasmaNoTrans)
+        ak = k;
+    else
+        ak = n;
+
+    #pragma omp task depend(in:A[0:lda*ak]) \
+                     depend(inout:C[0:ldc*n])
     core_zherk(uplo, trans,
                n, k,
                alpha, A, lda,

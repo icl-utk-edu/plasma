@@ -99,24 +99,18 @@ void core_omp_zhemm(
                               const plasma_complex64_t *B, int ldb,
     plasma_complex64_t beta,        plasma_complex64_t *C, int ldc)
 {
-    if (side == PlasmaLeft) {
-        #pragma omp task depend(in:A[0:m*m]) \
-                         depend(in:B[0:m*n]) \
-                         depend(inout:C[0:m*n])
-        core_zhemm(side, uplo,
-                   m, n,
-                   alpha, A, lda,
-                          B, ldb,
-                   beta,  C, ldc);
-    }
-    else {
-        #pragma omp task depend(in:A[0:n*n]) \
-                         depend(in:B[0:m*n]) \
-                         depend(inout:C[0:m*n])
-        core_zhemm(side, uplo,
-                   m, n,
-                   alpha, A, lda,
-                   B, ldb,
-                   beta,  C, ldc);
-    }
+    int ak;
+    if (side == PlasmaLeft)
+        ak = m;
+    else
+        ak = n;
+
+    #pragma omp task depend(in:A[0:lda*ak]) \
+                     depend(in:B[0:ldb*n]) \
+                     depend(inout:C[0:ldc*n])
+    core_zhemm(side, uplo,
+               m, n,
+               alpha, A, lda,
+                      B, ldb,
+               beta,  C, ldc);
 }
