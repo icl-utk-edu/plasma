@@ -65,7 +65,7 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                 if (transb == PlasmaNoTrans) {
                     for (int k = 0; k < A.nt; k++) {
                         int nvak = plasma_tile_nview(A, k);
-                        int ldbk   = plasma_tile_mmain(B, k);
+                        int ldbk = plasma_tile_mmain(B, k);
                         plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
                         core_omp_zgemm(
                             transa, transb,

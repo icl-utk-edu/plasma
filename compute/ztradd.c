@@ -200,12 +200,10 @@ int plasma_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
         plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
 
         // Call tile async function.
-        if (sequence->status == PlasmaSuccess) {
-            plasma_omp_ztradd(uplo, transa,
-                              alpha, A,
-                              beta,  B,
-                              sequence, &request);
-        }
+        plasma_omp_ztradd(uplo, transa,
+                          alpha, A,
+                          beta,  B,
+                          sequence, &request);
 
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(B, pB, ldb, sequence, &request);
