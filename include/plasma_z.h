@@ -24,7 +24,7 @@ extern "C" {
 /***************************************************************************//**
  *  Standard interface.
  **/
-int plasma_zgeadd(plasma_enum_t uplo, plasma_enum_t transa,
+int plasma_zgeadd(plasma_enum_t transa,
                   int m, int n,
                   plasma_complex64_t alpha, plasma_complex64_t *pA, int lda,
                   plasma_complex64_t beta,  plasma_complex64_t *pB, int ldb);

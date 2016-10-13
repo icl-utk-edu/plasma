@@ -48,7 +48,6 @@ void test_zgeadd(param_value_t param[], char *info)
     if (param == NULL) {
         if (info == NULL) {
             // Print usage info
-            print_usage(PARAM_UPLO);
             print_usage(PARAM_TRANSA);
             print_usage(PARAM_M);
             print_usage(PARAM_N);
@@ -61,8 +60,7 @@ void test_zgeadd(param_value_t param[], char *info)
         else {
             // Return column labels
             snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s %*s %*s %*s %*s %*s",
-                     InfoSpacing, "UpLo",
+                     "%*s %*s %*s %*s %*s %*s %*s %*s",
                      InfoSpacing, "TransA",
                      InfoSpacing, "m",
                      InfoSpacing, "n",
@@ -76,8 +74,7 @@ void test_zgeadd(param_value_t param[], char *info)
     }
     // Return column values
     snprintf(info, InfoLen,
-             "%*c %*c %*d %*d %*.4f %*.4f %*d %*d %*d",
-             InfoSpacing, param[PARAM_UPLO].c,
+             "%*c %*d %*d %*.4f %*.4f %*d %*d %*d",
              InfoSpacing, param[PARAM_TRANSA].c,
              InfoSpacing, param[PARAM_M].i,
              InfoSpacing, param[PARAM_N].i,
@@ -90,7 +87,6 @@ void test_zgeadd(param_value_t param[], char *info)
     //================================================================
     // Set parameters
     //================================================================
-    plasma_enum_t uplo   = plasma_uplo_const_t(param[PARAM_UPLO].c);
     plasma_enum_t transa = plasma_trans_const_t(param[PARAM_TRANSA].c);
 
     int m = param[PARAM_M].i;
@@ -163,7 +159,7 @@ void test_zgeadd(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    plasma_zgeadd(uplo, transa, m, n, alpha, A, lda, beta, B, ldb);
+    plasma_zgeadd(transa, m, n, alpha, A, lda, beta, B, ldb);
 
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
@@ -178,10 +174,33 @@ void test_zgeadd(param_value_t param[], char *info)
         // Calculate relative error |B_ref - B|_F / |B_ref|_F < 3*eps
         // Using 3*eps covers complex arithmetic
 
-        if (uplo == PlasmaGeneral)
-            core_zgeadd(transa, m, n, alpha, A, lda, beta, Bref, ldb);
-        else
-            core_ztradd(uplo, transa, m, n, alpha, A, lda, beta, Bref, ldb);
+        switch (transa) {
+        case PlasmaConjTrans:
+            for (int j = 0; j < n; j++) {
+                for (int i = 0; i < m; i++) {
+                    Bref[ldb*j+i] = 
+                        beta * Bref[ldb*j+i] + alpha * conj(A[lda*i+j]);
+                }
+            }
+            break;
+
+        case PlasmaTrans:
+            for (int j = 0; j < n; j++) {
+                for (int i = 0; i < m; i++) {
+                    Bref[ldb*j+i] =
+                        beta * Bref[ldb*j+i] + alpha * A[lda*i+j];
+                }
+            }
+            break;
+
+        case PlasmaNoTrans:
+            for (int j = 0; j < n; j++) {
+                for (int i = 0; i < m; i++) {
+                    Bref[ldb*j+i] =
+                        beta * Bref[ldb*j+i] + alpha * A[lda*j+i];
+                }
+            }
+        }
 
         double work[1];
 

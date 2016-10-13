@@ -178,7 +178,33 @@ void test_ztradd(param_value_t param[], char *info)
         // Calculate relative error |B_ref - B|_F / |B_ref|_F < 3*eps
         // Using 3*eps covers complex arithmetic
 
-        core_ztradd(uplo, transa, m, n, alpha, A, lda, beta, Bref, ldb);
+        switch (transa) {
+        case PlasmaConjTrans:
+            for (int j = 0; j < n; j++) {
+                for (int i = 0; i < m; i++) {
+                    Bref[ldb*j+i] = 
+                        beta * Bref[ldb*j+i] + alpha * conj(A[lda*i+j]);
+                }
+            }
+            break;
+
+        case PlasmaTrans:
+            for (int j = 0; j < n; j++) {
+                for (int i = 0; i < m; i++) {
+                    Bref[ldb*j+i] =
+                        beta * Bref[ldb*j+i] + alpha * A[lda*i+j];
+                }
+            }
+            break;
+
+        case PlasmaNoTrans:
+            for (int j = 0; j < n; j++) {
+                for (int i = 0; i < m; i++) {
+                    Bref[ldb*j+i] =
+                        beta * Bref[ldb*j+i] + alpha * A[lda*j+i];
+                }
+            }
+        }
 
         double work[1];
 
