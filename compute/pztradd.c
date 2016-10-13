@@ -155,43 +155,5 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transa,
             }
         }
         break;
-    case PlasmaGeneral:
-    default:
-        //================================
-        // PlasmaGeneral / PlasmaNoTrans
-        //================================
-        if (transa == PlasmaNoTrans) {
-            for (int m = 0; m < B.mt; m++) {
-                int mvbm = plasma_tile_mview(B, m);
-                int ldam = plasma_tile_mmain(A, m);
-                int ldbm = plasma_tile_mmain(B, m);
-                for (int n = 0; n < B.nt; n++) {
-                    int nvbn = plasma_tile_nview(B, n);
-                    core_omp_zgeadd(
-                        transa, mvbm, nvbn,
-                        alpha, A(m, n), ldam,
-                        beta,  B(m, n), ldbm,
-                        sequence, request);
-                }
-            }
-        }
-        //=====================================
-        // PlasmaGeneral / Plasma[_Conj]Trans
-        //=====================================
-        else {
-            for (int m = 0; m < B.mt; m++) {
-                int mvbm = plasma_tile_mview(B, m);
-                int ldbm = plasma_tile_mmain(B, m);
-                for (int n = 0; n < B.nt; n++) {
-                    int nvbn = plasma_tile_nview(B, n);
-                    int ldan = plasma_tile_mmain(A, n);
-                    core_omp_zgeadd(
-                        transa, mvbm, nvbn,
-                        alpha, A(n, m), ldan,
-                        beta,  B(m, n), ldbm,
-                        sequence, request);
-                }
-            }
-        }
     }
 }

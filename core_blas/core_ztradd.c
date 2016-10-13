@@ -36,8 +36,8 @@
  *
  * @param[in] uplo
  *          Specifies the shape of A and B matrices:
- *          - PlasmaUpper:   op( A ) and B are upper trapezoidal matrices.
- *          - PlasmaLower:   op( A ) and B are lower trapezoidal matrices.
+ *          - PlasmaUpper: op( A ) and B are upper trapezoidal matrices.
+ *          - PlasmaLower: op( A ) and B are lower trapezoidal matrices.
  *
  * @param[in] transa
  *          Specifies whether the matrix A is non-transposed, transposed, or

@@ -30,7 +30,7 @@
 
 /***************************************************************************//**
  *
- * @brief Tests ZTRADD
+ * @brief Tests ZGEADD
  *
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
@@ -40,7 +40,7 @@
  * If param is non-NULL and info is non-NULL, set info to column values
  * and run test.
  ******************************************************************************/
-void test_ztradd(param_value_t param[], char *info)
+void test_zgeadd(param_value_t param[], char *info)
 {
     //================================================================
     // Print usage info or return column labels or values
@@ -163,7 +163,7 @@ void test_ztradd(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    plasma_ztradd(uplo, transa, m, n, alpha, A, lda, beta, B, ldb);
+    plasma_zgeadd(uplo, transa, m, n, alpha, A, lda, beta, B, ldb);
 
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
@@ -171,14 +171,17 @@ void test_ztradd(param_value_t param[], char *info)
     param[PARAM_TIME].d   = time;
     param[PARAM_GFLOPS].d = flops_zgeadd(m, n) / time / 1e9;
 
-    //================================================================
-    // Test results by comparing to result of core_ztradd function
-    //================================================================
+    //==================================================================
+    // Test results by comparing to result of core_z{ge,tr}add function
+    //==================================================================
     if (test) {
         // Calculate relative error |B_ref - B|_F / |B_ref|_F < 3*eps
         // Using 3*eps covers complex arithmetic
 
-        core_ztradd(uplo, transa, m, n, alpha, A, lda, beta, Bref, ldb);
+        if (uplo == PlasmaGeneral)
+            core_zgeadd(transa, m, n, alpha, A, lda, beta, Bref, ldb);
+        else
+            core_ztradd(uplo, transa, m, n, alpha, A, lda, beta, Bref, ldb);
 
         double work[1];
 

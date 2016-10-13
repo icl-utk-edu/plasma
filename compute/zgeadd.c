@@ -20,10 +20,10 @@
 
 /***************************************************************************//**
  *
- * @ingroup plasma_tradd
+ * @ingroup plasma_geadd
  *
- *  Performs an addition of two trapezoidal matrices similarly to the
- * 'pztradd()' function from the PBLAS library:
+ *  Performs an addition of two general rectangular or trapezoidal matrices
+ *  similarly to the 'pztradd()' function from the PBLAS library:
  *
  *    \f[ B = \alpha * op( A ) + \beta * B, \f]
  *
@@ -39,8 +39,9 @@
  *
  * @param[in] uplo
  *          Specifies the shape of op( A ) and B matrices:
- *          - PlasmaUpper: op( A ) and B are upper trapezoidal matrices.
- *          - PlasmaLower: op( A ) and B are lower trapezoidal matrices.
+ *          - PlasmaGeneral: op( A ) and B are general rectangular matrices.
+ *          - PlasmaUpper:   op( A ) and B are upper trapezoidal matrices.
+ *          - PlasmaLower:   op( A ) and B are lower trapezoidal matrices.
  *
  * @param[in] transa
  *          Specifies whether the matrix A is non-transposed, transposed, or
@@ -85,18 +86,18 @@
  *
  *******************************************************************************
  *
- * @sa plasma_omp_ztradd
- * @sa plasma_ctradd
- * @sa plasma_dtradd
- * @sa plasma_stradd
+ * @sa plasma_omp_zgeadd
+ * @sa plasma_cgeadd
+ * @sa plasma_dgeadd
+ * @sa plasma_sgeadd
  *
  ******************************************************************************/
-int plasma_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
+int plasma_zgeadd(plasma_enum_t uplo, plasma_enum_t transa,
                   int m, int n,
                   plasma_complex64_t alpha, plasma_complex64_t *pA, int lda,
                   plasma_complex64_t beta,  plasma_complex64_t *pB, int ldb)
 {
-    printf("[%d]: Calling plasma_ztradd()...\n", omp_get_thread_num());
+    printf("[%d]: Calling plasma_zgeadd()...\n", omp_get_thread_num());
 
     // Get PLASMA context
     plasma_context_t *plasma = plasma_context_self();
@@ -106,7 +107,8 @@ int plasma_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
     }
 
     // Check input arguments
-    if ((uplo != PlasmaUpper) &&
+    if ((uplo != PlasmaGeneral) &&
+        (uplo != PlasmaUpper)   &&
         (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
         return -1;
@@ -201,10 +203,18 @@ int plasma_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
 
         // Call tile async function
         if (sequence->status == PlasmaSuccess) {
-            plasma_omp_ztradd(uplo, transa,
-                              alpha,     A,
-                              beta,      B,
-                              sequence, &request);
+            if (uplo == PlasmaGeneral) {
+                plasma_omp_zgeadd(transa,
+                                  alpha,     A,
+                                  beta,      B,
+                                  sequence, &request);
+            }
+            else {
+                plasma_omp_ztradd(uplo, transa,
+                                  alpha,     A,
+                                  beta,      B,
+                                  sequence, &request);
+            }
         }
 
         // Translate back to LAPACK layout
@@ -224,21 +234,16 @@ int plasma_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
 
 /***************************************************************************//**
  *
- * @ingroup plasma_tradd
+ * @ingroup plasma_geadd
  *
- *  Performs an addition of two trapezoidal matrices similarly to the
- * 'pztradd()' function from the PBLAS library. Non-blocking tile version of
- *  plasma_ztradd(). May return before the computation is finished. Operates
- *  on matrices stored by tiles. All matrices are passed through descriptors.
- *  All dimensions are taken from the descriptors. Allows for pipelining of
+ *  Performs an addition of two general rectangular matrices similarly to the
+ *  'pztradd()' function from the PBLAS library. Non-blocking tile version of
+ *  plasma_zgeadd(). May return before the computation is finished. Operates on
+ *  matrices stored by tiles. All matrices are passed through descriptors. All
+ *  dimensions are taken from the descriptors. Allows for pipelining of
  *  operations at runtime.
  *
  *******************************************************************************
- *
- * @param[in] uplo
- *          Specifies the shape of op( A ) and B matrices:
- *          - PlasmaUpper: op( A ) and B are upper trapezoidal matrices.
- *          - PlasmaLower: op( A ) and B are lower trapezoidal matrices.
  *
  * @param[in] transa
  *          Specifies whether the matrix A is non-transposed, transposed, or
@@ -276,18 +281,18 @@ int plasma_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
  *
  *******************************************************************************
  *
- * @sa plasma_ztradd
- * @sa plasma_omp_ctradd
- * @sa plasma_omp_dtradd
- * @sa plasma_omp_stradd
+ * @sa plasma_zgeadd
+ * @sa plasma_omp_cgeadd
+ * @sa plasma_omp_dgeadd
+ * @sa plasma_omp_sgeadd
  *
  ******************************************************************************/
-void plasma_omp_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
+void plasma_omp_zgeadd(plasma_enum_t transa,
                        plasma_complex64_t alpha, plasma_desc_t A,
                        plasma_complex64_t beta,  plasma_desc_t B,
                        plasma_sequence_t *sequence, plasma_request_t  *request)
 {
-    printf("[%d]: Calling plasma_omp_ztradd()...\n", omp_get_thread_num());
+    printf("[%d]: Calling plasma_omp_zgeadd()...\n", omp_get_thread_num());
 
     // Get PLASMA context
     plasma_context_t *plasma = plasma_context_self();
@@ -298,12 +303,6 @@ void plasma_omp_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
     }
 
     // Check input arguments
-    if ((uplo != PlasmaUpper) &&
-        (uplo != PlasmaLower)) {
-        plasma_error("illegal value of uplo");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
     if ((transa != PlasmaNoTrans) &&
         (transa != PlasmaTrans)   &&
         (transa != PlasmaConjTrans)) {
@@ -338,7 +337,7 @@ void plasma_omp_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
         return;
 
     // Call parallel function
-    plasma_pztradd(uplo,  transa,
+    plasma_pzgeadd(transa,
                    alpha, A,
                    beta,  B,
                    sequence, request);
