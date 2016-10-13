@@ -30,8 +30,6 @@ void plasma_pzgeadd(plasma_enum_t transa,
                     plasma_complex64_t beta,   plasma_desc_t B,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    printf("[%d]: Calling plasma_pzgeadd()...\n", omp_get_thread_num());
-
     // Check sequence status
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorSequence);

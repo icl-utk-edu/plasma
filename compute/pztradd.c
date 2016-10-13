@@ -30,9 +30,7 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transa,
                     plasma_complex64_t beta,   plasma_desc_t B,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    printf("[%d]: Calling plasma_pztradd()...\n", omp_get_thread_num());
-
-    // Check sequence status.
+    // Check sequence status
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;

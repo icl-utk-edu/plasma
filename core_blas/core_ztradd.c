@@ -82,8 +82,6 @@ int core_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                 plasma_complex64_t beta,        plasma_complex64_t *B, int ldb)
 {
-    printf("[%d]: Calling core_ztradd()...\n", omp_get_thread_num());
-
     // Check input arguments
     if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
@@ -92,9 +90,8 @@ int core_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
     }
 
     if ((transa != PlasmaNoTrans) &&
-        (transa != PlasmaTrans) &&
+        (transa != PlasmaTrans)   &&
         (transa != PlasmaConjTrans)) {
-
         coreblas_error("illegal value of transa");
         return -2;
     }
@@ -129,7 +126,7 @@ int core_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
     }
 
     // quick return
-    if (m == 0 || n = 0 || (alpha == 0.0 && beta == 1.0))
+    if (m == 0 || n == 0 || (alpha == 0.0 && beta == 1.0))
         return PlasmaSuccess;
 
     //==============
@@ -192,8 +189,6 @@ void core_omp_ztradd(
     plasma_complex64_t beta,        plasma_complex64_t *B, int ldb,
     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    printf("[%d]: Calling core_omp_ztradd()...\n", omp_get_thread_num());
-
     int k = (transa == PlasmaNoTrans) ? n : m;
 
     #pragma omp task depend(in:A[0:lda*k]) \
