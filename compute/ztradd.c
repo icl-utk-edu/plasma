@@ -97,6 +97,8 @@ int plasma_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
                   plasma_complex64_t alpha, plasma_complex64_t *pA, int lda,
                   plasma_complex64_t beta,  plasma_complex64_t *pB, int ldb)
 {
+    printf("[%d]: Calling plasma_ztradd()...\n", omp_get_thread_num());
+
     // Get PLASMA context
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -288,6 +290,8 @@ void plasma_omp_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
                        plasma_complex64_t beta,  plasma_desc_t B,
                        plasma_sequence_t *sequence, plasma_request_t  *request)
 {
+    printf("[%d]: Calling plasma_omp_ztradd()...\n", omp_get_thread_num());
+
     // Get PLASMA context
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {

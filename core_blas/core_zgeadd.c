@@ -76,6 +76,8 @@ int core_zgeadd(plasma_enum_t transa,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                 plasma_complex64_t beta,        plasma_complex64_t *B, int ldb)
 {
+    printf("Calling core_zgeadd()...\n");
+
     // Check input arguments
     if ((transa != PlasmaNoTrans) &&
         (transa != PlasmaTrans)   &&
@@ -147,6 +149,8 @@ void core_omp_zgeadd(
     plasma_complex64_t beta,        plasma_complex64_t *B, int ldb,
     plasma_sequence_t *sequence, plasma_request_t *request)
 {
+    printf("Calling core_omp_zgeadd()...\n");
+
     int k = (transa == PlasmaNoTrans) ? n : m;
 
     #pragma omp task depend(in:A[0:lda*k]) \
