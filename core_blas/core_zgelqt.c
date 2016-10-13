@@ -89,7 +89,7 @@ int core_zgelqt(int m, int n, int ib,
                 plasma_complex64_t *A, int lda,
                 plasma_complex64_t *T, int ldt,
                 plasma_complex64_t *TAU,
-                plasma_complex64_t *WORK, int lwork)
+                plasma_complex64_t *WORK)
 {
     // Check input arguments.
     if (m < 0) {
@@ -128,13 +128,9 @@ int core_zgelqt(int m, int n, int ib,
         coreblas_error("NULL WORK");
         return -9;
     }
-    if (lwork < ib*m) {
-        coreblas_error("illegal value of lwork");
-        return -10;
-    }
 
     // quick return
-    if ((m == 0) || (n == 0) || (ib == 0))
+    if (m == 0 || n == 0 || ib == 0)
         return PlasmaSuccess;
 
     int k = imin(m, n);
@@ -178,6 +174,7 @@ void core_omp_zgelqt(int m, int n, int ib,
                      plasma_workspace_t work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
+    // TODO: double check depend dimensions
     #pragma omp task depend(inout:A[0:lda*n]) \
                      depend(out:T[0:ib*n])
     {
@@ -185,17 +182,14 @@ void core_omp_zgelqt(int m, int n, int ib,
 
             // Prepare workspaces.
             int tid = omp_get_thread_num();
-            int ltau = m;
-            int lwork = work.lwork - ltau;
             plasma_complex64_t *TAU = (plasma_complex64_t*)work.spaces[tid];
-            plasma_complex64_t *W   = TAU + ltau;
 
             // Call the kernel.
             int info = core_zgelqt(m, n, ib,
                                    A, lda,
                                    T, ldt,
                                    TAU,
-                                   W, lwork);
+                                   TAU+m);
 
             if (info != PlasmaSuccess) {
                 plasma_error("core_zgelqt() failed");

@@ -55,12 +55,14 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
                     PlasmaConjTrans, PlasmaNonUnit,
                     tempmm, tempkm,
                     1.0, A(k, k), BLKLDD_BAND(uplo, A, k, k),
-                         A(m, k), BLKLDD_BAND(uplo, A, m, k));
+                         A(m, k), BLKLDD_BAND(uplo, A, m, k),
+                    sequence, request);
                 core_omp_zherk(
                     PlasmaLower, PlasmaNoTrans,
                     tempmm, A.mb,
                     -1.0, A(m, k), BLKLDD_BAND(uplo, A, m, k),
-                     1.0, A(m, m), BLKLDD_BAND(uplo, A, m, m));
+                     1.0, A(m, m), BLKLDD_BAND(uplo, A, m, m),
+                    sequence, request);
 
                 for (n = imax(k+1, m-A.klt); n < m; n++) {
                     tempmn = n == A.nt-1 ? A.n-n*A.nb : A.nb;
@@ -69,7 +71,8 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
                         tempmm, tempmn, tempkm,
                         -1.0, A(m, k), BLKLDD_BAND(uplo, A, m, k),
                               A(n, k), BLKLDD_BAND(uplo, A, n, k),
-                         1.0, A(m, n), BLKLDD_BAND(uplo, A, m, n));
+                         1.0, A(m, n), BLKLDD_BAND(uplo, A, m, n),
+                        sequence, request);
                 }
             }
         }
@@ -93,20 +96,23 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
                     PlasmaConjTrans, PlasmaNonUnit,
                     A.nb, tempmm,
                     1.0, A(k, k), BLKLDD_BAND(uplo, A, k, k),
-                          A(k, m), BLKLDD_BAND(uplo, A, k, m));
+                         A(k, m), BLKLDD_BAND(uplo, A, k, m),
+                    sequence, request);
                 core_omp_zherk(
                     PlasmaUpper, PlasmaConjTrans,
                     tempmm, A.mb,
                     -1.0, A(k, m), BLKLDD_BAND(uplo, A, k, m),
-                     1.0, A(m, m), BLKLDD_BAND(uplo, A, m, m));
+                     1.0, A(m, m), BLKLDD_BAND(uplo, A, m, m),
+                    sequence, request);
 
                 for (n = imax(k+1, m-A.kut); n < m; n++) {
                     core_omp_zgemm(
                         PlasmaConjTrans, PlasmaNoTrans,
                         A.mb, tempmm, A.mb,
                         -1.0, A(k, n), BLKLDD_BAND(uplo, A, k, n),
-                               A(k, m), BLKLDD_BAND(uplo, A, k, m),
-                        1.0,  A(n, m), BLKLDD_BAND(uplo, A, n, m));
+                              A(k, m), BLKLDD_BAND(uplo, A, k, m),
+                         1.0, A(n, m), BLKLDD_BAND(uplo, A, n, m),
+                        sequence, request);
                 }
             }
         }

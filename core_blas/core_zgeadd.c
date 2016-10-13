@@ -100,9 +100,8 @@ int core_zgeadd(plasma_enum_t transa,
         coreblas_error("NULL A");
         return -5;
     }
-
-    if (((transa == PlasmaNoTrans) && (lda < imax(1, m)) && (m > 0)) ||
-        ((transa != PlasmaNoTrans) && (lda < imax(1, n)) && (n > 0))) {
+    if ((transa == PlasmaNoTrans && lda < imax(1, m) && (m > 0)) ||
+        (transa != PlasmaNoTrans && lda < imax(1, n) && (n > 0))) {
         coreblas_error("illegal value of lda");
         return -6;
     }

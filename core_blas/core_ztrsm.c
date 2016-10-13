@@ -61,9 +61,9 @@
  *          The scalar alpha.
  *
  * @param[in] A
- *          The k-by-k triangular matrix,
- *          where k = m if side = PlasmaLeft,
- *            and k = n if side = PlasmaRight.
+ *          The lda-by-ka triangular matrix,
+ *          where ka = m if side = PlasmaLeft,
+ *            and ka = n if side = PlasmaRight.
  *          If uplo = PlasmaUpper, the leading k-by-k upper triangular part
  *          of the array A contains the upper triangular matrix, and the
  *          strictly lower triangular part of A is not referenced.
@@ -77,8 +77,8 @@
  *          The leading dimension of the array A. lda >= max(1,k).
  *
  * @param[in,out] B
- *          On entry, the m-by-n right hand side matrix B.
- *          On exit, if return value = 0, the m-by-n solution matrix X.
+ *          On entry, the ldb-by-n right hand side matrix B.
+ *          On exit, if return value = 0, the ldb-by-n solution matrix X.
  *
  * @param[in] ldb
  *          The leading dimension of the array B. ldb >= max(1,m).
@@ -104,14 +104,23 @@ void core_omp_ztrsm(
     plasma_enum_t transa, plasma_enum_t diag,
     int m, int n,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
-                                    plasma_complex64_t *B, int ldb)
+                                    plasma_complex64_t *B, int ldb,
+    plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // omp depends assume lda == m or n, ldb == m,
-    // depending on side.
-    #pragma omp task depend(in:A[0:m*m]) depend(inout:B[0:m*n])
-    core_ztrsm(side, uplo,
-               transa, diag,
-               m, n,
-               alpha, A, lda,
-                      B, ldb);
+    int ak;
+    if (side == PlasmaLeft)
+        ak = m;
+    else
+        ak = n;
+
+    #pragma omp task depend(in:A[0:lda*ak]) \
+                     depend(inout:B[0:ldb*n])
+    {
+        if (sequence->status == PlasmaSuccess)
+            core_ztrsm(side, uplo,
+                       transa, diag,
+                       m, n,
+                       alpha, A, lda,
+                              B, ldb);
+    }
 }

@@ -239,7 +239,7 @@ int core_zpamm(int op, plasma_enum_t side, plasma_enum_t storev,
     }
 
     // quick return
-    if ((m == 0) || (n == 0) || (k == 0))
+    if (m == 0 || n == 0 || k == 0)
         return PlasmaSuccess;
 
     // TRANS is set as:
