@@ -116,7 +116,9 @@ int core_zgeadd(plasma_enum_t transa,
         return -9;
     }
 
-    // @todo quick return
+    // quick return
+    if (m == 0 || n = 0 || (alpha == 0.0 && beta == 1.0))
+        return PlasmaSuccess;
 
     switch (transa) {
     case PlasmaConjTrans:

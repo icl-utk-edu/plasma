@@ -128,7 +128,9 @@ int core_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
         return -10;
     }
 
-    // @todo quick return
+    // quick return
+    if (m == 0 || n = 0 || (alpha == 0.0 && beta == 1.0))
+        return PlasmaSuccess;
 
     //==============
     // PlasmaLower
