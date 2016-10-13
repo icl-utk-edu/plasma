@@ -41,7 +41,9 @@ static inline int imax(int a, int b)
 
 #include "plasma_internal_s.h"
 #include "plasma_internal_d.h"
+#include "plasma_internal_ds.h"
 #include "plasma_internal_c.h"
 #include "plasma_internal_z.h"
+#include "plasma_internal_zc.h"
 
 #endif // ICL_PLASMA_INTERNAL_H
