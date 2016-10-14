@@ -159,13 +159,22 @@ void test_zgeadd(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    plasma_zgeadd(transa, m, n, alpha, A, lda, beta, B, ldb);
+    retval = plasma_zgeadd(transa, m, n, alpha, A, lda, beta, B, ldb);
 
     plasma_time_t stop = omp_get_wtime();
-    plasma_time_t time = stop-start;
 
-    param[PARAM_TIME].d   = time;
-    param[PARAM_GFLOPS].d = flops_zgeadd(m, n) / time / 1e9;
+    if (retval != PlasmaSuccess) {
+        plasma_error("plasma_zgeadd() failed");
+        param[PARAM_TIME].d   = 0.0;
+        param[PARAM_GFLOPS].d = 0.0;
+        if (!test)
+            return;
+    }
+    else {
+        plasma_time_t time    = stop-start;
+        param[PARAM_TIME].d   = time;
+        param[PARAM_GFLOPS].d = flops_zgeadd(m, n) / time / 1e9;
+    }
 
     //==================================================================
     // Test results by comparing to result of core_z{ge,tr}add function
@@ -173,8 +182,16 @@ void test_zgeadd(param_value_t param[], char *info)
     if (test) {
         // Calculate relative error |B_ref - B|_F / |B_ref|_F < 3*eps
         // Using 3*eps covers complex arithmetic
+        if (retval != PlasmaSuccess) {
+            param[PARAM_ERROR].d   = 1.0;
+            param[PARAM_SUCCESS].i = false;
+            return;
+        }
 
         switch (transa) {
+        //=================
+        // PlasmaConjTrans
+        //=================
         case PlasmaConjTrans:
             for (int j = 0; j < n; j++) {
                 for (int i = 0; i < m; i++) {
@@ -183,7 +200,9 @@ void test_zgeadd(param_value_t param[], char *info)
                 }
             }
             break;
-
+        //=================
+        // PlasmaTrans
+        //=================
         case PlasmaTrans:
             for (int j = 0; j < n; j++) {
                 for (int i = 0; i < m; i++) {
@@ -192,7 +211,9 @@ void test_zgeadd(param_value_t param[], char *info)
                 }
             }
             break;
-
+        //=================
+        // PlasmaNoTrans
+        //=================
         case PlasmaNoTrans:
             for (int j = 0; j < n; j++) {
                 for (int i = 0; i < m; i++) {
