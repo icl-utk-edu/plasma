@@ -234,7 +234,6 @@ void core_omp_ztslqt(int m, int n, int ib,
                      depend(out:T[0:ib*n])
     {
         if (sequence->status == PlasmaSuccess) {
-
             // Prepare workspaces.
             int tid = omp_get_thread_num();
             plasma_complex64_t *TAU = ((plasma_complex64_t*)work.spaces[tid]);

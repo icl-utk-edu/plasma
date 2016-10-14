@@ -252,7 +252,6 @@ void core_omp_zunmqr(plasma_enum_t side, plasma_enum_t trans,
                      depend(inout:C[0:ldc*n])
     {
         if (sequence->status == PlasmaSuccess) {
-
             // Prepare workspaces.
             int tid = omp_get_thread_num();
             plasma_complex64_t *W = (plasma_complex64_t*)work.spaces[tid];
@@ -269,7 +268,7 @@ void core_omp_zunmqr(plasma_enum_t side, plasma_enum_t trans,
             if (info != PlasmaSuccess) {
                 plasma_error("core_zunmqr() failed");
                 plasma_request_fail(sequence, request, PlasmaErrorInternal);
-             }
+            }
         }
     }
 }
