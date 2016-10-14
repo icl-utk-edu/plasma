@@ -143,10 +143,10 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                         int ldam = BLKLDD_BAND(uplo, A, m, k);
                         int ldbm = plasma_tile_mmain(B, m);
                         for (int n = 0; n < B.nt; n++) {
-                            int mvbn = plasma_tile_nview(B, n);
+                            int nvbn = plasma_tile_nview(B, n);
                             core_omp_zgemm(
                                 PlasmaNoTrans, PlasmaNoTrans,
-                                mvbm, mvbn, B.mb,
+                                mvbm, nvbn, B.mb,
                                 -1.0,   A(m, k), ldam,
                                         B(k, n), ldbk,
                                 lalpha, B(m, n), ldbm,
