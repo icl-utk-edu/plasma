@@ -38,7 +38,7 @@
  *    \f]
  *  where \f$ tau \f$ is a scalar, and \f$ v \f$ is a vector with
  *  v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
- *  and \f$ tau \f$ in TAU(i).
+ *  and \f$ tau \f$ in tau(i).
  *
  *******************************************************************************
  *
@@ -56,7 +56,7 @@
  *         On exit, the elements on and above the diagonal of the array
  *         contain the min(m,n)-by-n upper trapezoidal tile R (R is
  *         upper triangular if m >= n); the elements below the diagonal,
- *         with the array TAU, represent the unitary tile Q as a
+ *         with the array tau, represent the unitary tile Q as a
  *         product of elementary reflectors (see Further Details).
  *
  * @param[in] lda
@@ -70,14 +70,14 @@
  * @param[in] ldt
  *         The leading dimension of the array T. ldt >= ib.
  *
- * @param TAU
+ * @param tau
  *         Auxiliary workspace array of length n.
  *
- * @param WORK
+ * @param work
  *         Auxiliary workspace array of length ib*n.
  *
  * @param[in] lwork
- *         Size of the array WORK. Should be at least ib*n.
+ *         Size of the array work. Should be at least ib*n.
  *
  *******************************************************************************
  *
@@ -88,8 +88,8 @@
 int core_zgeqrt(int m, int n, int ib,
                 plasma_complex64_t *A, int lda,
                 plasma_complex64_t *T, int ldt,
-                plasma_complex64_t *TAU,
-                plasma_complex64_t *WORK)
+                plasma_complex64_t *tau,
+                plasma_complex64_t *work)
 {
     // Check input arguments.
     if (m < 0) {
@@ -120,12 +120,12 @@ int core_zgeqrt(int m, int n, int ib,
         coreblas_error("illegal value of ldt");
         return -7;
     }
-    if (TAU == NULL) {
-        coreblas_error("NULL TAU");
+    if (tau == NULL) {
+        coreblas_error("NULL tau");
         return -8;
     }
-    if (WORK == NULL) {
-        coreblas_error("NULL WORK");
+    if (work == NULL) {
+        coreblas_error("NULL work");
         return -9;
     }
 
@@ -140,14 +140,14 @@ int core_zgeqrt(int m, int n, int ib,
         LAPACKE_zgeqr2_work(LAPACK_COL_MAJOR,
                             m-i, sb,
                             &A[lda*i+i], lda,
-                            &TAU[i], WORK);
+                            &tau[i], work);
 
         LAPACKE_zlarft_work(LAPACK_COL_MAJOR,
                             lapack_const(PlasmaForward),
                             lapack_const(PlasmaColumnwise),
                             m-i, sb,
                             &A[lda*i+i], lda,
-                            &TAU[i],
+                            &tau[i],
                             &T[ldt*i], ldt);
 
         if (n > i+sb) {
@@ -160,7 +160,7 @@ int core_zgeqrt(int m, int n, int ib,
                                 &A[lda*i+i],      lda,
                                 &T[ldt*i],        ldt,
                                 &A[lda*(i+sb)+i], lda,
-                                WORK, n-i-sb);
+                                work, n-i-sb);
         }
     }
 
@@ -181,14 +181,14 @@ void core_omp_zgeqrt(int m, int n, int ib,
         if (sequence->status == PlasmaSuccess) {
             // Prepare workspaces.
             int tid = omp_get_thread_num();
-            plasma_complex64_t *TAU = ((plasma_complex64_t*)work.spaces[tid]);
+            plasma_complex64_t *tau = ((plasma_complex64_t*)work.spaces[tid]);
 
             // Call the kernel.
             int info = core_zgeqrt(m, n, ib,
                                    A, lda,
                                    T, ldt,
-                                   TAU,
-                                   TAU+n);
+                                   tau,
+                                   tau+n);
 
             if (info != PlasmaSuccess) {
                 plasma_error("core_zgeqrt() failed");

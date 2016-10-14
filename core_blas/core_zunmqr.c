@@ -87,13 +87,13 @@
  * @param[in] ldc
  *         The leading dimension of the array C. ldc >= max(1,m).
  *
- * @param WORK
+ * @param work
  *         Auxiliary workspace array of length
  *         ldwork-by-n  if side == PlasmaLeft
  *         ldwork-by-ib if side == PlasmaRight
  *
  * @param[in] ldwork
- *         The leading dimension of the array WORK.
+ *         The leading dimension of the array work.
  *             ldwork >= max(1,ib) if side == PlasmaLeft
  *             ldwork >= max(1,m)  if side == PlasmaRight
  *
@@ -108,7 +108,7 @@ int core_zunmqr(plasma_enum_t side, plasma_enum_t trans,
                 const plasma_complex64_t *A,    int lda,
                 const plasma_complex64_t *T,    int ldt,
                       plasma_complex64_t *C,    int ldc,
-                      plasma_complex64_t *WORK, int ldwork)
+                      plasma_complex64_t *work, int ldwork)
 {
     // Check input arguments.
     if (side != PlasmaLeft && side != PlasmaRight) {
@@ -117,7 +117,7 @@ int core_zunmqr(plasma_enum_t side, plasma_enum_t trans,
     }
 
     int nq; // order of Q
-    int nw; // dimension of WORK
+    int nw; // dimension of work
 
     if (side == PlasmaLeft) {
         nq = m;
@@ -172,8 +172,8 @@ int core_zunmqr(plasma_enum_t side, plasma_enum_t trans,
         coreblas_error("illegal value of ldc");
         return -12;
     }
-    if (WORK == NULL) {
-        coreblas_error("NULL WORK");
+    if (work == NULL) {
+        coreblas_error("NULL work");
         return -13;
     }
     if (ldwork < imax(1, nw) && nw > 0) {
@@ -225,7 +225,7 @@ int core_zunmqr(plasma_enum_t side, plasma_enum_t trans,
                             &A[lda*i+i], lda,
                             &T[ldt*i], ldt,
                             &C[ldc*jc+ic], ldc,
-                            WORK, ldwork);
+                            work, ldwork);
     }
 
     return PlasmaSuccess;
