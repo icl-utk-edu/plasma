@@ -71,6 +71,11 @@ int plasma_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                  double alpha, plasma_complex64_t *pA, int lda,
                  double beta,  plasma_complex64_t *pC, int ldc);
 
+int plasma_zlacpy(plasma_enum_t uplo,
+                  int m, int n,
+                  plasma_complex64_t *pA, int lda,
+                  plasma_complex64_t *pB, int ldb);
+
 int plasma_zpbsv(plasma_enum_t uplo,
                  int n, int kd, int nrhs,
                  plasma_complex64_t *pAB, int ldab,
@@ -115,11 +120,6 @@ int plasma_zsyrk(plasma_enum_t uplo, plasma_enum_t trans,
                  int n, int k,
                  plasma_complex64_t alpha, plasma_complex64_t *pA, int lda,
                  plasma_complex64_t beta,  plasma_complex64_t *pC, int ldc);
-
-int plasma_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
-                  int m, int n,
-                  plasma_complex64_t alpha, plasma_complex64_t *pA, int lda,
-                  plasma_complex64_t beta,  plasma_complex64_t *pB, int ldb);
 
 int plasma_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
                  plasma_enum_t transa, plasma_enum_t diag,
@@ -222,6 +222,9 @@ void plasma_omp_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                       double beta,  plasma_desc_t C,
                       plasma_sequence_t *sequence, plasma_request_t *request);
 
+void plasma_omp_zlacpy(plasma_enum_t uplo, plasma_desc_t A, plasma_desc_t B,
+                       plasma_sequence_t *sequence, plasma_request_t *request);
+
 void plasma_omp_zpb2desc(plasma_complex64_t *pA, int lda,
                          plasma_desc_t A,
                          plasma_sequence_t *sequence,
@@ -261,11 +264,6 @@ void plasma_omp_zsyrk(plasma_enum_t uplo, plasma_enum_t trans,
                       plasma_complex64_t alpha, plasma_desc_t A,
                       plasma_complex64_t beta,  plasma_desc_t C,
                       plasma_sequence_t *sequence, plasma_request_t *request);
-
-void plasma_omp_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
-                       plasma_complex64_t alpha, plasma_desc_t A,
-                       plasma_complex64_t beta,  plasma_desc_t B,
-                       plasma_sequence_t *sequence, plasma_request_t  *request);
 
 void plasma_omp_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
                       plasma_enum_t transa, plasma_enum_t diag,

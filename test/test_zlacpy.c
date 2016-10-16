@@ -12,12 +12,10 @@
 
 #include "test.h"
 #include "flops.h"
-#include "core_blas.h"
 #include "core_lapack.h"
 #include "plasma.h"
 
 #include <assert.h>
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,11 +24,9 @@
 
 #include <omp.h>
 
-#define COMPLEX
-
 /***************************************************************************//**
  *
- * @brief Tests ZTRADD
+ * @brief Tests ZLACPY
  *
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
@@ -40,7 +36,7 @@
  * If param is non-NULL and info is non-NULL, set info to column values
  * and run test.
  ******************************************************************************/
-void test_ztradd(param_value_t param[], char *info)
+void test_zlacpy(param_value_t param[], char *info)
 {
     //================================================================
     // Print usage info or return column labels or values
@@ -49,11 +45,8 @@ void test_ztradd(param_value_t param[], char *info)
         if (info == NULL) {
             // Print usage info
             print_usage(PARAM_UPLO);
-            print_usage(PARAM_TRANSA);
             print_usage(PARAM_M);
             print_usage(PARAM_N);
-            print_usage(PARAM_ALPHA);
-            print_usage(PARAM_BETA);
             print_usage(PARAM_PADA);
             print_usage(PARAM_PADB);
             print_usage(PARAM_NB);
@@ -61,13 +54,10 @@ void test_ztradd(param_value_t param[], char *info)
         else {
             // Return column labels
             snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s %*s %*s %*s %*s %*s",
+                     "%*s %*s %*s %*s %*s %*s",
                      InfoSpacing, "UpLo",
-                     InfoSpacing, "TransA",
                      InfoSpacing, "m",
                      InfoSpacing, "n",
-                     InfoSpacing, "alpha",
-                     InfoSpacing, "beta",
                      InfoSpacing, "PadA",
                      InfoSpacing, "PadB",
                      InfoSpacing, "nb");
@@ -76,13 +66,10 @@ void test_ztradd(param_value_t param[], char *info)
     }
     // Return column values
     snprintf(info, InfoLen,
-             "%*c %*c %*d %*d %*.4f %*.4f %*d %*d %*d",
+             "%*c %*d %*d %*d %*d %*d",
              InfoSpacing, param[PARAM_UPLO].c,
-             InfoSpacing, param[PARAM_TRANSA].c,
              InfoSpacing, param[PARAM_M].i,
              InfoSpacing, param[PARAM_N].i,
-             InfoSpacing, creal(param[PARAM_ALPHA].z),
-             InfoSpacing, creal(param[PARAM_BETA].z),
              InfoSpacing, param[PARAM_PADA].i,
              InfoSpacing, param[PARAM_PADB].i,
              InfoSpacing, param[PARAM_NB].i);
@@ -90,29 +77,13 @@ void test_ztradd(param_value_t param[], char *info)
     //================================================================
     // Set parameters
     //================================================================
-    plasma_enum_t uplo   = plasma_uplo_const_t(param[PARAM_UPLO].c);
-    plasma_enum_t transa = plasma_trans_const_t(param[PARAM_TRANSA].c);
+    plasma_enum_t uplo = plasma_uplo_const_t(param[PARAM_UPLO].c);
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
 
-    int Am, An;
-    int Bm, Bn;
-
-    if (transa == PlasmaNoTrans) {
-        Am = m;
-        An = n;
-    }
-    else {
-        Am = n;
-        An = m;
-    }
-
-    Bm = m;
-    Bn = n;
-
-    int lda = imax(1, Am + param[PARAM_PADA].i);
-    int ldb = imax(1, Bm + param[PARAM_PADB].i);
+    int lda = imax(1, m + param[PARAM_PADA].i);
+    int ldb = imax(1, m + param[PARAM_PADB].i);
 
     int    test = param[PARAM_TEST].c == 'y';
     double eps  = LAPACKE_dlamch('E');
@@ -126,73 +97,62 @@ void test_ztradd(param_value_t param[], char *info)
     // Allocate and initialize arrays
     //================================================================
     plasma_complex64_t *A =
-        (plasma_complex64_t*)malloc((size_t)lda*An*sizeof(plasma_complex64_t));
+        (plasma_complex64_t*)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
     plasma_complex64_t *B =
-        (plasma_complex64_t*)malloc((size_t)ldb*Bn*sizeof(plasma_complex64_t));
+        (plasma_complex64_t*)malloc((size_t)ldb*n*sizeof(plasma_complex64_t));
     assert(B != NULL);
 
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
-    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*An, A);
-    assert(retval == 0);
-
-    retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*Bn, B);
+    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
 
     plasma_complex64_t *Bref = NULL;
     if (test) {
         Bref = (plasma_complex64_t*)malloc(
-            (size_t)ldb*Bn*sizeof(plasma_complex64_t));
+            (size_t)ldb*n*sizeof(plasma_complex64_t));
         assert(Bref != NULL);
-
-        memcpy(Bref, B, (size_t)ldb*Bn*sizeof(plasma_complex64_t));
     }
-
-#ifdef COMPLEX
-    plasma_complex64_t alpha = param[PARAM_ALPHA].z;
-    plasma_complex64_t beta  = param[PARAM_BETA].z;
-#else
-    double alpha = creal(param[PARAM_ALPHA].z);
-    double beta  = creal(param[PARAM_BETA].z);
-#endif
 
     //================================================================
     // Run and time PLASMA
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    plasma_ztradd(uplo, transa, m, n, alpha, A, lda, beta, B, ldb);
+    plasma_zlacpy(uplo, m, n, A, lda, B, ldb);
 
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
     param[PARAM_TIME].d   = time;
-    param[PARAM_GFLOPS].d = flops_ztradd(m, n) / time / 1e9;
+    param[PARAM_GFLOPS].d = 0.0;
 
     //================================================================
-    // Test results by comparing to result of core_ztradd function
+    // Test results by comparing to result of core_zlacpy function
     //================================================================
     if (test) {
         // Calculate relative error |B_ref - B|_F / |B_ref|_F < 3*eps
         // Using 3*eps covers complex arithmetic
 
-        core_ztradd(uplo, transa, m, n, alpha, A, lda, beta, Bref, ldb);
+        lapack_int mtrxLayout = LAPACK_COL_MAJOR;
+
+        retval = LAPACKE_zlacpy_work(mtrxLayout, uplo, m, n, A, lda, Bref, ldb);
 
         double work[1];
 
         // Calculate Frobenius norm of reference result B_ref
         double BnormRef  = LAPACKE_zlange_work(
-                               LAPACK_COL_MAJOR, 'F', Bm, Bn, Bref, ldb, work);
+                               mtrxLayout, 'F', m, n, Bref, ldb, work);
 
         // Calculate difference B_ref-B
         plasma_complex64_t zmone = -1.0;
-        cblas_zaxpy((size_t)ldb*Bn, CBLAS_SADDR(zmone), B, 1, Bref, 1);
+        cblas_zaxpy((size_t)ldb*n, CBLAS_SADDR(zmone), B, 1, Bref, 1);
 
         // Calculate Frobenius norm of B_ref-B
         double BnormDiff = LAPACKE_zlange_work(
-                               LAPACK_COL_MAJOR, 'F', Bm, Bn, Bref, ldb, work);
+                               mtrxLayout, 'F', m, n, Bref, ldb, work);
 
         // Calculate relative error |B_ref-B|_F / |B_ref|_F
         double error = BnormDiff/BnormRef;
