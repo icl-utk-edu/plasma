@@ -20,7 +20,7 @@
 
 #define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
 #define T(m, n) (plasma_complex64_t*)plasma_tile_addr(T, m, n)
- 
+
 /***************************************************************************//**
  *  Parallel tile LQ factorization - dynamic scheduling
  * @see plasma_omp_zgelqf

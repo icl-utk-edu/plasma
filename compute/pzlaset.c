@@ -19,7 +19,7 @@
 #include "core_blas.h"
 
 #define A(m, n) ((plasma_complex64_t*)plasma_tile_addr(A, m, n))
- 
+
 /***************************************************************************//**
  *  Initializes the matrix A to beta on the diagonal and alpha on the
  *  offdiagonals. Applies alpha correctly for any shape of the submatrix

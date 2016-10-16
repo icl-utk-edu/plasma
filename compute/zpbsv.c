@@ -281,10 +281,8 @@ void plasma_omp_zpbsv(plasma_enum_t uplo, plasma_desc_t AB, plasma_desc_t B,
         return;
 
     // Call the parallel functions.
-    // factorization
     plasma_pzpbtrf(uplo, AB, sequence, request);
 
-    // forward-substitution
     plasma_pztbsm(PlasmaLeft, uplo,
                   uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans, 
                   PlasmaNonUnit,
@@ -293,7 +291,6 @@ void plasma_omp_zpbsv(plasma_enum_t uplo, plasma_desc_t AB, plasma_desc_t B,
                   NULL,
                   sequence, request);
 
-    // backward-substitution
     plasma_pztbsm(PlasmaLeft, uplo,
                   uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans, 
                   PlasmaNonUnit,

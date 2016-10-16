@@ -132,7 +132,6 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
                 int mvak = plasma_tile_mview(A, k);
                 int nvak = plasma_tile_nview(A, k);
                 int ldak = plasma_tile_mmain(A, k);
-                int ldbk = plasma_tile_mmain(B, k);
                 for (int n = B.nt-1; n > k; n--) {
                     int nvbn = plasma_tile_nview(B, n);
                     int ldan = plasma_tile_mmain(A, n);

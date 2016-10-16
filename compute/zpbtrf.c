@@ -40,7 +40,7 @@
  *
  * @param[in] kd
  *          The number of subdiagonals within the band of A if uplo=upper,
- *          or the number of suuperdiagonals if uplo=lower. ku >= 0.
+ *          or the number of superdiagonals if uplo=lower. kd >= 0.
  *
  * @param[in,out] AB
  *          On entry, the upper or lower triangle of the Hermitian band
@@ -213,6 +213,7 @@ void plasma_omp_zpbtrf(plasma_enum_t uplo, plasma_desc_t AB,
     if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if (plasma_desc_check(AB) != PlasmaSuccess) {
