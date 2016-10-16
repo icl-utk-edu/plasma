@@ -107,8 +107,7 @@ int plasma_zpbtrs(plasma_enum_t uplo,
         plasma_error("illegal value of nrhs");
         return -5;
     }
-    if (ldab < imax(1, 1+kd))
-    {
+    if (ldab < imax(1, 1+kd)) {
         plasma_error("illegal value of ldab");
         return -7;
     }
@@ -135,7 +134,7 @@ int plasma_zpbtrs(plasma_enum_t uplo,
     // and we need extra nb space on the bottom.
     int ldab_desc = (tku+tkl+1)*nb;  
 
-    // Create tile matrices.
+    // Initialize tile matrix descriptors.
     plasma_desc_t AB;
     plasma_desc_t B;
     int retval;
@@ -258,6 +257,7 @@ void plasma_omp_zpbtrs(plasma_enum_t uplo, plasma_desc_t AB, plasma_desc_t B,
     if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if (plasma_desc_check(AB) != PlasmaSuccess) {

@@ -55,7 +55,7 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
                     int nvbn = plasma_tile_nview(B, n);
                     core_omp_zunmqr(
                         side, trans,
-                        mvbk, nvbn, imin(nvak, mvak), ib, T.nb,
+                        mvbk, nvbn, imin(nvak, mvak), ib,
                         A(k, k), ldak,
                         T(k, k), T.mb,
                         B(k, n), ldbk,
@@ -70,7 +70,7 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
                         int nvbn = plasma_tile_nview(B, n);
                         core_omp_ztsmqr(
                             side, trans,
-                            B.mb, nvbn, mvbm, nvbn, imin(nvak, mvak), ib, T.nb,
+                            B.mb, nvbn, mvbm, nvbn, imin(nvak, mvak), ib,
                             B(k, n), ldbk,
                             B(m, n), ldbm,
                             A(m, k), ldam,
@@ -99,7 +99,7 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
                         int nvbn = plasma_tile_nview(B, n);
                         core_omp_ztsmqr(
                             side, trans,
-                            B.mb, nvbn, mvbm, nvbn, imin(nvak, mvak), ib, T.nb,
+                            B.mb, nvbn, mvbm, nvbn, imin(nvak, mvak), ib,
                             B(k, n), ldbk,
                             B(m, n), ldbm,
                             A(m, k), ldam,
@@ -112,7 +112,7 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
                     int nvbn = plasma_tile_nview(B, n);
                     core_omp_zunmqr(
                         side, trans,
-                        mvbk, nvbn, imin(nvak, mvak), ib, T.nb,
+                        mvbk, nvbn, imin(nvak, mvak), ib,
                         A(k, k), ldak,
                         T(k, k), T.mb,
                         B(k, n), ldbk,
@@ -132,7 +132,6 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
                 int mvak = plasma_tile_mview(A, k);
                 int nvak = plasma_tile_nview(A, k);
                 int ldak = plasma_tile_mmain(A, k);
-                int ldbk = plasma_tile_mmain(B, k);
                 for (int n = B.nt-1; n > k; n--) {
                     int nvbn = plasma_tile_nview(B, n);
                     int ldan = plasma_tile_mmain(A, n);
@@ -141,7 +140,7 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
                         int ldbm = plasma_tile_mmain(B, m);
                         core_omp_ztsmqr(
                             side, trans,
-                            mvbm, B.nb, mvbm, nvbn, imin(nvak, mvak), ib, T.nb,
+                            mvbm, B.nb, mvbm, nvbn, imin(nvak, mvak), ib,
                             B(m, k), ldbm,
                             B(m, n), ldbm,
                             A(n, k), ldan,
@@ -155,7 +154,7 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
                     int ldbm = plasma_tile_mmain(B, m);
                     core_omp_zunmqr(
                         side, trans,
-                        mvbm, nvbk, imin(nvak, mvak), ib, T.nb,
+                        mvbm, nvbk, imin(nvak, mvak), ib,
                         A(k, k), ldak,
                         T(k, k), T.mb,
                         B(m, k), ldbm,
@@ -178,7 +177,7 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
                     int ldbm = plasma_tile_mmain(B, m);
                     core_omp_zunmqr(
                         side, trans,
-                        mvbm, nvbk, imin(nvak, mvak), ib, T.nb,
+                        mvbm, nvbk, imin(nvak, mvak), ib,
                         A(k, k), ldak,
                         T(k, k), T.mb,
                         B(m, k), ldbm,
@@ -193,7 +192,7 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
                         int ldbm = plasma_tile_mmain(B, m);
                         core_omp_ztsmqr(
                             side, trans,
-                            mvbm, B.nb, mvbm, nvbn, imin(nvak, mvak), ib, T.nb,
+                            mvbm, B.nb, mvbm, nvbn, imin(nvak, mvak), ib,
                             B(m, k), ldbm,
                             B(m, n), ldbm,
                             A(n, k), ldan,

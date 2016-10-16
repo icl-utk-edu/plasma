@@ -38,7 +38,7 @@
  *    \f]
  *  where \f$ tau \f$ is a scalar, and \f$ v \f$ is a vector with
  *  v(1:i-1) = 0 and v(i) = 1; v(i+1:n)^H is stored on exit in A(i,i+1:n),
- *  and \f$ tau \f$ in TAU(i).
+ *  and \f$ tau \f$ in tau(i).
  *
  *******************************************************************************
  *
@@ -56,7 +56,7 @@
  *         On exit, the elements on and below the diagonal of the array
  *         contain the m-by-min(m,n) lower trapezoidal tile L (L is
  *         lower triangular if m <= n); the elements above the diagonal,
- *         with the array TAU, represent the unitary tile Q as a
+ *         with the array tau, represent the unitary tile Q as a
  *         product of elementary reflectors (see Further Details).
  *
  * @param[in] lda
@@ -70,14 +70,14 @@
  * @param[in] ldt
  *         The leading dimension of the array T. ldt >= ib.
  *
- * @param TAU
+ * @param tau
  *         Auxiliarry workspace array of length m.
  *
- * @param WORK
+ * @param work
  *         Auxiliary workspace array of length ib*m.
  *
  * @param[in] lwork
- *         Size of the array WORK. Should be at least ib*m.
+ *         Size of the array work. Should be at least ib*m.
  *
  *******************************************************************************
  *
@@ -88,65 +88,79 @@
 int core_zgelqt(int m, int n, int ib,
                 plasma_complex64_t *A, int lda,
                 plasma_complex64_t *T, int ldt,
-                plasma_complex64_t *TAU,
-                plasma_complex64_t *WORK, int lwork)
+                plasma_complex64_t *tau,
+                plasma_complex64_t *work)
 {
-    // Check input arguments
+    // Check input arguments.
     if (m < 0) {
-        coreblas_error("Illegal value of m");
+        coreblas_error("illegal value of m");
         return -1;
     }
     if (n < 0) {
-        coreblas_error("Illegal value of n");
+        coreblas_error("illegal value of n");
         return -2;
     }
     if ((ib < 0) || ( (ib == 0) && ((m > 0) && (n > 0)) )) {
-        coreblas_error("Illegal value of ib");
+        coreblas_error("illegal value of ib");
         return -3;
     }
-    if ((lda < imax(1,m)) && (m > 0)) {
-        coreblas_error("Illegal value of lda");
+    if (A == NULL) {
+        coreblas_error("NULL A");
+        return -4;
+    }
+    if (lda < imax(1, m) && m > 0) {
+        coreblas_error("illegal value of lda");
         return -5;
     }
-    if ((ldt < imax(1,ib)) && (ib > 0)) {
-        coreblas_error("Illegal value of ldt");
+    if (T == NULL) {
+        coreblas_error("NULL T");
+        return -6;
+    }
+    if (ldt < imax(1,ib) && ib > 0) {
+        coreblas_error("illegal value of ldt");
         return -7;
     }
-    if (lwork < ib*m) {
-        coreblas_error("Illegal value of lwork");
-        return -10;
+    if (tau == NULL) {
+        coreblas_error("NULL tau");
+        return -8;
+    }
+    if (work == NULL) {
+        coreblas_error("NULL work");
+        return -9;
     }
 
-    // Quick return
-    if ((m == 0) || (n == 0) || (ib == 0))
+    // quick return
+    if (m == 0 || n == 0 || ib == 0)
         return PlasmaSuccess;
 
     int k = imin(m, n);
     for (int i = 0; i < k; i += ib) {
         int sb = imin(ib, k-i);
 
-        LAPACKE_zgelq2_work(LAPACK_COL_MAJOR, sb, n-i,
-                            &A[lda*i+i], lda, &TAU[i], WORK);
+        LAPACKE_zgelq2_work(LAPACK_COL_MAJOR,
+                            sb, n-i,
+                            &A[lda*i+i], lda,
+                            &tau[i], work);
 
         LAPACKE_zlarft_work(LAPACK_COL_MAJOR,
-            lapack_const(PlasmaForward),
-            lapack_const(PlasmaRowwise),
-            n-i, sb,
-            &A[lda*i+i], lda, &TAU[i],
-            &T[ldt*i], ldt);
+                            lapack_const(PlasmaForward),
+                            lapack_const(PlasmaRowwise),
+                            n-i, sb,
+                            &A[lda*i+i], lda,
+                            &tau[i],
+                            &T[ldt*i], ldt);
 
         if (m > i+sb) {
-            LAPACKE_zlarfb_work(
-                LAPACK_COL_MAJOR,
-                lapack_const(PlasmaRight),
-                lapack_const(PlasmaNoTrans),
-                lapack_const(PlasmaForward),
-                lapack_const(PlasmaRowwise),
-                m-i-sb, n-i, sb,
-                &A[lda*i+i],      lda,
-                &T[ldt*i],        ldt,
-                &A[lda*i+(i+sb)], lda,
-                WORK, m-i-sb);
+            LAPACKE_zlarfb_work(LAPACK_COL_MAJOR,
+                                lapack_const(PlasmaRight),
+                                lapack_const(PlasmaNoTrans),
+                                lapack_const(PlasmaForward),
+                                lapack_const(PlasmaRowwise),
+                                m-i-sb, n-i, sb,
+                                &A[lda*i+i],      lda,
+                                &T[ldt*i],        ldt,
+                                &A[lda*i+(i+sb)], lda,
+                                work, m-i-sb);
         }
     }
 
@@ -154,37 +168,31 @@ int core_zgelqt(int m, int n, int ib,
 }
 
 /******************************************************************************/
-void core_omp_zgelqt(int m, int n, int ib, int nb,
+void core_omp_zgelqt(int m, int n, int ib,
                      plasma_complex64_t *A, int lda,
                      plasma_complex64_t *T, int ldt,
                      plasma_workspace_t work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // OpenMP depends assume lda == m == n == nb, ldt == ib.
-    #pragma omp task depend(inout:A[0:nb*nb]) \
-                     depend(out:T[0:ib*nb])
+    // TODO: double check depend dimensions
+    #pragma omp task depend(inout:A[0:lda*n]) \
+                     depend(out:T[0:ib*n])
     {
         if (sequence->status == PlasmaSuccess) {
+            // Prepare workspaces.
             int tid = omp_get_thread_num();
-            // split spaces into TAU and WORK
-            int ltau = m;
-            int lwork = work.lwork - ltau;
-            plasma_complex64_t *TAU = ((plasma_complex64_t*)work.spaces[tid]);
-            plasma_complex64_t *W   =
-                ((plasma_complex64_t*)work.spaces[tid]) + ltau;
+            plasma_complex64_t *tau = (plasma_complex64_t*)work.spaces[tid];
 
             // Call the kernel.
             int info = core_zgelqt(m, n, ib,
                                    A, lda,
                                    T, ldt,
-                                   TAU,
-                                   W, lwork);
+                                   tau,
+                                   tau+m);
 
             if (info != PlasmaSuccess) {
-                plasma_error_with_code("Error in call to COREBLAS in argument",
-                                       -info);
-                plasma_request_fail(sequence, request,
-                                    PlasmaErrorIllegalValue);
+                plasma_error("core_zgelqt() failed");
+                plasma_request_fail(sequence, request, PlasmaErrorInternal);
             }
         }
     }

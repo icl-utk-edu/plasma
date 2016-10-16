@@ -334,7 +334,7 @@ void plasma_omp_zgels(plasma_enum_t trans,
 
     //===============================
     // Solve using QR factorization.
-    //===============================    
+    //===============================
     if (A.m >= A.n) {
         plasma_pzgeqrf(A, T, work, sequence, request);
 
@@ -351,7 +351,7 @@ void plasma_omp_zgels(plasma_enum_t trans,
     }
     //===============================
     // Solve using LQ factorization.
-    //===============================    
+    //===============================
     else {
         plasma_pzgelqf(A, T, work, sequence, request);
 

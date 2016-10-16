@@ -55,7 +55,8 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                     mvcm, nvcn, 0,
                     alpha, A(0, 0), ldam,
                            B(0, 0), ldbk,
-                    beta,  C(m, n), ldcm);
+                    beta,  C(m, n), ldcm,
+                    sequence, request);
             }
             else if (transa == PlasmaNoTrans) {
                 int ldam = plasma_tile_mmain(A, m);
@@ -72,7 +73,8 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                             mvcm, nvcn, nvak,
                             alpha, A(m, k), ldam,
                                    B(k, n), ldbk,
-                            zbeta, C(m, n), ldcm);
+                            zbeta, C(m, n), ldcm,
+                            sequence, request);
                     }
                 }
                 //=====================================
@@ -88,7 +90,8 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                             mvcm, nvcn, nvak,
                             alpha, A(m, k), ldam,
                                    B(n, k), ldbn,
-                            zbeta, C(m, n), ldcm);
+                            zbeta, C(m, n), ldcm,
+                            sequence, request);
                     }
                 }
             }
@@ -107,7 +110,8 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                             mvcm, nvcn, mvak,
                             alpha, A(k, m), ldak,
                                    B(k, n), ldbk,
-                            zbeta, C(m, n), ldcm);
+                            zbeta, C(m, n), ldcm,
+                            sequence, request);
                     }
                 }
                 //==========================================
@@ -124,7 +128,8 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                             mvcm, nvcn, mvak,
                             alpha, A(k, m), ldak,
                                    B(n, k), ldbn,
-                            zbeta, C(m, n), ldcm);
+                            zbeta, C(m, n), ldcm,
+                            sequence, request);
                     }
                 }
             }

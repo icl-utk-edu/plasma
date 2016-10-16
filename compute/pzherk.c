@@ -51,7 +51,8 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
                     uplo, trans,
                     nvcn, nvak,
                     alpha, A(n, k), ldan,
-                    dbeta, C(n, n), ldcn);
+                    dbeta, C(n, n), ldcn,
+                    sequence, request);
             }
             //==============================
             // PlasmaNoTrans / PlasmaLower
@@ -69,7 +70,8 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
                             mvcm, nvcn, nvak,
                             alpha, A(m, k), ldam,
                                    A(n, k), ldan,
-                            zbeta, C(m, n), ldcm);
+                            zbeta, C(m, n), ldcm,
+                            sequence, request);
                     }
                 }
             }
@@ -88,7 +90,8 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
                             nvcn, mvcm, nvak,
                             alpha, A(n, k), ldan,
                                    A(m, k), ldam,
-                            zbeta, C(n, m), ldcn);
+                            zbeta, C(n, m), ldcn,
+                            sequence, request);
                     }
                 }
             }
@@ -105,7 +108,8 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
                     uplo, trans,
                     nvcn, mvak,
                     alpha, A(k, n), ldak,
-                    dbeta, C(n, n), ldcn);
+                    dbeta, C(n, n), ldcn,
+                    sequence, request);
             }
             //===================================
             // Plasma[_ConjTrans] / PlasmaLower
@@ -123,7 +127,8 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
                             mvcm, nvcn, mvak,
                             alpha, A(k, m), ldak,
                                    A(k, n), ldak,
-                            zbeta, C(m, n), ldcm);
+                            zbeta, C(m, n), ldcm,
+                            sequence, request);
                     }
                 }
             }
@@ -142,7 +147,8 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
                             nvcn, mvcm, mvak,
                             alpha, A(k, n), ldak,
                                    A(k, m), ldak,
-                            zbeta, C(n, m), ldcn);
+                            zbeta, C(n, m), ldcn,
+                            sequence, request);
                     }
                 }
             }
