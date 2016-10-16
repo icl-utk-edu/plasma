@@ -99,13 +99,13 @@
  * @param[in] ldt
  *         The leading dimension of the array T. ldt >= ib.
  *
- * @param WORK
+ * @param work
  *         Auxiliary workspace array of length
  *             ldwork-by-m1 if side == PlasmaLeft
  *             ldwork-by-ib if side == PlasmaRight
  *
  * @param[in] ldwork
- *         The leading dimension of the array WORK.
+ *         The leading dimension of the array work.
  *             ldwork >= max(1,ib) if side == PlasmaLeft
  *             ldwork >= max(1,n1) if side == PlasmaRight
  *
@@ -121,7 +121,7 @@ int core_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
                       plasma_complex64_t *A2,   int lda2,
                 const plasma_complex64_t *V,    int ldv,
                 const plasma_complex64_t *T,    int ldt,
-                      plasma_complex64_t *WORK, int ldwork)
+                      plasma_complex64_t *work, int ldwork)
 {
     // Check input arguments.
     if (side != PlasmaLeft && side != PlasmaRight) {
@@ -190,8 +190,8 @@ int core_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
         coreblas_error("illegal value of ldt");
         return -16;
     }
-    if (WORK == NULL) {
-        coreblas_error("NULL WORK");
+    if (work == NULL) {
+        coreblas_error("NULL work");
         return -17;
     }
     if (ldwork < imax(1, side == PlasmaLeft ? ib : n1)) {
@@ -245,7 +245,7 @@ int core_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
                     A2, lda2,
                     &V[i], ldv,
                     &T[ldt*i], ldt,
-                    WORK, ldwork);
+                    work, ldwork);
     }
 
     return PlasmaSuccess;
@@ -268,7 +268,6 @@ void core_omp_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
                      depend(in:T[0:ib*k])
     {
         if (sequence->status == PlasmaSuccess) {
-
             // Prepare workspaces.
             int tid = omp_get_thread_num();
             plasma_complex64_t *W = (plasma_complex64_t*)work.spaces[tid];
@@ -286,7 +285,7 @@ void core_omp_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
             if (info != PlasmaSuccess) {
                 plasma_error("core_ztsmlq() failed");
                 plasma_request_fail(sequence, request, PlasmaErrorInternal);
-             }
+            }
         }
     }
 }

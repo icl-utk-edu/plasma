@@ -241,13 +241,13 @@ void plasma_omp_zpotrs(plasma_enum_t uplo, plasma_desc_t A, plasma_desc_t B,
         return;
     }
     if (plasma_desc_check(A) != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         plasma_error("invalid A");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if (plasma_desc_check(B) != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         plasma_error("invalid B");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if (sequence == NULL) {

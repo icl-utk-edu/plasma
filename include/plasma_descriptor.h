@@ -133,12 +133,16 @@ static inline void *plasma_tile_addr_general_band(plasma_desc_t A, int m, int n)
 /******************************************************************************/
 static inline void *plasma_tile_addr(plasma_desc_t A, int m, int n)
 {
-    if (A.type == PlasmaGeneral)
+    if (A.type == PlasmaGeneral) {
         return plasma_tile_addr_general(A, m, n);
-    else if (A.type == PlasmaGeneralBand)
+    }
+    else if (A.type == PlasmaGeneralBand) {
         return plasma_tile_addr_general_band(A, m, n);
-    else
+    }
+    else {
         plasma_fatal_error("invalid matrix type");
+        return NULL;
+    }
 }
 
 /***************************************************************************//**
