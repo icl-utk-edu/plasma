@@ -30,7 +30,7 @@
 
 /***************************************************************************//**
  *
- * @brief Tests ZTRADD
+ * @brief Tests ZGEADD
  *
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
@@ -40,7 +40,7 @@
  * If param is non-NULL and info is non-NULL, set info to column values
  * and run test.
  ******************************************************************************/
-void test_ztradd(param_value_t param[], char *info)
+void test_zgeadd(param_value_t param[], char *info)
 {
     //================================================================
     // Print usage info or return column labels or values
@@ -48,7 +48,6 @@ void test_ztradd(param_value_t param[], char *info)
     if (param == NULL) {
         if (info == NULL) {
             // Print usage info
-            print_usage(PARAM_UPLO);
             print_usage(PARAM_TRANSA);
             print_usage(PARAM_M);
             print_usage(PARAM_N);
@@ -61,8 +60,7 @@ void test_ztradd(param_value_t param[], char *info)
         else {
             // Return column labels
             snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s %*s %*s %*s %*s %*s",
-                     InfoSpacing, "UpLo",
+                     "%*s %*s %*s %*s %*s %*s %*s %*s",
                      InfoSpacing, "TransA",
                      InfoSpacing, "m",
                      InfoSpacing, "n",
@@ -76,8 +74,7 @@ void test_ztradd(param_value_t param[], char *info)
     }
     // Return column values
     snprintf(info, InfoLen,
-             "%*c %*c %*d %*d %*.4f %*.4f %*d %*d %*d",
-             InfoSpacing, param[PARAM_UPLO].c,
+             "%*c %*d %*d %*.4f %*.4f %*d %*d %*d",
              InfoSpacing, param[PARAM_TRANSA].c,
              InfoSpacing, param[PARAM_M].i,
              InfoSpacing, param[PARAM_N].i,
@@ -90,7 +87,6 @@ void test_ztradd(param_value_t param[], char *info)
     //================================================================
     // Set parameters
     //================================================================
-    plasma_enum_t uplo   = plasma_uplo_const_t(param[PARAM_UPLO].c);
     plasma_enum_t transa = plasma_trans_const_t(param[PARAM_TRANSA].c);
 
     int m = param[PARAM_M].i;
@@ -163,12 +159,12 @@ void test_ztradd(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    retval = plasma_ztradd(uplo, transa, m, n, alpha, A, lda, beta, B, ldb);
+    retval = plasma_zgeadd(transa, m, n, alpha, A, lda, beta, B, ldb);
 
     plasma_time_t stop = omp_get_wtime();
 
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_ztradd() failed");
+        plasma_error("plasma_zgeadd() failed");
         param[PARAM_TIME].d    = 0.0;
         param[PARAM_GFLOPS].d  = 0.0;
         param[PARAM_ERROR].d   = 1.0;
@@ -181,88 +177,44 @@ void test_ztradd(param_value_t param[], char *info)
         param[PARAM_GFLOPS].d = flops_zgeadd(m, n) / time / 1e9;
     }
 
-    //================================================================
-    // Test results by comparing to result of core_ztradd function
-    //================================================================
+    //==================================================================
+    // Test results by comparing to result of core_z{ge,tr}add function
+    //==================================================================
     if (test) {
         // Calculate relative error |B_ref - B|_F / |B_ref|_F < 3*eps
         // Using 3*eps covers complex arithmetic
 
-        //=============
-        // PlasmaLower
-        //=============
-        if (uplo == PlasmaLower) {
-            switch (transa) {
-            //=================
-            // PlasmaConjTrans
-            //=================
-            case PlasmaConjTrans:
-                for (int j = 0; j < n; j++) {
-                    for (int i = j; i < m; i++) {
-                        Bref[ldb*j+i] =
-                            beta * Bref[ldb*j+i] + alpha * conj(A[lda*i+j]);
-                    }
-                }
-                break;
-            //=================
-            // PlasmaTrans
-            //=================
-            case PlasmaTrans:
-                for (int j = 0; j < n; j++) {
-                    for (int i = j; i < m; i++) {
-                        Bref[ldb*j+i] =
-                            beta * Bref[ldb*j+i] + alpha * A[lda*i+j];
-                    }
-                }
-                break;
-            //=================
-            // PlasmaNoTrans
-            //=================
-            case PlasmaNoTrans:
-                for (int j = 0; j < n; j++) {
-                    for (int i = j; i < m; i++) {
-                        Bref[ldb*j+i] =
-                            beta * Bref[ldb*j+i] + alpha * A[lda*j+i];
-                    }
+        switch (transa) {
+        //=================
+        // PlasmaConjTrans
+        //=================
+        case PlasmaConjTrans:
+            for (int j = 0; j < n; j++) {
+                for (int i = 0; i < m; i++) {
+                    Bref[ldb*j+i] = 
+                        beta * Bref[ldb*j+i] + alpha * conj(A[lda*i+j]);
                 }
             }
-        }
-        //=============
-        // PlasmaUpper
-        //=============
-        else if (uplo == PlasmaUpper) {
-            switch (transa) {
-            //=================
-            // PlasmaConjTrans
-            //=================
-            case PlasmaConjTrans:
-                for (int j = 0; j < n; j++) {
-                    for (int i = 0; i < imin(j+1, m); i++) {
-                        Bref[ldb*j+i] =
-                            beta * Bref[ldb*j+i] + alpha * conj(A[lda*i+j]);
-                    }
+            break;
+        //=================
+        // PlasmaTrans
+        //=================
+        case PlasmaTrans:
+            for (int j = 0; j < n; j++) {
+                for (int i = 0; i < m; i++) {
+                    Bref[ldb*j+i] =
+                        beta * Bref[ldb*j+i] + alpha * A[lda*i+j];
                 }
-                break;
-            //=================
-            // PlasmaTrans
-            //=================
-            case PlasmaTrans:
-                for (int j = 0; j < n; j++) {
-                    for (int i = 0; i < imin(j+1, m); i++) {
-                        Bref[ldb*j+i] =
-                            beta * Bref[ldb*j+i] + alpha * A[lda*i+j];
-                    }
-                }
-                break;
-            //=================
-            // PlasmaNoTrans
-            //=================
-            case PlasmaNoTrans:
-                for (int j = 0; j < n; j++) {
-                    for (int i = 0; i < imin(j+1, m); i++) {
-                        Bref[ldb*j+i] =
-                            beta * Bref[ldb*j+i] + alpha * A[lda*j+i];
-                    }
+            }
+            break;
+        //=================
+        // PlasmaNoTrans
+        //=================
+        case PlasmaNoTrans:
+            for (int j = 0; j < n; j++) {
+                for (int i = 0; i < m; i++) {
+                    Bref[ldb*j+i] =
+                        beta * Bref[ldb*j+i] + alpha * A[lda*j+i];
                 }
             }
         }

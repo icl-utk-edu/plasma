@@ -772,24 +772,24 @@ static double  flops_dlarfg(double n)
 static double  flops_slarfg(double n)
     { return    fmuls_larfg(n) +    fadds_larfg(n); }
 
-//------------------------------------------------------------ tradd
-static double fmuls_tradd(double m, double n)
+//------------------------------------------------------------ geadd
+static double fmuls_geadd(double m, double n)
     { return 2*m*n; }
 
-static double fadds_tradd(double m, double n)
+static double fadds_geadd(double m, double n)
     { return   m*n; }
 
-static double flops_ztradd(double m, double n)
-    { return 6.*fmuls_tradd(m, n) + 2.*fadds_tradd(m, n); }
+static double flops_zgeadd(double m, double n)
+    { return 6.*fmuls_geadd(m, n) + 2.*fadds_geadd(m, n); }
 
-static double flops_ctradd(double m, double n)
-    { return 6.*fmuls_tradd(m, n) + 2.*fadds_tradd(m, n); }
+static double flops_cgeadd(double m, double n)
+    { return 6.*fmuls_geadd(m, n) + 2.*fadds_geadd(m, n); }
 
-static double flops_dtradd(double m, double n)
-    { return    fmuls_tradd(m, n) +    fadds_tradd(m, n); }
+static double flops_dgeadd(double m, double n)
+    { return    fmuls_geadd(m, n) +    fadds_geadd(m, n); }
 
-static double flops_stradd(double m, double n)
-    { return    fmuls_tradd(m, n) +    fadds_tradd(m, n); }
+static double flops_sgeadd(double m, double n)
+    { return    fmuls_geadd(m, n) +    fadds_geadd(m, n); }
 
 #ifdef __cplusplus
 }  // extern "C"
