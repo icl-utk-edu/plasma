@@ -73,7 +73,7 @@ static const char * const ParamUsage[][2] = {
     {"--transa=[n|t|c]", "transposition of A [default: n]"},
     {"--transb=[n|t|c]", "transposition of B [default: n]"},
     {"--side=[l|r]", "left of right side application [default: l]"},
-    {"--uplo=[f|u|l]",
+    {"--uplo=[g|u|l]",
         "general rectangular or upper or lower triangular matrix [default: l]"},
     {"--diag=[n|u]", "not unit triangular or unit matrix [default: n]"},
     {"--m=", "M dimension (number of rows) [default: 1000]"},

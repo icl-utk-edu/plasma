@@ -26,6 +26,11 @@ struct routines_t {
 
 struct routines_t routines[] =
 {
+    { "zgeadd", test_zgeadd },
+    { "dgeadd", test_dgeadd },
+    { "cgeadd", test_cgeadd },
+    { "sgeadd", test_sgeadd },
+
     { "zgelqf", test_zgelqf },
     { "dgelqf", test_dgelqf },
     { "cgelqf", test_cgelqf },

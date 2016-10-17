@@ -37,6 +37,11 @@ void plasma_pzge2desc(plasma_complex64_t *pA, int lda,
                       plasma_sequence_t *sequence,
                       plasma_request_t *request);
 
+void plasma_pzgeadd(plasma_enum_t transa,
+                    plasma_complex64_t alpha,  plasma_desc_t A,
+                    plasma_complex64_t beta,   plasma_desc_t B,
+                    plasma_sequence_t *sequence, plasma_request_t *request);
+
 void plasma_pzgelqf(plasma_desc_t A, plasma_desc_t T,
                     plasma_workspace_t work,
                     plasma_sequence_t *sequence, plasma_request_t *request);
