@@ -30,7 +30,7 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transa,
                     plasma_complex64_t beta,   plasma_desc_t B,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // Check sequence status.
+    // Check sequence status
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
@@ -59,7 +59,7 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transa,
                     int ldam = plasma_tile_mmain(A, m);
                     int ldbm = plasma_tile_mmain(B, m);
                     core_omp_zgeadd(
-                        transa, 
+                        transa,
                         mvbm, nvbn,
                         alpha, A(m, n), ldam,
                         beta,  B(m, n), ldbm,
@@ -153,44 +153,5 @@ void plasma_pztradd(plasma_enum_t uplo, plasma_enum_t transa,
             }
         }
         break;
-    case PlasmaGeneral:
-    default:
-        //================================
-        // PlasmaGeneral / PlasmaNoTrans
-        //================================
-        if (transa == PlasmaNoTrans) {
-            for (int m = 0; m < B.mt; m++) {
-                int mvbm = plasma_tile_mview(B, m);
-                int ldam = plasma_tile_mmain(A, m);
-                int ldbm = plasma_tile_mmain(B, m);
-                for (int n = 0; n < B.nt; n++) {
-                    int nvbn = plasma_tile_nview(B, n);
-                    core_omp_zgeadd(
-                        transa, mvbm, nvbn,
-                        alpha, A(m, n), ldam,
-                        beta,  B(m, n), ldbm,
-                        sequence, request);
-                }
-            }
-        }
-        //=====================================
-        // PlasmaGeneral / Plasma[_Conj]Trans
-        //=====================================
-        else {
-            for (int m = 0; m < B.mt; m++) {
-                int mvbm = plasma_tile_mview(B, m);
-                int ldam = plasma_tile_mmain(A, m);
-                int ldbm = plasma_tile_mmain(B, m);
-                for (int n = 0; n < B.nt; n++) {
-                    int nvbn = plasma_tile_nview(B, n);
-                    int ldan = plasma_tile_mmain(A, n);
-                    core_omp_zgeadd(
-                        transa, mvbm, nvbn,
-                        alpha, A(n, m), ldan,
-                        beta,  B(m, n), ldbm,
-                        sequence, request);
-                }
-            }
-        }
     }
 }
