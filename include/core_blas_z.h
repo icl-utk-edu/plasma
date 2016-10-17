@@ -286,6 +286,13 @@ void core_omp_zsyrk(
     plasma_complex64_t beta,        plasma_complex64_t *C, int ldc,
     plasma_sequence_t *sequence, plasma_request_t *request);
 
+void core_omp_ztradd(
+    plasma_enum_t uplo, plasma_enum_t transa,
+    int m, int n,
+    plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+    plasma_complex64_t beta,        plasma_complex64_t *B, int ldb,
+    plasma_sequence_t *sequence, plasma_request_t *request);
+
 void core_omp_ztrmm(
     plasma_enum_t side, plasma_enum_t uplo,
     plasma_enum_t transa, plasma_enum_t diag,

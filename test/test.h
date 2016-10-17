@@ -177,9 +177,7 @@ static inline int imax(int a, int b)
 
 #include "test_s.h"
 #include "test_d.h"
-#include "test_ds.h"
 #include "test_c.h"
 #include "test_z.h"
-#include "test_zc.h"
 
 #endif // TEST_H
