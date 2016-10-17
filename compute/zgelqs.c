@@ -43,7 +43,7 @@
  * @param[in] lda
  *          The leading dimension of the array A. lda >= m.
  *
- * @param[in] descT
+ * @param[in] T
  *          Auxiliary factorization data, computed by plasma_zgelqf.
  *
  * @param[in,out] B
@@ -284,6 +284,6 @@ void plasma_omp_zgelqs(plasma_desc_t A, plasma_desc_t T,
 
     // Find X = Q^H * Y.
     plasma_pzunmlq(PlasmaLeft, Plasma_ConjTrans,
-                   A, B, T, work,
+                   A, T, B, work,
                    sequence, request);
 }

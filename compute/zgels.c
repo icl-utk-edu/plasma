@@ -66,7 +66,7 @@
  *
  * @param[out] T
  *          On exit, auxiliary factorization data.
- *          Matrix of T is allocated inside this function and needs to be 
+ *          Matrix of T is allocated inside this function and needs to be
  *          destroyed by plasma_desc_destroy.
  *
  * @param[in,out] pB
@@ -172,7 +172,7 @@ int plasma_zgels(plasma_enum_t trans,
 
     // Prepare descriptor T.
     int tmb, tnb, tm, tn;
-    if ( A.m >= A.n ) {
+    if (A.m >= A.n) {
         // QR branch
         tmb = ib;
         tnb = nb;
@@ -365,7 +365,7 @@ void plasma_omp_zgels(plasma_enum_t trans,
         plasma_pzgeqrf(A, T, work, sequence, request);
 
         plasma_pzunmqr(PlasmaLeft, Plasma_ConjTrans,
-                       A, B, T,
+                       A, T, B,
                        work, sequence, request);
 
         plasma_pztrsm(PlasmaLeft, PlasmaUpper,
@@ -396,7 +396,7 @@ void plasma_omp_zgels(plasma_enum_t trans,
 
         // Find X = Q^H * Y.
         plasma_pzunmlq(PlasmaLeft, Plasma_ConjTrans,
-                       A, B, T,
+                       A, T, B,
                        work, sequence, request);
     }
 }

@@ -46,7 +46,7 @@
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,m).
  *
- * @param[in] descT
+ * @param[in] T
  *          Auxiliary factorization data, computed by plasma_zgelqf.
  *
  * @param[out] Q
@@ -273,5 +273,5 @@ void plasma_omp_zunglq(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
     plasma_pzlaset(PlasmaGeneral, 0.0, 1.0, Q, sequence, request);
 
     // Construct Q.
-    plasma_pzunglq(A, Q, T, work, sequence, request);
+    plasma_pzunglq(A, T, Q, work, sequence, request);
 }

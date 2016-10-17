@@ -51,7 +51,7 @@
  * @param[out] T
  *          On exit, auxiliary factorization data, required by plasma_zgeqrs to
  *          solve the system of equations.
- *          Matrix in T is allocated inside this function and needs to be 
+ *          Matrix in T is allocated inside this function and needs to be
  *          destroyed by plasma_desc_destroy.
  *
  *******************************************************************************

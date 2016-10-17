@@ -67,7 +67,7 @@
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,k).
  *
- * @param[in] descT
+ * @param[in] T
  *          Auxiliary factorization data, computed by plasma_zgelqf.
  *
  * @param[in,out] C
@@ -340,7 +340,6 @@ void plasma_omp_zunmlq(plasma_enum_t side, plasma_enum_t trans,
 
     // Call the parallel function.
     plasma_pzunmlq(side, trans,
-                   A, C, T,
-                   work,
-                   sequence, request);
+                   A, T, C,
+                   work, sequence, request);
 }
