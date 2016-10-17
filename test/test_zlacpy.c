@@ -10,30 +10,21 @@
  *
  **/
 
-#include "test.h"
-#include "flops.h"
 #include "core_blas.h"
 #include "core_lapack.h"
+#include "flops.h"
+#include "ma-mtrx.h"
 #include "plasma.h"
+#include "test.h"
 
 #include <assert.h>
-#include <complex.h>
+#include <math.h>
+#include <omp.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-
-#include <omp.h>
-
-
-int vec_cpy(int n, plasma_complex64_t a[], plasma_complex64_t b[]);
-int mtrx_cpy(int m, int n, plasma_complex64_t A[], plasma_complex64_t B[]);
-int mtrx_tran(int m, int n, plasma_complex64_t A[]);
-int gen_consec_mtrx(int m, int n, plasma_complex64_t A[]);
-int print_vec(int n, plasma_complex64_t a[]);
-int print_mtrx(int m, int n, plasma_complex64_t A[]);
 
 /***************************************************************************//**
  *
@@ -115,18 +106,20 @@ void test_zlacpy(param_value_t param[], char *info)
         (plasma_complex64_t*)malloc((size_t)ldb*n*sizeof(plasma_complex64_t));
     assert(B != NULL);
 
-    /*
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
-    */
 
     // @test Fill in matrix A with consecutive natural numbers
-    gen_consec_mtrx(m, n, A);
+    // gen_consec_mtrx(m, n, A);
 
     // @test Print matrix A
+    /*
+    printf("Matrix A:\n");
     print_mtrx(m, n, A);
+    printf("\n");
+    */
 
     plasma_complex64_t *Bref = NULL;
     if (test) {
@@ -140,9 +133,20 @@ void test_zlacpy(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    lapack_int retval = plasma_zlacpy(uplo, m, n, A, lda, B, ldb);
+    retval = plasma_zlacpy(uplo, m, n, A, lda, B, ldb);
 
     plasma_time_t stop = omp_get_wtime();
+
+    // @test Print matrices A, B
+    /*
+    printf("Matrix A:\n");
+    print_mtrx(m, n, A);
+    printf("\n");
+
+    printf("Matrix B:\n");
+    print_mtrx(m, n, B);
+    printf("\n");
+    */
 
     param[PARAM_GFLOPS].d = 0.0;
 
@@ -170,7 +174,15 @@ void test_zlacpy(param_value_t param[], char *info)
 
         lapack_int mtrxLayout = LAPACK_COL_MAJOR;
 
-        retval = LAPACKE_zlacpy_work(mtrxLayout, uplo, m, n, A, lda, Bref, ldb);
+        retval = LAPACKE_zlacpy_work(
+                    mtrxLayout, lapack_const(uplo), m, n, A, lda, Bref, ldb);
+
+        // @test Print matrix B_ref
+        /*
+        printf("Matrix Bref:\n");
+        print_mtrx(m, n, Bref);
+        printf("\n");
+        */
 
         if (retval != PlasmaSuccess) {
             coreblas_error("LAPACKE_zlacpy_work() failed");
@@ -208,116 +220,4 @@ void test_zlacpy(param_value_t param[], char *info)
 
     if (test)
         free(Bref);
-}
-
-
-// Copies one vector into another vector
-int vec_cpy(int n, plasma_complex64_t a[], plasma_complex64_t b[]) {
-
-  int i;
-
-  for (i = 0; i < n; i++) {
-
-    b[i] = a[i];
-
-  }
-
-  return 0;
-
-}
-
-// Copies one matrix into another
-int mtrx_cpy(int m, int n, plasma_complex64_t A[], plasma_complex64_t B[]) {
-
-  int i;
-
-  for (i = 0; i < m; i++) {
-
-    vec_cpy(n, &A[i*n], &B[i*n]);
-
-  }
-
-  return 0;
-
-}
-
-// Transposes matrix
-int mtrx_tran(int m, int n, plasma_complex64_t A[]) {
-
-  int i, j;
-
-  plasma_complex64_t *T = calloc(m*n, sizeof(plasma_complex64_t));
-
-  if (T==NULL) {
-
-    fprintf(stderr, "'calloc()' failed!\n");
-    return(-1);
-
-  }
-
-  for (i = 0; i < m; i++) {
-    for (j = 0; j < n; j++) {
-      
-      T[j*m+i] = A[i*n+j];
-
-    }
-  }
-
-  mtrx_cpy(m, n, T, A);
-
-  free(T);
-
-  return 0;
-
-}
-
-// Generates matrix of consecutive natural numbers
-int gen_consec_mtrx(int m, int n, plasma_complex64_t A[]) {
-
-  int i, j;
-
-  for (i = 0; i < m; i++) {
-    for (j = 0; j < n; j++) {
-
-      A[i*m+j] = i*m+j+1;
-
-    }
-  }
-
-  mtrx_tran(m, n, A);
-
-  return 0;
-
-}
-
-// Prints out contents of vector to screen
-int print_vec(int n, plasma_complex64_t a[]) {
-
-  int i;
-
-  for (i = 0; i < n; i++) {
-
-    printf("%g %g\t", creal(a[i]), cimag(a[i]));
-
-  }
-
-  printf("\n");
-
-  return 0;
-
-}
-
-// Prints out contents of matrix to screen
-int print_mtrx(int m, int n, plasma_complex64_t A[]) {
-
-  int i;
-
-  for (i = 0; i < m*n; i = i+n) {
-
-    print_vec(n, &A[i]);
-
-  }
-
-  return 0;
-
 }

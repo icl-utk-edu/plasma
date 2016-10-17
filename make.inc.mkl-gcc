@@ -39,6 +39,7 @@ CFLAGS   += -DPLASMA_WITH_MKL \
 
 # With gcc OpenMP (libgomp), use -lmkl_sequential or (-lmkl_gnu_thread   with MKL_NUM_THREADS=1).
 # With icc OpenMP (liomp5),  use -lmkl_sequential or (-lmkl_intel_thread with MKL_NUM_THREADS=1).
-LIBS      = -L$(MKLROOT)/lib -lmkl_intel_lp64 -lmkl_core -lmkl_sequential -lm
+LIBS      = -L$(MKLROOT)/lib -lmkl_intel_lp64 -lmkl_core -lmkl_sequential -lm \
+            -L/opt/ma-mtrx/lib -lma-mtrx-c
 
-INC       = -I$(MKLROOT)/include
+INC       = -I$(MKLROOT)/include -I/opt/ma-mtrx/include

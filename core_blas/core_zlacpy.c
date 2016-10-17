@@ -48,7 +48,7 @@
  *
  * @param[in] ldb
  *          The leading dimension of the array B.
- *          ldb >= max(1,M).
+ *          ldb >= max(1,m).
  *
  ******************************************************************************/
 void core_zlacpy(plasma_enum_t uplo,
