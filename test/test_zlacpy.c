@@ -99,11 +99,11 @@ void test_zlacpy(param_value_t param[], char *info)
     // Allocate and initialize arrays
     //================================================================
     plasma_complex64_t *A =
-        (plasma_complex64_t*)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
+        (plasma_complex64_t*)calloc((size_t)lda*n, sizeof(plasma_complex64_t));
     assert(A != NULL);
 
     plasma_complex64_t *B =
-        (plasma_complex64_t*)malloc((size_t)ldb*n*sizeof(plasma_complex64_t));
+        (plasma_complex64_t*)calloc((size_t)ldb*n, sizeof(plasma_complex64_t));
     assert(B != NULL);
 
     int seed[] = {0, 0, 0, 1};
@@ -111,20 +111,10 @@ void test_zlacpy(param_value_t param[], char *info)
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
 
-    // @test Fill in matrix A with consecutive natural numbers
-    // gen_consec_mtrx(m, n, A);
-
-    // @test Print matrix A
-    /*
-    printf("Matrix A:\n");
-    print_mtrx(m, n, A);
-    printf("\n");
-    */
-
     plasma_complex64_t *Bref = NULL;
     if (test) {
-        Bref = (plasma_complex64_t*)malloc(
-            (size_t)ldb*n*sizeof(plasma_complex64_t));
+        Bref = (plasma_complex64_t*)calloc(
+            (size_t)ldb*n, sizeof(plasma_complex64_t));
         assert(Bref != NULL);
     }
 
@@ -136,17 +126,6 @@ void test_zlacpy(param_value_t param[], char *info)
     retval = plasma_zlacpy(uplo, m, n, A, lda, B, ldb);
 
     plasma_time_t stop = omp_get_wtime();
-
-    // @test Print matrices A, B
-    /*
-    printf("Matrix A:\n");
-    print_mtrx(m, n, A);
-    printf("\n");
-
-    printf("Matrix B:\n");
-    print_mtrx(m, n, B);
-    printf("\n");
-    */
 
     param[PARAM_GFLOPS].d = 0.0;
 
@@ -176,13 +155,6 @@ void test_zlacpy(param_value_t param[], char *info)
 
         retval = LAPACKE_zlacpy_work(
                     mtrxLayout, lapack_const(uplo), m, n, A, lda, Bref, ldb);
-
-        // @test Print matrix B_ref
-        /*
-        printf("Matrix Bref:\n");
-        print_mtrx(m, n, Bref);
-        printf("\n");
-        */
 
         if (retval != PlasmaSuccess) {
             coreblas_error("LAPACKE_zlacpy_work() failed");

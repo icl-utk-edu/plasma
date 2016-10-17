@@ -230,9 +230,10 @@ void core_omp_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void core_omp_zlacpy(plasma_enum_t uplo,
-                     int m, int n, int nb,
+                     int m, int n,
                      const plasma_complex64_t *A, int lda,
-                           plasma_complex64_t *B, int ldb);
+                           plasma_complex64_t *B, int ldb,
+                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void core_omp_zlacpy_lapack2tile_band(plasma_enum_t uplo,
                                       int it, int jt,

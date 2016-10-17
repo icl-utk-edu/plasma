@@ -65,14 +65,18 @@ void core_zlacpy(plasma_enum_t uplo,
 
 /******************************************************************************/
 void core_omp_zlacpy(plasma_enum_t uplo,
-                     int m, int n, int nb,
+                     int m, int n,
                      const plasma_complex64_t *A, int lda,
-                           plasma_complex64_t *B, int ldb)
+                           plasma_complex64_t *B, int ldb,
+                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     #pragma omp task depend(in:A[0:lda*n]) \
                      depend(out:B[0:ldb*n])
-    core_zlacpy(uplo,
-                m, n,
-                A, lda,
-                B, ldb);
+    {
+        if (sequence->status == PlasmaSuccess)
+            core_zlacpy(uplo,
+                        m, n,
+                        A, lda,
+                        B, ldb);
+    }
 }
