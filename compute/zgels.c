@@ -53,8 +53,8 @@
  *          The number of right hand sides, i.e., the number of columns of the
  *          matrices B and X.  nrhs >= 0.
  *
- * @param[in,out] A
- *          On entry, the m-by-n matrix A.
+ * @param[in,out] pA
+ *          On entry, pointer to the m-by-n matrix A.
  *          On exit,
  *          if m >= n, A is overwritten by details of its QR factorization as
  *                     returned by plasma_zgeqrf;
@@ -64,12 +64,14 @@
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,m).
  *
- * @param[out] descT
+ * @param[out] T
  *          On exit, auxiliary factorization data.
+ *          Matrix of T is allocated inside this function and needs to be 
+ *          destroyed by plasma_desc_destroy.
  *
- * @param[in,out] B
- *          On entry, the m-by-nrhs matrix B of right-hand side vectors, stored
- *          columnwise;
+ * @param[in,out] pB
+ *          On entry, pointer to the m-by-nrhs matrix B of right-hand side
+ *          vectors, stored columnwise;
  *          On exit, if return value = 0, B is overwritten by the solution
  *          vectors, stored columnwise:
  *          if m >= n, rows 1 to N of B contain the least squares solution
@@ -100,7 +102,7 @@
 int plasma_zgels(plasma_enum_t trans,
                  int m, int n, int nrhs,
                  plasma_complex64_t *pA, int lda,
-                 plasma_desc_t T,
+                 plasma_desc_t *T,
                  plasma_complex64_t *pB, int ldb)
 {
     // Get PLASMA context.
@@ -158,6 +160,7 @@ int plasma_zgels(plasma_enum_t trans,
         plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
+
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
                                         imax(m, n), nrhs, 0, 0, imax(m, n),
                                         nrhs, &B);
@@ -166,6 +169,29 @@ int plasma_zgels(plasma_enum_t trans,
         plasma_desc_destroy(&A);
         return retval;
     }
+
+    // Prepare descriptor T.
+    int tmb, tnb, tm, tn;
+    if ( A.m >= A.n ) {
+        // QR branch
+        tmb = ib;
+        tnb = nb;
+        tm  = tmb*A.mt;
+        tn  = A.n;
+    }
+    else {
+        // LQ branch
+        tmb = ib;
+        tnb = nb;
+        tm  = tmb*A.mt;
+        tn  = tnb*A.nt;
+    }
+    // nt, i.e. n should be doubled if tree-reduction QR is performed,
+    // not implemented now
+    // Create the descriptor using the standard function.
+    retval = plasma_desc_general_create(PlasmaComplexDouble,
+                                        tmb, tnb, tm, tn,
+                                        0, 0, tm, tn, T);
 
     // Allocate workspace.
     plasma_workspace_t work;
@@ -197,7 +223,7 @@ int plasma_zgels(plasma_enum_t trans,
 
         // Call the tile async function.
         plasma_omp_zgels(PlasmaNoTrans,
-                         A, T,
+                         A, *T,
                          B, work,
                          sequence, &request);
 

@@ -38,8 +38,8 @@
  *          The number of columns of the matrix A.
  *          n >= 0.
  *
- * @param[in,out] A
- *          On entry, the m-by-n matrix A.
+ * @param[in,out] pA
+ *          On entry, pointer to the m-by-n matrix A.
  *          On exit, the elements on and above the diagonal of the array contain
  *          the min(m,n)-by-n upper trapezoidal matrix R (R is upper triangular
  *          if m >= n); the elements below the diagonal represent the unitary
@@ -48,9 +48,11 @@
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,m).
  *
- * @param[out] descT
+ * @param[out] T
  *          On exit, auxiliary factorization data, required by plasma_zgeqrs to
  *          solve the system of equations.
+ *          Matrix in T is allocated inside this function and needs to be 
+ *          destroyed by plasma_desc_destroy.
  *
  *******************************************************************************
  *
@@ -69,7 +71,7 @@
  ******************************************************************************/
 int plasma_zgeqrf(int m, int n,
                   plasma_complex64_t *pA, int lda,
-                  plasma_desc_t T)
+                  plasma_desc_t *T)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -110,6 +112,22 @@ int plasma_zgeqrf(int m, int n,
         return retval;
     }
 
+    // Prepare descriptor T.
+    int tmb = ib;
+    int tnb = nb;
+    int tm = tmb*A.mt;
+    int tn = imin(A.m, A.n);
+    // nt, i.e. n should be doubled if tree-reduction QR is performed,
+    // not implemented now
+    // Create the descriptor using the standard function.
+    retval = plasma_desc_general_create(PlasmaComplexDouble,
+                                        tmb, tnb, tm, tn,
+                                        0, 0, tm, tn, T);
+    if (retval != PlasmaSuccess) {
+        plasma_error("plasma_desc_general_create() failed");
+        return retval;
+    }
+
     // Allocate workspace.
     plasma_workspace_t work;
     size_t lwork = nb + ib*nb;  // geqrt: tau + work
@@ -138,7 +156,7 @@ int plasma_zgeqrf(int m, int n,
         plasma_omp_zge2desc(pA, lda, A, sequence, &request);
 
         // Call the tile async function.
-        plasma_omp_zgeqrf(A, T, work, sequence, &request);
+        plasma_omp_zgeqrf(A, *T, work, sequence, &request);
 
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);

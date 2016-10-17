@@ -26,7 +26,7 @@ extern "C" {
  **/
 int plasma_zgelqf(int m, int n,
                   plasma_complex64_t *pA, int lda,
-                  plasma_desc_t T);
+                  plasma_desc_t *T);
 
 int plasma_zgelqs(int m, int n, int nrhs,
                   plasma_complex64_t *pA, int lda,
@@ -36,7 +36,7 @@ int plasma_zgelqs(int m, int n, int nrhs,
 int plasma_zgels(plasma_enum_t trans,
                  int m, int n, int nrhs,
                  plasma_complex64_t *pA, int lda,
-                 plasma_desc_t T,
+                 plasma_desc_t *T,
                  plasma_complex64_t *pB, int ldb);
 
 int plasma_zgemm(plasma_enum_t transa, plasma_enum_t transb,
@@ -47,7 +47,7 @@ int plasma_zgemm(plasma_enum_t transa, plasma_enum_t transb,
 
 int plasma_zgeqrf(int m, int n,
                   plasma_complex64_t *f77A, int lda,
-                  plasma_desc_t T);
+                  plasma_desc_t *T);
 
 int plasma_zgeqrs(int m, int n, int nrhs,
                   plasma_complex64_t *pA, int lda,

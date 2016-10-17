@@ -301,8 +301,7 @@ plasma_desc_t plasma_desc_view(plasma_desc_t A, int i, int j, int m, int n)
 }
 
 /******************************************************************************/
-int plasma_descT_create(plasma_enum_t precision, int m, int n,
-                        plasma_desc_t *A)
+int plasma_descT_create(plasma_desc_t A, plasma_desc_t *T)
 {
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -311,17 +310,23 @@ int plasma_descT_create(plasma_enum_t precision, int m, int n,
     }
 
     // Compute the parameters of the descriptor.
-    int nb = plasma->nb;
     int ib = plasma->ib;
 
     int mb = ib;
-    int mt = (m%nb == 0) ? (m/nb) : (m/nb+1);
-    int nt = (n%nb == 0) ? (n/nb) : (n/nb+1);
+    int nb = A.nb;
+
+    int mt = A.mt;
+    int nt = A.nt;
     // nt should be doubled if tree-reduction QR is performed,
     // not implemented now
 
+    int m = mt*mb;
+    int n = nt*nb;
+
     // Create the descriptor using the standard function.
-    int retval = plasma_desc_general_create(precision, mb, nb, mt*mb, nt*nb,
-                                            0, 0, mt*mb, nt*nb, A);
+    //int retval = plasma_desc_general_create(A.precision, mb, nb, m, n,
+    //                                        0, 0, m, n, T);
+    int retval = plasma_desc_general_create(A.precision, mb, nb, m, n,
+                                            0, 0, m, n, T);
     return retval;
 }
