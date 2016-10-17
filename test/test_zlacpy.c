@@ -13,7 +13,6 @@
 #include "core_blas.h"
 #include "core_lapack.h"
 #include "flops.h"
-#include "ma-mtrx.h"
 #include "plasma.h"
 #include "test.h"
 

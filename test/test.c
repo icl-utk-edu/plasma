@@ -121,6 +121,11 @@ struct routines_t routines[] =
     { "csyr2k", test_csyr2k },
     { "ssyr2k", test_ssyr2k },
 
+    { "ztradd", test_ztradd },
+    { "dtradd", test_dtradd },
+    { "ctradd", test_ctradd },
+    { "stradd", test_stradd },
+
     { "ztrmm", test_ztrmm },
     { "dtrmm", test_dtrmm },
     { "ctrmm", test_ctrmm },

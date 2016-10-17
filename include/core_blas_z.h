@@ -124,6 +124,11 @@ void core_zsyrk(plasma_enum_t uplo, plasma_enum_t trans,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                 plasma_complex64_t beta,        plasma_complex64_t *C, int ldc);
 
+int core_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
+                int m, int n,
+                plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
+                plasma_complex64_t beta,        plasma_complex64_t *B, int ldb);
+
 void core_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
                 plasma_enum_t transa, plasma_enum_t diag,
                 int m, int n,
