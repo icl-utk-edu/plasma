@@ -51,7 +51,7 @@ int plasma_zgemm(plasma_enum_t transa, plasma_enum_t transb,
                  plasma_complex64_t beta,  plasma_complex64_t *pC, int ldc);
 
 int plasma_zgeqrf(int m, int n,
-                  plasma_complex64_t *f77A, int lda,
+                  plasma_complex64_t *pA, int lda,
                   plasma_desc_t *T);
 
 int plasma_zgeqrs(int m, int n, int nrhs,
@@ -141,12 +141,12 @@ int plasma_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
 int plasma_zunglq(int m, int n, int k,
                   plasma_complex64_t *pA, int lda,
                   plasma_desc_t T,
-                  plasma_complex64_t *Qf77, int ldq);
+                  plasma_complex64_t *pQ, int ldq);
 
 int plasma_zungqr(int m, int n, int k,
                   plasma_complex64_t *pA, int lda,
                   plasma_desc_t T,
-                  plasma_complex64_t *Qf77, int ldq);
+                  plasma_complex64_t *pQ, int ldq);
 
 int plasma_zunmlq(plasma_enum_t side, plasma_enum_t trans,
                   int m, int n, int k,
