@@ -112,12 +112,24 @@ void test_zlacpy(param_value_t param[], char *info)
 
     lapack_int mtrxLayout = LAPACK_COL_MAJOR;
 
-    // Enforce NaNs in upper or lower triangle of B
-    if (uplo == PlasmaLower) {
-        LAPACKE_zlaset_work(mtrxLayout, 'U', m, n, nan(""), nan(""), B, ldb);
-    }
-    else if (uplo == PlasmaUpper) {
-        LAPACKE_zlaset_work(mtrxLayout, 'L', m, n, nan(""), nan(""), B, ldb);
+    // LAPACKE_[zcds]lantr_work has a bug (returns 0)
+    // in MKL <= 11.3.3 (at least). Fixed in LAPACK 3.6.1.
+    // For now, zero out the opposite triangle and use lange.
+    // @sa test_ztrmm
+
+    // Enforce zeroes in general rectangle or upper or lower triangle of B
+    switch (uplo) {
+        case PlasmaLower:
+            LAPACKE_zlaset_work(
+                mtrxLayout, 'U', m-1, n-1, 0.0, 0.0, &B[n], ldb);
+            break;
+        case PlasmaUpper:
+            LAPACKE_zlaset_work(
+                mtrxLayout, 'L', m-1, n-1, 0.0, 0.0, &B[1], ldb);
+            break;
+        default:
+            LAPACKE_zlaset_work(
+                mtrxLayout, 'G', m,   n,   0.0, 0.0,  B,    ldb);
     }
 
     plasma_complex64_t *Bref = NULL;
@@ -171,18 +183,16 @@ void test_zlacpy(param_value_t param[], char *info)
         double work[1];
 
         // Calculate Frobenius norm of reference result B_ref
-        double BnormRef  = LAPACKE_zlantr_work(
-                               mtrxLayout, 'F', lapack_const(uplo), 'N', m, n,
-                               Bref, ldb, work);
+        double BnormRef  = LAPACKE_zlange_work(
+                               mtrxLayout, 'F', m, n, Bref, ldb, work);
 
         // Calculate difference B_ref-B
         plasma_complex64_t zmone = -1.0;
         cblas_zaxpy((size_t)ldb*n, CBLAS_SADDR(zmone), B, 1, Bref, 1);
 
         // Calculate Frobenius norm of B_ref-B
-        double BnormDiff = LAPACKE_zlantr_work(
-                               mtrxLayout, 'F', lapack_const(uplo), 'N', m, n,
-                               Bref, ldb, work);
+        double BnormDiff = LAPACKE_zlange_work(
+                               mtrxLayout, 'F', m, n, Bref, ldb, work);
 
         // Calculate relative error |B_ref-B|_F / |B_ref|_F
         double error = BnormDiff/BnormRef;
