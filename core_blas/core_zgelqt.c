@@ -63,7 +63,7 @@
  *         The leading dimension of the array A.  lda >= max(1,m).
  *
  * @param[out] T
- *         The ib-by-n triangular factor T of the block reflector.
+ *         The ib-by-m triangular factor T of the block reflector.
  *         T is upper triangular by block (economic storage);
  *         The rest of the array is not referenced.
  *
@@ -176,7 +176,8 @@ void core_omp_zgelqt(int m, int n, int ib,
 {
     // TODO: double check depend dimensions
     #pragma omp task depend(inout:A[0:lda*n]) \
-                     depend(out:T[0:ib*n])
+                     depend(out:T[0:ib*m]) // T should be mxib, but is stored 
+                                           // as ibxm
     {
         if (sequence->status == PlasmaSuccess) {
             // Prepare workspaces.
