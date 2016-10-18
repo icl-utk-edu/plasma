@@ -76,6 +76,11 @@ struct routines_t routines[] =
     { "cherk", test_cherk },
     { "", NULL },
 
+    { "zlag2c", test_zlag2c },
+    { "dlag2s", test_dlag2s },
+    { "", NULL },
+    { "", NULL },
+
     { "zpbsv", test_zpbsv },
     { "dpbsv", test_dpbsv },
     { "cpbsv", test_cpbsv },
