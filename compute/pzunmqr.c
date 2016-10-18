@@ -19,15 +19,15 @@
 #include "core_blas.h"
 
 #define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
-#define B(m, n) (plasma_complex64_t*)plasma_tile_addr(B, m, n)
 #define T(m, n) (plasma_complex64_t*)plasma_tile_addr(T, m, n)
+#define B(m, n) (plasma_complex64_t*)plasma_tile_addr(B, m, n)
 
 /***************************************************************************//**
  *  Parallel application of Q using tile V - QR factorization
  * @see plasma_omp_zgeqrs
  **/
 void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
-                    plasma_desc_t A, plasma_desc_t B, plasma_desc_t T,
+                    plasma_desc_t A, plasma_desc_t T, plasma_desc_t B,
                     plasma_workspace_t work,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {

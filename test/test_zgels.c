@@ -137,8 +137,6 @@ void test_zgels(param_value_t param[], char *info)
     // Prepare the descriptor for matrix T.
     //================================================================
     plasma_desc_t T;
-    retval = plasma_descT_create(PlasmaComplexDouble, m, n, &T);
-    assert(retval == PlasmaSuccess);
 
     //================================================================
     // Run and time PLASMA.
@@ -146,7 +144,7 @@ void test_zgels(param_value_t param[], char *info)
     plasma_time_t start = omp_get_wtime();
     plasma_zgels(PlasmaNoTrans, m, n, nrhs,
                  A, lda,
-                 T,
+                 &T,
                  B, ldb);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;

@@ -36,8 +36,8 @@
  * @param[in] n
  *          The number of columns of the matrix A. n >= 0.
  *
- * @param[in,out] A
- *          On entry, the m-by-n matrix A.
+ * @param[in,out] pA
+ *          On entry, pointer to the m-by-n matrix A.
  *          On exit, the elements on and below the diagonal of the array
  *          contain the m-by-min(m,n) lower trapezoidal matrix L (L is lower
  *          triangular if M <= N); the elements above the diagonal represent
@@ -47,9 +47,11 @@
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,m).
  *
- * @param[out] descT
+ * @param[out] T
  *          On exit, auxiliary factorization data, required by plasma_zgelqs
  *          to solve the system of equations.
+ *          Matrix of T is allocated inside this function and needs to be
+ *          destroyed by plasma_desc_destroy.
  *
  *******************************************************************************
  *
@@ -67,7 +69,7 @@
  ******************************************************************************/
 int plasma_zgelqf(int m, int n,
                   plasma_complex64_t *pA, int lda,
-                  plasma_desc_t T)
+                  plasma_desc_t *T)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -108,6 +110,13 @@ int plasma_zgelqf(int m, int n,
         return retval;
     }
 
+    // Prepare descriptor T.
+    retval = plasma_descT_create(A, ib, T);
+    if (retval != PlasmaSuccess) {
+        plasma_error("plasma_descT_create() failed");
+        return retval;
+    }
+
     // Allocate workspace.
     plasma_workspace_t work;
     size_t lwork = nb + ib*nb;  // gelqt: tau + work
@@ -136,7 +145,7 @@ int plasma_zgelqf(int m, int n,
         plasma_omp_zge2desc(pA, lda, A, sequence, &request);
 
         // Call the tile async function.
-        plasma_omp_zgelqf(A, T, work, sequence, &request);
+        plasma_omp_zgelqf(A, *T, work, sequence, &request);
 
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);

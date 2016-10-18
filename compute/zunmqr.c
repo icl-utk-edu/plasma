@@ -69,7 +69,7 @@
  *          If side == PlasmaLeft,  lda >= max(1,m).
  *          If side == PlasmaRight, lda >= max(1,n).
  *
- * @param[in] descT
+ * @param[in] T
  *          Auxiliary factorization data, computed by plasma_zgeqrf.
  *
  * @param[in,out] C
@@ -341,6 +341,6 @@ void plasma_omp_zunmqr(plasma_enum_t side, plasma_enum_t trans,
 
     // Call the parallel function.
     plasma_pzunmqr(side, trans,
-                   A, C, T, work,
-                   sequence, request);
+                   A, T, C,
+                   work, sequence, request);
 }

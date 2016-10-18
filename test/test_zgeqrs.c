@@ -136,15 +136,13 @@ void test_zgeqrs(param_value_t param[], char *info)
     // Prepare the descriptor for matrix T.
     //================================================================
     plasma_desc_t T;
-    retval = plasma_descT_create(PlasmaComplexDouble, m, n, &T);
-    assert(retval == PlasmaSuccess);
 
     //================================================================
     // Run and time PLASMA.
     //================================================================
     // prepare QR factorization of A - only auxiliary for this test,
     // time is not measured
-    plasma_zgeqrf(m, n, A, lda, T);
+    plasma_zgeqrf(m, n, A, lda, &T);
 
     // perform solution of the system by the prepared QR factorization of A
     plasma_time_t start = omp_get_wtime();
