@@ -60,7 +60,7 @@
  *          If side == PlasmaLeft,  m >= k >= 0.
  *          If side == PlasmaRight, n >= k >= 0.
  *
- * @param[in] A
+ * @param[in] pA
  *          Details of the QR factorization of the original matrix A as returned
  *          by plasma_zgeqrf.
  *
@@ -72,8 +72,8 @@
  * @param[in] T
  *          Auxiliary factorization data, computed by plasma_zgeqrf.
  *
- * @param[in,out] C
- *          On entry, the m-by-n matrix C.
+ * @param[in,out] pC
+ *          On entry, pointer to the m-by-n matrix C.
  *          On exit, C is overwritten by Q*C, Q^H*C, C*Q, or C*Q^H.
  *
  * @param[in] ldc
