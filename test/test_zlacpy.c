@@ -98,11 +98,11 @@ void test_zlacpy(param_value_t param[], char *info)
     // Allocate and initialize arrays
     //================================================================
     plasma_complex64_t *A =
-        (plasma_complex64_t*)calloc((size_t)lda*n, sizeof(plasma_complex64_t));
+        (plasma_complex64_t*)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
     plasma_complex64_t *B =
-        (plasma_complex64_t*)calloc((size_t)ldb*n, sizeof(plasma_complex64_t));
+        (plasma_complex64_t*)malloc((size_t)ldb*n*sizeof(plasma_complex64_t));
     assert(B != NULL);
 
     int seed[] = {0, 0, 0, 1};
@@ -110,11 +110,23 @@ void test_zlacpy(param_value_t param[], char *info)
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
 
+    lapack_int mtrxLayout = LAPACK_COL_MAJOR;
+
+    // Enforce NaNs in upper or lower triangle of B
+    if (uplo == PlasmaLower) {
+        LAPACKE_zlaset_work(mtrxLayout, 'U', m, n, nan(""), nan(""), B, ldb);
+    }
+    else if (uplo == PlasmaUpper) {
+        LAPACKE_zlaset_work(mtrxLayout, 'L', m, n, nan(""), nan(""), B, ldb);
+    }
+
     plasma_complex64_t *Bref = NULL;
     if (test) {
-        Bref = (plasma_complex64_t*)calloc(
-            (size_t)ldb*n, sizeof(plasma_complex64_t));
+        Bref = (plasma_complex64_t*)malloc(
+            (size_t)ldb*n*sizeof(plasma_complex64_t));
         assert(Bref != NULL);
+
+        memcpy(Bref, B, (size_t)ldb*n*sizeof(plasma_complex64_t));
     }
 
     //================================================================
@@ -130,9 +142,10 @@ void test_zlacpy(param_value_t param[], char *info)
 
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_zlacpy() failed");
-        param[PARAM_TIME].d = 0.0;
-        if (!test)
-            return;
+        param[PARAM_TIME].d    = 0.0;
+        param[PARAM_ERROR].d   = 1.0;
+        param[PARAM_SUCCESS].i = false;
+        return;
     }
     else {
         param[PARAM_TIME].d = stop-start;
@@ -144,13 +157,6 @@ void test_zlacpy(param_value_t param[], char *info)
     if (test) {
         // Calculate relative error |B_ref - B|_F / |B_ref|_F < 3*eps
         // Using 3*eps covers complex arithmetic
-        if (retval != PlasmaSuccess) {
-            param[PARAM_ERROR].d   = 1.0;
-            param[PARAM_SUCCESS].i = false;
-            return;
-        }
-
-        lapack_int mtrxLayout = LAPACK_COL_MAJOR;
 
         retval = LAPACKE_zlacpy_work(
                     mtrxLayout, lapack_const(uplo), m, n, A, lda, Bref, ldb);
@@ -165,16 +171,18 @@ void test_zlacpy(param_value_t param[], char *info)
         double work[1];
 
         // Calculate Frobenius norm of reference result B_ref
-        double BnormRef  = LAPACKE_zlange_work(
-                               mtrxLayout, 'F', m, n, Bref, ldb, work);
+        double BnormRef  = LAPACKE_zlantr_work(
+                               mtrxLayout, 'F', lapack_const(uplo), 'N', m, n,
+                               Bref, ldb, work);
 
         // Calculate difference B_ref-B
         plasma_complex64_t zmone = -1.0;
         cblas_zaxpy((size_t)ldb*n, CBLAS_SADDR(zmone), B, 1, Bref, 1);
 
         // Calculate Frobenius norm of B_ref-B
-        double BnormDiff = LAPACKE_zlange_work(
-                               mtrxLayout, 'F', m, n, Bref, ldb, work);
+        double BnormDiff = LAPACKE_zlantr_work(
+                               mtrxLayout, 'F', lapack_const(uplo), 'N', m, n,
+                               Bref, ldb, work);
 
         // Calculate relative error |B_ref-B|_F / |B_ref|_F
         double error = BnormDiff/BnormRef;
