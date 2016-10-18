@@ -133,21 +133,21 @@ void plasma_pztrsm(plasma_enum_t side, plasma_enum_t uplo,
                                              plasma_desc_t B,
                    plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_pzunglq(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
+void plasma_pzunglq(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
                     plasma_workspace_t work,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_pzungqr(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
+void plasma_pzungqr(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
                     plasma_workspace_t work,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
-                    plasma_desc_t A, plasma_desc_t B, plasma_desc_t T,
+                    plasma_desc_t A, plasma_desc_t T, plasma_desc_t B,
                     plasma_workspace_t work,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
-                    plasma_desc_t A, plasma_desc_t B, plasma_desc_t T,
+                    plasma_desc_t A, plasma_desc_t T, plasma_desc_t B,
                     plasma_workspace_t work,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 

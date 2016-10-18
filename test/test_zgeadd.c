@@ -165,10 +165,11 @@ void test_zgeadd(param_value_t param[], char *info)
 
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_zgeadd() failed");
-        param[PARAM_TIME].d   = 0.0;
-        param[PARAM_GFLOPS].d = 0.0;
-        if (!test)
-            return;
+        param[PARAM_TIME].d    = 0.0;
+        param[PARAM_GFLOPS].d  = 0.0;
+        param[PARAM_ERROR].d   = 1.0;
+        param[PARAM_SUCCESS].i = false;
+        return;
     }
     else {
         plasma_time_t time    = stop-start;
@@ -182,11 +183,6 @@ void test_zgeadd(param_value_t param[], char *info)
     if (test) {
         // Calculate relative error |B_ref - B|_F / |B_ref|_F < 3*eps
         // Using 3*eps covers complex arithmetic
-        if (retval != PlasmaSuccess) {
-            param[PARAM_ERROR].d   = 1.0;
-            param[PARAM_SUCCESS].i = false;
-            return;
-        }
 
         switch (transa) {
         //=================

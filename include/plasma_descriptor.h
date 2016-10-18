@@ -242,8 +242,7 @@ int plasma_desc_general_band_check(plasma_desc_t A);
 
 plasma_desc_t plasma_desc_view(plasma_desc_t A, int i, int j, int m, int n);
 
-int plasma_descT_create(plasma_enum_t precision, int m, int n,
-                        plasma_desc_t *A);
+int plasma_descT_create(plasma_desc_t A, int ib, plasma_desc_t *T);
 
 #ifdef __cplusplus
 }  // extern "C"

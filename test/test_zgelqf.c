@@ -115,14 +115,12 @@ void test_zgelqf(param_value_t param[], char *info)
     // Prepare the descriptor for matrix T.
     //================================================================
     plasma_desc_t T;
-    retval = plasma_descT_create(PlasmaComplexDouble, m, n, &T);
-    assert(retval == PlasmaSuccess);
 
     //================================================================
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    plasma_zgelqf(m, n, A, lda, T);
+    plasma_zgelqf(m, n, A, lda, &T);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
