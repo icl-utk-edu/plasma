@@ -171,27 +171,11 @@ int plasma_zgels(plasma_enum_t trans,
     }
 
     // Prepare descriptor T.
-    int tmb, tnb, tm, tn;
-    if (A.m >= A.n) {
-        // QR branch
-        tmb = ib;
-        tnb = nb;
-        tm  = tmb*A.mt;
-        tn  = A.n;
+    retval = plasma_descT_create(A, ib, T);
+    if (retval != PlasmaSuccess) {
+        plasma_error("plasma_descT_create() failed");
+        return retval;
     }
-    else {
-        // LQ branch
-        tmb = ib;
-        tnb = nb;
-        tm  = tmb*A.mt;
-        tn  = tnb*A.nt;
-    }
-    // nt, i.e. n should be doubled if tree-reduction QR is performed,
-    // not implemented now
-    // Create the descriptor using the standard function.
-    retval = plasma_desc_general_create(PlasmaComplexDouble,
-                                        tmb, tnb, tm, tn,
-                                        0, 0, tm, tn, T);
 
     // Allocate workspace.
     plasma_workspace_t work;

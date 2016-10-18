@@ -301,31 +301,24 @@ plasma_desc_t plasma_desc_view(plasma_desc_t A, int i, int j, int m, int n)
 }
 
 /******************************************************************************/
-int plasma_descT_create(plasma_desc_t A, plasma_desc_t *T)
+int plasma_descT_create(plasma_desc_t A, int ib, plasma_desc_t *T)
 {
-    plasma_context_t *plasma = plasma_context_self();
-    if (plasma == NULL) {
-        plasma_error("PLASMA not initialized");
-        return PlasmaErrorNotInitialized;
-    }
-
-    // Compute the parameters of the descriptor.
-    int ib = plasma->ib;
-
+    // T uses tiles ib x nb, typically, ib < nb, and these tiles are
+    // rectangular. This dimension is the same for QR and LQ factorizations.
     int mb = ib;
     int nb = A.nb;
 
+    // Number of tile rows and columns in T is the same as for T.
     int mt = A.mt;
     int nt = A.nt;
     // nt should be doubled if tree-reduction QR is performed,
     // not implemented now
 
+    // Dimension of the matrix as whole multiples of the tiles.
     int m = mt*mb;
     int n = nt*nb;
 
     // Create the descriptor using the standard function.
-    //int retval = plasma_desc_general_create(A.precision, mb, nb, m, n,
-    //                                        0, 0, m, n, T);
     int retval = plasma_desc_general_create(A.precision, mb, nb, m, n,
                                             0, 0, m, n, T);
     return retval;

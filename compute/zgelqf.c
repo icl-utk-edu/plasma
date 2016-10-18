@@ -111,18 +111,9 @@ int plasma_zgelqf(int m, int n,
     }
 
     // Prepare descriptor T.
-    int tmb = ib;
-    int tnb = nb;
-    int tm = tmb*imin(A.mt, A.nt);
-    int tn = tnb*A.nt;
-    // nt, i.e. n should be doubled if tree-reduction QR is performed,
-    // not implemented now
-    // Create the descriptor using the standard function.
-    retval = plasma_desc_general_create(PlasmaComplexDouble,
-                                        tmb, tnb, tm, tn,
-                                        0, 0, tm, tn, T);
+    retval = plasma_descT_create(A, ib, T);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_general_create() failed");
+        plasma_error("plasma_descT_create() failed");
         return retval;
     }
 
