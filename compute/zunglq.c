@@ -39,7 +39,7 @@
  *          defines the matrix Q.
  *          m >= k >= 0.
  *
- * @param[in] A
+ * @param[in] pA
  *          Details of the LQ factorization of the original matrix A as returned
  *          by plasma_zgelqf.
  *
@@ -49,8 +49,8 @@
  * @param[in] T
  *          Auxiliary factorization data, computed by plasma_zgelqf.
  *
- * @param[out] Q
- *          On exit, the m-by-n matrix Q.
+ * @param[out] pQ
+ *          On exit, pointer to the m-by-n matrix Q.
  *
  * @param[in] ldq
  *          The leading dimension of the array Q. ldq >= max(1,m).
@@ -72,7 +72,7 @@
 int plasma_zunglq(int m, int n, int k,
                   plasma_complex64_t *pA, int lda,
                   plasma_desc_t T,
-                  plasma_complex64_t *Qf77, int ldq)
+                  plasma_complex64_t *pQ, int ldq)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
