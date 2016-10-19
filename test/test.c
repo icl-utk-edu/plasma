@@ -78,8 +78,8 @@ struct routines_t routines[] =
 
     { "zlag2c", test_zlag2c },
     { "dlag2s", test_dlag2s },
-    { "", NULL },
-    { "", NULL },
+    { "clag2z", test_clag2z },
+    { "slag2d", test_slag2d },
 
     { "zpbsv", test_zpbsv },
     { "dpbsv", test_dpbsv },

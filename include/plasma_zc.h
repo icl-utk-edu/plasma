@@ -28,11 +28,9 @@ int plasma_zlag2c(int m, int n,
                   plasma_complex64_t *pA,  int lda,
                   plasma_complex32_t *pAs, int ldas);
 
-/*
 int plasma_clag2z(int m, int n,
                   plasma_complex32_t *pAs, int ldas,
                   plasma_complex64_t *pA,  int lda);
-*/
 
 /***************************************************************************//**
  *  Tile asynchronous interface
@@ -41,10 +39,8 @@ int plasma_clag2z(int m, int n,
 void plasma_omp_zlag2c(plasma_desc_t A, plasma_desc_t As,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 
-/*
-void plasma_omp_clag2z(plasma_desc_t *As, plasma_desc_t *A,
+void plasma_omp_clag2z(plasma_desc_t As, plasma_desc_t A,
                        plasma_sequence_t *sequence, plasma_request_t *request);
-*/
 
 #ifdef __cplusplus
 }  // extern "C"
