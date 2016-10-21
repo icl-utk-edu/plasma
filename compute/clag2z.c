@@ -71,17 +71,14 @@ int plasma_clag2z(int m, int n,
         plasma_error("illegal value of m");
         return -1;
     }
-
     if (n < 0) {
         plasma_error("illegal value of n");
         return -2;
     }
-
     if (ldas < imax(1, m)) {
         plasma_error("illegal value of ldas");
         return -4;
     }
-
     if (lda < imax(1, m)) {
         plasma_error("illegal value of lda");
         return -6;
@@ -211,25 +208,21 @@ void plasma_omp_clag2z(plasma_desc_t As, plasma_desc_t A,
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-
     if (plasma_desc_check(A) != PlasmaSuccess) {
         plasma_error("invalid A");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-
     if (As.nb != As.mb) {
         plasma_error("only square tiles supported");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-
     if (sequence == NULL) {
         plasma_error("NULL sequence");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-
     if (request == NULL) {
         plasma_error("NULL request");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
