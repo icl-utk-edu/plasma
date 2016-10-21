@@ -56,6 +56,11 @@ struct routines_t routines[] =
     { "cgeqrs", test_cgeqrs },
     { "sgeqrs", test_sgeqrs },
 
+    { "zgetrf", test_zgetrf },
+    { "dgetrf", test_dgetrf },
+    { "cgetrf", test_cgetrf },
+    { "sgetrf", test_sgetrf },
+
     { "zhemm", test_zherk },
     { "", NULL },  // blank to keep test -h nicely aligned
     { "chemm", test_cherk },
