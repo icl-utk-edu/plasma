@@ -76,8 +76,8 @@ struct routines_t routines[] =
     { "cherk", test_cherk },
     { "", NULL },
 
-	{ "zlacpy", test_zlacpy },
-	{ "dlacpy", test_dlacpy },
+    { "zlacpy", test_zlacpy },
+    { "dlacpy", test_dlacpy },
     { "clacpy", test_clacpy },
     { "slacpy", test_slacpy },
 
@@ -86,10 +86,10 @@ struct routines_t routines[] =
     { "clag2z", test_clag2z },
     { "slag2d", test_slag2d },
 
-	{ "zlauum", test_zlauum },
-	{ "dlauum", test_dlauum },
-	{ "clauum", test_clauum },
-	{ "slauum", test_slauum },
+    { "zlauum", test_zlauum },
+    { "dlauum", test_dlauum },
+    { "clauum", test_clauum },
+    { "slauum", test_slauum },
 
     { "zpbsv", test_zpbsv },
     { "dpbsv", test_dpbsv },
@@ -151,10 +151,10 @@ struct routines_t routines[] =
     { "ctrsm", test_ctrsm },
     { "strsm", test_strsm },
 
-	{ "ztrtri", test_ztrtri },
-	{ "dtrtri", test_dtrtri },
-	{ "ctrtri", test_ctrtri },
-	{ "strtri", test_strtri },
+    { "ztrtri", test_ztrtri },
+    { "dtrtri", test_dtrtri },
+    { "ctrtri", test_ctrtri },
+    { "strtri", test_strtri },
 
     { NULL, NULL }  // last entry
 };

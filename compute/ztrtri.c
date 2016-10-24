@@ -66,16 +66,16 @@
  *
  ******************************************************************************/
 int plasma_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
-				  int n, plasma_complex64_t *pA, int lda)
+                  int n, plasma_complex64_t *pA, int lda)
 {
-	// Get PLASMA context.
+    // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
         return PlasmaErrorNotInitialized;
     }
 
-	// Check input arguments.
+    // Check input arguments.
     if (uplo != PlasmaUpper && uplo != PlasmaLower) {
         plasma_error("illegal value of uplo");
         return -1;
@@ -96,7 +96,7 @@ int plasma_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
     if (imax(n, 0) == 0)
         return PlasmaSuccess;
 
-	// Set tiling parameters.
+    // Set tiling parameters.
     int nb = plasma->nb;
 
     // Create tile matrix.
@@ -123,7 +123,7 @@ int plasma_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
     #pragma omp parallel
     #pragma omp master
     {
-		// Translate to tile layout.
+        // Translate to tile layout.
         plasma_omp_zge2desc(pA, lda, A, sequence, &request);
 
         // Call the tile async function.
@@ -144,12 +144,12 @@ int plasma_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
 }
 
 /***************************************************************************//**
-																			  */
+                                                                              */
 void plasma_omp_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
-					   plasma_desc_t A,
-					   plasma_sequence_t *sequence, plasma_request_t *request)
+                       plasma_desc_t A,
+                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
-	// Get PLASMA context.
+    // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
@@ -157,25 +157,25 @@ void plasma_omp_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
         return;
     }
 
-	// Check input arguments.
-	if ((uplo != PlasmaUpper) &&
-		(uplo != PlasmaLower)) {
-		plasma_error("illegal value of uplo");
-		plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-		return;
-	}
-	if ((diag != PlasmaUnit) &&
-		(diag != PlasmaNonUnit)) {
-		plasma_error("illegal value of diag");
-		plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-		return;
-	}
-	if (plasma_desc_check(A) != PlasmaSuccess) {
+    // Check input arguments.
+    if ((uplo != PlasmaUpper) &&
+        (uplo != PlasmaLower)) {
+        plasma_error("illegal value of uplo");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+    if ((diag != PlasmaUnit) &&
+        (diag != PlasmaNonUnit)) {
+        plasma_error("illegal value of diag");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+    if (plasma_desc_check(A) != PlasmaSuccess) {
         plasma_error("invalid A");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-	if (sequence == NULL) {
+    if (sequence == NULL) {
         plasma_error("NULL sequence");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
@@ -186,10 +186,10 @@ void plasma_omp_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
         return;
     }
 
-	// Quick return
-	if (A.n == 0)
-		return;
+    // Quick return
+    if (A.n == 0)
+        return;
 
-	// Call the parallel function.
-	plasma_pztrtri(uplo, diag, A, sequence, request);
+    // Call the parallel function.
+    plasma_pztrtri(uplo, diag, A, sequence, request);
 }

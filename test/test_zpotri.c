@@ -41,14 +41,14 @@
  ******************************************************************************/
 void test_zpotri(param_value_t param[], char *info)
 {
-	//================================================================
+    //================================================================
     // Print usage info or return column labels or values.
     //================================================================
     if (param == NULL) {
         if (info == NULL) {
             // Print usage info.
             print_usage(PARAM_UPLO);
-			print_usage(PARAM_N);
+            print_usage(PARAM_N);
             print_usage(PARAM_PADA);
             print_usage(PARAM_NB);
         }
@@ -95,7 +95,7 @@ void test_zpotri(param_value_t param[], char *info)
         (plasma_complex64_t*)malloc((size_t)lda*lda*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
-	plasma_complex64_t *Aref;
+    plasma_complex64_t *Aref;
 
     int *ipiv;
     ipiv = (int*)malloc((size_t)lda*sizeof(int));
@@ -107,7 +107,7 @@ void test_zpotri(param_value_t param[], char *info)
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*lda, A);
     assert(retval == 0);
 
-	//================================================================
+    //================================================================
     // Make the A matrix symmetric/Hermitian positive definite.
     // It increases diagonal by n, and makes it real.
     // It sets Aji = conj( Aij ) for j < i, that is, copy lower
@@ -120,16 +120,16 @@ void test_zpotri(param_value_t param[], char *info)
         }
     }
 
-	// Take Cholesky decomposition
-	LAPACKE_zpotrf(LAPACK_COL_MAJOR, lapack_const(uplo), n, A, lda);
+    // Take Cholesky decomposition
+    LAPACKE_zpotrf(LAPACK_COL_MAJOR, lapack_const(uplo), n, A, lda);
 
-	if (test) {
-		Aref = (plasma_complex64_t*)malloc(
-			(size_t)lda*n*sizeof(plasma_complex64_t));
-		assert(Aref != NULL);
+    if (test) {
+        Aref = (plasma_complex64_t*)malloc(
+            (size_t)lda*n*sizeof(plasma_complex64_t));
+        assert(Aref != NULL);
 
-		memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
-	}
+        memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
+    }
 
     //================================================================
     // Run and time PLASMA.
@@ -151,10 +151,10 @@ void test_zpotri(param_value_t param[], char *info)
         double work[1];
 
         // B = inv(A)
-		LAPACKE_zpotri_work(CblasColMajor, lapack_const(uplo), n, Aref, lda);
+        LAPACKE_zpotri_work(CblasColMajor, lapack_const(uplo), n, Aref, lda);
 
-		double Anorm = LAPACKE_zlange_work(
-			   LAPACK_COL_MAJOR, 'F', lda, lda, Aref, lda, work);
+        double Anorm = LAPACKE_zlange_work(
+               LAPACK_COL_MAJOR, 'F', lda, lda, Aref, lda, work);
 
         // A -= Aref
         cblas_zaxpy((size_t)lda*n, CBLAS_SADDR(zmone), Aref, 1, A, 1);

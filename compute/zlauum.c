@@ -63,21 +63,21 @@
  *
  ******************************************************************************/
 int plasma_zlauum(plasma_enum_t uplo, int n,
-				  plasma_complex64_t *pA, int lda)
+                  plasma_complex64_t *pA, int lda)
 {
-	// Get PLASMA context.
+    // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
         return PlasmaErrorNotInitialized;
     }
 
-	// Check input arguments.
+    // Check input arguments.
     if (uplo != PlasmaUpper && uplo != PlasmaLower) {
         plasma_error("illegal value of uplo");
         return -1;
     }
-	if (n < 0) {
+    if (n < 0) {
         plasma_error("illegal value of n");
         return -2;
     }
@@ -89,7 +89,7 @@ int plasma_zlauum(plasma_enum_t uplo, int n,
     if (imax(n, 0) == 0)
         return PlasmaSuccess;
 
-	// Set tiling parameters.
+    // Set tiling parameters.
     int nb = plasma->nb;
 
     // Create tile matrix.
@@ -116,16 +116,16 @@ int plasma_zlauum(plasma_enum_t uplo, int n,
     #pragma omp parallel
     #pragma omp master
     {
-		// Translate to tile layout.
-		plasma_omp_zge2desc(pA, lda, A, sequence, &request);
+        // Translate to tile layout.
+        plasma_omp_zge2desc(pA, lda, A, sequence, &request);
 
-		// Call the tile async function.
-		plasma_omp_zlauum(uplo, A, sequence, &request);
+        // Call the tile async function.
+        plasma_omp_zlauum(uplo, A, sequence, &request);
 
-		// Translate back to LAPACK layout.
+        // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
-	}
-	    // Implicit synchronization.
+    }
+        // Implicit synchronization.
 
     // Free matrix A in tile layout.
     plasma_desc_destroy(&A);
@@ -178,9 +178,9 @@ int plasma_zlauum(plasma_enum_t uplo, int n,
  *
  ******************************************************************************/
 void plasma_omp_zlauum(plasma_enum_t uplo, plasma_desc_t A,
-					   plasma_sequence_t *sequence, plasma_request_t *request)
+                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
-	// Get PLASMA context.
+    // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
@@ -188,19 +188,19 @@ void plasma_omp_zlauum(plasma_enum_t uplo, plasma_desc_t A,
         return;
     }
 
-	// Check input arguments.
-	if ((uplo != PlasmaUpper) &&
-		(uplo != PlasmaLower)) {
-		plasma_error("illegal value of uplo");
-		plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-		return;
-	}
-	if (plasma_desc_check(A) != PlasmaSuccess) {
+    // Check input arguments.
+    if ((uplo != PlasmaUpper) &&
+        (uplo != PlasmaLower)) {
+        plasma_error("illegal value of uplo");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+    if (plasma_desc_check(A) != PlasmaSuccess) {
         plasma_error("invalid A");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-	if (sequence == NULL) {
+    if (sequence == NULL) {
         plasma_error("NULL sequence");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
@@ -212,10 +212,10 @@ void plasma_omp_zlauum(plasma_enum_t uplo, plasma_desc_t A,
     }
 
 
-	// Quick return
-	if (A.n == 0)
-		return;
+    // Quick return
+    if (A.n == 0)
+        return;
 
-	// Call the parallel function.
-	plasma_pzlauum(uplo, A, sequence, request);
+    // Call the parallel function.
+    plasma_pzlauum(uplo, A, sequence, request);
 }

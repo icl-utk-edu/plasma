@@ -62,10 +62,10 @@
  *
  ******************************************************************************/
 int plasma_zpotri(plasma_enum_t uplo,
-				  int n,
-				  plasma_complex64_t *pA, int lda)
+                  int n,
+                  plasma_complex64_t *pA, int lda)
 {
-	// Get PLASMA context.
+    // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_fatal_error("PLASMA not initialized");
@@ -117,19 +117,19 @@ int plasma_zpotri(plasma_enum_t uplo,
     #pragma omp parallel
     #pragma omp master
     {
-		// Translate to tile layout.
-		plasma_omp_zge2desc(pA, lda, A, sequence, &request);
+        // Translate to tile layout.
+        plasma_omp_zge2desc(pA, lda, A, sequence, &request);
 
-		// Invert triangular part.
-		plasma_omp_ztrtri(uplo, PlasmaNonUnit, A, sequence, &request);
+        // Invert triangular part.
+        plasma_omp_ztrtri(uplo, PlasmaNonUnit, A, sequence, &request);
 
-		// Compute product of upper and lower triangle.
-		plasma_omp_zlauum(uplo, A, sequence, &request);
+        // Compute product of upper and lower triangle.
+        plasma_omp_zlauum(uplo, A, sequence, &request);
 
-		// Translate back to LAPACK layout.
-		plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
-	}
-	// Implicit synchronization.
+        // Translate back to LAPACK layout.
+        plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
+    }
+    // Implicit synchronization.
 
     // Free matrix A in tile layout.
     plasma_desc_destroy(&A);

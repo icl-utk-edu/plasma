@@ -87,7 +87,7 @@ void core_zlaset(plasma_enum_t uplo,
 //                        int i1, int i2, const int *ipiv, int inc);
 
 int core_zlauum(plasma_enum_t uplo, int n,
-				plasma_complex64_t *A, int lda);
+                plasma_complex64_t *A, int lda);
 
 int core_zpamm(int op, plasma_enum_t side, plasma_enum_t storev,
                int m, int n, int k, int l,
@@ -145,8 +145,8 @@ void core_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
                                                 plasma_complex64_t *B, int ldb);
 
 int core_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
-				int n,
-				plasma_complex64_t *A, int lda);
+                int n,
+                plasma_complex64_t *A, int lda);
 
 int core_ztslqt(int m, int n, int ib,
                 plasma_complex64_t *A1, int lda1,
@@ -270,8 +270,8 @@ void core_omp_zlaset(plasma_enum_t uplo,
 //                            int i1, int i2, const int *ipiv, int inc);
 
 void core_omp_zlauum(plasma_enum_t uplo,
-					 int n, plasma_complex64_t *A, int lda,
-					 plasma_sequence_t *sequence, plasma_request_t *request);
+                     int n, plasma_complex64_t *A, int lda,
+                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void core_omp_zpotrf(plasma_enum_t uplo,
                      int n,
@@ -326,9 +326,9 @@ void core_omp_ztrsm(
     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void core_omp_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
-					 int n,
-					 plasma_complex64_t *A, int lda,
-					 plasma_sequence_t *sequence, plasma_request_t *request);
+                     int n,
+                     plasma_complex64_t *A, int lda,
+                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void core_omp_ztslqt(int m, int n, int ib,
                      plasma_complex64_t *A1, int lda1,

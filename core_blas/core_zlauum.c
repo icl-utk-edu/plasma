@@ -55,25 +55,25 @@
  *
  ******************************************************************************/
 int core_zlauum(plasma_enum_t uplo, int n,
-				 plasma_complex64_t *A, int lda)
+                 plasma_complex64_t *A, int lda)
 {
     return LAPACKE_zlauum_work(LAPACK_COL_MAJOR,
-						lapack_const(uplo), n, A, lda);
+                        lapack_const(uplo), n, A, lda);
 }
 
 /******************************************************************************/
 void core_omp_zlauum(plasma_enum_t uplo,
-					 int n, plasma_complex64_t *A, int lda,
-					 plasma_sequence_t *sequence, plasma_request_t *request)
+                     int n, plasma_complex64_t *A, int lda,
+                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     #pragma omp task depend(inout:A[0:lda*n])
     {
         if (sequence->status == PlasmaSuccess) {
-			int info = core_zlauum(uplo, n, A, lda);
-			if (info != PlasmaSuccess) {
-				coreblas_error("core_zlauum() failed");
-				plasma_request_fail(sequence, request, PlasmaErrorInternal);
-			}
-		}
+            int info = core_zlauum(uplo, n, A, lda);
+            if (info != PlasmaSuccess) {
+                coreblas_error("core_zlauum() failed");
+                plasma_request_fail(sequence, request, PlasmaErrorInternal);
+            }
+        }
     }
 }
