@@ -76,6 +76,16 @@ struct routines_t routines[] =
     { "cherk", test_cherk },
     { "", NULL },
 
+	{ "zlacpy", test_zlacpy },
+	{ "dlacpy", test_dlacpy },
+    { "clacpy", test_clacpy },
+    { "slacpy", test_slacpy },
+
+    { "zlag2c", test_zlag2c },
+    { "dlag2s", test_dlag2s },
+    { "clag2z", test_clag2z },
+    { "slag2d", test_slag2d },
+
 	{ "zlauum", test_zlauum },
 	{ "dlauum", test_dlauum },
 	{ "clauum", test_clauum },
