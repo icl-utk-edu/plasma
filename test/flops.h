@@ -791,6 +791,19 @@ static double flops_dgeadd(double m, double n)
 static double flops_sgeadd(double m, double n)
     { return    fmuls_geadd(m, n) +    fadds_geadd(m, n); }
 
+//------------------------------------------------------------ lauum
+static double  flops_zlauum(double n)
+    { return 2.5 * (0.25 * n * n * n);} // Complex flop is approx 2.5 real flops
+
+static double  flops_dlauum(double n)
+    { return 0.25 * n * n * n;}
+
+static double  flops_clauum(double n)
+    { return 2.5 * (0.25 * n * n * n);} // Complex flop is approx 2.5 real flops
+
+static double  flops_slauum(double n)
+    { return 0.25 * n * n * n;}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

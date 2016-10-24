@@ -76,6 +76,11 @@ struct routines_t routines[] =
     { "cherk", test_cherk },
     { "", NULL },
 
+	{ "zlauum", test_zlauum },
+	{ "dlauum", test_dlauum },
+	{ "clauum", test_clauum },
+	{ "slauum", test_slauum },
+
     { "zpbsv", test_zpbsv },
     { "dpbsv", test_dpbsv },
     { "cpbsv", test_cpbsv },
@@ -95,6 +100,11 @@ struct routines_t routines[] =
     { "dpotrf", test_dpotrf },
     { "cpotrf", test_cpotrf },
     { "spotrf", test_spotrf },
+
+    { "zpotri", test_zpotri },
+    { "dpotri", test_dpotri },
+    { "cpotri", test_cpotri },
+    { "spotri", test_spotri },
 
     { "zpotrs", test_zpotrf },
     { "dpotrs", test_dpotrf },
@@ -130,6 +140,11 @@ struct routines_t routines[] =
     { "dtrsm", test_dtrsm },
     { "ctrsm", test_ctrsm },
     { "strsm", test_strsm },
+
+	{ "ztrtri", test_ztrtri },
+	{ "dtrtri", test_dtrtri },
+	{ "ctrtri", test_ctrtri },
+	{ "strtri", test_strtri },
 
     { NULL, NULL }  // last entry
 };
@@ -175,6 +190,7 @@ int main(int argc, char **argv)
     test_routine(test, routine, NULL);
 
     plasma_init();
+
     if (outer) {
         // outer product iteration
         do {

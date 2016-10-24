@@ -78,6 +78,9 @@ void plasma_pzlaset(plasma_enum_t uplo,
                     plasma_desc_t A,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
+void plasma_pzlauum(plasma_enum_t uplo, plasma_desc_t A,
+					plasma_sequence_t *sequence, plasma_request_t *request);
+
 void plasma_pzpb2desc(plasma_complex64_t *pA, int lda,
                       plasma_desc_t A,
                       plasma_sequence_t *sequence,
@@ -129,6 +132,10 @@ void plasma_pztrsm(plasma_enum_t side, plasma_enum_t uplo,
                    plasma_complex64_t alpha, plasma_desc_t A,
                                              plasma_desc_t B,
                    plasma_sequence_t *sequence, plasma_request_t *request);
+
+void plasma_pztrtri(plasma_enum_t uplo, plasma_enum_t diag,
+				    plasma_desc_t A,
+					plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzunglq(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
                     plasma_workspace_t work,

@@ -27,10 +27,12 @@ void test_zgeqrs(param_value_t param[], char *info);
 void test_zhemm(param_value_t param[], char *info);
 void test_zher2k(param_value_t param[], char *info);
 void test_zherk(param_value_t param[], char *info);
+void test_zlauum(param_value_t param[], char *info);
 void test_zpbsv(param_value_t param[], char *info);
 void test_zpbtrf(param_value_t param[], char *info);
 void test_zposv(param_value_t param[], char *info);
 void test_zpotrf(param_value_t param[], char *info);
+void test_zpotri(param_value_t param[], char *info);
 void test_zpotrs(param_value_t param[], char *info);
 void test_zsymm(param_value_t param[], char *info);
 void test_zsyr2k(param_value_t param[], char *info);
@@ -38,5 +40,6 @@ void test_zsyrk(param_value_t param[], char *info);
 void test_ztradd(param_value_t param[], char *info);
 void test_ztrmm(param_value_t param[], char *info);
 void test_ztrsm(param_value_t param[], char *info);
+void test_ztrtri(param_value_t param[], char *info);
 
 #endif // TEST_Z_H
