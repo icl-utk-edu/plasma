@@ -22,6 +22,8 @@
 #include "mkl_lapacke.h"
 #include "mkl_cblas.h"
 
+#include "../trace/trace.h"
+
 #define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
 
 /******************************************************************************/
@@ -77,6 +79,64 @@ void core_zlaswp(plasma_desc_t A, int n, int k1, int k2, int *ipiv)
 }
 
 /******************************************************************************/
+void pzdesc2ge(plasma_desc_t A, plasma_complex64_t *pA, int lda)
+{
+    plasma_complex64_t *f77;
+    plasma_complex64_t *bdl;
+
+    int x1, y1;
+    int x2, y2;
+    int n, m, ldt;
+
+    for (m = 0; m < A.mt; m++) {
+        ldt = plasma_tile_mmain(A, m);
+        for (n = 0; n < A.nt; n++) {
+            x1 = n == 0 ? A.j%A.nb : 0;
+            y1 = m == 0 ? A.i%A.mb : 0;
+            x2 = n == A.nt-1 ? (A.j+A.n-1)%A.nb+1 : A.nb;
+            y2 = m == A.mt-1 ? (A.i+A.m-1)%A.mb+1 : A.mb;
+
+            f77 = &pA[(size_t)A.nb*lda*n + (size_t)A.mb*m];
+            bdl = (plasma_complex64_t*)plasma_tile_addr(A, m, n);
+
+            core_zlacpy(PlasmaGeneral,
+                        y2-y1, x2-x1,
+                        &(bdl[x1*A.nb+y1]), ldt,
+                        &(f77[x1*lda+y1]), lda);
+        }
+    }
+}
+
+/******************************************************************************/
+void pzge2desc(plasma_complex64_t *pA, int lda, plasma_desc_t A)
+{
+    plasma_complex64_t *f77;
+    plasma_complex64_t *bdl;
+
+    int x1, y1;
+    int x2, y2;
+    int n, m, ldt;
+
+    for (m = 0; m < A.mt; m++) {
+        ldt = plasma_tile_mmain(A, m);
+        for (n = 0; n < A.nt; n++) {
+            x1 = n == 0 ? A.j%A.nb : 0;
+            y1 = m == 0 ? A.i%A.mb : 0;
+            x2 = n == A.nt-1 ? (A.j+A.n-1)%A.nb+1 : A.nb;
+            y2 = m == A.mt-1 ? (A.i+A.m-1)%A.mb+1 : A.mb;
+
+            f77 = &pA[(size_t)A.nb*lda*n + (size_t)A.mb*m];
+            bdl = (plasma_complex64_t*)plasma_tile_addr(A, m, n);
+
+            core_zlacpy(PlasmaGeneral,
+                        y2-y1, x2-x1,
+                        &(f77[x1*lda+y1]), lda,
+                        &(bdl[x1*A.nb+y1]), ldt);
+        }
+    }
+}
+
+/******************************************************************************/
 void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
@@ -105,90 +165,121 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
     memcpy(pB, pA, (size_t)A.m*A.n*sizeof(plasma_complex64_t));
     LAPACKE_zgetrf(LAPACK_COL_MAJOR, A.m, A.n, pB, A.m, ipiv);
 
+trace_init();
 
 
+
+#pragma omp parallel
+#pragma omp master
+{
     for (int k = 0; k < imin(A.mt, A.nt); k++)
     {
+        plasma_complex64_t *a00 = A(k, k);
+        plasma_complex64_t *a20 = A(A.mt-1, k);
 
+        int ma00k = (A.mt-k-1)*A.mb;
+        int na00k = plasma_tile_nmain(A, k);
+        int lda20 = plasma_tile_mmain(A, A.mt-1);
 
-
-        #pragma omp parallel
-        #pragma omp master
-            plasma_omp_zdesc2ge(A, pA, A.m, sequence, request);
-
-        // Factor the panel.
         int nvak = plasma_tile_nview(A, k);
-        LAPACKE_zgetrf(LAPACK_COL_MAJOR,
-                       A.m-k*A.nb, nvak,
-                       &pA[k*A.nb*A.m + k*A.nb], A.m, &ipiv[k*A.nb]);
+        int mvak = plasma_tile_mview(A, k);
+        int ldak = plasma_tile_mmain(A, k);
 
-        // Adjust pivot indices.
-        for (int i = k*A.nb+1; i <= A.m; i++)
-            ipiv[i-1] += k*A.nb;
+        // panel
+        #pragma omp task depend(inout:ipiv[0:imin(A.m, A.n)]) \
+                         depend(inout:a00[0:ma00k*na00k]) \
+                         depend(inout:a20[lda20*nvak]) \
+                         priority(1)                     
+        {
+            trace_event_start();
+            pzdesc2ge(A, pA, A.m);
 
-        #pragma omp parallel
-        #pragma omp master
-            plasma_omp_zge2desc(pA, A.m, A, sequence, request);
+            LAPACKE_zgetrf(LAPACK_COL_MAJOR,
+                           A.m-k*A.nb, nvak,
+                           &pA[k*A.nb*A.m + k*A.nb], A.m, &ipiv[k*A.nb]);
 
+            for (int i = k*A.nb+1; i <= A.m; i++)
+                ipiv[i-1] += k*A.nb;
 
+            pzge2desc(pA, A.m, A);
+            trace_event_stop(Chocolate);
+        }
 
-        // Pivot to the right.
+        // update
         for (int n = k+1; n < A.nt; n++) {
+
+            plasma_complex64_t *a01 = A(k, n);
+            plasma_complex64_t *a11 = A(k+1, n);
+            plasma_complex64_t *a21 = A(A.mt-1, n);
+
+            int ma11k = (A.mt-k-2)*A.mb;
+            int na11n = plasma_tile_nmain(A, n);
+            int lda21 = plasma_tile_mmain(A, A.mt-1);
+
             int nvan = plasma_tile_nview(A, n);
-            int ione = 1;
-            int k1 = k*A.nb+1;
-            int k2 = imin(k*A.nb+A.nb, A.m);
-            core_zlaswp(A, n, k1, k2, ipiv);
-        }
 
-        #pragma omp parallel
-        #pragma omp master
-        {
-            for (int n = k+1; n < A.nt; n++) {
-                int mvak = plasma_tile_mview(A, k);
-                int nvan = plasma_tile_nview(A, n);
-                int ldak = plasma_tile_mmain(A, k);
-                core_omp_ztrsm(
-                    PlasmaLeft, PlasmaLower,
-                    PlasmaNoTrans, PlasmaUnit,
-                    mvak, nvan,
-                    1.0, A(k, k), ldak,
-                         A(k, n), ldak,
-                    sequence, request);
-            }
-        }
+            #pragma omp task depend(in:ipiv[0:imin(A.m, A.n)]) \
+                             depend(in:a00[0:ma00k*na00k]) \
+                             depend(in:a20[lda20*nvak]) \
+                             depend(inout:a01[ldak*nvan]) \
+                             depend(inout:a11[ma11k*na11n]) \
+                             depend(inout:a21[lda21*nvan])
+            {
+                // laswp
+                int k1 = k*A.nb+1;
+                int k2 = imin(k*A.nb+A.nb, A.m);
+                trace_event_start();
+                core_zlaswp(A, n, k1, k2, ipiv);
+                usleep(100);
+                trace_event_stop(RoyalBlue);
 
-        #pragma omp parallel
-        #pragma omp master
-        {
-            for (int n = k+1; n < A.nt; n++) {
+                // trsm
+                trace_event_start();
+                core_ztrsm(PlasmaLeft, PlasmaLower,
+                           PlasmaNoTrans, PlasmaUnit,
+                           mvak, nvan,
+                           1.0, A(k, k), ldak,
+                                A(k, n), ldak);
+                usleep(100);
+                trace_event_stop(MediumPurple);
+
+                // gemm
+                trace_event_start();
                 for (int m = k+1; m < A.mt; m++) {
                     int mvam = plasma_tile_mview(A, m);
-                    int nvan = plasma_tile_nview(A, n);
                     int ldam = plasma_tile_mmain(A, m);
-                    int ldak = plasma_tile_mmain(A, k);
-                    core_omp_zgemm(
-                        PlasmaNoTrans, PlasmaNoTrans,
-                        mvam, nvan, A.nb,
-                        -1.0, A(m, k), ldam,
-                              A(k, n), ldak,
-                        1.0,  A(m, n), ldam,
-                        sequence, request);
+
+                    // #pragma omp task
+                    // {
+                        core_zgemm(
+                            PlasmaNoTrans, PlasmaNoTrans,
+                            mvam, nvan, A.nb,
+                            -1.0, A(m, k), ldam,
+                                  A(k, n), ldak,
+                            1.0,  A(m, n), ldam);
+                        usleep(100);
+                    // }
                 }
+                trace_event_stop(MediumAquamarine);
             }
         }
+    } 
+}
 
-    }
 
-    // Pivot to the left.
+
+    // pivoting to the left
     for (int k = 1; k < imin(A.mt, A.nt); k++) {
         int k1 = k*A.nb+1;
         int k2 = imin(A.m, A.n);
         int ione = 1;
+        trace_event_start();
         core_zlaswp(A, k-1, k1, k2, ipiv);
+        usleep(100);
+        trace_event_stop(DodgerBlue);
     }
 
-
+trace_write("../trace.svg");
 
     #pragma omp parallel
     #pragma omp master
@@ -205,38 +296,3 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
     free(pA);
     free(pB);
 }
-
-/*
-        // Pivot to the left as you go.
-        int n = k*A.nb;
-        int k1 = k*A.nb+1;
-        int k2 = (k+1)*A.nb;
-        int ione = 1;
-        zlaswp(&n, pA, &A.m, &k1, &k2, ipiv, &ione);
-*/
-/*
-        // Apply triangular solve to the block of U.
-        for (int n = k+1; n < A.nt; n++) {
-            plasma_complex64_t zone = 1.0;
-            cblas_ztrsm(
-                CblasColMajor,
-                CblasLeft, CblasLower, CblasNoTrans, CblasUnit,
-                A.nb, A.nb,
-                CBLAS_SADDR(zone), &pA[k*A.nb + k*A.nb*A.m], A.m,
-                                   &pA[k*A.nb + n*A.nb*A.m], A.m);
-        }
-*/
-/*
-        plasma_complex64_t mzone = -1.0;
-        plasma_complex64_t zone  =  1.0;
-        for (int n = k+1; n < A.nt; n++)
-            for (int m = k+1; m < A.mt; m++) {
-                cblas_zgemm(
-                    CblasColMajor,
-                    CblasNoTrans, CblasNoTrans,
-                    A.nb, A.nb, A.nb,
-                    CBLAS_SADDR(mzone), &pA[m*A.nb + k*A.nb*A.m], A.m,
-                                        &pA[k*A.nb + n*A.nb*A.m], A.m,
-                    CBLAS_SADDR(zone),  &pA[m*A.nb + n*A.nb*A.m], A.m);
-            }
-*/
