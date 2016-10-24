@@ -49,9 +49,10 @@ void plasma_pzdesc2ge(plasma_desc_t A,
             bdl = (plasma_complex64_t*)plasma_tile_addr(A, m, n);
 
             core_omp_zlacpy(PlasmaGeneral,
-                            y2-y1, x2-x1, A.mb,
+                            y2-y1, x2-x1,
                             &(bdl[x1*A.nb+y1]), ldt,
-                            &(f77[x1*lda+y1]), lda);
+                            &(f77[x1*lda+y1]), lda,
+                            sequence, request);
         }
     }
 }
