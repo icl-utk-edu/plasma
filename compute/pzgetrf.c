@@ -137,7 +137,7 @@ void pzge2desc(plasma_complex64_t *pA, int lda, plasma_desc_t A)
 }
 
 /******************************************************************************/
-void plasma_pzgetrf(plasma_desc_t A, int *_ipiv,
+void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Check sequence status.
@@ -163,12 +163,9 @@ void plasma_pzgetrf(plasma_desc_t A, int *_ipiv,
 
 
     memcpy(pB, pA, (size_t)A.m*A.n*sizeof(plasma_complex64_t));
-    LAPACKE_zgetrf(LAPACK_COL_MAJOR, A.m, A.n, pB, A.m, _ipiv);
+    LAPACKE_zgetrf(LAPACK_COL_MAJOR, A.m, A.n, pB, A.m, ipiv);
 
 trace_init();
-
-    int *ipiv_ = (int*)malloc((size_t)A.m*imin(A.mt, A.nt)*sizeof(int));
-    assert(ipiv_ != NULL);
 
 
 
@@ -177,8 +174,6 @@ trace_init();
 {
     for (int k = 0; k < imin(A.mt, A.nt); k++)
     {
-        int *ipiv = ipiv_+A.m*k;
-
         plasma_complex64_t *a00 = A(k, k);
         plasma_complex64_t *a20 = A(A.mt-1, k);
 
@@ -193,10 +188,11 @@ trace_init();
         // panel
         #pragma omp task depend(inout:a00[0:ma00k*na00k]) \
                          depend(inout:a20[0:lda20*nvak]) \
-                         depend(out:ipiv[0:A.m]) \
+                         depend(out:ipiv[k*A.mb:mvak]) \
                          priority(1)
         {
             trace_event_start();
+
             pzdesc2ge(plasma_desc_view(A, k*A.mb, k*A.nb, A.m-k*A.mb, nvak),
                       &pA[k*A.mb*A.m + k*A.mb], A.m);
 
@@ -228,7 +224,7 @@ trace_init();
 
             #pragma omp task depend(in:a00[0:ma00k*na00k]) \
                              depend(in:a20[0:lda20*nvak]) \
-                             depend(in:ipiv[0:A.m]) \
+                             depend(in:ipiv[k*A.mb:mvak]) \
                              depend(inout:a01[0:ldak*nvan]) \
                              depend(inout:a11[0:ma11k*na11n]) \
                              depend(inout:a21[0:lda21*nvan])
@@ -272,8 +268,8 @@ trace_init();
     }
 }
 
-    for (int k = 1; k < imin(A.mt, A.nt); k++)
-        memcpy(&ipiv_[k*A.mb], &ipiv_[k*A.m+k*A.mb], (size_t)(A.m-k*A.mb)*sizeof(int));
+    // for (int k = 1; k < imin(A.mt, A.nt); k++)
+    //     memcpy(&ipiv_[k*A.mb], &ipiv_[k*A.m+k*A.mb], (size_t)(A.m-k*A.mb)*sizeof(int));
 
     // pivoting to the left
     for (int k = 1; k < imin(A.mt, A.nt); k++) {
@@ -281,7 +277,7 @@ trace_init();
         int k2 = imin(A.m, A.n);
         int ione = 1;
         trace_event_start();
-        core_zlaswp(A, k-1, k1, k2, ipiv_);
+        core_zlaswp(A, k-1, k1, k2, ipiv);
         trace_event_stop(DodgerBlue);
     }
 
