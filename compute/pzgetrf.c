@@ -20,7 +20,7 @@
 
 #include "plasma_z.h"
 #include "mkl_lapacke.h"
-#include "mkl_cblas.h"
+#include "mkl_cblas.h" 
 
 #include "../trace/trace.h"
 
@@ -137,7 +137,7 @@ void pzge2desc(plasma_complex64_t *pA, int lda, plasma_desc_t A)
 }
 
 /******************************************************************************/
-void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
+void plasma_pzgetrf(plasma_desc_t A, int *_ipiv,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Check sequence status.
@@ -163,9 +163,12 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
 
 
     memcpy(pB, pA, (size_t)A.m*A.n*sizeof(plasma_complex64_t));
-    LAPACKE_zgetrf(LAPACK_COL_MAJOR, A.m, A.n, pB, A.m, ipiv);
+    LAPACKE_zgetrf(LAPACK_COL_MAJOR, A.m, A.n, pB, A.m, _ipiv);
 
 trace_init();
+
+    int *ipiv_ = (int*)malloc((size_t)A.m*imin(A.mt, A.nt)*sizeof(int));
+    assert(ipiv_ != NULL);
 
 
 
@@ -174,6 +177,8 @@ trace_init();
 {
     for (int k = 0; k < imin(A.mt, A.nt); k++)
     {
+        int *ipiv = ipiv_+A.m*k;
+
         plasma_complex64_t *a00 = A(k, k);
         plasma_complex64_t *a20 = A(A.mt-1, k);
 
@@ -186,22 +191,25 @@ trace_init();
         int ldak = plasma_tile_mmain(A, k);
 
         // panel
-        #pragma omp task depend(inout:ipiv[0:imin(A.m, A.n)]) \
-                         depend(inout:a00[0:ma00k*na00k]) \
-                         depend(inout:a20[lda20*nvak]) \
-                         priority(1)                     
+        #pragma omp task depend(inout:a00[0:ma00k*na00k]) \
+                         depend(inout:a20[0:lda20*nvak]) \
+                         depend(out:ipiv[0:A.m]) \
+                         priority(1)
         {
             trace_event_start();
-            pzdesc2ge(A, pA, A.m);
+            pzdesc2ge(plasma_desc_view(A, k*A.mb, k*A.nb, A.m-k*A.mb, nvak),
+                      &pA[k*A.mb*A.m + k*A.mb], A.m);
 
             LAPACKE_zgetrf(LAPACK_COL_MAJOR,
-                           A.m-k*A.nb, nvak,
-                           &pA[k*A.nb*A.m + k*A.nb], A.m, &ipiv[k*A.nb]);
+                           A.m-k*A.mb, nvak,
+                           &pA[k*A.mb*A.m + k*A.mb], A.m, &ipiv[k*A.mb]);
 
-            for (int i = k*A.nb+1; i <= A.m; i++)
-                ipiv[i-1] += k*A.nb;
+            for (int i = k*A.mb+1; i <= A.m; i++)
+                ipiv[i-1] += k*A.mb;
 
-            pzge2desc(pA, A.m, A);
+            pzge2desc(&pA[k*A.mb*A.m + k*A.mb], A.m,
+                      plasma_desc_view(A, k*A.mb, k*A.nb, A.m-k*A.mb, nvak));
+
             trace_event_stop(Chocolate);
         }
 
@@ -218,19 +226,18 @@ trace_init();
 
             int nvan = plasma_tile_nview(A, n);
 
-            #pragma omp task depend(in:ipiv[0:imin(A.m, A.n)]) \
-                             depend(in:a00[0:ma00k*na00k]) \
-                             depend(in:a20[lda20*nvak]) \
-                             depend(inout:a01[ldak*nvan]) \
-                             depend(inout:a11[ma11k*na11n]) \
-                             depend(inout:a21[lda21*nvan])
+            #pragma omp task depend(in:a00[0:ma00k*na00k]) \
+                             depend(in:a20[0:lda20*nvak]) \
+                             depend(in:ipiv[0:A.m]) \
+                             depend(inout:a01[0:ldak*nvan]) \
+                             depend(inout:a11[0:ma11k*na11n]) \
+                             depend(inout:a21[0:lda21*nvan])
             {
                 // laswp
-                int k1 = k*A.nb+1;
-                int k2 = imin(k*A.nb+A.nb, A.m);
+                int k1 = k*A.mb+1;
+                int k2 = imin(k*A.mb+A.mb, A.m);
                 trace_event_start();
                 core_zlaswp(A, n, k1, k2, ipiv);
-                usleep(100);
                 trace_event_stop(RoyalBlue);
 
                 // trsm
@@ -240,42 +247,41 @@ trace_init();
                            mvak, nvan,
                            1.0, A(k, k), ldak,
                                 A(k, n), ldak);
-                usleep(100);
                 trace_event_stop(MediumPurple);
 
                 // gemm
-                trace_event_start();
                 for (int m = k+1; m < A.mt; m++) {
                     int mvam = plasma_tile_mview(A, m);
                     int ldam = plasma_tile_mmain(A, m);
 
-                    // #pragma omp task
-                    // {
+                    #pragma omp task priority(n == k+1)
+                    {
+                        trace_event_start();
                         core_zgemm(
                             PlasmaNoTrans, PlasmaNoTrans,
                             mvam, nvan, A.nb,
                             -1.0, A(m, k), ldam,
                                   A(k, n), ldak,
                             1.0,  A(m, n), ldam);
-                        usleep(100);
-                    // }
+                        trace_event_stop(n == k+1 ? Lime : MediumAquamarine);
+                    }
                 }
-                trace_event_stop(MediumAquamarine);
+                #pragma omp taskwait
             }
         }
-    } 
+    }
 }
 
-
+    for (int k = 1; k < imin(A.mt, A.nt); k++)
+        memcpy(&ipiv_[k*A.mb], &ipiv_[k*A.m+k*A.mb], (size_t)(A.m-k*A.mb)*sizeof(int));
 
     // pivoting to the left
     for (int k = 1; k < imin(A.mt, A.nt); k++) {
-        int k1 = k*A.nb+1;
+        int k1 = k*A.mb+1;
         int k2 = imin(A.m, A.n);
         int ione = 1;
         trace_event_start();
-        core_zlaswp(A, k-1, k1, k2, ipiv);
-        usleep(100);
+        core_zlaswp(A, k-1, k1, k2, ipiv_);
         trace_event_stop(DodgerBlue);
     }
 
