@@ -266,20 +266,24 @@ trace_init();
             }
         }
     }
-}
-
-    // for (int k = 1; k < imin(A.mt, A.nt); k++)
-    //     memcpy(&ipiv_[k*A.mb], &ipiv_[k*A.m+k*A.mb], (size_t)(A.m-k*A.mb)*sizeof(int));
 
     // pivoting to the left
     for (int k = 1; k < imin(A.mt, A.nt); k++) {
-        int k1 = k*A.mb+1;
-        int k2 = imin(A.m, A.n);
-        int ione = 1;
-        trace_event_start();
-        core_zlaswp(A, k-1, k1, k2, ipiv);
-        trace_event_stop(DodgerBlue);
+
+        // currently unspecified size
+        #pragma omp task depend(in:ipiv[(imin(A.mt, A.nt)-1)*A.mb])
+        {
+            int k1 = k*A.mb+1;
+            int k2 = imin(A.m, A.n);
+            int ione = 1;
+            trace_event_start();
+            core_zlaswp(A, k-1, k1, k2, ipiv);
+            trace_event_stop(DodgerBlue);
+        }
     }
+}
+
+
 
 trace_write("../trace.svg");
 
