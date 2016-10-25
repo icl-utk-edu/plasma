@@ -206,7 +206,7 @@ trace_init();
             pzge2desc(&pA[k*A.mb*A.m + k*A.mb], A.m,
                       plasma_desc_view(A, k*A.mb, k*A.nb, A.m-k*A.mb, nvak));
 
-            trace_event_stop(Chocolate);
+            trace_event_stop(Tan);
         }
 
         // update
@@ -270,8 +270,12 @@ trace_init();
     // pivoting to the left
     for (int k = 1; k < imin(A.mt, A.nt); k++) {
 
-        // currently unspecified size
-        #pragma omp task depend(in:ipiv[(imin(A.mt, A.nt)-1)*A.mb])
+        plasma_complex64_t *akk = A(k, k);
+        int makk = (A.mt-k-1)*A.mb;
+        int nakk = plasma_tile_nmain(A, k);
+
+        #pragma omp task depend(in:ipiv[(imin(A.mt, A.nt)-1)*A.mb]) \
+                         depend(inout:akk[0:makk*nakk])
         {
             int k1 = k*A.mb+1;
             int k2 = imin(A.m, A.n);
