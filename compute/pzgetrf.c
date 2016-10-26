@@ -59,26 +59,6 @@ static void print_matrix(plasma_complex64_t *A, int m, int n, int nb)
 }
 
 /******************************************************************************/
-void core_zlaswp(plasma_desc_t A, int n, int k1, int k2, int *ipiv)
-{
-    for (int m = k1-1; m <= k2-1; m++) {
-        if (ipiv[m]-1 != m) {
-
-            int m1 = m;
-            int m2 = ipiv[m]-1;
-
-            int nvan = plasma_tile_nview(A, n);
-            int lda1 = plasma_tile_mmain(A, m1/A.mb);
-            int lda2 = plasma_tile_mmain(A, m2/A.mb);
-
-            cblas_zswap(nvan,
-                        A(m1/A.mb, n) + m1%A.mb, lda1,
-                        A(m2/A.mb, n) + m2%A.mb, lda2);
-        }
-    }
-}
-
-/******************************************************************************/
 void pzdesc2ge(plasma_desc_t A, plasma_complex64_t *pA, int lda)
 {
     plasma_complex64_t *f77;
@@ -132,6 +112,25 @@ void pzge2desc(plasma_complex64_t *pA, int lda, plasma_desc_t A)
                         y2-y1, x2-x1,
                         &(f77[x1*lda+y1]), lda,
                         &(bdl[x1*A.nb+y1]), ldt);
+        }
+    }
+}
+
+/******************************************************************************/
+void core_zlaswp(plasma_desc_t A, int k1, int k2, int *ipiv)
+{
+    for (int m = k1-1; m <= k2-1; m++) {
+        if (ipiv[m]-1 != m) {
+
+            int m1 = m;
+            int m2 = ipiv[m]-1;
+
+            int lda1 = plasma_tile_mmain(A, m1/A.mb);
+            int lda2 = plasma_tile_mmain(A, m2/A.mb);
+
+            cblas_zswap(A.n,
+                        A(m1/A.mb, 0) + m1%A.mb, lda1,
+                        A(m2/A.mb, 0) + m2%A.mb, lda2);
         }
     }
 }
@@ -233,7 +232,7 @@ trace_init();
                 int k1 = k*A.mb+1;
                 int k2 = imin(k*A.mb+A.mb, A.m);
                 trace_event_start();
-                core_zlaswp(A, n, k1, k2, ipiv);
+                core_zlaswp(plasma_desc_view(A, 0, n*A.nb, A.m, nvan), k1, k2, ipiv);
                 trace_event_stop(RoyalBlue);
 
                 // trsm
@@ -281,7 +280,7 @@ trace_init();
             int k2 = imin(A.m, A.n);
             int ione = 1;
             trace_event_start();
-            core_zlaswp(A, k-1, k1, k2, ipiv);
+            core_zlaswp(plasma_desc_view(A, 0, (k-1)*A.nb, A.m, A.nb), k1, k2, ipiv);
             trace_event_stop(DodgerBlue);
         }
     }
