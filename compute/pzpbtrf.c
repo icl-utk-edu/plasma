@@ -27,9 +27,6 @@
 void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    int k, m, n;
-    int tempkm, tempmm, tempmn;
-
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorSequence);
@@ -40,38 +37,43 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
     // PlasmaLower
     //==============
     if (uplo == PlasmaLower) {
-        for (k = 0; k < A.mt; k++) {
-            tempkm = k == A.mt-1 ? A.m-k*A.mb : A.mb;
+        for (int k = 0; k < A.mt; k++) {
+            int mvak  = plasma_tile_mview(A, k);
+            int ldakk = BLKLDD_BAND(uplo, A, k, k);
             core_omp_zpotrf(
-                PlasmaLower, tempkm,
-                A(k, k), BLKLDD_BAND(uplo, A, k, k),
+                PlasmaLower, mvak,
+                A(k, k), ldakk,
                 A.nb*k,
                 sequence, request);
 
-            for (m = k+1; m < imin(A.nt, k+A.klt); m++) {
-                tempmm = m == A.mt-1 ? A.m-m*A.mb : A.mb;
+            for (int m = k+1; m < imin(A.nt, k+A.klt); m++) {
+                int mvam  = plasma_tile_mview(A, m);
+                int ldamk = BLKLDD_BAND(uplo, A, m, k);
+                int ldamm = BLKLDD_BAND(uplo, A, m, m);
                 core_omp_ztrsm(
                     PlasmaRight, PlasmaLower,
                     PlasmaConjTrans, PlasmaNonUnit,
-                    tempmm, tempkm,
-                    1.0, A(k, k), BLKLDD_BAND(uplo, A, k, k),
-                         A(m, k), BLKLDD_BAND(uplo, A, m, k),
+                    mvam, mvak,
+                    1.0, A(k, k), ldakk,
+                         A(m, k), ldamk,
                     sequence, request);
                 core_omp_zherk(
                     PlasmaLower, PlasmaNoTrans,
-                    tempmm, A.mb,
-                    -1.0, A(m, k), BLKLDD_BAND(uplo, A, m, k),
-                     1.0, A(m, m), BLKLDD_BAND(uplo, A, m, m),
+                    mvam, A.mb,
+                    -1.0, A(m, k), ldamk,
+                     1.0, A(m, m), ldamm,
                     sequence, request);
 
-                for (n = imax(k+1, m-A.klt); n < m; n++) {
-                    tempmn = n == A.nt-1 ? A.n-n*A.nb : A.nb;
+                for (int n = imax(k+1, m-A.klt); n < m; n++) {
+                    int nvan  = plasma_tile_nview(A, n);
+                    int ldank = BLKLDD_BAND(uplo, A, n, k);
+                    int ldamn = BLKLDD_BAND(uplo, A, m, n);
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaConjTrans,
-                        tempmm, tempmn, tempkm,
-                        -1.0, A(m, k), BLKLDD_BAND(uplo, A, m, k),
-                              A(n, k), BLKLDD_BAND(uplo, A, n, k),
-                         1.0, A(m, n), BLKLDD_BAND(uplo, A, m, n),
+                        mvam, nvan, mvak,
+                        -1.0, A(m, k), ldamk,
+                              A(n, k), ldank,
+                         1.0, A(m, n), ldamn,
                         sequence, request);
                 }
             }
@@ -81,37 +83,42 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
     // PlasmaUpper
     //==============
     else {
-        for (k = 0; k < A.nt; k++) {
-            tempkm = k == A.nt-1 ? A.n-k*A.nb : A.nb;
+        for (int k = 0; k < A.nt; k++) {
+            int mvak  = plasma_tile_mview(A, k);
+            int ldakk = BLKLDD_BAND(uplo, A, k, k);
             core_omp_zpotrf(
-                PlasmaUpper, tempkm,
-                A(k, k), BLKLDD_BAND(uplo, A, k, k),
+                PlasmaUpper, mvak,
+                A(k, k), ldakk,
                 A.nb*k,
                 sequence, request);
 
-            for (m = k+1; m < imin(A.nt, k+A.kut); m++) {
-                tempmm = m == A.nt-1 ? A.n-m*A.nb : A.nb;
+            for (int m = k+1; m < imin(A.nt, k+A.kut); m++) {
+                int mvam  = plasma_tile_mview(A, m);
+                int ldakm = BLKLDD_BAND(uplo, A, k, m);
+                int ldamm = BLKLDD_BAND(uplo, A, m, m);
                 core_omp_ztrsm(
                     PlasmaLeft, PlasmaUpper,
                     PlasmaConjTrans, PlasmaNonUnit,
-                    A.nb, tempmm,
-                    1.0, A(k, k), BLKLDD_BAND(uplo, A, k, k),
-                         A(k, m), BLKLDD_BAND(uplo, A, k, m),
+                    A.nb, mvam,
+                    1.0, A(k, k), ldakk,
+                         A(k, m), ldakm,
                     sequence, request);
                 core_omp_zherk(
                     PlasmaUpper, PlasmaConjTrans,
-                    tempmm, A.mb,
-                    -1.0, A(k, m), BLKLDD_BAND(uplo, A, k, m),
-                     1.0, A(m, m), BLKLDD_BAND(uplo, A, m, m),
+                    mvam, A.mb,
+                    -1.0, A(k, m), ldakm,
+                     1.0, A(m, m), ldamm,
                     sequence, request);
 
-                for (n = imax(k+1, m-A.kut); n < m; n++) {
+                for (int n = imax(k+1, m-A.kut); n < m; n++) {
+                    int ldakn = BLKLDD_BAND(uplo, A, k, n);
+                    int ldanm = BLKLDD_BAND(uplo, A, n, m);
                     core_omp_zgemm(
                         PlasmaConjTrans, PlasmaNoTrans,
-                        A.mb, tempmm, A.mb,
-                        -1.0, A(k, n), BLKLDD_BAND(uplo, A, k, n),
-                              A(k, m), BLKLDD_BAND(uplo, A, k, m),
-                         1.0, A(n, m), BLKLDD_BAND(uplo, A, n, m),
+                        A.mb, mvam, A.mb,
+                        -1.0, A(k, n), ldakn,
+                              A(k, m), ldakm,
+                         1.0, A(n, m), ldanm,
                         sequence, request);
                 }
             }

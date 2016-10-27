@@ -135,12 +135,12 @@ int plasma_zpbsv(plasma_enum_t uplo,
     int nb = plasma->nb;
 
     // Initialize tile matrix descriptors.
-    int lda = nb*(1+(kd+nb-1)/nb);
+    int lm = nb*(1+(kd+nb-1)/nb);
     plasma_desc_t AB;
     plasma_desc_t B;
     int retval;
     retval = plasma_desc_general_band_create(PlasmaComplexDouble, uplo, nb, nb,
-                                             lda, n, 0, 0, n, n, kd, kd, &AB);
+                                             lm, n, 0, 0, n, n, kd, kd, &AB);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_band_create() failed");
         return retval;
