@@ -72,7 +72,7 @@ plasma_enum_t plasma_diag_const_t(char lapack_char)
  * @retval PlasmaRight     if lapack_char = 'R'
  ******************************************************************************/
 // @retval PlasmaBothSides if lapack_char = 'B'  // for trevc
-plasma_enum_t plasma_side_cons_t(char lapack_char)
+plasma_enum_t plasma_side_const_t(char lapack_char)
 {
     switch (lapack_char) {
     case 'L': case 'l': return PlasmaLeft;

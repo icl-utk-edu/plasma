@@ -176,7 +176,7 @@ void core_omp_zgelqt(int m, int n, int ib,
 {
     // TODO: double check depend dimensions
     #pragma omp task depend(inout:A[0:lda*n]) \
-                     depend(out:T[0:ib*m]) // T should be mxib, but is stored 
+                     depend(out:T[0:ib*m]) // T should be mxib, but is stored
                                            // as ibxm
     {
         if (sequence->status == PlasmaSuccess) {

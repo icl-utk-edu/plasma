@@ -92,7 +92,7 @@ void test_ztrsm(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    plasma_enum_t side = plasma_side_cons_t(param[PARAM_SIDE].c);
+    plasma_enum_t side = plasma_side_const_t(param[PARAM_SIDE].c);
     plasma_enum_t uplo = plasma_uplo_const_t(param[PARAM_UPLO].c);
     plasma_enum_t transa = plasma_trans_const_t(param[PARAM_TRANSA].c);
     plasma_enum_t diag = plasma_diag_const_t(param[PARAM_DIAG].c);
