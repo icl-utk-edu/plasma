@@ -136,6 +136,11 @@ struct routines_t routines[] =
     { "ctrtri", test_ctrtri },
     { "strtri", test_strtri },
 
+    { "zunmlq", test_zunmlq },
+    { "dormlq", test_dormlq },
+    { "cunmlq", test_cunmlq },
+    { "sormlq", test_sormlq },
+
     { "zunmqr", test_zunmqr },
     { "dormqr", test_dormqr },
     { "cunmqr", test_cunmqr },

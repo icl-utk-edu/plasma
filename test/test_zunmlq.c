@@ -27,7 +27,7 @@
 
 /***************************************************************************//**
  *
- * @brief Tests ZUNMQR.
+ * @brief Tests ZUNMLQ.
  *
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
@@ -37,7 +37,7 @@
  * If param is non-NULL and info is non-NULL, set info to column values
  * and run test.
  ******************************************************************************/
-void test_zunmqr(param_value_t param[], char *info)
+void test_zunmlq(param_value_t param[], char *info)
 {
     //================================================================
     // Print usage info or return column labels or values.
@@ -100,21 +100,21 @@ void test_zunmqr(param_value_t param[], char *info)
     // side and trans.
     int am, an;
     if (side == PlasmaLeft) {
-        am = m;
+        an = m;
         if (trans == PlasmaNoTrans) {
-            an = m;
+            am = k;
         }
         else {
-            an = k;
+            am = m;
         }
     }
     else {
-        am = n;
+        an = n;
         if (trans == PlasmaNoTrans) {
-            an = k;
+            am = n;
         }
         else {
-            an = n;
+            am = k;
         }
     }
     int lda = imax(1, am + param[PARAM_PADA].i);
@@ -135,7 +135,7 @@ void test_zunmqr(param_value_t param[], char *info)
 
     //================================================================
     // Allocate and initialize array A for construction of matrix Q as
-    // A = Q*R.
+    // A = L*Q.
     //================================================================
     plasma_complex64_t *A =
         (plasma_complex64_t*)malloc((size_t)lda*an*sizeof(plasma_complex64_t));
@@ -150,7 +150,7 @@ void test_zunmqr(param_value_t param[], char *info)
     // Prepare factorization of matrix A.
     //================================================================
     plasma_desc_t T;
-    plasma_zgeqrf(am, an, A, lda, &T);
+    plasma_zgelqf(am, an, A, lda, &T);
 
     //================================================================
     // Prepare m-by-n matrix B.
@@ -178,7 +178,7 @@ void test_zunmqr(param_value_t param[], char *info)
     //================================================================
     // Number of Householder reflectors to be used depends on
     // side and trans combination.
-    int qk = an;
+    int qk = am;
 
     int qm, qn, ldq;
     plasma_complex64_t *Q = NULL;
@@ -189,14 +189,14 @@ void test_zunmqr(param_value_t param[], char *info)
         Q = (plasma_complex64_t *)malloc((size_t)ldq*qn*
                                          sizeof(plasma_complex64_t));
         // Build explicit Q.
-        plasma_zungqr(qm, qn, qk, A, lda, T, Q, ldq);
+        plasma_zunglq(qm, qn, qk, A, lda, T, Q, ldq);
     }
 
     //================================================================
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    plasma_zunmqr(side, trans,
+    plasma_zunmlq(side, trans,
                   bm, bn, qk,
                   A, lda, T,
                   B, ldb);
@@ -204,7 +204,7 @@ void test_zunmqr(param_value_t param[], char *info)
     plasma_time_t time = stop-start;
 
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = flops_zunmqr(side, bm, bn, qk) /
+    param[PARAM_GFLOPS].d = flops_zunmlq(side, bm, bn, qk) /
                             time / 1e9;
 
     //================================================================

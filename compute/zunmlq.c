@@ -122,14 +122,11 @@ int plasma_zunmlq(plasma_enum_t side, plasma_enum_t trans,
         return -4;
     }
 
-    int am;
     int an;
     if (side == PlasmaLeft) {
-        am = n;
         an = m;
     }
     else {
-        am = m;
         an = n;
     }
 
@@ -159,7 +156,7 @@ int plasma_zunmlq(plasma_enum_t side, plasma_enum_t trans,
     plasma_desc_t C;
     int retval;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        am, an, 0, 0, k, an, &A);
+                                        k, an, 0, 0, k, an, &A);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
