@@ -232,6 +232,12 @@ void test_zunmlq(param_value_t param[], char *info)
             }
         }
 
+        // |Q*B|_1
+        double work[1];
+        double normC = LAPACKE_zlange_work(LAPACK_COL_MAJOR, '1', cm, cn,
+                                           B, ldb, work);
+
+
         // Apply explicit Q and compute the difference. For example, for
         // PlasmaLeft and PlasmaNoTrans, B <- implicit(Q)*B - Q*Bref.
         if (side == PlasmaLeft) {
@@ -249,18 +255,13 @@ void test_zunmlq(param_value_t param[], char *info)
                           1.0, B, ldb);
         }
 
-        // |B|_1
-        double work[1];
-        double normB = LAPACKE_zlange_work(LAPACK_COL_MAJOR, '1', bm, bn,
-                                           Bref, ldb, work);
-
         // Compute error in the difference.
         // |implicit(Q)*B - Q*Bref|_1
         double error = LAPACKE_zlange_work(LAPACK_COL_MAJOR, '1', cm, cn,
                                            B, ldb, work);
 
         // Normalize the result.
-        error /= (cn * normB);
+        error /= (cm * normC);
 
         // Store the results.
         param[PARAM_ERROR].d = error;

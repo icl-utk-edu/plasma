@@ -260,7 +260,7 @@ void test_zunmqr(param_value_t param[], char *info)
                                            B, ldb, work);
 
         // Normalize the result.
-        error /= (cn * normB);
+        error /= (cm * normB);
 
         // Store the results.
         param[PARAM_ERROR].d = error;
