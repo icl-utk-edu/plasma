@@ -215,7 +215,7 @@ void test_zgetrf(param_value_t param[], char *info)
     // Return column values.
     snprintf(info, InfoLen,
              "%*d %*d %*d %*d",
-             InfoSpacing, param[PARAM_N].i,
+             InfoSpacing, param[PARAM_M].i,
              InfoSpacing, param[PARAM_N].i,
              InfoSpacing, param[PARAM_PADA].i,
              InfoSpacing, param[PARAM_NB].i);
