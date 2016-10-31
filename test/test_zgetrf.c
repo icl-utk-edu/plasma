@@ -24,7 +24,7 @@
 #include <omp.h>
 
 /******************************************************************************/
-void plasma_zgetrf__(int m, int n, plasma_complex64_t *A, int lda, int *ipiv, int nb)
+void plasma_zgetrf_(int m, int n, plasma_complex64_t *A, int lda, int *ipiv, int nb)
 {
     for (int k = 0; k < imin(m, n); k += nb) {
 
@@ -81,7 +81,7 @@ void plasma_zgetrf__(int m, int n, plasma_complex64_t *A, int lda, int *ipiv, in
 }
 
 /******************************************************************************/
-void plasma_zgetrf_(int m, int n, plasma_complex64_t *A, int lda, int *ipiv, int nb)
+void plasma_zgetrf__(int m, int n, plasma_complex64_t *A, int lda, int *ipiv, int nb)
 {
     for (int k = 0; k < imin(m, n); k++) {
 
@@ -264,7 +264,8 @@ void test_zgetrf(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    plasma_zgetrf_(m, n, A, lda, IPIV, param[PARAM_NB].i);
+//  plasma_zgetrf_(m, n, A, lda, IPIV, param[PARAM_NB].i);
+    plasma_zgetrf(m, n, A, lda, IPIV);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
