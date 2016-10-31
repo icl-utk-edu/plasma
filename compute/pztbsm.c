@@ -40,10 +40,10 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
 
     if (side == PlasmaLeft) {
         if (uplo == PlasmaUpper) {
-            // ==========================================
-            // PlasmaLeft / PlasmaUpper / PlasmaNoTrans
-            // ==========================================
             if (trans == PlasmaNoTrans) {
+                // ==========================================
+                // PlasmaLeft / PlasmaUpper / PlasmaNoTrans
+                // ==========================================
                 for (int k = 0; k < B.mt; k++) {
                     int mvbk = plasma_tile_mview(B, B.mt-k-1);
                     int ldak = BLKLDD_BAND(uplo, A, B.mt-k-1, B.mt-k-1);
@@ -74,10 +74,10 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                     }
                 }
             }
-            // ==============================================
-            // PlasmaLeft / PlasmaUpper / Plasma[Conj]Trans
-            // ==============================================
             else {
+                // ==============================================
+                // PlasmaLeft / PlasmaUpper / Plasma[Conj]Trans
+                // ==============================================
                 for (int k = 0; k < B.mt; k++) {
                     int mvbk = plasma_tile_mview(B, k);
                     int ldak = BLKLDD_BAND(uplo, A, k, k);
@@ -111,10 +111,10 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
             }
         }
         else {
-            // ==========================================
-            // PlasmaLeft / PlasmaLower / PlasmaNoTrans
-            // ==========================================
             if (trans == PlasmaNoTrans) {
+                // ==========================================
+                // PlasmaLeft / PlasmaLower / PlasmaNoTrans
+                // ==========================================
                 for (int k = 0; k < B.mt; k++) {
                     int mvbk = plasma_tile_mview(B, k);
                     int ldak = BLKLDD_BAND(uplo, A, B.mt-k-1, B.mt-k-1);
@@ -155,10 +155,10 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                     }
                 }
             }
-            // ==============================================
-            // PlasmaLeft / PlasmaLower / Plasma[Conj]Trans
-            // ==============================================
             else {
+                // ==============================================
+                // PlasmaLeft / PlasmaLower / Plasma[Conj]Trans
+                // ==============================================
                 for (int k = 0; k < B.mt; k++) {
                     int mvbk = plasma_tile_mview(B, B.mt-k-1);
                     int ldak = BLKLDD_BAND(uplo, A, B.mt-k-1, B.mt-k-1);

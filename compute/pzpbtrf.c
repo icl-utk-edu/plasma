@@ -33,10 +33,10 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
         return;
     }
 
-    //==============
-    // PlasmaLower
-    //==============
     if (uplo == PlasmaLower) {
+        //==============
+        // PlasmaLower
+        //==============
         for (int k = 0; k < A.mt; k++) {
             int mvak  = plasma_tile_mview(A, k);
             int ldakk = BLKLDD_BAND(uplo, A, k, k);
@@ -45,7 +45,6 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
                 A(k, k), ldakk,
                 A.nb*k,
                 sequence, request);
-
             for (int m = k+1; m < imin(A.nt, k+A.klt); m++) {
                 int mvam  = plasma_tile_mview(A, m);
                 int ldamk = BLKLDD_BAND(uplo, A, m, k);
@@ -63,7 +62,6 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
                     -1.0, A(m, k), ldamk,
                      1.0, A(m, m), ldamm,
                     sequence, request);
-
                 for (int n = imax(k+1, m-A.klt); n < m; n++) {
                     int nvan  = plasma_tile_nview(A, n);
                     int ldank = BLKLDD_BAND(uplo, A, n, k);
@@ -79,10 +77,10 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
             }
         }
     }
-    //==============
-    // PlasmaUpper
-    //==============
     else {
+        //==============
+        // PlasmaUpper
+        //==============
         for (int k = 0; k < A.nt; k++) {
             int mvak  = plasma_tile_mview(A, k);
             int ldakk = BLKLDD_BAND(uplo, A, k, k);
@@ -91,7 +89,6 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
                 A(k, k), ldakk,
                 A.nb*k,
                 sequence, request);
-
             for (int m = k+1; m < imin(A.nt, k+A.kut); m++) {
                 int mvam  = plasma_tile_mview(A, m);
                 int ldakm = BLKLDD_BAND(uplo, A, k, m);
@@ -109,7 +106,6 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
                     -1.0, A(k, m), ldakm,
                      1.0, A(m, m), ldamm,
                     sequence, request);
-
                 for (int n = imax(k+1, m-A.kut); n < m; n++) {
                     int ldakn = BLKLDD_BAND(uplo, A, k, n);
                     int ldanm = BLKLDD_BAND(uplo, A, n, m);

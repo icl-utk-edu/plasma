@@ -123,15 +123,8 @@ int plasma_zpbtrs(plasma_enum_t uplo,
     // Set tiling parameters.
     int nb = plasma->nb;
 
-    // number of tiles in upper band (not including diagonal)
-    int tku  = (kd+kd+nb-1)/nb;
-
-    // number of tiles in lower band (not including diagonal)
-    int tkl  = (kd+nb-1)/nb;
-
-
     // Initialize tile matrix descriptors.
-    int lm = (tku+tkl+1)*nb;  // check this
+    int lm = nb*(1+(kd+nb-1)/nb);
     plasma_desc_t AB;
     plasma_desc_t B;
     int retval;
