@@ -73,15 +73,16 @@ pzge2desc(pA, lda, A);
                         &a0[j+k*lda0], lda0,
                         &ap[jp%nb+k*ldap], ldap);
 
-            // column scaling
+            // column scaling and trailing update
             for (int l = 0; l < A.mt; l++) {
 
-                plasma_complex64_t *ai = A(l, 0);
+                plasma_complex64_t *al = A(l, 0);
                 int ldal = plasma_tile_mmain(A, l);
 
                 int mva0 = plasma_tile_mview(A, 0);
                 int mval = plasma_tile_mview(A, l);
 
+                // column scaling
                 if (cabs(a0[j+j*lda0]) >= sfmin) {
                     if (l == 0) {
                         for (int i = 1; i < mva0-j; i++)
@@ -89,7 +90,7 @@ pzge2desc(pA, lda, A);
                     }
                     else {
                         for (int i = 0; i < mval; i++)
-                            ai[i+j*ldal] /= a0[j+j*lda0];
+                            al[i+j*ldal] /= a0[j+j*lda0];
                     }
                 }
                 else {
@@ -98,22 +99,30 @@ pzge2desc(pA, lda, A);
                         cblas_zscal(mva0-j-1, CBLAS_SADDR(scal),
                                     &a0[j+1+j*lda0], 1);
                     else
-                        cblas_zscal(mval, CBLAS_SADDR(scal), &ai[j*ldal], 1);
+                        cblas_zscal(mval, CBLAS_SADDR(scal), &al[j*ldal], 1);
                 }
 
+                // trailing update
+                plasma_complex64_t zmone = -1.0;
+                if (l == 0) {
+                    cblas_zgeru(CblasColMajor,
+                                mva0-j-1, k+kb-j-1,
+                                CBLAS_SADDR(zmone), &a0[j+1+j*lda0], 1,
+                                                    &a0[j+(j+1)*lda0], lda0,
+                                                    &a0[j+1+(j+1)*lda0], lda0);
+                }
+                else {
+                    cblas_zgeru(CblasColMajor,
+                                mval, k+kb-j-1,
+                                CBLAS_SADDR(zmone), &al[+j*ldal], 1,
+                                                    &a0[j+(j+1)*lda0], lda0,
+                                                    &al[+(j+1)*ldal], ldal);
+                }
 
             }
 
 pzdesc2ge(A, pA, lda);
 
-            // trailing update
-            plasma_complex64_t zone = 1.0;
-            plasma_complex64_t zmone = -1.0;
-            cblas_zgeru(CblasColMajor,
-                        m-j-1, k+kb-j-1,
-                        CBLAS_SADDR(zmone), &pA[j+1+j*lda], 1,
-                                            &pA[j+(j+1)*lda], lda,
-                                            &pA[j+1+(j+1)*lda], lda);
         }
 
 pzge2desc(pA, lda, A);
