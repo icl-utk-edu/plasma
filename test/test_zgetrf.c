@@ -37,38 +37,57 @@ void plasma_zgetrf_(int m, int n,
     int retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
                                             m, n, 0, 0, m, n, &A);
     assert(retval == PlasmaSuccess);
+    pzge2desc(pA, lda, A);
+
 
 
     double sfmin = LAPACKE_dlamch_work('S');
-
 
     for (int k = 0; k < imin(m, n); k += ib) {
 
         int kb = imin(imin(m, n)-k, ib);
 
+        plasma_complex64_t *a0 = A(0, 0);
+        int lda0 = plasma_tile_mmain(A, 0);
+        int mva0 = plasma_tile_mview(A, 0);
+        int nva0 = plasma_tile_nview(A, 0);
+
+        //======================
         // panel factorization
+        //======================
         for (int j = k; j < k+kb; j++) {
 
             // pivot search
             int imax = 0;
-            plasma_complex64_t max = pA[j+j*lda];
-            for (int i = 1; i < m-j; i++)
-                if (cblas_dcabs1(&pA[j+i+j*lda]) > cblas_dcabs1(&max)) {
-                    max = pA[j+i+j*lda];
-                    imax = i;
+            plasma_complex64_t max = a0[j+j*lda];
+            for (int l = 0; l < A.mt; l++) {
+
+                plasma_complex64_t *al = A(l, 0);
+                int ldal = plasma_tile_mmain(A, l);
+                int mval = plasma_tile_mview(A, l);
+
+                if (l == 0) {
+                    for (int i = 1; i < mva0-j; i++)
+                        if (cblas_dcabs1(&a0[j+i+j*lda0]) > cblas_dcabs1(&max)) {
+                            max = a0[j+i+j*lda0];
+                            imax = i;
+                        }
                 }
+                else {
+                    for (int i = 0; i < mval; i++)
+                        if (cblas_dcabs1(&al[i+j*ldal]) > cblas_dcabs1(&max)) {
+                            max = al[i+j*ldal];
+                            imax = A.mb*l+i-j;
+                        }
+                }
+            }
             int jp = j+imax;
             ipiv[j] = jp-k+1;
 
-pzge2desc(pA, lda, A);
-
-            plasma_complex64_t *a0 = A(0, 0);
+            // pivot swap
             plasma_complex64_t *ap = A(jp/nb, 0);
-
-            int lda0 = plasma_tile_mmain(A, 0);
             int ldap = plasma_tile_mmain(A, jp/nb);
 
-            // pivot swap
             cblas_zswap(kb,
                         &a0[j+k*lda0], lda0,
                         &ap[jp%nb+k*ldap], ldap);
@@ -78,8 +97,6 @@ pzge2desc(pA, lda, A);
 
                 plasma_complex64_t *al = A(l, 0);
                 int ldal = plasma_tile_mmain(A, l);
-
-                int mva0 = plasma_tile_mview(A, 0);
                 int mval = plasma_tile_mview(A, l);
 
                 // column scaling
@@ -118,24 +135,15 @@ pzge2desc(pA, lda, A);
                                                     &a0[j+(j+1)*lda0], lda0,
                                                     &al[+(j+1)*ldal], ldal);
                 }
-
             }
-
-pzdesc2ge(A, pA, lda);
-
         }
-
-pzge2desc(pA, lda, A);
+        //============================
+        // trailing submatrix update
+        //============================
 
         // pivot adjustment
         for (int i = k+1; i <= imin(m, k+kb); i++)
             ipiv[i-1] += k;
-
-        plasma_complex64_t *a0 = A(0, 0);
-
-        int lda0 = plasma_tile_mmain(A, 0);
-        int nva0 = plasma_tile_nview(A, 0);
-        int mva0 = plasma_tile_mview(A, 0);
 
         // right pivoting
         for (int i = k; i < k+kb; i++) {
@@ -187,11 +195,8 @@ pzge2desc(pA, lda, A);
                             CBLAS_SADDR(zone),  &ai[(k+kb)*ldai], ldai);           
             }
         }
-pzdesc2ge(A, pA, lda);
 
     }
-
-pzge2desc(pA, lda, A);
 
     // left pivoting
     for (int k = ib; k < imin(m, n); k += ib) {
@@ -208,7 +213,9 @@ pzge2desc(pA, lda, A);
         }
 
     }
+
 pzdesc2ge(A, pA, lda);
+
 }
 
 /******************************************************************************/
