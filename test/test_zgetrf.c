@@ -49,7 +49,14 @@ void plasma_zgetrf_(int m, int n,
         // panel factorization
         for (int j = k; j < k+kb; j++) {
 
-            int jp = j + cblas_izamax(m-j, &pA[j+j*lda], 1);
+            int imax = 0;
+            plasma_complex64_t max = pA[j+j*lda];
+            for (int i = 1; i < m-j; i++)
+                if (cblas_dcabs1(&pA[j+i+j*lda]) > cblas_dcabs1(&max)) {
+                    max = pA[j+i+j*lda];
+                    imax = i;
+                }
+            int jp = j+imax;
             ipiv[j] = jp-k+1;
 
             cblas_zswap(kb,
@@ -74,11 +81,11 @@ void plasma_zgetrf_(int m, int n,
                                             &pA[j+1+(j+1)*lda], lda);
         }
 
+pzge2desc(pA, lda, A);
+
         // pivot adjustment
         for (int i = k+1; i <= imin(m, k+kb); i++)
             ipiv[i-1] += k;
-
-pzge2desc(pA, lda, A);
 
         plasma_complex64_t *a0 = A(0, 0);
 
