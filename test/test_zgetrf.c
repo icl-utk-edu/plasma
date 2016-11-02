@@ -59,9 +59,19 @@ void plasma_zgetrf_(int m, int n,
             int jp = j+imax;
             ipiv[j] = jp-k+1;
 
+pzge2desc(pA, lda, A);
+
+            plasma_complex64_t *a0 = A(0, 0);
+            plasma_complex64_t *ap = A(jp/nb, 0);
+
+            int lda0 = plasma_tile_mmain(A, 0);
+            int ldap = plasma_tile_mmain(A, jp/nb);
+
             cblas_zswap(kb,
-                        &pA[j+k*lda], lda,
-                        &pA[jp+k*lda], lda);
+                        &a0[j+k*lda0], lda0,
+                        &ap[jp%nb+k*ldap], ldap);
+
+pzdesc2ge(A, pA, lda);
 
             if (cabs(pA[j+j*lda]) >= sfmin) {
                 plasma_complex64_t scal = 1.0/pA[j+j*lda];
