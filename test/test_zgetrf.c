@@ -39,18 +39,42 @@ void plasma_zgetrf_(int m, int n,
     assert(retval == PlasmaSuccess);
 
 
+    double sfmin = LAPACKE_dlamch_work('S');
+
 
     for (int k = 0; k < imin(m, n); k += ib) {
 
         int kb = imin(imin(m, n)-k, ib);
 
-        // panel
-        LAPACKE_zgetrf(LAPACK_COL_MAJOR,
-                       m-k,
-                       kb,
-                       &pA[k+k*lda], lda,
-                       &ipiv[k]);
+        // panel factorization
+        for (int j = k; j < k+kb; j++) {
 
+            int jp = j + cblas_izamax(m-j, &pA[j+j*lda], 1);
+            ipiv[j] = jp-k+1;
+
+            cblas_zswap(kb,
+                        &pA[j+k*lda], lda,
+                        &pA[jp+k*lda], lda);
+
+            if (cabs(pA[j+j*lda]) >= sfmin) {
+                plasma_complex64_t scal = 1.0/pA[j+j*lda];
+                cblas_zscal(m-j-1, CBLAS_SADDR(scal), &pA[j+1+j*lda], 1);
+            }
+            else {
+                for (int i = 1; i < m-j; i++)
+                    pA[j+i+j*lda] /= pA[j+j*lda];
+            }
+
+            plasma_complex64_t zone = 1.0;
+            plasma_complex64_t zmone = -1.0;
+            cblas_zgeru(CblasColMajor,
+                        m-j-1, k+kb-j-1,
+                        CBLAS_SADDR(zmone), &pA[j+1+j*lda], 1,
+                                            &pA[j+(j+1)*lda], lda,
+                                            &pA[j+1+(j+1)*lda], lda);
+        }
+
+        // pivot adjustment
         for (int i = k+1; i <= imin(m, k+kb); i++)
             ipiv[i-1] += k;
 
@@ -306,9 +330,6 @@ void test_zgetrf(param_value_t param[], char *info)
     lapack_int retval;
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
-
-// for (int i = 0; i < imin(m, n); i++)
-//     A[i*lda+i] = 1000.0;
 
     plasma_complex64_t *Aref = NULL;
     if (test) {
