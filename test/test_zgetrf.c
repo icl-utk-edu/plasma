@@ -49,6 +49,7 @@ void plasma_zgetrf_(int m, int n,
         // panel factorization
         for (int j = k; j < k+kb; j++) {
 
+            // pivot search
             int imax = 0;
             plasma_complex64_t max = pA[j+j*lda];
             for (int i = 1; i < m-j; i++)
@@ -67,21 +68,45 @@ pzge2desc(pA, lda, A);
             int lda0 = plasma_tile_mmain(A, 0);
             int ldap = plasma_tile_mmain(A, jp/nb);
 
+            // pivot swap
             cblas_zswap(kb,
                         &a0[j+k*lda0], lda0,
                         &ap[jp%nb+k*ldap], ldap);
 
+            // column scaling
+            for (int l = 0; l < A.mt; l++) {
+
+                plasma_complex64_t *ai = A(l, 0);
+                int ldal = plasma_tile_mmain(A, l);
+
+                int mva0 = plasma_tile_mview(A, 0);
+                int mval = plasma_tile_mview(A, l);
+
+                if (cabs(a0[j+j*lda0]) >= sfmin) {
+                    if (l == 0) {
+                        for (int i = 1; i < mva0-j; i++)
+                            a0[j+i+j*lda0] /= a0[j+j*lda0];
+                    }
+                    else {
+                        for (int i = 0; i < mval; i++)
+                            ai[i+j*ldal] /= a0[j+j*lda0];
+                    }
+                }
+                else {
+                    plasma_complex64_t scal = 1.0/a0[j+j*lda0];
+                    if (l == 0)
+                        cblas_zscal(mva0-j-1, CBLAS_SADDR(scal),
+                                    &a0[j+1+j*lda0], 1);
+                    else
+                        cblas_zscal(mval, CBLAS_SADDR(scal), &ai[j*ldal], 1);
+                }
+
+
+            }
+
 pzdesc2ge(A, pA, lda);
 
-            if (cabs(pA[j+j*lda]) >= sfmin) {
-                plasma_complex64_t scal = 1.0/pA[j+j*lda];
-                cblas_zscal(m-j-1, CBLAS_SADDR(scal), &pA[j+1+j*lda], 1);
-            }
-            else {
-                for (int i = 1; i < m-j; i++)
-                    pA[j+i+j*lda] /= pA[j+j*lda];
-            }
-
+            // trailing update
             plasma_complex64_t zone = 1.0;
             plasma_complex64_t zmone = -1.0;
             cblas_zgeru(CblasColMajor,
