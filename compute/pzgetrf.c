@@ -136,7 +136,7 @@ void core_zlaswp(plasma_desc_t A, int k1, int k2, int *ipiv)
 }
 
 /******************************************************************************/
-void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
+void plasma_pzgetrf(plasma_desc_t A, int *ipiv, int ib,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Check sequence status.
@@ -191,21 +191,12 @@ trace_init();
                          priority(1)
         {
             trace_event_start();
-
-            pzdesc2ge(plasma_desc_view(A, k*A.mb, k*A.nb, A.m-k*A.mb, nvak),
-                      &pA[k*A.mb*A.m + k*A.mb], A.m);
-
-            LAPACKE_zgetrf(LAPACK_COL_MAJOR,
-                           A.m-k*A.mb, nvak,
-                           &pA[k*A.mb*A.m + k*A.mb], A.m, &ipiv[k*A.mb]);
-
-            pzge2desc(&pA[k*A.mb*A.m + k*A.mb], A.m,
-                      plasma_desc_view(A, k*A.mb, k*A.nb, A.m-k*A.mb, nvak));
+            core_zgetrf(plasma_desc_view(A, k*A.mb, k*A.nb, A.m-k*A.mb, nvak),
+                        &ipiv[k*A.mb], ib);
+            trace_event_stop(Tan);
 
             for (int i = k*A.mb+1; i <= A.m; i++)
                 ipiv[i-1] += k*A.mb;
-
-            trace_event_stop(Tan);
         }
 
         // update
@@ -285,8 +276,6 @@ trace_init();
         }
     }
 }
-
-
 
 trace_write("../trace.svg");
 

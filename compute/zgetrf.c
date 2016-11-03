@@ -50,6 +50,7 @@ int plasma_zgetrf(int m, int n,
 
     // Set tiling parameters.
     int nb = plasma->nb;
+    int ib = plasma->ib;
 
     // Create tile matrix.
     plasma_desc_t A;
@@ -86,7 +87,7 @@ int plasma_zgetrf(int m, int n,
     }
 
     // Call the tile async function.
-    plasma_omp_zgetrf(A, IPIV, sequence, &request);
+    plasma_omp_zgetrf(A, IPIV, ib, sequence, &request);
 
     #pragma omp parallel
     #pragma omp master
@@ -125,7 +126,7 @@ int plasma_zgetrf(int m, int n,
 /***************************************************************************//**
  *
  ******************************************************************************/
-void plasma_omp_zgetrf(plasma_desc_t A, int *IPIV,
+void plasma_omp_zgetrf(plasma_desc_t A, int *IPIV, int ib,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
@@ -156,5 +157,5 @@ void plasma_omp_zgetrf(plasma_desc_t A, int *IPIV,
     // quick return
 
     // Call the parallel function.
-    plasma_pzgetrf(A, IPIV, sequence, request);
+    plasma_pzgetrf(A, IPIV, ib, sequence, request);
 }

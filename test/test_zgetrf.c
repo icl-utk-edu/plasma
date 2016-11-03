@@ -29,277 +29,6 @@ void pzdesc2ge(plasma_desc_t A, plasma_complex64_t *pA, int lda);
 void pzge2desc(plasma_complex64_t *pA, int lda, plasma_desc_t A);
 
 /******************************************************************************/
-
-// typedef int pthread_barrierattr_t;
-// typedef struct pthread_barrier_s {
-//     unsigned size;
-//     volatile unsigned count;
-// } pthread_barrier_t;
-
-// int pthread_barrier_init(pthread_barrier_t *restrict barrier,
-//     const pthread_barrierattr_t *restrict attr, unsigned size) {
-//     barrier->size = size;
-//     barrier->count = 0;
-//     return 0;
-// }
-
-// int pthread_barrier_wait(pthread_barrier_t *barrier) {
-//     __sync_fetch_and_add(&barrier->count, 1);
-//     __sync_bool_compare_and_swap(&barrier->count, barrier->size, 0);
-//     while (barrier->count != 0);
-//     return 0;
-// }
-
-/******************************************************************************/
-void plasma_zgetrf_(plasma_desc_t A, int *ipiv, int ib)
-{
-    double sfmin = LAPACKE_dlamch_work('S');
-
-    for (int k = 0; k < imin(A.m, A.n); k += ib) {
-
-        int kb = imin(imin(A.m, A.n)-k, ib);
-
-        plasma_complex64_t *a0 = A(0, 0);
-        int lda0 = plasma_tile_mmain(A, 0);
-        int mva0 = plasma_tile_mview(A, 0);
-        int nva0 = plasma_tile_nview(A, 0);
-
-        //======================
-        // panel factorization
-        //======================
-        for (int j = k; j < k+kb; j++) {
-
-            // pivot search
-            int imax = 0;
-            plasma_complex64_t max = a0[j+j*lda0];
-            for (int l = 0; l < A.mt; l++) {
-
-                plasma_complex64_t *al = A(l, 0);
-                int ldal = plasma_tile_mmain(A, l);
-                int mval = plasma_tile_mview(A, l);
-
-                if (l == 0) {
-                    for (int i = 1; i < mva0-j; i++)
-                        if (cblas_dcabs1(&a0[j+i+j*lda0]) > cblas_dcabs1(&max)) {
-                            max = a0[j+i+j*lda0];
-                            imax = i;
-                        }
-                }
-                else {
-                    for (int i = 0; i < mval; i++)
-                        if (cblas_dcabs1(&al[i+j*ldal]) > cblas_dcabs1(&max)) {
-                            max = al[i+j*ldal];
-                            imax = A.mb*l+i-j;
-                        }
-                }
-            }
-            int jp = j+imax;
-            ipiv[j] = jp-k+1;
-
-            // pivot swap
-            plasma_complex64_t *ap = A(jp/A.mb, 0);
-            int ldap = plasma_tile_mmain(A, jp/A.mb);
-
-            cblas_zswap(kb,
-                        &a0[j+k*lda0], lda0,
-                        &ap[jp%A.mb+k*ldap], ldap);
-
-            // column scaling and trailing update
-            for (int l = 0; l < A.mt; l++) {
-
-                plasma_complex64_t *al = A(l, 0);
-                int ldal = plasma_tile_mmain(A, l);
-                int mval = plasma_tile_mview(A, l);
-
-                // column scaling
-                if (cabs(a0[j+j*lda0]) >= sfmin) {
-                    if (l == 0) {
-                        for (int i = 1; i < mva0-j; i++)
-                            a0[j+i+j*lda0] /= a0[j+j*lda0];
-                    }
-                    else {
-                        for (int i = 0; i < mval; i++)
-                            al[i+j*ldal] /= a0[j+j*lda0];
-                    }
-                }
-                else {
-                    plasma_complex64_t scal = 1.0/a0[j+j*lda0];
-                    if (l == 0)
-                        cblas_zscal(mva0-j-1, CBLAS_SADDR(scal),
-                                    &a0[j+1+j*lda0], 1);
-                    else
-                        cblas_zscal(mval, CBLAS_SADDR(scal), &al[j*ldal], 1);
-                }
-
-                // trailing update
-                plasma_complex64_t zmone = -1.0;
-                if (l == 0) {
-                    cblas_zgeru(CblasColMajor,
-                                mva0-j-1, k+kb-j-1,
-                                CBLAS_SADDR(zmone), &a0[j+1+j*lda0], 1,
-                                                    &a0[j+(j+1)*lda0], lda0,
-                                                    &a0[j+1+(j+1)*lda0], lda0);
-                }
-                else {
-                    cblas_zgeru(CblasColMajor,
-                                mval, k+kb-j-1,
-                                CBLAS_SADDR(zmone), &al[+j*ldal], 1,
-                                                    &a0[j+(j+1)*lda0], lda0,
-                                                    &al[+(j+1)*ldal], ldal);
-                }
-            }
-        }
-        //============================
-        // trailing submatrix update
-        //============================
-
-        // pivot adjustment
-        for (int i = k+1; i <= imin(A.m, k+kb); i++)
-            ipiv[i-1] += k;
-
-        // right pivoting
-        for (int i = k; i < k+kb; i++) {
-
-            plasma_complex64_t *ap = A((ipiv[i]-1)/A.mb, 0);
-            int ldap = plasma_tile_mmain(A, (ipiv[i]-1)/A.mb);
-
-            cblas_zswap(nva0-k-kb,
-                        &a0[i+(k+kb)*lda0], lda0,
-                        &ap[(ipiv[i]-1)%A.mb+(k+kb)*ldap], ldap);
-        }
-
-        // trsm
-        plasma_complex64_t zone = 1.0;
-        cblas_ztrsm(CblasColMajor,
-                    PlasmaLeft, PlasmaLower,
-                    PlasmaNoTrans, PlasmaUnit,
-                    kb,
-                    nva0-k-kb,
-                    CBLAS_SADDR(zone), &a0[k+k*lda0], lda0,
-                                       &a0[k+(k+kb)*lda0], lda0);
-
-        // gemm
-        plasma_complex64_t zmone = -1.0;
-        for (int i = 0; i < A.mt; i++) {
-
-            plasma_complex64_t *ai = A(i, 0);
-            int mvai = plasma_tile_mview(A, i);
-            int ldai = plasma_tile_mmain(A, i);
-
-            if (i == 0) {
-                cblas_zgemm(CblasColMajor,
-                            CblasNoTrans, CblasNoTrans,
-                            mva0-k-kb,
-                            nva0-k-kb,
-                            kb,
-                            CBLAS_SADDR(zmone), &a0[k+kb+k*lda0], lda0,
-                                                &a0[k+(k+kb)*lda0], lda0,
-                            CBLAS_SADDR(zone),  &a0[(k+kb)+(k+kb)*lda0], lda0);
-            }
-            else {
-                cblas_zgemm(CblasColMajor,
-                            CblasNoTrans, CblasNoTrans,
-                            mvai,
-                            nva0-k-kb,
-                            kb,
-                            CBLAS_SADDR(zmone), &ai[k*ldai], ldai,
-                                                &a0[k+(k+kb)*lda0], lda0,
-                            CBLAS_SADDR(zone),  &ai[(k+kb)*ldai], ldai);           
-            }
-        }
-
-    }
-
-    // left pivoting
-    for (int k = ib; k < imin(A.m, A.n); k += ib) {
-        for (int i = k; i < imin(A.m, A.n); i++) {
-
-            plasma_complex64_t *ai = A(i/A.mb, 0);
-            plasma_complex64_t *ap = A((ipiv[i]-1)/A.mb, 0);
-            int ldai = plasma_tile_mmain(A, (i/A.mb));
-            int ldap = plasma_tile_mmain(A, (ipiv[i]-1)/A.mb);
-
-            cblas_zswap(ib,
-                        &ai[i%A.mb+(k-ib)*ldai], ldai,
-                        &ap[(ipiv[i]-1)%A.mb+(k-ib)*ldap], ldap);
-        }
-    }
-}
-
-/******************************************************************************/
-void plasma_zgetrf__(int m, int n, plasma_complex64_t *A, int lda, int *ipiv, int nb)
-{
-    for (int k = 0; k < imin(m, n); k++) {
-
-        // panel
-        LAPACKE_zgetrf(LAPACK_COL_MAJOR,
-                       m-k, 1, &A[k+k*lda], lda, &ipiv[k]);
-
-        for (int i = k+1; i <= imin(m, k+1); i++)
-            ipiv[i-1] += k;
-
-        // left pivoting
-        LAPACKE_zlaswp(LAPACK_COL_MAJOR,
-                       k,
-                       &A[0], lda,
-                       k+1,
-                       k+1,
-                       ipiv, 1);
-
-        if (k == imin(m, n)-1)
-            break;
-
-        int l = (k+1)&(~k);
-        int kb = imin(imin(m, n)-k-1, l);
-
-        // right pivoting
-        LAPACKE_zlaswp(LAPACK_COL_MAJOR,
-                       kb,
-                       &A[(k+1)*lda], lda,
-                       (k-l+1)+1,
-                       k+1,
-                       ipiv, 1);
-
-        plasma_complex64_t zone = 1.0;
-        cblas_ztrsm(CblasColMajor,
-                    PlasmaLeft, PlasmaLower,
-                    PlasmaNoTrans, PlasmaUnit,
-                    l,
-                    kb,
-                    CBLAS_SADDR(zone), &A[k+1-l+(k+1-l)*lda], lda,
-                                       &A[k+1-l+(k+1)*lda], lda);
-
-        plasma_complex64_t zmone = -1.0;
-        cblas_zgemm(CblasColMajor,
-                    CblasNoTrans, CblasNoTrans,
-                    m-k-1,
-                    kb,
-                    l,
-                    CBLAS_SADDR(zmone), &A[k+1+(k+1-l)*lda], lda,
-                                        &A[k+1-l+(k+1)*lda], lda,
-                    CBLAS_SADDR(zone),  &A[k+1+(k+1)*lda], lda);
-    }
-
-    // right reminder for n > m
-    int k = imin(m, n);
-    LAPACKE_zlaswp(LAPACK_COL_MAJOR,
-                   n-k,
-                   &A[k*lda], lda,
-                   1,
-                   k,
-                   ipiv, 1);
-
-    plasma_complex64_t zone = 1.0;
-    cblas_ztrsm(CblasColMajor,
-                PlasmaLeft, PlasmaLower,
-                PlasmaNoTrans, PlasmaUnit,
-                k,
-                n-k,
-                CBLAS_SADDR(zone), &A[0], lda,
-                                   &A[k*lda], lda);
-}
-
-/******************************************************************************/
 static void print_matrix(plasma_complex64_t *A, int m, int n)
 {
     for (int j = 0; j < m; j++) {
@@ -346,25 +75,28 @@ void test_zgetrf(param_value_t param[], char *info)
             print_usage(PARAM_N);
             print_usage(PARAM_PADA);
             print_usage(PARAM_NB);
+            print_usage(PARAM_IB);
         }
         else {
             // Return column labels.
             snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s",
+                     "%*s %*s %*s %*s %*s",
                      InfoSpacing, "M",
                      InfoSpacing, "N",
                      InfoSpacing, "PadA",
-                     InfoSpacing, "NB");
+                     InfoSpacing, "NB",
+                     InfoSpacing, "IB");
         }
         return;
     }
     // Return column values.
     snprintf(info, InfoLen,
-             "%*d %*d %*d %*d",
+             "%*d %*d %*d %*d %*d",
              InfoSpacing, param[PARAM_M].i,
              InfoSpacing, param[PARAM_N].i,
              InfoSpacing, param[PARAM_PADA].i,
-             InfoSpacing, param[PARAM_NB].i);
+             InfoSpacing, param[PARAM_NB].i,
+             InfoSpacing, param[PARAM_IB].i);
 
     //================================================================
     // Set parameters.
@@ -381,6 +113,7 @@ void test_zgetrf(param_value_t param[], char *info)
     // Set tuning parameters.
     //================================================================
     plasma_set(PlasmaNb, param[PARAM_NB].i);
+    plasma_set(PlasmaIb, param[PARAM_IB].i);
 
     //================================================================
     // Allocate and initialize arrays.
@@ -406,24 +139,25 @@ void test_zgetrf(param_value_t param[], char *info)
         memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
     }
 
+    int nb = param[PARAM_NB].i;
     //================================================================
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-//  plasma_zgetrf(m, n, A, lda, IPIV);
+    plasma_zgetrf(m, n, A, lda, IPIV);
 
 
 
 
-    int nb = param[PARAM_NB].i;
-    plasma_desc_t dA;
-    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                            m, n, 0, 0, m, n, &dA);
-    assert(retval == PlasmaSuccess);
 
-    pzge2desc(A, lda, dA);
-    plasma_zgetrf_(dA, IPIV, param[PARAM_IB].i);
-    pzdesc2ge(dA, A, lda);
+    // plasma_desc_t dA;
+    // retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
+    //                                     m, n, 0, 0, m, n, &dA);
+    // assert(retval == PlasmaSuccess);
+
+    // pzge2desc(A, lda, dA);
+    // core_zgetrf(plasma_desc_view(dA, nb, nb, m-nb, n-nb), IPIV, param[PARAM_IB].i);
+    // pzdesc2ge(dA, A, lda);
 
 
 
@@ -443,11 +177,15 @@ void test_zgetrf(param_value_t param[], char *info)
             LAPACK_COL_MAJOR,
             m, n,
             Aref, lda, IPIV);
+        // LAPACKE_zgetrf(
+        //     LAPACK_COL_MAJOR,
+        //     m-nb, n-nb,
+        //     &Aref[nb+nb*lda], lda, IPIV);
 
         plasma_complex64_t zmone = -1.0;
         cblas_zaxpy((size_t)lda*n, CBLAS_SADDR(zmone), Aref, 1, A, 1);
 
-print_matrix(A, m, n);
+// print_matrix(A, m, n);
 
         double work[1];
         double Anorm = LAPACKE_zlange_work(

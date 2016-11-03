@@ -175,10 +175,13 @@ static inline int plasma_tile_nmain(plasma_desc_t A, int k)
  */
 static inline int plasma_tile_mview(plasma_desc_t A, int k)
 {
-    if (A.i/A.mb+k < A.m/A.mb)
+    if (k < A.mt-1)
         return A.mb;
     else
-        return A.m%A.mb;
+        if ((A.i+A.m)%A.mb == 0)
+            return A.mb;
+        else
+            return (A.i+A.m)%A.mb;
 }
 
 /***************************************************************************//**
@@ -189,10 +192,13 @@ static inline int plasma_tile_mview(plasma_desc_t A, int k)
  */
 static inline int plasma_tile_nview(plasma_desc_t A, int k)
 {
-    if (A.j/A.nb+k < A.n/A.nb)
+    if (k < A.nt-1)
         return A.nb;
     else
-        return A.n%A.nb;
+        if ((A.j+A.n)%A.nb == 0)
+            return A.nb;
+        else
+            return (A.j+A.n)%A.nb;
 }
 
 /******************************************************************************/
