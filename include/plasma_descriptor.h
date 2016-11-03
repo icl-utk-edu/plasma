@@ -50,7 +50,7 @@ typedef struct {
     size_t A22;   ///< pointer to the beginning of A22
 
     // tile parameters
-    int mb; //< number of rows in a tile
+    int mb; ///< number of rows in a tile
     int nb; ///< number of columns in a tile
 
     // main matrix parameters

@@ -29,23 +29,35 @@ void pzdesc2ge(plasma_desc_t A, plasma_complex64_t *pA, int lda);
 void pzge2desc(plasma_complex64_t *pA, int lda, plasma_desc_t A);
 
 /******************************************************************************/
-void plasma_zgetrf_(int m, int n,
-                    plasma_complex64_t *pA, int lda, int *ipiv,
-                    int nb, int ib)
+
+// typedef int pthread_barrierattr_t;
+// typedef struct pthread_barrier_s {
+//     unsigned size;
+//     volatile unsigned count;
+// } pthread_barrier_t;
+
+// int pthread_barrier_init(pthread_barrier_t *restrict barrier,
+//     const pthread_barrierattr_t *restrict attr, unsigned size) {
+//     barrier->size = size;
+//     barrier->count = 0;
+//     return 0;
+// }
+
+// int pthread_barrier_wait(pthread_barrier_t *barrier) {
+//     __sync_fetch_and_add(&barrier->count, 1);
+//     __sync_bool_compare_and_swap(&barrier->count, barrier->size, 0);
+//     while (barrier->count != 0);
+//     return 0;
+// }
+
+/******************************************************************************/
+void plasma_zgetrf_(plasma_desc_t A, int *ipiv, int ib)
 {
-    plasma_desc_t A;
-    int retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                            m, n, 0, 0, m, n, &A);
-    assert(retval == PlasmaSuccess);
-    pzge2desc(pA, lda, A);
-
-
-
     double sfmin = LAPACKE_dlamch_work('S');
 
-    for (int k = 0; k < imin(m, n); k += ib) {
+    for (int k = 0; k < imin(A.m, A.n); k += ib) {
 
-        int kb = imin(imin(m, n)-k, ib);
+        int kb = imin(imin(A.m, A.n)-k, ib);
 
         plasma_complex64_t *a0 = A(0, 0);
         int lda0 = plasma_tile_mmain(A, 0);
@@ -59,7 +71,7 @@ void plasma_zgetrf_(int m, int n,
 
             // pivot search
             int imax = 0;
-            plasma_complex64_t max = a0[j+j*lda];
+            plasma_complex64_t max = a0[j+j*lda0];
             for (int l = 0; l < A.mt; l++) {
 
                 plasma_complex64_t *al = A(l, 0);
@@ -85,12 +97,12 @@ void plasma_zgetrf_(int m, int n,
             ipiv[j] = jp-k+1;
 
             // pivot swap
-            plasma_complex64_t *ap = A(jp/nb, 0);
-            int ldap = plasma_tile_mmain(A, jp/nb);
+            plasma_complex64_t *ap = A(jp/A.mb, 0);
+            int ldap = plasma_tile_mmain(A, jp/A.mb);
 
             cblas_zswap(kb,
                         &a0[j+k*lda0], lda0,
-                        &ap[jp%nb+k*ldap], ldap);
+                        &ap[jp%A.mb+k*ldap], ldap);
 
             // column scaling and trailing update
             for (int l = 0; l < A.mt; l++) {
@@ -142,18 +154,18 @@ void plasma_zgetrf_(int m, int n,
         //============================
 
         // pivot adjustment
-        for (int i = k+1; i <= imin(m, k+kb); i++)
+        for (int i = k+1; i <= imin(A.m, k+kb); i++)
             ipiv[i-1] += k;
 
         // right pivoting
         for (int i = k; i < k+kb; i++) {
 
-            plasma_complex64_t *ap = A((ipiv[i]-1)/nb, 0);
-            int ldap = plasma_tile_mmain(A, (ipiv[i]-1)/nb);
+            plasma_complex64_t *ap = A((ipiv[i]-1)/A.mb, 0);
+            int ldap = plasma_tile_mmain(A, (ipiv[i]-1)/A.mb);
 
             cblas_zswap(nva0-k-kb,
                         &a0[i+(k+kb)*lda0], lda0,
-                        &ap[(ipiv[i]-1)%nb+(k+kb)*ldap], ldap);
+                        &ap[(ipiv[i]-1)%A.mb+(k+kb)*ldap], ldap);
         }
 
         // trsm
@@ -199,23 +211,19 @@ void plasma_zgetrf_(int m, int n,
     }
 
     // left pivoting
-    for (int k = ib; k < imin(m, n); k += ib) {
-        for (int i = k; i < imin(m, n); i++) {
+    for (int k = ib; k < imin(A.m, A.n); k += ib) {
+        for (int i = k; i < imin(A.m, A.n); i++) {
 
-            plasma_complex64_t *ai = A(i/nb, 0);
-            plasma_complex64_t *ap = A((ipiv[i]-1)/nb, 0);
-            int ldai = plasma_tile_mmain(A, (i/nb));
-            int ldap = plasma_tile_mmain(A, (ipiv[i]-1)/nb);
+            plasma_complex64_t *ai = A(i/A.mb, 0);
+            plasma_complex64_t *ap = A((ipiv[i]-1)/A.mb, 0);
+            int ldai = plasma_tile_mmain(A, (i/A.mb));
+            int ldap = plasma_tile_mmain(A, (ipiv[i]-1)/A.mb);
 
             cblas_zswap(ib,
-                        &ai[i%nb+(k-ib)*ldai], ldai,
-                        &ap[(ipiv[i]-1)%nb+(k-ib)*ldap], ldap);
+                        &ai[i%A.mb+(k-ib)*ldai], ldai,
+                        &ap[(ipiv[i]-1)%A.mb+(k-ib)*ldap], ldap);
         }
-
     }
-
-pzdesc2ge(A, pA, lda);
-
 }
 
 /******************************************************************************/
@@ -402,8 +410,25 @@ void test_zgetrf(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    plasma_zgetrf_(m, n, A, lda, IPIV, param[PARAM_NB].i, param[PARAM_IB].i);
 //  plasma_zgetrf(m, n, A, lda, IPIV);
+
+
+
+
+    int nb = param[PARAM_NB].i;
+    plasma_desc_t dA;
+    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
+                                            m, n, 0, 0, m, n, &dA);
+    assert(retval == PlasmaSuccess);
+
+    pzge2desc(A, lda, dA);
+    plasma_zgetrf_(dA, IPIV, param[PARAM_IB].i);
+    pzdesc2ge(dA, A, lda);
+
+
+
+
+
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 

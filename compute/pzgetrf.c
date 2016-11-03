@@ -199,11 +199,11 @@ trace_init();
                            A.m-k*A.mb, nvak,
                            &pA[k*A.mb*A.m + k*A.mb], A.m, &ipiv[k*A.mb]);
 
-            for (int i = k*A.mb+1; i <= A.m; i++)
-                ipiv[i-1] += k*A.mb;
-
             pzge2desc(&pA[k*A.mb*A.m + k*A.mb], A.m,
                       plasma_desc_view(A, k*A.mb, k*A.nb, A.m-k*A.mb, nvak));
+
+            for (int i = k*A.mb+1; i <= A.m; i++)
+                ipiv[i-1] += k*A.mb;
 
             trace_event_stop(Tan);
         }
