@@ -10,13 +10,14 @@
  *
  **/
 
+#include "core_blas.h"
 #include "plasma_async.h"
+#include "plasma_barrier.h"
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
 #include "plasma_types.h"
 #include "plasma_workspace.h"
-#include "core_blas.h"
 
 #include "plasma_z.h"
 #include "mkl_lapacke.h"
@@ -137,6 +138,7 @@ void core_zlaswp(plasma_desc_t A, int k1, int k2, int *ipiv)
 
 /******************************************************************************/
 void plasma_pzgetrf(plasma_desc_t A, int *ipiv, int ib,
+                    plasma_barrier_t *barrier,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Check sequence status.
@@ -166,8 +168,6 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv, int ib,
 
 trace_init();
 
-
-
 #pragma omp parallel
 #pragma omp master
 {
@@ -190,10 +190,17 @@ trace_init();
                          depend(out:ipiv[k*A.mb:mvak]) \
                          priority(1)
         {
-            trace_event_start();
-            core_zgetrf(plasma_desc_view(A, k*A.mb, k*A.nb, A.m-k*A.mb, nvak),
-                        &ipiv[k*A.mb], ib);
-            trace_event_stop(Tan);
+            for (int i = 0; i < 4; i++) {
+                #pragma omp task priority(1)
+                {
+                    trace_event_start();
+                    core_zgetrf(plasma_desc_view(A, k*A.mb, k*A.nb,
+                                                 A.m-k*A.mb, nvak),
+                                &ipiv[k*A.mb], ib, i, 4, barrier);
+                    trace_event_stop(Tan);
+                }
+            }
+            #pragma omp taskwait
 
             for (int i = k*A.mb+1; i <= A.m; i++)
                 ipiv[i-1] += k*A.mb;
@@ -217,7 +224,8 @@ trace_init();
                              depend(in:ipiv[k*A.mb:mvak]) \
                              depend(inout:a01[0:ldak*nvan]) \
                              depend(inout:a11[0:ma11k*na11n]) \
-                             depend(inout:a21[0:lda21*nvan])
+                             depend(inout:a21[0:lda21*nvan]) \
+                             priority(n == k+1)
             {
                 // laswp
                 int k1 = k*A.mb+1;

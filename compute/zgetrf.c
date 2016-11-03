@@ -62,6 +62,10 @@ int plasma_zgetrf(int m, int n,
         return retval;
     }
 
+    // Initialize barrier.
+    plasma_barrier_t barrier;
+    plasma_barrier_init(&barrier, 4);
+
     // Create sequence.
     plasma_sequence_t *sequence = NULL;
     retval = plasma_sequence_create(&sequence);
@@ -87,7 +91,7 @@ int plasma_zgetrf(int m, int n,
     }
 
     // Call the tile async function.
-    plasma_omp_zgetrf(A, IPIV, ib, sequence, &request);
+    plasma_omp_zgetrf(A, IPIV, ib, &barrier, sequence, &request);
 
     #pragma omp parallel
     #pragma omp master
@@ -127,6 +131,7 @@ int plasma_zgetrf(int m, int n,
  *
  ******************************************************************************/
 void plasma_omp_zgetrf(plasma_desc_t A, int *IPIV, int ib,
+                       plasma_barrier_t *barrier,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
@@ -157,5 +162,5 @@ void plasma_omp_zgetrf(plasma_desc_t A, int *IPIV, int ib,
     // quick return
 
     // Call the parallel function.
-    plasma_pzgetrf(A, IPIV, ib, sequence, request);
+    plasma_pzgetrf(A, IPIV, ib, barrier, sequence, request);
 }

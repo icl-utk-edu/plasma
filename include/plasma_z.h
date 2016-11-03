@@ -14,6 +14,7 @@
 #define ICL_PLASMA_Z_H
 
 #include "plasma_async.h"
+#include "plasma_barrier.h"
 #include "plasma_descriptor.h"
 #include "plasma_workspace.h"
 
@@ -209,6 +210,7 @@ void plasma_omp_zgeqrs(plasma_desc_t A, plasma_desc_t T,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_omp_zgetrf(plasma_desc_t A, int *IPIV, int ib,
+                       plasma_barrier_t *barrier,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_omp_zhemm(plasma_enum_t side, plasma_enum_t uplo,
