@@ -49,8 +49,6 @@ static void print_matrix(plasma_complex64_t *A, int m, int n)
 
 #define COMPLEX
 
-#define A(i_, j_) A[(i_) + (size_t)lda*(j_)]
-
 /***************************************************************************//**
  *
  * @brief Tests ZPOTRF.
@@ -148,18 +146,27 @@ void test_zgetrf(param_value_t param[], char *info)
 
 
 
-
-
+    // int cores = 4;
     // plasma_desc_t dA;
     // retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
     //                                     m, n, 0, 0, m, n, &dA);
     // assert(retval == PlasmaSuccess);
 
     // pzge2desc(A, lda, dA);
-    // core_zgetrf(plasma_desc_view(dA, nb, nb, m-nb, n-nb), IPIV, param[PARAM_IB].i);
+    // plasma_time_t start = omp_get_wtime();
+
+    // plasma_barrier_t barrier;
+    // plasma_barrier_init(&barrier, cores);
+
+    // #pragma omp parallel
+    // #pragma omp master
+    // {
+    //     for (int i = 0; i < cores; i++)
+    //         #pragma omp task
+    //             core_zgetrf(dA, IPIV, param[PARAM_IB].i, i, cores, &barrier);
+    // }
+    // plasma_time_t stop = omp_get_wtime();
     // pzdesc2ge(dA, A, lda);
-
-
 
 
 
@@ -177,10 +184,6 @@ void test_zgetrf(param_value_t param[], char *info)
             LAPACK_COL_MAJOR,
             m, n,
             Aref, lda, IPIV);
-        // LAPACKE_zgetrf(
-        //     LAPACK_COL_MAJOR,
-        //     m-nb, n-nb,
-        //     &Aref[nb+nb*lda], lda, IPIV);
 
         plasma_complex64_t zmone = -1.0;
         cblas_zaxpy((size_t)lda*n, CBLAS_SADDR(zmone), Aref, 1, A, 1);
