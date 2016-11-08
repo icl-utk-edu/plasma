@@ -36,8 +36,8 @@
  * @param[in] n
  *          The number of columns of the matrix A. n >= 0.
  *
- * @param[in,out] A
- *          On entry, the m-by-n matrix A.
+ * @param[in,out] pA
+ *          On entry, pointer to the m-by-n matrix A.
  *          On exit, the elements on and below the diagonal of the array
  *          contain the m-by-min(m,n) lower trapezoidal matrix L (L is lower
  *          triangular if M <= N); the elements above the diagonal represent
@@ -47,9 +47,11 @@
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,m).
  *
- * @param[out] descT
- *          On exit, auxiliary factorization data, required by PLASMA_zgelqs
+ * @param[out] T
+ *          On exit, auxiliary factorization data, required by plasma_zgelqs
  *          to solve the system of equations.
+ *          Matrix of T is allocated inside this function and needs to be
+ *          destroyed by plasma_desc_destroy.
  *
  *******************************************************************************
  *
@@ -59,22 +61,16 @@
  *******************************************************************************
  *
  * @sa plasma_omp_zgelqf
- * @sa PLASMA_cgelqf
- * @sa PLASMA_dgelqf
- * @sa PLASMA_sgelqf
- * @sa PLASMA_zgelqs
+ * @sa plasma_cgelqf
+ * @sa plasma_dgelqf
+ * @sa plasma_sgelqf
+ * @sa plasma_zgelqs
  *
  ******************************************************************************/
-int PLASMA_zgelqf(int m, int n,
-                  plasma_complex64_t *A, int lda,
-                  plasma_desc_t *descT)
+int plasma_zgelqf(int m, int n,
+                  plasma_complex64_t *pA, int lda,
+                  plasma_desc_t *T)
 {
-    int ib, nb;
-    int retval;
-    int status;
-
-    plasma_desc_t descA;
-
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -101,23 +97,33 @@ int PLASMA_zgelqf(int m, int n,
         return PlasmaSuccess;
 
     // Set tiling parameters.
-    ib = plasma->ib;
-    nb = plasma->nb;
+    int ib = plasma->ib;
+    int nb = plasma->nb;
+    int householder_mode = plasma->householder_mode;
 
     // Create tile matrix.
+    plasma_desc_t A;
+    int retval;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        m, n, 0, 0, m, n, &descA);
+                                        m, n, 0, 0, m, n, &A);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
+        return retval;
+    }
+
+    // Prepare descriptor T.
+    retval = plasma_descT_create(A, ib, householder_mode, T);
+    if (retval != PlasmaSuccess) {
+        plasma_error("plasma_descT_create() failed");
         return retval;
     }
 
     // Allocate workspace.
     plasma_workspace_t work;
     size_t lwork = nb + ib*nb;  // gelqt: tau + work
-    retval = plasma_workspace_alloc(&work, lwork, PlasmaComplexDouble);
+    retval = plasma_workspace_create(&work, lwork, PlasmaComplexDouble);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_workspace_alloc() failed");
+        plasma_error("plasma_workspace_create() failed");
         return retval;
     }
 
@@ -128,6 +134,7 @@ int PLASMA_zgelqf(int m, int n,
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
+
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
 
@@ -136,23 +143,23 @@ int PLASMA_zgelqf(int m, int n,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
+        plasma_omp_zge2desc(pA, lda, A, sequence, &request);
 
         // Call the tile async function.
-        plasma_omp_zgelqf(&descA, descT, &work, sequence, &request);
+        plasma_omp_zgelqf(A, *T, work, sequence, &request);
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(&descA, A, lda, sequence, &request);
+        plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
     }
     // implicit synchronization
 
-    plasma_workspace_free(&work);
+    plasma_workspace_destroy(&work);
 
     // Free matrix A in tile layout.
-    plasma_desc_destroy(&descA);
+    plasma_desc_destroy(&A);
 
     // Return status.
-    status = sequence->status;
+    int status = sequence->status;
     plasma_sequence_destroy(sequence);
     return status;
 }
@@ -162,7 +169,7 @@ int PLASMA_zgelqf(int m, int n,
  * @ingroup plasma_gelqf
  *
  *  Computes the tile LQ factorization of a matrix.
- *  Non-blocking tile version of PLASMA_zgelqf().
+ *  Non-blocking tile version of plasma_zgelqf().
  *  May return before the computation is finished.
  *  Allows for pipelining of operations at runtime.
  *
@@ -174,13 +181,13 @@ int PLASMA_zgelqf(int m, int n,
  *
  * @param[out] T
  *          Descriptor of matrix T.
- *          On exit, auxiliary factorization data, required by PLASMA_zgelqs to
+ *          On exit, auxiliary factorization data, required by plasma_zgelqs to
  *          solve the system of equations.
  *
  * @param[in] work
  *          Workspace for the auxiliary arrays needed by some coreblas kernels.
  *          For LQ factorization, contains preallocated space for TAU and WORK
- *          arrays. Allocated by the plasma_workspace_alloc function.
+ *          arrays. Allocated by the plasma_workspace_create function.
  *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to
@@ -198,17 +205,16 @@ int PLASMA_zgelqf(int m, int n,
  *
  *******************************************************************************
  *
- * @sa PLASMA_zgelqf
+ * @sa plasma_zgelqf
  * @sa plasma_omp_cgelqf
  * @sa plasma_omp_dgelqf
  * @sa plasma_omp_sgelqf
  * @sa plasma_omp_zgelqs
  *
  ******************************************************************************/
-void plasma_omp_zgelqf(plasma_desc_t *A, plasma_desc_t *T,
-                       plasma_workspace_t *work,
-                       plasma_sequence_t *sequence,
-                       plasma_request_t *request)
+void plasma_omp_zgelqf(plasma_desc_t A, plasma_desc_t T,
+                       plasma_workspace_t work,
+                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -224,18 +230,8 @@ void plasma_omp_zgelqf(plasma_desc_t *A, plasma_desc_t *T,
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
-    if (A->mb != plasma->nb || A->nb != plasma->nb) {
-        plasma_error("wrong tile dimensions of A");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
     if (plasma_desc_check(T) != PlasmaSuccess) {
         plasma_error("invalid T");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    if (T->mb != plasma->ib || T->nb != plasma->nb) {
-        plasma_error("wrong tile dimensions of T");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
@@ -250,16 +246,10 @@ void plasma_omp_zgelqf(plasma_desc_t *A, plasma_desc_t *T,
         return;
     }
 
-    // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
-        return;
-    }
-
-    // Quick return
-    if (imin(A->m, A->n) == 0)
+    // quick return
+    if (imin(A.m, A.n) == 0)
         return;
 
     // Call the parallel function.
-    plasma_pzgelqf(*A, *T, work, sequence, request);
+    plasma_pzgelqf(A, T, work, sequence, request);
 }

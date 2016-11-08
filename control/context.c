@@ -79,6 +79,13 @@ int plasma_set(plasma_enum_t param, int value)
         }
         plasma->ib = value;
         break;
+    case PlasmaHouseholderMode:
+        if (value != PlasmaFlatHouseholder && value != PlasmaTreeHouseholder) {
+            plasma_error("invalid Householder mode");
+            return PlasmaErrorIllegalValue;
+        }
+        plasma->householder_mode = value;
+        break;
     default:
         plasma_error("Unknown parameter");
         return PlasmaErrorIllegalValue;
@@ -103,6 +110,10 @@ int plasma_get(plasma_enum_t param, int *value)
         break;
     case PlasmaIb:
         *value = plasma->ib;
+        return PlasmaSuccess;
+        break;
+    case PlasmaHouseholderMode:
+        *value = plasma->householder_mode;
         return PlasmaSuccess;
         break;
     default:
@@ -202,4 +213,5 @@ void plasma_context_init(plasma_context_t *context)
     context->nb = 256;
     context->ib = 64;
     context->inplace_outplace = PlasmaOutplace;
+    context->householder_mode = PlasmaFlatHouseholder;
 }

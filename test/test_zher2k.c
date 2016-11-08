@@ -170,7 +170,7 @@ void test_zher2k(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    PLASMA_zher2k(
+    plasma_zher2k(
         uplo, trans,
         n, k,
         alpha, A, lda,

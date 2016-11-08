@@ -19,16 +19,16 @@
 #include "core_blas.h"
 
 #define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
-#define B(m, n) (plasma_complex64_t*)plasma_tile_addr(B, m, n)
 #define T(m, n) (plasma_complex64_t*)plasma_tile_addr(T, m, n)
+#define B(m, n) (plasma_complex64_t*)plasma_tile_addr(B, m, n)
 
 /***************************************************************************//**
  *  Parallel application of Q using tile V - LQ factorization
  * @see plasma_omp_zgelqs
  **/
 void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
-                    plasma_desc_t A, plasma_desc_t B, plasma_desc_t T,
-                    plasma_workspace_t *work,
+                    plasma_desc_t A, plasma_desc_t T, plasma_desc_t B,
+                    plasma_workspace_t work,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Check sequence status.
@@ -55,7 +55,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                     int nvbn = plasma_tile_nview(B, n);
                     core_omp_zunmlq(
                             side, trans,
-                            mvbk, nvbn, imin(nvak, mvak), ib, T.nb,
+                            mvbk, nvbn, imin(nvak, mvak), ib,
                             A(k, k), ldak,
                             T(k, k), T.mb,
                             B(k, n), ldbk,
@@ -69,8 +69,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                         int nvbn = plasma_tile_nview(B, n);
                         core_omp_ztsmlq(
                                 side, trans,
-                                B.mb, nvbn, mvbm, nvbn, imin(nvak, mvak),
-                                ib, T.nb,
+                                B.mb, nvbn, mvbm, nvbn, imin(nvak, mvak), ib,
                                 B(k, n), ldbk,
                                 B(m, n), ldbm,
                                 A(k, m), ldak,
@@ -98,8 +97,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                         int nvbn = plasma_tile_nview(B, n);
                         core_omp_ztsmlq(
                                 side, trans,
-                                B.mb, nvbn, mvbm, nvbn, imin(nvak, mvak),
-                                ib, T.nb,
+                                B.mb, nvbn, mvbm, nvbn, imin(nvak, mvak), ib,
                                 B(k, n), ldbk,
                                 B(m, n), ldbm,
                                 A(k, m), ldak,
@@ -112,7 +110,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                     int nvbn = plasma_tile_nview(B, n);
                     core_omp_zunmlq(
                             side, trans,
-                            mvbk, nvbn, imin(nvak, mvak), ib, T.nb,
+                            mvbk, nvbn, imin(nvak, mvak), ib,
                             A(k, k), ldak,
                             T(k, k), T.mb,
                             B(k, n), ldbk,
@@ -139,8 +137,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                         int ldbm = plasma_tile_mmain(B, m);
                         core_omp_ztsmlq(
                                 side, trans,
-                                mvbm, B.nb, mvbm, nvbn, imin(nvak, mvak),
-                                ib, T.nb,
+                                mvbm, B.nb, mvbm, nvbn, imin(nvak, mvak), ib,
                                 B(m, k), ldbm,
                                 B(m, n), ldbm,
                                 A(k, n), ldak,
@@ -154,7 +151,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                     int ldbm = plasma_tile_mmain(B, m);
                     core_omp_zunmlq(
                             side, trans,
-                            mvbm, nvbk, imin(nvak, mvak), ib, T.nb,
+                            mvbm, nvbk, imin(nvak, mvak), ib,
                             A(k, k), ldak,
                             T(k, k), T.mb,
                             B(m, k), ldbm,
@@ -177,7 +174,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                     int ldbm = plasma_tile_mmain(B, m);
                     core_omp_zunmlq(
                             side, trans,
-                            mvbm, nvbk, imin(nvak, mvak), ib, T.nb,
+                            mvbm, nvbk, imin(nvak, mvak), ib,
                             A(k, k), ldak,
                             T(k, k), T.mb,
                             B(m, k), ldbm,
@@ -191,8 +188,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                         int ldbm = plasma_tile_mmain(B, m);
                         core_omp_ztsmlq(
                                 side, trans,
-                                mvbm, B.nb, mvbm, nvbn, imin(nvak, mvak),
-                                ib, T.nb,
+                                mvbm, B.nb, mvbm, nvbn, imin(nvak, mvak), ib,
                                 B(m, k), ldbm,
                                 B(m, n), ldbm,
                                 A(k, n), ldak,

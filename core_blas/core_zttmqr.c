@@ -19,7 +19,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup core_tsmqr
+ * @ingroup core_ttmqr
  *
  *  Overwrites the general m1-by-n1 tile A1 and
  *  m2-by-n2 tile A2 with
@@ -36,13 +36,13 @@
  *
  *    Q = H(1) H(2) . . . H(k)
  *
- *  as returned by core_ztsqrt.
+ *  as returned by core_zttqrt.
  *
  *******************************************************************************
  *
  * @param[in] side
  *         - PlasmaLeft  : apply Q or Q^H from the Left;
- *         - PlasmaRight :  apply Q or Q^H from the Right.
+ *         - PlasmaRight : apply Q or Q^H from the Right.
  *
  * @param[in] trans
  *         - PlasmaNoTrans    : Apply Q;
@@ -86,7 +86,7 @@
  * @param[in] V
  *         The i-th row must contain the vector which defines the
  *         elementary reflector H(i), for i = 1,2,...,k, as returned by
- *         core_ZTSQRT in the first k columns of its array argument V.
+ *         core_zttqrt in the first k columns of its array argument V.
  *
  * @param[in] ldv
  *         The leading dimension of the array V. ldv >= max(1,k).
@@ -115,7 +115,7 @@
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int core_ztsmqr(plasma_enum_t side, plasma_enum_t trans,
+int core_zttmqr(plasma_enum_t side, plasma_enum_t trans,
                 int m1, int n1, int m2, int n2, int k, int ib,
                       plasma_complex64_t *A1,   int lda1,
                       plasma_complex64_t *A2,   int lda2,
@@ -124,11 +124,12 @@ int core_ztsmqr(plasma_enum_t side, plasma_enum_t trans,
                       plasma_complex64_t *work, int ldwork)
 {
     // Check input arguments.
-    if (side != PlasmaLeft && side != PlasmaRight) {
+    if ((side != PlasmaLeft) && (side != PlasmaRight)) {
         coreblas_error("illegal value of side");
         return -1;
     }
-    if (trans != PlasmaNoTrans && trans != Plasma_ConjTrans) {
+
+    if ((trans != PlasmaNoTrans) && (trans != Plasma_ConjTrans)) {
         coreblas_error("illegal value of trans");
         return -2;
     }
@@ -140,17 +141,17 @@ int core_ztsmqr(plasma_enum_t side, plasma_enum_t trans,
         coreblas_error("illegal value of n1");
         return -4;
     }
-    if (m2 < 0 || (m2 != m1 && side == PlasmaRight)) {
+    if ((m2 < 0) || ((m2 != m1) && (side == PlasmaRight))) {
         coreblas_error("illegal value of m2");
         return -5;
     }
-    if (n2 < 0 || (n2 != n1 && side == PlasmaLeft)) {
+    if ( (n2 < 0) || ((n2 != n1) && (side == PlasmaLeft))) {
         coreblas_error("illegal value of n2");
         return -6;
     }
-    if (k < 0 ||
-        (side == PlasmaLeft  && k > m1) ||
-        (side == PlasmaRight && k > n1)) {
+    if ((k < 0) ||
+        ((side == PlasmaLeft)  && (k > m1)) ||
+        ((side == PlasmaRight) && (k > n1))) {
         coreblas_error("illegal value of k");
         return -7;
     }
@@ -162,7 +163,7 @@ int core_ztsmqr(plasma_enum_t side, plasma_enum_t trans,
         coreblas_error("NULL A1");
         return -9;
     }
-    if (lda1 < imax(1, m1)) {
+    if (lda1 < imax(1,m1)) {
         coreblas_error("illegal value of lda1");
         return -10;
     }
@@ -170,7 +171,7 @@ int core_ztsmqr(plasma_enum_t side, plasma_enum_t trans,
         coreblas_error("NULL A2");
         return -11;
     }
-    if (lda2 < imax(1, m2)) {
+    if (lda2 < imax(1,m2)){
         coreblas_error("illegal value of lda2");
         return -12;
     }
@@ -186,7 +187,7 @@ int core_ztsmqr(plasma_enum_t side, plasma_enum_t trans,
         coreblas_error("NULL T");
         return -15;
     }
-    if (ldt < imax(1, ib)) {
+    if (ldt < imax(1,ib)){
         coreblas_error("illegal value of ldt");
         return -16;
     }
@@ -195,7 +196,7 @@ int core_ztsmqr(plasma_enum_t side, plasma_enum_t trans,
         return -17;
     }
     if (ldwork < imax(1, side == PlasmaLeft ? ib : m1)) {
-        coreblas_error("illegal value of ldwork");
+        coreblas_error("Illegal value of ldwork");
         return -18;
     }
 
@@ -215,27 +216,33 @@ int core_ztsmqr(plasma_enum_t side, plasma_enum_t trans,
         i3 = -ib;
     }
 
-    for (int i = i1; i > -1 && i < k; i += i3) {
+    for (int i = i1; i > -1 && i < k; i+=i3) {
         int kb = imin(ib, k-i);
         int ic = 0;
         int jc = 0;
         int mi = m1;
         int ni = n1;
+        int mi2 = m2;
+        int ni2 = n2;
+        int l  = 0;
 
         if (side == PlasmaLeft) {
             // H or H^H is applied to C(i:m,1:n).
-            mi = m1 - i;
+            mi = kb; //m1 - i;
+            mi2 = imin(i+kb, m2);
             ic = i;
+            l  = imin(kb, imax(0, m2-i));
         }
         else {
-            // H or H^H is applied to C(1:m,i:n).
-            ni = n1 - i;
+            ni  = kb;
+            ni2 = imin(i+kb, n2);
             jc = i;
+            l  = imin(kb, imax(0, n2-i));
         }
 
-        // Apply H or H^H (NOTE: core_zparfb used to be core_ztsrfb).
+        // Apply H or H^H (NOTE: core_zparfb used to be core_zttrfb).
         core_zparfb(side, trans, PlasmaForward, PlasmaColumnwise,
-                    mi, ni, m2, n2, kb, 0,
+                    mi, ni, mi2, ni2, kb, l,
                     &A1[lda1*jc+ic], lda1,
                     A2, lda2,
                     &V[ldv*i], ldv,
@@ -247,12 +254,12 @@ int core_ztsmqr(plasma_enum_t side, plasma_enum_t trans,
 }
 
 /******************************************************************************/
-void core_omp_ztsmqr(plasma_enum_t side, plasma_enum_t trans,
+void core_omp_zttmqr(plasma_enum_t side, plasma_enum_t trans,
                      int m1, int n1, int m2, int n2, int k, int ib,
                            plasma_complex64_t *A1, int lda1,
                            plasma_complex64_t *A2, int lda2,
-                     const plasma_complex64_t *V,  int ldv,
-                     const plasma_complex64_t *T,  int ldt,
+                     const plasma_complex64_t *V, int ldv,
+                     const plasma_complex64_t *T, int ldt,
                      plasma_workspace_t work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
@@ -269,7 +276,7 @@ void core_omp_ztsmqr(plasma_enum_t side, plasma_enum_t trans,
             int ldwork = side == PlasmaLeft ? ib : m1; // TODO: double check
 
             // Call the kernel.
-            int info = core_ztsmqr(side, trans,
+            int info = core_zttmqr(side, trans,
                                    m1, n1, m2, n2, k, ib,
                                    A1, lda1,
                                    A2, lda2,
@@ -278,7 +285,7 @@ void core_omp_ztsmqr(plasma_enum_t side, plasma_enum_t trans,
                                    W,  ldwork);
 
             if (info != PlasmaSuccess) {
-                plasma_error("core_ztsmqr() failed");
+                plasma_error("core_zttmqr() failed");
                 plasma_request_fail(sequence, request, PlasmaErrorInternal);
             }
         }

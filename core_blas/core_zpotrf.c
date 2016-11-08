@@ -57,19 +57,18 @@ int core_zpotrf(plasma_enum_t uplo,
 {
     return LAPACKE_zpotrf(LAPACK_COL_MAJOR,
                           lapack_const(uplo),
-                           n,
-                           A, lda);
+                          n,
+                          A, lda);
 }
 
 /******************************************************************************/
 void core_omp_zpotrf(plasma_enum_t uplo,
                      int n,
                      plasma_complex64_t *A, int lda,
-                     plasma_sequence_t *sequence, plasma_request_t *request,
-                     int iinfo)
+                     int iinfo,
+                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // omp depends assume lda = n.
-    #pragma omp task depend(inout:A[0:n*n])
+    #pragma omp task depend(inout:A[0:lda*n])
     {
         if (sequence->status == PlasmaSuccess) {
             int info = core_zpotrf(uplo,

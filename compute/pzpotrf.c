@@ -43,7 +43,8 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
             core_omp_zpotrf(
                 PlasmaLower, mvak,
                 A(k, k), ldak,
-                sequence, request, A.nb*k);
+                A.nb*k,
+                sequence, request);
 
             for (int m = k+1; m < A.mt; m++) {
                 int mvam = plasma_tile_mview(A, m);
@@ -53,7 +54,8 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
                     PlasmaConjTrans, PlasmaNonUnit,
                     mvam, A.mb,
                     1.0, A(k, k), ldak,
-                         A(m, k), ldam);
+                         A(m, k), ldam,
+                    sequence, request);
             }
             for (int m = k+1; m < A.mt; m++) {
                 int mvam = plasma_tile_mview(A, m);
@@ -62,7 +64,8 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
                     PlasmaLower, PlasmaNoTrans,
                     mvam, A.mb,
                     -1.0, A(m, k), ldam,
-                     1.0, A(m, m), ldam);
+                     1.0, A(m, m), ldam,
+                    sequence, request);
 
                 for (int n = k+1; n < m; n++) {
                     int ldan = plasma_tile_mmain(A, n);
@@ -71,7 +74,8 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
                         mvam, A.mb, A.mb,
                         -1.0, A(m, k), ldam,
                               A(n, k), ldan,
-                         1.0, A(m, n), ldam);
+                         1.0, A(m, n), ldam,
+                        sequence, request);
                 }
             }
         }
@@ -86,7 +90,8 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
             core_omp_zpotrf(
                 PlasmaUpper, nvak,
                 A(k, k), ldak,
-                sequence, request, A.nb*k);
+                A.nb*k,
+                sequence, request);
 
             for (int m = k+1; m < A.nt; m++) {
                 int nvam = plasma_tile_nview(A, m);
@@ -95,7 +100,8 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
                     PlasmaConjTrans, PlasmaNonUnit,
                     A.nb, nvam,
                     1.0, A(k, k), ldak,
-                         A(k, m), ldak);
+                         A(k, m), ldak,
+                    sequence, request);
             }
             for (int m = k+1; m < A.nt; m++) {
                 int nvam = plasma_tile_nview(A, m);
@@ -104,7 +110,8 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
                     PlasmaUpper, PlasmaConjTrans,
                     nvam, A.mb,
                     -1.0, A(k, m), ldak,
-                     1.0, A(m, m), ldam);
+                     1.0, A(m, m), ldam,
+                    sequence, request);
 
                 for (int n = k+1; n < m; n++) {
                     int ldan = plasma_tile_mmain(A, n);
@@ -113,7 +120,8 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
                         A.mb, nvam, A.mb,
                         -1.0, A(k, n), ldak,
                               A(k, m), ldak,
-                         1.0, A(n, m), ldan);
+                         1.0, A(n, m), ldan,
+                        sequence, request);
                 }
             }
         }

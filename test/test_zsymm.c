@@ -90,7 +90,7 @@ void test_zsymm(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    plasma_enum_t side = plasma_side_cons_t(param[PARAM_SIDE].c);
+    plasma_enum_t side = plasma_side_const_t(param[PARAM_SIDE].c);
     plasma_enum_t uplo = plasma_uplo_const_t(param[PARAM_UPLO].c);
 
     int m = param[PARAM_M].i;
@@ -174,7 +174,7 @@ void test_zsymm(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    PLASMA_zsymm(
+    plasma_zsymm(
         side, uplo,
         m, n,
         alpha, A, lda,

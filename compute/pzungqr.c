@@ -19,14 +19,14 @@
 #include "core_blas.h"
 
 #define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
-#define Q(m, n) (plasma_complex64_t*)plasma_tile_addr(Q, m, n)
 #define T(m, n) (plasma_complex64_t*)plasma_tile_addr(T, m, n)
+#define Q(m, n) (plasma_complex64_t*)plasma_tile_addr(Q, m, n)
 
 /***************************************************************************//**
  *  Parallel construction of Q using tile V (application to identity)
  **/
-void plasma_pzungqr(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
-                    plasma_workspace_t *work,
+void plasma_pzungqr(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
+                    plasma_workspace_t work,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Check sequence status.
@@ -52,7 +52,7 @@ void plasma_pzungqr(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
                 int nvqn = plasma_tile_nview(Q, n);
                 core_omp_ztsmqr(
                     PlasmaLeft, PlasmaNoTrans,
-                    Q.mb, nvqn, mvqm, nvqn, nvak, ib, T.nb,
+                    Q.mb, nvqn, mvqm, nvqn, nvak, ib,
                     Q(k, n), ldqk,
                     Q(m, n), ldqm,
                     A(m, k), ldam,
@@ -65,7 +65,7 @@ void plasma_pzungqr(plasma_desc_t A, plasma_desc_t Q, plasma_desc_t T,
             int nvqn = plasma_tile_nview(Q, n);
             core_omp_zunmqr(
                 PlasmaLeft, PlasmaNoTrans,
-                mvqk, nvqn, imin(nvak, mvak), ib, T.nb,
+                mvqk, nvqn, imin(nvak, mvak), ib,
                 A(k, k), ldak,
                 T(k, k), T.mb,
                 Q(k, n), ldqk,

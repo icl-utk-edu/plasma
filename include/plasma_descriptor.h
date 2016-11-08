@@ -54,10 +54,10 @@ typedef struct {
     int nb; ///< number of columns in a tile
 
     // main matrix parameters
-    int lm;  ///< number of rows of the entire matrix
-    int ln;  ///< number of columns of the entire matrix
-    int lmt; ///< number of tile rows of the entire matrix
-    int lnt; ///< number of tile columns of the entire matrix
+    int gm;  ///< number of rows of the entire matrix
+    int gn;  ///< number of columns of the entire matrix
+    int gmt; ///< number of tile rows of the entire matrix
+    int gnt; ///< number of tile columns of the entire matrix
 
     // submatrix parameters
     int i;  ///< row index to the beginning of the submatrix
@@ -97,17 +97,17 @@ static inline void *plasma_tile_addr_general(plasma_desc_t A, int m, int n)
     size_t eltsize = plasma_element_size(A.precision);
     size_t offset = 0;
 
-    int lm1 = A.lm/A.mb;
-    int ln1 = A.ln/A.nb;
+    int lm1 = A.gm/A.mb;
+    int ln1 = A.gn/A.nb;
 
     if (mm < lm1)
         if (nn < ln1)
             offset = A.mb*A.nb*(mm + (size_t)lm1 * nn);
         else
-            offset = A.A12 + ((size_t)A.mb * (A.ln%A.nb) * mm);
+            offset = A.A12 + ((size_t)A.mb * (A.gn%A.nb) * mm);
     else
         if (nn < ln1)
-            offset = A.A21 + ((size_t)A.nb * (A.lm%A.mb) * nn);
+            offset = A.A21 + ((size_t)A.nb * (A.gm%A.mb) * nn);
         else
             offset = A.A22;
 
@@ -133,12 +133,16 @@ static inline void *plasma_tile_addr_general_band(plasma_desc_t A, int m, int n)
 /******************************************************************************/
 static inline void *plasma_tile_addr(plasma_desc_t A, int m, int n)
 {
-    if (A.type == PlasmaGeneral)
+    if (A.type == PlasmaGeneral) {
         return plasma_tile_addr_general(A, m, n);
-    else if (A.type == PlasmaGeneralBand)
+    }
+    else if (A.type == PlasmaGeneralBand) {
         return plasma_tile_addr_general_band(A, m, n);
-    else
+    }
+    else {
         plasma_fatal_error("invalid matrix type");
+        return NULL;
+    }
 }
 
 /***************************************************************************//**
@@ -148,10 +152,10 @@ static inline void *plasma_tile_addr(plasma_desc_t A, int m, int n)
  */
 static inline int plasma_tile_mmain(plasma_desc_t A, int k)
 {
-    if (A.i/A.mb+k < A.lm/A.mb)
+    if (A.i/A.mb+k < A.gm/A.mb)
         return A.mb;
     else
-        return A.lm%A.mb;
+        return A.gm%A.mb;
 }
 
 /***************************************************************************//**
@@ -161,10 +165,10 @@ static inline int plasma_tile_mmain(plasma_desc_t A, int k)
  */
 static inline int plasma_tile_nmain(plasma_desc_t A, int k)
 {
-    if (A.j/A.nb+k < A.ln/A.nb)
+    if (A.j/A.nb+k < A.gn/A.nb)
         return A.nb;
     else
-        return A.ln%A.nb;
+        return A.gn%A.nb;
 }
 
 /***************************************************************************//**
@@ -214,32 +218,32 @@ static inline int BLKLDD_BAND(plasma_enum_t uplo, plasma_desc_t A, int m, int n)
 /******************************************************************************/
 int plasma_desc_general_create(plasma_enum_t dtyp, int mb, int nb,
                                int lm, int ln, int i, int j, int m, int n,
-                               plasma_desc_t *desc);
+                               plasma_desc_t *A);
 
 int plasma_desc_general_band_create(plasma_enum_t dtyp, plasma_enum_t uplo,
                                     int mb, int nb, int lm, int ln,
                                     int i, int j, int m, int n, int kl, int ku,
-                                    plasma_desc_t *desc);
+                                    plasma_desc_t *A);
 
-int plasma_desc_destroy(plasma_desc_t *desc);
+int plasma_desc_destroy(plasma_desc_t *A);
 
 int plasma_desc_general_init(plasma_enum_t precision, void *matrix,
                              int mb, int nb, int lm, int ln, int i, int j,
-                             int m, int n, plasma_desc_t *desc);
+                             int m, int n, plasma_desc_t *A);
 
 int plasma_desc_general_band_init(plasma_enum_t precision, plasma_enum_t uplo,
                                   void *matrix, int mb, int nb, int lm, int ln,
                                   int i, int j, int m, int n, int kl, int ku,
-                                  plasma_desc_t *desc);
+                                  plasma_desc_t *A);
 
-int plasma_desc_check(plasma_desc_t *desc);
-int plasma_desc_general_check(plasma_desc_t *desc);
-int plasma_desc_general_band_check(plasma_desc_t *desc);
+int plasma_desc_check(plasma_desc_t A);
+int plasma_desc_general_check(plasma_desc_t A);
+int plasma_desc_general_band_check(plasma_desc_t A);
 
-plasma_desc_t plasma_desc_view(plasma_desc_t descA, int i, int j, int m, int n);
+plasma_desc_t plasma_desc_view(plasma_desc_t A, int i, int j, int m, int n);
 
-int plasma_descT_create(plasma_enum_t precision, int m, int n,
-                        plasma_desc_t *desc);
+int plasma_descT_create(plasma_desc_t A, int ib, plasma_enum_t householder_mode,
+                        plasma_desc_t *T);
 
 #ifdef __cplusplus
 }  // extern "C"

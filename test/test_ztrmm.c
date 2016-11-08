@@ -90,7 +90,7 @@ void test_ztrmm(param_value_t param[], char *info)
     //================================================================
     // Set parameters
     //================================================================
-    plasma_enum_t side = plasma_side_cons_t(param[PARAM_SIDE].c);
+    plasma_enum_t side = plasma_side_const_t(param[PARAM_SIDE].c);
     plasma_enum_t uplo = plasma_uplo_const_t(param[PARAM_UPLO].c);
     plasma_enum_t transa = plasma_trans_const_t(param[PARAM_TRANSA].c);
     plasma_enum_t diag = plasma_diag_const_t(param[PARAM_DIAG].c);
@@ -158,7 +158,7 @@ void test_ztrmm(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    PLASMA_ztrmm(side, uplo,
+    plasma_ztrmm(side, uplo,
                  transa, diag,
                  m, n, alpha, A, lda, B, ldb);
 

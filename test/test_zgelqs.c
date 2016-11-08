@@ -136,22 +136,20 @@ void test_zgelqs(param_value_t param[], char *info)
     //================================================================
     // Prepare the descriptor for matrix T.
     //================================================================
-    plasma_desc_t descT;
-    retval = plasma_descT_create(PlasmaComplexDouble, m, n, &descT);
-    assert(retval == PlasmaSuccess);
+    plasma_desc_t T;
 
     //================================================================
     // Run and time PLASMA.
     //================================================================
     // prepare LQ factorization of A - only auxiliary for this test,
     // time is not measured
-    PLASMA_zgelqf(m, n, A, lda, &descT);
+    plasma_zgelqf(m, n, A, lda, &T);
 
     // perform solution of the system by the prepared LQ factorization of A
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zgelqs(m, n, nrhs,
+    plasma_zgelqs(m, n, nrhs,
                   A, lda,
-                  &descT,
+                  T,
                   B, ldb);
 
     plasma_time_t stop = omp_get_wtime();
@@ -206,7 +204,7 @@ void test_zgelqs(param_value_t param[], char *info)
     //================================================================
     // Free arrays.
     //================================================================
-    plasma_desc_destroy(&descT);
+    plasma_desc_destroy(&T);
     free(A);
     free(B);
     if (test) {

@@ -19,7 +19,7 @@
 #include "core_blas.h"
 
 #define A(m, n) ((plasma_complex64_t*)plasma_tile_addr(A, m, n))
- 
+
 /***************************************************************************//**
  *  Initializes the matrix A to beta on the diagonal and alpha on the
  *  offdiagonals. Applies alpha correctly for any shape of the submatrix
@@ -40,8 +40,8 @@ void plasma_pzlaset(plasma_enum_t uplo,
         return;
     }
 
-    int lm1 = A.lm/A.mb;
-    int ln1 = A.ln/A.nb;
+    int lm1 = A.gm/A.mb;
+    int ln1 = A.gn/A.nb;
 
     for (i = 0; i < A.mt; i++) {
         if (i == 0 && i == A.mt-1)
@@ -67,8 +67,8 @@ void plasma_pzlaset(plasma_enum_t uplo,
                 (uplo == PlasmaLower && i >= j) ||
                 (uplo == PlasmaUpper && i <= j))
                 core_omp_zlaset(i == j ? uplo : PlasmaGeneral,
-                                A.i/A.mb+i == lm1 ? A.lm-lm1*A.mb : A.mb,
-                                A.j/A.nb+j == ln1 ? A.ln-ln1*A.nb : A.nb,
+                                A.i/A.mb+i == lm1 ? A.gm-lm1*A.mb : A.mb,
+                                A.j/A.nb+j == ln1 ? A.gn-ln1*A.nb : A.nb,
                                 i == 0 ? A.i%A.mb : 0,
                                 j == 0 ? A.j%A.nb : 0,
                                 m,

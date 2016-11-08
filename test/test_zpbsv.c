@@ -169,7 +169,7 @@ void test_zpbsv(param_value_t param[], char *info)
     int iinfo;
 
     plasma_time_t start = omp_get_wtime();
-    iinfo = PLASMA_zpbsv(uplo, n, kd, nrhs, AB, ldab, X, ldx);
+    iinfo = plasma_zpbsv(uplo, n, kd, nrhs, AB, ldab, X, ldx);
     if (iinfo != 0) printf( " zpbsv failed with info=%d\n", iinfo );
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;

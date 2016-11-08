@@ -24,7 +24,7 @@
  *
  *  Solves a system of linear equations A * X = B with a Hermitian positive definite
  *  matrix A using the Cholesky factorization of A (i.e., A = L*L^T or A = U^T*U)
- *  computed by PLASMA_zpbtrf.
+ *  computed by plasma_zpbtrf.
  *
  *******************************************************************************
  *
@@ -46,7 +46,7 @@
  * @param[in,out] AB
  *          The triangular factor U or L from the Cholesky
  *          factorization A = U^H*U or A = L*L^H, computed by
- *          PLASMA_zpotrf.
+ *          plasma_zpotrf.
  *          Remark: If out-of-place layout translation is used, the
  *          matrix A can be considered as input, however if inplace
  *          layout translation is enabled, the content of A will be
@@ -71,23 +71,17 @@
  *******************************************************************************
  *
  * @sa plasma_omp_zpbtrs
- * @sa PLASMA_cpbtrs
- * @sa PLASMA_dpbtrs
- * @sa PLASMA_spbtrs
- * @sa PLASMA_zpbtrf
+ * @sa plasma_cpbtrs
+ * @sa plasma_dpbtrs
+ * @sa plasma_spbtrs
+ * @sa plasma_zpbtrf
  *
  ******************************************************************************/
-int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
-                  plasma_complex64_t *AB, int ldab,
-                  plasma_complex64_t *B, int ldb)
+int plasma_zpbtrs(plasma_enum_t uplo,
+                  int n, int kd, int nrhs,
+                  plasma_complex64_t *pAB, int ldab,
+                  plasma_complex64_t *pB,  int ldb)
 {
-    int nb;
-    int retval;
-    int status;
-
-    plasma_desc_t descAB;
-    plasma_desc_t descB;
-
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -113,8 +107,7 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
         plasma_error("illegal value of nrhs");
         return -5;
     }
-    if (ldab < imax(1, 1+kd))
-    {
+    if (ldab < imax(1, 1+kd)) {
         plasma_error("illegal value of ldab");
         return -7;
     }
@@ -128,28 +121,25 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
         return PlasmaSuccess;
 
     // Set tiling parameters.
-    nb = plasma->nb;
+    int nb = plasma->nb;
 
     // Initialize tile matrix descriptors.
-    int tku  = (kd+kd+nb-1)/nb; // number of tiles in upper band (not including diagonal)
-    int tkl  = (kd+nb-1)/nb;    // number of tiles in lower band (not including diagonal)
-    int ldab_desc = (tku+tkl+1)*nb;  // since we use zgetrf on panel, we pivot back within panel.
-                                     // this could fill the last tile of the panel,
-                                     // and we need extra NB space on the bottom
-
-    // Create tile matrices.
+    int lm = nb*(1+(kd+nb-1)/nb);
+    plasma_desc_t AB;
+    plasma_desc_t B;
+    int retval;
     retval = plasma_desc_general_band_create(PlasmaComplexDouble, uplo, nb, nb,
-                                             ldab_desc, n, 0, 0, n, n, kd, kd,
-                                             &descAB);
+                                             lm, n, 0, 0, n, n, kd, kd,
+                                             &AB);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_band_create() failed");
         return retval;
     }
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        n, nrhs, 0, 0, n, nrhs, &descB);
+                                        n, nrhs, 0, 0, n, nrhs, &B);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
-        plasma_desc_destroy(&descAB);
+        plasma_desc_destroy(&AB);
         return retval;
     }
 
@@ -160,6 +150,7 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
+
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
 
@@ -168,28 +159,23 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_band_Async(uplo, AB, ldab, &descAB, sequence, &request);
-        if (sequence->status == PlasmaSuccess) {
-            PLASMA_zcm2ccrb_Async(B, ldb, &descB, sequence, &request);
-        }
+        plasma_omp_zpb2desc(pAB, ldab, AB, sequence, &request);
+        plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
 
         // Call the tile async function.
-        if (sequence->status == PlasmaSuccess) {
-            plasma_omp_zpbtrs(uplo, &descAB, &descB, sequence, &request);
-        }
+        plasma_omp_zpbtrs(uplo, AB, B, sequence, &request);
 
         // Translate back to LAPACK layout.
-        if (sequence->status == PlasmaSuccess)
-            PLASMA_zccrb2cm_Async(&descB, B, ldb, sequence, &request);
+        plasma_omp_zdesc2ge(B, pB, ldb, sequence, &request);
     }
     // implicit synchronization
 
     // Free matrix A in tile layout.
-    plasma_desc_destroy(&descAB);
-    plasma_desc_destroy(&descB);
+    plasma_desc_destroy(&AB);
+    plasma_desc_destroy(&B);
 
     // Return status.
-    status = sequence->status;
+    int status = sequence->status;
     plasma_sequence_destroy(sequence);
     return status;
 }
@@ -200,7 +186,7 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
  *
  *  Solves a system of linear equations using previously
  *  computed Cholesky factorization.
- *  Non-blocking tile version of PLASMA_zpbtrs().
+ *  Non-blocking tile version of plasma_zpbtrs().
  *  May return before the computation is finished.
  *  Operates on matrices stored by tiles.
  *  All matrices are passed through descriptors.
@@ -215,7 +201,7 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
  *
  * @param[in] AB
  *          The triangular factor U or L from the Cholesky factorization
- *          A = U^H*U or A = L*L^H, computed by PLASMA_zpotrf.
+ *          A = U^H*U or A = L*L^H, computed by plasma_zpotrf.
  *
  * @param[in,out] B
  *          On entry, the n-by-nrhs right hand side matrix B.
@@ -238,7 +224,7 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
  *
  *******************************************************************************
  *
- * @sa PLASMA_zpbtrs
+ * @sa plasma_zpbtrs
  * @sa plasma_omp_zpbtrs
  * @sa plasma_omp_cpbtrs
  * @sa plasma_omp_dpbtrs
@@ -246,11 +232,8 @@ int PLASMA_zpbtrs(plasma_enum_t uplo, int n, int kd, int nrhs,
  * @sa plasma_omp_zpbtrf
  *
  ******************************************************************************/
-void plasma_omp_zpbtrs(plasma_enum_t uplo,
-                       plasma_desc_t *AB,
-                       plasma_desc_t *B,
-                       plasma_sequence_t *sequence,
-                       plasma_request_t *request)
+void plasma_omp_zpbtrs(plasma_enum_t uplo, plasma_desc_t AB, plasma_desc_t B,
+                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -264,6 +247,7 @@ void plasma_omp_zpbtrs(plasma_enum_t uplo,
     if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if (plasma_desc_check(AB) != PlasmaSuccess) {
@@ -287,56 +271,24 @@ void plasma_omp_zpbtrs(plasma_enum_t uplo,
         return;
     }
 
-    if (AB->mb != AB->nb) {
-        plasma_error("only square tiles supported");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    if (AB->m != AB->n) {
-        plasma_error("only square matrix A is supported");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    if (B->mb != B->nb) {
-        plasma_error("only square tiles supported");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-
-    // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
-        return;
-    }
-
     // quick return
-    /*
-    if (min(n, nrhs) == 0)
+    if (AB.n == 0 || B.n == 0)
         return;
-    */
 
     // Call the parallel functions.
-    plasma_pztbsm(
-        PlasmaLeft,
-        uplo,
-        uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans,
-        PlasmaNonUnit,
-        1.0,
-        *AB,
-        *B,
-        NULL,
-        sequence,
-        request);
+    plasma_pztbsm(PlasmaLeft, uplo,
+                  uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans,
+                  PlasmaNonUnit,
+                  1.0, AB,
+                       B,
+                  NULL,
+                  sequence, request);
 
-    plasma_pztbsm(
-        PlasmaLeft,
-        uplo,
-        uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans,
-        PlasmaNonUnit,
-        1.0,
-        *AB,
-        *B,
-        NULL,
-        sequence,
-        request);
+    plasma_pztbsm(PlasmaLeft, uplo,
+                  uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans,
+                  PlasmaNonUnit,
+                  1.0, AB,
+                       B,
+                  NULL,
+                  sequence, request);
 }

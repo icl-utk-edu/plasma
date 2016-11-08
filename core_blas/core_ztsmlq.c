@@ -99,13 +99,13 @@
  * @param[in] ldt
  *         The leading dimension of the array T. ldt >= ib.
  *
- * @param WORK
+ * @param work
  *         Auxiliary workspace array of length
  *             ldwork-by-m1 if side == PlasmaLeft
  *             ldwork-by-ib if side == PlasmaRight
  *
  * @param[in] ldwork
- *         The leading dimension of the array WORK.
+ *         The leading dimension of the array work.
  *             ldwork >= max(1,ib) if side == PlasmaLeft
  *             ldwork >= max(1,n1) if side == PlasmaRight
  *
@@ -117,132 +117,135 @@
  ******************************************************************************/
 int core_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
                 int m1, int n1, int m2, int n2, int k, int ib,
-                      plasma_complex64_t *A1, int lda1,
-                      plasma_complex64_t *A2, int lda2,
-                const plasma_complex64_t *V, int ldv,
-                const plasma_complex64_t *T, int ldt,
-                      plasma_complex64_t *WORK, int ldwork)
+                      plasma_complex64_t *A1,   int lda1,
+                      plasma_complex64_t *A2,   int lda2,
+                const plasma_complex64_t *V,    int ldv,
+                const plasma_complex64_t *T,    int ldt,
+                      plasma_complex64_t *work, int ldwork)
 {
-    int i, i1, i3;
-    int nw;
-    int kb;
-    int ic = 0;
-    int jc = 0;
-    int mi = m1;
-    int ni = n1;
-
-    // Check input arguments
-    if ((side != PlasmaLeft) && (side != PlasmaRight)) {
-        coreblas_error("Illegal value of side");
+    // Check input arguments.
+    if (side != PlasmaLeft && side != PlasmaRight) {
+        coreblas_error("illegal value of side");
         return -1;
     }
-
-    // nw is the minimum dimension of WORK
-    if (side == PlasmaLeft) {
-        nw = ib;
-    }
-    else {
-        nw = n1;
-    }
-
-    if ((trans != PlasmaNoTrans) && (trans != Plasma_ConjTrans)) {
-        coreblas_error("Illegal value of trans");
+    if (trans != PlasmaNoTrans && trans != Plasma_ConjTrans) {
+        coreblas_error("illegal value of trans");
         return -2;
     }
     if (m1 < 0) {
-        coreblas_error("Illegal value of m1");
+        coreblas_error("illegal value of m1");
         return -3;
     }
     if (n1 < 0) {
-        coreblas_error("Illegal value of n1");
+        coreblas_error("illegal value of n1");
         return -4;
     }
-    if ((m2 < 0) ||
-        ((m2 != m1) && (side == PlasmaRight))) {
-        coreblas_error("Illegal value of m2");
+    if (m2 < 0 || (m2 != m1 && side == PlasmaRight)) {
+        coreblas_error("illegal value of m2");
         return -5;
     }
-    if ((n2 < 0) ||
-        ((n2 != n1) && (side == PlasmaLeft))) {
-        coreblas_error("Illegal value of n2");
+    if (n2 < 0 || (n2 != n1 && side == PlasmaLeft)) {
+        coreblas_error("illegal value of n2");
         return -6;
     }
-    if ((k < 0) ||
-        ( (side == PlasmaLeft)  && (k > m1) ) ||
-        ( (side == PlasmaRight) && (k > n1) ) ) {
-        coreblas_error("Illegal value of k");
+    if (k < 0 ||
+        (side == PlasmaLeft  && k > m1 ) ||
+        (side == PlasmaRight && k > n1)) {
+        coreblas_error("illegal value of k");
         return -7;
     }
     if (ib < 0) {
-        coreblas_error("Illegal value of ib");
+        coreblas_error("illegal value of ib");
         return -8;
     }
-    if (lda1 < imax(1,m1)) {
-        coreblas_error("Illegal value of lda1");
+    if (A1 == NULL) {
+        coreblas_error("NULL A1");
+        return -9;
+    }
+    if (lda1 < imax(1, m1)) {
+        coreblas_error("illegal value of lda1");
         return -10;
     }
-    if (lda2 < imax(1,m2)) {
-        coreblas_error("Illegal value of lda2");
+    if (A2 == NULL) {
+        coreblas_error("NULL A2");
+        return -11;
+    }
+    if (lda2 < imax(1, m2)) {
+        coreblas_error("illegal value of lda2");
         return -12;
     }
-    if (ldv < imax(1,k)) {
-        coreblas_error("Illegal value of ldv");
+    if (V == NULL) {
+        coreblas_error("NULL V");
+        return -13;
+    }
+    if (ldv < imax(1, k)) {
+        coreblas_error("illegal value of ldv");
         return -14;
     }
-    if (ldt < imax(1,ib)) {
-        coreblas_error("Illegal value of ldt");
+    if (T == NULL) {
+        coreblas_error("NULL T");
+        return -15;
+    }
+    if (ldt < imax(1, ib)) {
+        coreblas_error("illegal value of ldt");
         return -16;
     }
-    if (ldwork < imax(1,nw)) {
-        coreblas_error("Illegal value of ldwork");
+    if (work == NULL) {
+        coreblas_error("NULL work");
+        return -17;
+    }
+    if (ldwork < imax(1, side == PlasmaLeft ? ib : n1)) {
+        coreblas_error("illegal value of ldwork");
         return -18;
     }
 
-    // Quick return
-    if ((m1 == 0) || (n1 == 0) ||
-        (m2 == 0) || (n2 == 0) ||
-        (k == 0)  || (ib == 0))
+    // quick return
+    if (m1 == 0 || n1 == 0 || m2 == 0 || n2 == 0 || k == 0  || ib == 0)
         return PlasmaSuccess;
 
-    if (((side == PlasmaLeft) && (trans == PlasmaNoTrans))
-        || ((side == PlasmaRight) && (trans != PlasmaNoTrans))) {
+    int i1, i3;
+
+    if ((side == PlasmaLeft  && trans == PlasmaNoTrans) ||
+        (side == PlasmaRight && trans != PlasmaNoTrans)) {
         i1 = 0;
         i3 = ib;
     }
     else {
-        i1 = ((k-1) / ib)*ib;
+        i1 = ((k-1)/ib)*ib;
         i3 = -ib;
     }
 
-    if (trans == PlasmaNoTrans) {
+    if (trans == PlasmaNoTrans)
         trans = Plasma_ConjTrans;
-    }
-    else {
+    else
         trans = PlasmaNoTrans;
-    }
 
-    for (i = i1; (i > -1) && (i < k); i += i3) {
-        kb = imin(ib, k-i);
+    for (int i = i1; i > -1 && i < k; i += i3) {
+        int kb = imin(ib, k-i);
+        int ic = 0;
+        int jc = 0;
+        int mi = m1;
+        int ni = n1;
 
         if (side == PlasmaLeft) {
-            // H or H^H is applied to C(i:m,1:n)
+            // H or H^H is applied to C(i:m,1:n).
             mi = m1 - i;
             ic = i;
         }
         else {
-            // H or H^H is applied to C(1:m,i:n)
+            // H or H^H is applied to C(1:m,i:n).
             ni = n1 - i;
             jc = i;
         }
-        // Apply H or H^H (NOTE: core_zparfb used to be core_ztsrfb)
-        core_zparfb(
-            side, trans, PlasmaForward, PlasmaRowwise,
-            mi, ni, m2, n2, kb, 0,
-            &A1[lda1*jc+ic], lda1,
-            A2, lda2,
-            &V[i], ldv,
-            &T[ldt*i], ldt,
-            WORK, ldwork);
+
+        // Apply H or H^H.
+        core_zparfb(side, trans, PlasmaForward, PlasmaRowwise,
+                    mi, ni, m2, n2, kb, 0,
+                    &A1[lda1*jc+ic], lda1,
+                    A2, lda2,
+                    &V[i], ldv,
+                    &T[ldt*i], ldt,
+                    work, ldwork);
     }
 
     return PlasmaSuccess;
@@ -250,42 +253,38 @@ int core_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
 
 /******************************************************************************/
 void core_omp_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
-                     int m1, int n1, int m2, int n2, int k, int ib, int nb,
+                     int m1, int n1, int m2, int n2, int k, int ib,
                            plasma_complex64_t *A1, int lda1,
                            plasma_complex64_t *A2, int lda2,
                      const plasma_complex64_t *V,  int ldv,
                      const plasma_complex64_t *T,  int ldt,
-                     plasma_workspace_t *work,
+                     plasma_workspace_t work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // OpenMP depends assume m1 == n1 == m2 == n2 == lda1 == lda2 == ldv == nb,
-    //                       ldt == ib.
-    #pragma omp task depend(inout:A1[0:nb*nb]) \
-                     depend(inout:A2[0:nb*nb]) \
-                     depend(in:V[0:nb*nb]) \
-                     depend(in:T[0:ib*nb])
+    // TODO: double check depend dimensions
+    #pragma omp task depend(inout:A1[0:lda1*n1]) \
+                     depend(inout:A2[0:lda2*n2]) \
+                     depend(in:V[0:ldv*k]) \
+                     depend(in:T[0:ib*k])
     {
         if (sequence->status == PlasmaSuccess) {
+            // Prepare workspaces.
             int tid = omp_get_thread_num();
-            plasma_complex64_t *W   =
-                ((plasma_complex64_t*)work->spaces[tid]);
+            plasma_complex64_t *W = (plasma_complex64_t*)work.spaces[tid];
+            int ldwork = side == PlasmaLeft ? ib : n1;  // TODO: double check
 
-            int ldwork = side == PlasmaLeft ? ib : nb;
-
-            // call the kernel
+            // Call the kernel.
             int info = core_ztsmlq(side, trans,
                                    m1, n1, m2, n2, k, ib,
                                    A1, lda1,
                                    A2, lda2,
-                                   V, ldv,
-                                   T, ldt,
-                                   W, ldwork);
+                                   V,  ldv,
+                                   T,  ldt,
+                                   W,  ldwork);
 
             if (info != PlasmaSuccess) {
-                plasma_error_with_code("Error in call to COREBLAS in argument",
-                                       -info);
-                plasma_request_fail(sequence, request,
-                                    PlasmaErrorIllegalValue);
+                plasma_error("core_ztsmlq() failed");
+                plasma_request_fail(sequence, request, PlasmaErrorInternal);
             }
         }
     }

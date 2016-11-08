@@ -27,7 +27,8 @@
  ******************************************************************************/
 void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                    plasma_enum_t trans, plasma_enum_t diag,
-                   plasma_complex64_t alpha, plasma_desc_t A, plasma_desc_t B,
+                   plasma_complex64_t alpha, plasma_desc_t A,
+                                             plasma_desc_t B,
                    plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Check sequence status.
@@ -52,7 +53,8 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                             side, uplo, trans, diag,
                             mvbm, nvbn,
                             alpha, A(m, m), ldam,
-                                   B(m, n), ldbm);
+                                   B(m, n), ldbm,
+                            sequence, request);
 
                         for (int k = m+1; k < A.mt; k++) {
                             int nvak = plasma_tile_nview(A, k);
@@ -62,7 +64,8 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                                 mvbm, nvbn, nvak,
                                 alpha, A(m, k), ldam,
                                        B(k, n), ldbk,
-                                1.0,   B(m, n), ldbm);
+                                1.0,   B(m, n), ldbm,
+                                sequence, request);
                         }
                     }
                 }
@@ -81,7 +84,8 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                             side, uplo, trans, diag,
                             mvbm, nvbn,
                             alpha, A(m, m), ldam,
-                                   B(m, n), ldbm);
+                                   B(m, n), ldbm,
+                            sequence, request);
 
                         for (int k = 0; k < m; k++) {
                             int ldbk = plasma_tile_mmain(B, k);
@@ -91,7 +95,8 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                                 mvbm, nvbn, B.mb,
                                 alpha, A(k, m), ldak,
                                        B(k, n), ldbk,
-                                1.0,   B(m, n), ldbm);
+                                1.0,   B(m, n), ldbm,
+                                sequence, request);
                         }
                     }
                 }
@@ -112,7 +117,8 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                             side, uplo, trans, diag,
                             mvbm, nvbn,
                             alpha, A(m, m), ldam,
-                                   B(m, n), ldbm);
+                                   B(m, n), ldbm,
+                            sequence, request);
 
                         for (int k = 0; k < m; k++) {
                             int ldbk = plasma_tile_mmain(B, k);
@@ -121,7 +127,8 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                                 mvbm, nvbn, B.mb,
                                 alpha, A(m, k), ldam,
                                        B(k, n), ldbk,
-                                1.0,   B(m, n), ldbm);
+                                1.0,   B(m, n), ldbm,
+                                sequence, request);
                         }
                     }
                 }
@@ -140,7 +147,8 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                             side, uplo, trans, diag,
                             mvbm, nvbn,
                             alpha, A(m, m), ldam,
-                                   B(m, n), ldbm);
+                                   B(m, n), ldbm,
+                            sequence, request);
 
                         for (int k = m+1; k < A.mt; k++) {
                             int mvak = plasma_tile_mview(A, k);
@@ -151,7 +159,8 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                                 mvbm, nvbn, mvak,
                                 alpha, A(k, m), ldak,
                                        B(k, n), ldbk,
-                                1.0,   B(m, n), ldbm);
+                                1.0,   B(m, n), ldbm,
+                                sequence, request);
                         }
                     }
                 }
@@ -174,7 +183,8 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                             side, uplo, trans, diag,
                             mvbm, nvbn,
                             alpha, A(n, n), ldan,
-                                   B(m, n), ldbm);
+                                   B(m, n), ldbm,
+                            sequence, request);
 
                         for (int k = 0; k < n; k++) {
                             int ldak = plasma_tile_mmain(A, k);
@@ -183,7 +193,8 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                                 mvbm, nvbn, B.mb,
                                 alpha, B(m, k), ldbm,
                                        A(k, n), ldak,
-                                1.0,   B(m, n), ldbm);
+                                1.0,   B(m, n), ldbm,
+                                sequence, request);
                         }
                     }
                 }
@@ -202,7 +213,8 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                             side, uplo, trans, diag,
                             mvbm, nvbn,
                             alpha, A(n, n), ldan,
-                                   B(m, n), ldbm);
+                                   B(m, n), ldbm,
+                            sequence, request);
 
                         for (int k = n+1; k < A.mt; k++) {
                             int nvak = plasma_tile_nview(A, k);
@@ -211,7 +223,8 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                                 mvbm, nvbn, nvak,
                                 alpha, B(m, k), ldbm,
                                        A(n, k), ldan,
-                                1.0,   B(m, n), ldbm);
+                                1.0,   B(m, n), ldbm,
+                                sequence, request);
                         }
                     }
                 }
@@ -232,7 +245,8 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                             side, uplo, trans, diag,
                             mvbm, nvbn,
                             alpha, A(n, n), ldan,
-                                   B(m, n), ldbm);
+                                   B(m, n), ldbm,
+                            sequence, request);
 
                         for (int k = n+1; k < A.mt; k++) {
                             int nvak = plasma_tile_nview(A, k);
@@ -242,7 +256,8 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                                 mvbm, nvbn, nvak,
                                 alpha, B(m, k), ldbm,
                                        A(k, n), ldak,
-                                1.0,   B(m, n), ldbm);
+                                1.0,   B(m, n), ldbm,
+                                sequence, request);
                         }
                     }
                 }
@@ -261,7 +276,8 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                             side, uplo, trans, diag,
                             mvbm, nvbn,
                             alpha, A(n, n), ldan,
-                                   B(m, n), ldbm);
+                                   B(m, n), ldbm,
+                            sequence, request);
 
                         for (int k = 0; k < n; k++) {
                             core_omp_zgemm(
@@ -269,7 +285,8 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                                 mvbm, nvbn, B.mb,
                                 alpha, B(m, k), ldbm,
                                        A(n, k), ldan,
-                                1.0,   B(m, n), ldbm);
+                                1.0,   B(m, n), ldbm,
+                                sequence, request);
                         }
                     }
                 }

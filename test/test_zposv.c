@@ -148,7 +148,7 @@ void test_zposv(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zposv(uplo, n, nrhs, A, lda, B, ldb);
+    plasma_zposv(uplo, n, nrhs, A, lda, B, ldb);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
     double flops = flops_zpotrf(n) + flops_zpotrs(n, nrhs);

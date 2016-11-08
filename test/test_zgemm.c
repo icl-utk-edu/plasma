@@ -183,7 +183,7 @@ void test_zgemm(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    PLASMA_zgemm(
+    plasma_zgemm(
         transa, transb,
         m, n, k,
         alpha, A, lda,

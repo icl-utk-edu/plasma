@@ -154,7 +154,7 @@ void test_zherk(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    PLASMA_zherk(
+    plasma_zherk(
         uplo, trans,
         n, k,
         alpha, A, lda,

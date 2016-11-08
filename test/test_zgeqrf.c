@@ -49,16 +49,18 @@ void test_zgeqrf(param_value_t param[], char *info)
             print_usage(PARAM_PADA);
             print_usage(PARAM_NB);
             print_usage(PARAM_IB);
+            print_usage(PARAM_HMODE);
         }
         else {
             // Return column labels.
             snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s %*s %*s",
+                     "%*s %*s %*s %*s %*s %*s %*s",
                      InfoSpacing, "M",
                      InfoSpacing, "N",
                      InfoSpacing, "PadA",
                      InfoSpacing, "NB",
                      InfoSpacing, "IB",
+                     InfoSpacing, "Hous. mode",
                      InfoSpacing, "Ortho.");
         }
         return;
@@ -66,12 +68,13 @@ void test_zgeqrf(param_value_t param[], char *info)
     // Return column values.
     // ortho. column appended later.
     snprintf(info, InfoLen,
-             "%*d %*d %*d %*d %*d",
+             "%*d %*d %*d %*d %*d %*c",
              InfoSpacing, param[PARAM_M].i,
              InfoSpacing, param[PARAM_N].i,
              InfoSpacing, param[PARAM_PADA].i,
              InfoSpacing, param[PARAM_NB].i,
-             InfoSpacing, param[PARAM_IB].i);
+             InfoSpacing, param[PARAM_IB].i,
+             InfoSpacing, param[PARAM_HMODE].c);
 
     //================================================================
     // Set parameters.
@@ -89,6 +92,12 @@ void test_zgeqrf(param_value_t param[], char *info)
     //================================================================
     plasma_set(PlasmaNb, param[PARAM_NB].i);
     plasma_set(PlasmaIb, param[PARAM_IB].i);
+    if (param[PARAM_HMODE].c == 't') {
+        plasma_set(PlasmaHouseholderMode, PlasmaTreeHouseholder);
+    }
+    else {
+        plasma_set(PlasmaHouseholderMode, PlasmaFlatHouseholder);
+    }
 
     //================================================================
     // Allocate and initialize arrays.
@@ -114,15 +123,13 @@ void test_zgeqrf(param_value_t param[], char *info)
     //================================================================
     // Prepare the descriptor for matrix T.
     //================================================================
-    plasma_desc_t descT;
-    retval = plasma_descT_create(PlasmaComplexDouble, m, n, &descT);
-    assert(retval == PlasmaSuccess);
+    plasma_desc_t T;
 
     //================================================================
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    PLASMA_zgeqrf(m, n, A, lda, &descT);
+    plasma_zgeqrf(m, n, A, lda, &T);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
@@ -143,7 +150,7 @@ void test_zgeqrf(param_value_t param[], char *info)
                                          sizeof(plasma_complex64_t));
 
         // Build Q.
-        PLASMA_zungqr(m, minmn, minmn, A, lda, &descT, Q, ldq);
+        plasma_zungqr(m, minmn, minmn, A, lda, T, Q, ldq);
 
         // Build the identity matrix
         plasma_complex64_t *Id =
@@ -182,7 +189,7 @@ void test_zgeqrf(param_value_t param[], char *info)
         LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'u', m, n, A, lda, R, m);
 
         // Compute Q * R.
-        PLASMA_zunmqr(PlasmaLeft, PlasmaNoTrans, m, n, minmn, A, lda, &descT,
+        plasma_zunmqr(PlasmaLeft, PlasmaNoTrans, m, n, minmn, A, lda, T,
                       R, m);
 
         // Compute the difference.
@@ -227,7 +234,7 @@ void test_zgeqrf(param_value_t param[], char *info)
     //================================================================
     // Free arrays.
     //================================================================
-    plasma_desc_destroy(&descT);
+    plasma_desc_destroy(&T);
     free(A);
     if (test)
         free(Aref);

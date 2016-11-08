@@ -33,7 +33,7 @@
  *
  *        Q = H(1) H(2) . . . H(k)
  *
- *  as returned by PLASMA_zgelqf. Q is of order m if side = PlasmaLeft
+ *  as returned by plasma_zgelqf. Q is of order m if side = PlasmaLeft
  *  and of order n if side = PlasmaRight.
  *
  *******************************************************************************
@@ -60,18 +60,18 @@
  *          If side == PlasmaLeft,  m >= k >= 0.
  *          If side == PlasmaRight, n >= k >= 0.
  *
- * @param[in] A
+ * @param[in] pA
  *          Details of the LQ factorization of the original matrix A as returned
- *          by PLASMA_zgelqf.
+ *          by plasma_zgelqf.
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,k).
  *
- * @param[in] descT
- *          Auxiliary factorization data, computed by PLASMA_zgelqf.
+ * @param[in] T
+ *          Auxiliary factorization data, computed by plasma_zgelqf.
  *
- * @param[in,out] C
- *          On entry, the m-by-n matrix C.
+ * @param[in,out] pC
+ *          On entry, pointer to the m-by-n matrix C.
  *          On exit, C is overwritten by Q*C, Q^H*C, C*Q, or C*Q^H.
  *
  * @param[in] ldc
@@ -85,24 +85,18 @@
  *******************************************************************************
  *
  * @sa plasma_omp_zunmlq
- * @sa PLASMA_cunmlq
- * @sa PLASMA_dormlq
- * @sa PLASMA_sormlq
- * @sa PLASMA_zgelqf
+ * @sa plasma_cunmlq
+ * @sa plasma_dormlq
+ * @sa plasma_sormlq
+ * @sa plasma_zgelqf
  *
  ******************************************************************************/
-int PLASMA_zunmlq(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
-                  plasma_complex64_t *A, int lda,
-                  plasma_desc_t *descT,
-                  plasma_complex64_t *C, int ldc)
+int plasma_zunmlq(plasma_enum_t side, plasma_enum_t trans,
+                  int m, int n, int k,
+                  plasma_complex64_t *pA, int lda,
+                  plasma_desc_t T,
+                  plasma_complex64_t *pC, int ldc)
 {
-    int An;
-    int ib, nb;
-    int retval;
-    int status;
-
-    plasma_desc_t descA, descC;
-
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -128,12 +122,15 @@ int PLASMA_zunmlq(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
         return -4;
     }
 
-    if (side == PlasmaLeft)
-        An = m;
-    else
-        An = n;
+    int an;
+    if (side == PlasmaLeft) {
+        an = m;
+    }
+    else {
+        an = n;
+    }
 
-    if ((k < 0) || (k > An)) {
+    if ((k < 0) || (k > an)) {
         plasma_error("illegal value of k");
         return -5;
     }
@@ -151,30 +148,33 @@ int PLASMA_zunmlq(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
         return PlasmaSuccess;
 
     // Set tiling parameters.
-    ib = plasma->ib;
-    nb = plasma->nb;
+    int ib = plasma->ib;
+    int nb = plasma->nb;
 
     // Create tile matrices.
+    plasma_desc_t A;
+    plasma_desc_t C;
+    int retval;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        lda, An, 0, 0, k, An, &descA);
+                                        k, an, 0, 0, k, an, &A);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        ldc, n, 0, 0, m, n, &descC);
+                                        m, n, 0, 0, m, n, &C);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
-        plasma_desc_destroy(&descA);
+        plasma_desc_destroy(&A);
         return retval;
     }
 
     // Allocate workspace.
     plasma_workspace_t work;
     size_t lwork = ib*nb;  // unmlq: work
-    retval = plasma_workspace_alloc(&work, lwork, PlasmaComplexDouble);
+    retval = plasma_workspace_create(&work, lwork, PlasmaComplexDouble);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_workspace_alloc() failed");
+        plasma_error("plasma_workspace_create() failed");
         return retval;
     }
 
@@ -185,6 +185,7 @@ int PLASMA_zunmlq(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
+
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
 
@@ -193,27 +194,27 @@ int PLASMA_zunmlq(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
     #pragma omp master
     {
         // Translate to tile layout.
-        PLASMA_zcm2ccrb_Async(A, lda, &descA, sequence, &request);
-        PLASMA_zcm2ccrb_Async(C, ldc, &descC, sequence, &request);
+        plasma_omp_zge2desc(pA, lda, A, sequence, &request);
+        plasma_omp_zge2desc(pC, ldc, C, sequence, &request);
 
         // Call the tile async function.
         plasma_omp_zunmlq(side, trans,
-                          &descA, descT, &descC, &work,
+                          A, T, C, work,
                           sequence, &request);
 
         // Translate back to LAPACK layout.
-        PLASMA_zccrb2cm_Async(&descC, C, ldc, sequence, &request);
+        plasma_omp_zdesc2ge(C, pC, ldc, sequence, &request);
     }
     // implicit synchronization
 
-    plasma_workspace_free(&work);
+    plasma_workspace_destroy(&work);
 
     // Free matrices in tile layout.
-    plasma_desc_destroy(&descA);
-    plasma_desc_destroy(&descC);
+    plasma_desc_destroy(&A);
+    plasma_desc_destroy(&C);
 
     // Return status.
-    status = sequence->status;
+    int status = sequence->status;
     plasma_sequence_destroy(sequence);
     return status;
 }
@@ -222,7 +223,7 @@ int PLASMA_zunmlq(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
  *
  * @ingroup plasma_unmlq
  *
- *  Non-blocking tile version of PLASMA_zunmlq().
+ *  Non-blocking tile version of plasma_zunmlq().
  *  May return before the computation is finished.
  *  Allows for pipelining of operations at runtime.
  *
@@ -241,11 +242,11 @@ int PLASMA_zunmlq(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
  * @param[in] A
  *          Descriptor of matrix A stored in the tile layout.
  *          Details of the QR factorization of the original matrix A as returned
- *          by PLASMA_zgeqrf.
+ *          by plasma_zgeqrf.
  *
  * @param[in] T
  *          Descriptor of matrix T.
- *          Auxiliary factorization data, computed by PLASMA_zgeqrf.
+ *          Auxiliary factorization data, computed by plasma_zgeqrf.
  *
  * @param[in,out] C
  *          Descriptor of matrix C.
@@ -255,7 +256,7 @@ int PLASMA_zunmlq(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
  * @param[in] work
  *          Workspace for the auxiliary arrays needed by some coreblas kernels.
  *          For multiplication by Q contains preallocated space for WORK
- *          arrays. Allocated by the plasma_workspace_alloc function.
+ *          arrays. Allocated by the plasma_workspace_create function.
  *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to
@@ -273,7 +274,7 @@ int PLASMA_zunmlq(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
  *
  *******************************************************************************
  *
- * @sa PLASMA_zunmlq
+ * @sa plasma_zunmlq
  * @sa plasma_omp_cunmlq
  * @sa plasma_omp_dormlq
  * @sa plasma_omp_sormlq
@@ -281,8 +282,8 @@ int PLASMA_zunmlq(plasma_enum_t side, plasma_enum_t trans, int m, int n, int k,
  *
  ******************************************************************************/
 void plasma_omp_zunmlq(plasma_enum_t side, plasma_enum_t trans,
-                       plasma_desc_t *A, plasma_desc_t *T, plasma_desc_t *C,
-                       plasma_workspace_t *work,
+                       plasma_desc_t A, plasma_desc_t T, plasma_desc_t C,
+                       plasma_workspace_t work,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
@@ -305,32 +306,17 @@ void plasma_omp_zunmlq(plasma_enum_t side, plasma_enum_t trans,
         return;
     }
     if (plasma_desc_check(A) != PlasmaSuccess) {
-        plasma_error("invalid descriptor A");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    if (A->mb != plasma->nb || A->nb != plasma->nb) {
-        plasma_error("wrong tile dimensions of A");
+        plasma_error("invalid A");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if (plasma_desc_check(T) != PlasmaSuccess) {
-        plasma_error("invalid descriptor T");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    if (T->mb != plasma->ib || T->nb != plasma->nb) {
-        plasma_error("wrong tile dimensions of T");
+        plasma_error("invalid T");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if (plasma_desc_check(C) != PlasmaSuccess) {
-        plasma_error("invalid descriptor C");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    if (C->mb != plasma->nb || C->nb != plasma->nb) {
-        plasma_error("wrong tile dimensions of C");
+        plasma_error("invalid C");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
@@ -346,12 +332,11 @@ void plasma_omp_zunmlq(plasma_enum_t side, plasma_enum_t trans,
     }
 
     // quick return
-    // (m == 0 || n == 0 || k == 0)
-    if (C->m == 0 || C->n == 0 || imin(A->m, A->n) == 0)
+    if (C.m == 0 || C.n == 0 || A.m == 0 || A.n == 0)
         return;
 
     // Call the parallel function.
     plasma_pzunmlq(side, trans,
-                   *A, *C, *T,
+                   A, T, C,
                    work, sequence, request);
 }
