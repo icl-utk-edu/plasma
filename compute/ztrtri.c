@@ -143,8 +143,50 @@ int plasma_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
     return status;
 }
 
-/***************************************************************************//**
-                                                                              */
+/****************************************************************************//**
+ *
+  * @ingroup plasma_ztrtri
+ *
+ *  Computes the inverse of a complex upper or lower triangular matrix A.
+ *
+ *******************************************************************************
+ *
+ * @param[in] uplo
+ *          - PlasmaUpper: Upper triangle of A is stored;
+ *          - PlasmaLower: Lower triangle of A is stored.
+ *
+ * @param[in] diag
+ *          - PlasmaNonUnit: A is non-unit triangular;
+ *          - PlasmaUnit:    A is unit triangular.
+ *
+ * @param[in] A
+ *          On entry, the triangular matrix A.  If uplo = 'U', the
+ *          leading n-by-n upper triangular part of the array A
+ *          contains the upper triangular matrix, and the strictly
+ *          lower triangular part of A is not referenced.  If uplo =
+ *          'L', the leading n-by-n lower triangular part of the array
+ *          A contains the lower triangular matrix, and the strictly
+ *          upper triangular part of A is not referenced.  If diag =
+ *          'U', the diagonal elements of A are also not referenced and
+ *          are assumed to be 1.  On exit, the (triangular) inverse of
+ *          the original matrix, in the same storage format.
+ *
+ * @retval void
+ *          Errors are returned by setting sequence->status and
+ *          request->status to error values.  The sequence->status and
+ *          request->status should never be set to PlasmaSuccess (the
+ *          initial values) since another async call may be setting a
+ *          failure value at the same time.
+ *
+ *******************************************************************************
+ *
+ * @sa plasma_ztrtri
+ * @sa plasma_omp_ztrtri
+ * @sa plasma_omp_ctrtri
+ * @sa plasma_omp_dtrtri
+ * @sa plasma_omp_strtri
+ *
+ ******************************************************************************/
 void plasma_omp_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
                        plasma_desc_t A,
                        plasma_sequence_t *sequence, plasma_request_t *request)

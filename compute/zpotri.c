@@ -120,11 +120,8 @@ int plasma_zpotri(plasma_enum_t uplo,
         // Translate to tile layout.
         plasma_omp_zge2desc(pA, lda, A, sequence, &request);
 
-        // Invert triangular part.
-        plasma_omp_ztrtri(uplo, PlasmaNonUnit, A, sequence, &request);
-
-        // Compute product of upper and lower triangle.
-        plasma_omp_zlauum(uplo, A, sequence, &request);
+		// Perform computation.
+		plasma_omp_zpotri(uplo, A, sequence, &request);
 
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
@@ -138,4 +135,87 @@ int plasma_zpotri(plasma_enum_t uplo,
     int status = sequence->status;
     plasma_sequence_destroy(sequence);
     return status;
+}
+
+/***************************************************************************//**
+ *
+ * @ingroup plasma_zpotri
+ *
+ *  Computes the inverse of a complex Hermitian
+ *  positive definite matrix A using the Cholesky factorization
+ *  A = U^H*U or A = L*L^H computed by plasma_zpotrf.
+ *
+ *******************************************************************************
+ *
+ * @param[in] uplo
+ *          - PlasmaUpper: Upper triangle of A is stored;
+ *          - PlasmaLower: Lower triangle of A is stored.
+ *
+ * @param[in] A
+ *          On entry, the triangular factor U or L from the Cholesky
+ *          factorization A = U^H*U or A = L*L^H, as computed by
+ *          plasma_zpotrf.
+ *          On exit, the upper or lower triangle of the (Hermitian)
+ *          inverse of A, overwriting the input factor U or L.
+ *
+ * @retval void
+ *          Errors are returned by setting sequence->status and
+ *          request->status to error values.  The sequence->status and
+ *          request->status should never be set to PlasmaSuccess (the
+ *          initial values) since another async call may be setting a
+ *          failure value at the same time.
+ *
+ *******************************************************************************
+ *
+ * @sa plasma_zpotri
+ * @sa plasma_omp_zpotri
+ * @sa plasma_omp_cpotri
+ * @sa plasma_omp_dpotri
+ * @sa plasma_omp_spotri
+ *
+ ******************************************************************************/
+void plasma_omp_zpotri(plasma_enum_t uplo, plasma_desc_t A,
+					   plasma_sequence_t *sequence, plasma_request_t *request)
+{
+	    // Get PLASMA context.
+    plasma_context_t *plasma = plasma_context_self();
+    if (plasma == NULL) {
+        plasma_error("PLASMA not initialized");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+
+    // Check input arguments.
+    if ((uplo != PlasmaUpper) &&
+        (uplo != PlasmaLower)) {
+        plasma_error("illegal value of uplo");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+    if (plasma_desc_check(A) != PlasmaSuccess) {
+        plasma_error("invalid A");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+    if (sequence == NULL) {
+        plasma_error("NULL sequence");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+    if (request == NULL) {
+        plasma_error("NULL request");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+
+    // Quick return
+    if (A.n == 0)
+        return;
+
+	// Invert triangular part.
+	plasma_pztrtri(uplo, PlasmaNonUnit, A, sequence, request);
+
+	// Compute product of upper and lower triangle.
+	plasma_pzlauum(uplo, A, sequence, request);
+
 }
