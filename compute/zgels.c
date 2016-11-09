@@ -347,11 +347,23 @@ void plasma_omp_zgels(plasma_enum_t trans,
     // Solve using QR factorization.
     //===============================
     if (A.m >= A.n) {
-        plasma_pzgeqrf(A, T, work, sequence, request);
+        if (plasma->householder_mode == PlasmaTreeHouseholder) {
+            plasma_pzgeqrfrh(A, T, work, sequence, request);
+        }
+        else {
+            plasma_pzgeqrf(A, T, work, sequence, request);
+        }
 
-        plasma_pzunmqr(PlasmaLeft, Plasma_ConjTrans,
-                       A, T, B,
-                       work, sequence, request);
+        if (plasma->householder_mode == PlasmaTreeHouseholder) {
+            plasma_pzunmqrrh(PlasmaLeft, Plasma_ConjTrans,
+                             A, T, B,
+                             work, sequence, request);
+        }
+        else {
+            plasma_pzunmqr(PlasmaLeft, Plasma_ConjTrans,
+                           A, T, B,
+                           work, sequence, request);
+        }
 
         plasma_pztrsm(PlasmaLeft, PlasmaUpper,
                       PlasmaNoTrans, PlasmaNonUnit,
@@ -364,7 +376,12 @@ void plasma_omp_zgels(plasma_enum_t trans,
     // Solve using LQ factorization.
     //===============================
     else {
-        plasma_pzgelqf(A, T, work, sequence, request);
+        if (plasma->householder_mode == PlasmaTreeHouseholder) {
+            plasma_pzgelqfrh(A, T, work, sequence, request);
+        }
+        else {
+            plasma_pzgelqf(A, T, work, sequence, request);
+        }
 
         // Zero the trailing block of the right-hand-side matrix.
         // B has less rows than X.
@@ -380,8 +397,16 @@ void plasma_omp_zgels(plasma_enum_t trans,
             sequence, request);
 
         // Find X = Q^H * Y.
-        plasma_pzunmlq(PlasmaLeft, Plasma_ConjTrans,
-                       A, T, B,
-                       work, sequence, request);
+        if (plasma->householder_mode == PlasmaTreeHouseholder) {
+            plasma_pzunmlqrh(PlasmaLeft, Plasma_ConjTrans,
+                             A, T, B,
+                             work, sequence, request);
+        }
+        else {
+            plasma_pzunmlq(PlasmaLeft, Plasma_ConjTrans,
+                           A, T, B,
+                           work, sequence, request);
+        }
+
     }
 }

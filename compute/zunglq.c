@@ -273,5 +273,10 @@ void plasma_omp_zunglq(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
     plasma_pzlaset(PlasmaGeneral, 0.0, 1.0, Q, sequence, request);
 
     // Construct Q.
-    plasma_pzunglq(A, T, Q, work, sequence, request);
+    if (plasma->householder_mode == PlasmaTreeHouseholder) {
+        plasma_pzunglqrh(A, T, Q, work, sequence, request);
+    }
+    else {
+        plasma_pzunglq(A, T, Q, work, sequence, request);
+    }
 }

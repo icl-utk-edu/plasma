@@ -42,15 +42,6 @@ void plasma_pzgeqrfrh(plasma_desc_t A, plasma_desc_t T,
     int noperations;
     plasma_rh_tree_operations(A.mt, A.nt, &operations, &noperations);
 
-    //printf("noperations %d\n",noperations);
-    //int j,k,kpiv;
-    //for (int iop = 0; iop < noperations; iop++) {
-    //    plasma_qr_operation_get(operations, iop, &j, &k, &kpiv);
-    //    if (omp_get_thread_num() == 0) {
-    //        printf(" %d, %d, %d \n", j,k,kpiv);
-    //    }
-    //}
-
     // Set inner blocking from the T tile row-dimension.
     int ib = T.mb;
 
@@ -65,8 +56,7 @@ void plasma_pzgeqrfrh(plasma_desc_t A, plasma_desc_t T,
 
         if (kpiv < 0) {
             // triangularization
-            // GEQRT(k,j)
-            if (debug) printf("GEQRT (%d,%d,%d,%d) ", k, j, mvak, nvaj);
+            if (debug) printf("GEQRT (%d,%d) ", k, j);
             core_omp_zgeqrt(
                 mvak, nvaj, ib,
                 A(k, j), ldak,
@@ -77,8 +67,7 @@ void plasma_pzgeqrfrh(plasma_desc_t A, plasma_desc_t T,
             for (int jj = j + 1; jj < A.nt; jj++) {
                 int nvajj = plasma_tile_nview(A, jj);
 
-                // UNMQR(k,j,jj)
-                if (debug) printf("UNMQR (%d,%d,%d,%d,%d,%d) ", k, j, jj, mvak, nvajj, imin(nvaj, mvak));
+                if (debug) printf("UNMQR (%d,%d,%d) ", k, j, jj);
                 core_omp_zunmqr(
                     PlasmaLeft, Plasma_ConjTrans,
                     mvak, nvajj, imin(nvaj, mvak), ib,
@@ -96,8 +85,7 @@ void plasma_pzgeqrfrh(plasma_desc_t A, plasma_desc_t T,
             int mvakpiv = plasma_tile_mview(A, kpiv);
             int ldakpiv = plasma_tile_mmain(A, kpiv);
 
-            // TTQRT(A.mt- kk - 1, pivpmkk, j)
-            if (debug) printf("TTQRT (%d,%d,%d,%d,%d) ", k, kpiv, j, mvak, nvaj);
+            if (debug) printf("TTQRT (%d,%d,%d) ", k, kpiv, j);
             core_omp_zttqrt(
                 mvak, nvaj, ib,
                 A(kpiv, j), ldakpiv,
@@ -109,9 +97,7 @@ void plasma_pzgeqrfrh(plasma_desc_t A, plasma_desc_t T,
             for (int jj = j + 1; jj < A.nt; jj++) {
                 int nvajj = plasma_tile_nview(A, jj);
 
-                // TTMQR(A.mt-kk-1,pivpmkk,j,jj)
-                if (debug) printf("TTMQR (%d,%d,%d,%d,%d,%d,%d,%d,%d)) ", k, kpiv,
-                                  j, jj, mvakpiv, nvajj, mvak, nvajj, nvaj);
+                if (debug) printf("TTMQR (%d,%d,%d,%d)) ", k, kpiv, j, jj);
                 core_omp_zttmqr(
                     PlasmaLeft, Plasma_ConjTrans,
                     mvakpiv, nvajj, mvak, nvajj, nvaj, ib,
@@ -124,8 +110,6 @@ void plasma_pzgeqrfrh(plasma_desc_t A, plasma_desc_t T,
             }
 
             if (debug) printf("\n ");
-
-            if (debug) printf(" ==== \n ");
         }
     }
 

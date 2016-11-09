@@ -283,7 +283,14 @@ void plasma_omp_zgelqs(plasma_desc_t A, plasma_desc_t T,
                   sequence, request);
 
     // Find X = Q^H * Y.
-    plasma_pzunmlq(PlasmaLeft, Plasma_ConjTrans,
-                   A, T, B, work,
-                   sequence, request);
+    if (plasma->householder_mode == PlasmaTreeHouseholder) {
+        plasma_pzunmlqrh(PlasmaLeft, Plasma_ConjTrans,
+                         A, T, B, work,
+                         sequence, request);
+    }
+    else {
+        plasma_pzunmlq(PlasmaLeft, Plasma_ConjTrans,
+                       A, T, B, work,
+                       sequence, request);
+    }
 }

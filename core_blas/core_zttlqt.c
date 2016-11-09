@@ -1,15 +1,19 @@
 /**
  *
- * @file
+ * @file core_zttlqt.c
  *
- *  PLASMA is a software package provided by:
- *  University of Tennessee, US,
- *  University of Manchester, UK.
+ *  PLASMA core_blas kernel
+ *  PLASMA is a software package provided by Univ. of Tennessee,
+ *  Univ. of California Berkeley and Univ. of Colorado Denver
  *
+ * @version 2.8.0
+ * @author Hatem Ltaief
+ * @author Mathieu Faverge
+ * @author Dulceneia Becker
+ * @date 2010-11-15
  * @precisions normal z -> c d s
  *
  **/
-
 #include "core_blas.h"
 #include "plasma_types.h"
 #include "plasma_internal.h"
@@ -23,47 +27,47 @@
 
 /***************************************************************************//**
  *
- * @ingroup core_ttqrt
+ * @ingroup core_ttlqt
  *
- * Computes a QR factorization of a rectangular matrix
- * formed by coupling an n-by-n upper triangular tile A1
- * on top of an m-by-n upper triangular tile A2:
+ *  Computes an LQ factorization of a rectangular matrix
+ *  formed by coupling side-by-side an m-by-m lower triangular tile A1
+ *  and an m-by-n lower triangular tile A2:
  *
- *    | A1 | = Q * R
- *    | A2 |
+ *    | A1 A2 | = L * Q
+ *
  *
  *******************************************************************************
  *
  * @param[in] m
- *         The number of columns of the tile A2. m >= 0.
+ *         The number of rows of the tile A1 and A2. m >= 0.
+ *         The number of columns of the tile A1.
  *
  * @param[in] n
- *         The number of rows of the tile A1.
- *         The number of columns of the tiles A1 and A2. n >= 0.
+ *         The number of columns of the tile A2. n >= 0.
  *
  * @param[in] ib
  *         The inner-blocking size.  ib >= 0.
  *
  * @param[in,out] A1
- *         On entry, the n-by-n tile A1.
- *         On exit, the elements on and above the diagonal of the array
- *         contain the n-by-n upper trapezoidal tile R;
- *         the elements below the diagonal are not referenced.
+ *         On entry, the m-by-m tile A1.
+ *         On exit, the elements on and below the diagonal of the array
+ *         contain the m-by-m lower trapezoidal tile L;
+ *         the elements above the diagonal are not referenced.
  *
  * @param[in] lda1
- *         The leading dimension of the array A1. lda1 >= max(1,n).
+ *         The leading dimension of the array A1.  lda1 >= max(1,m).
  *
  * @param[in,out] A2
- *         On entry, the m-by-n upper triangular tile A2.
- *         On exit, the elements on and above the diagonal of the array
+ *         On entry, the m-by-n lower triangular tile A2.
+ *         On exit, the elements on and below the diagonal of the array
  *         with the matrix T represent
- *         the unitary tile Q as a product of elementary reflectors
+ *         the unitary tile Q as a product of elementary reflectors.
  *
  * @param[in] lda2
- *         The leading dimension of the tile A2. lda2 >= max(1,m).
+ *         The leading dimension of the array A2.  lda2 >= max(1,m).
  *
  * @param[out] T
- *         The ib-by-n triangular factor T of the block reflector.
+ *         The ib-by-m triangular factor T of the block reflector.
  *         T is upper triangular by block (economic storage);
  *         The rest of the array is not referenced.
  *
@@ -71,10 +75,10 @@
  *         The leading dimension of the array T. ldt >= ib.
  *
  * @param tau
- *         Auxiliary workspace array of length n.
+ *         Auxiliary workspace array of length m.
  *
  * @param work
- *         Auxiliary workspace array of length ib*n.
+ *         Auxiliary workspace array of length ib*m.
  *
  *******************************************************************************
  *
@@ -82,7 +86,7 @@
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int core_zttqrt(int m, int n, int ib,
+int core_zttlqt(int m, int n, int ib,
                 plasma_complex64_t *A1, int lda1,
                 plasma_complex64_t *A2, int lda2,
                 plasma_complex64_t *T,  int ldt,
@@ -143,105 +147,106 @@ int core_zttqrt(int m, int n, int ib,
     static plasma_complex64_t zone  = 1.0;
     static plasma_complex64_t zzero = 0.0;
 
-    // TODO: Need to check why some cases require this to avoid 
+    // TODO: Need to check why some cases require this to avoid
     // uninitialized values
-    //core_zlaset(PlasmaGeneral, ib, n, zzero, zzero, T, ldt);
+    //core_zlaset(PlasmaGeneral, ib, m, zzero, zzero, T, ldt);
 
-    for (int ii = 0; ii < n; ii += ib) {
-        int sb = imin(n-ii, ib);
+    for (int ii = 0; ii < m; ii += ib) {
+        int sb = imin(m-ii, ib);
         for (int i = 0; i < sb; i++) {
             int j  = ii + i;
-            int mi = imin(j+1, m);
-            int ni = sb-i-1;
+            int mi = sb-i-1;
+            int ni = imin( j + 1, n);
 
-            // Generate elementary reflector H(j) to annihilate A2(1:mi, j).
-            LAPACKE_zlarfg_work(
-                    mi+1, &A1[lda1*j+j], &A2[lda2*j], 1, &tau[j]);
+            // Generate elementary reflector H(ii*ib+i) to annihilate 
+            // A(ii*ib+i, ii*ib+i:m).
+#ifdef COMPLEX
+            LAPACKE_zlacgv_work(ni, &A2[j], lda2);
+            LAPACKE_zlacgv_work(1, &A1[lda1*j+j], lda1);
+#endif
+            LAPACKE_zlarfg_work(ni+1, &A1[lda1*j+j], &A2[j], lda2, &tau[j]);
 
-            if (ni > 0) {
-                // Apply H(j-1) to A(j:m, j+1:ii+ib) from the left.
+            plasma_complex64_t alpha;
+            if (mi > 0) {
+                // Apply H(j-1) to A(j:ii+ib-1, j-1:m) from the right.
                 cblas_zcopy(
-                    ni,
-                    &A1[lda1*(j+1)+j], lda1,
+                    mi,
+                    &A1[lda1*j+(j+1)], 1,
                     work, 1);
 
-#ifdef COMPLEX
-                LAPACKE_zlacgv_work(ni, work, 1);
-#endif
                 cblas_zgemv(
-                    CblasColMajor, (CBLAS_TRANSPOSE)Plasma_ConjTrans,
+                    CblasColMajor, (CBLAS_TRANSPOSE)PlasmaNoTrans,
                     mi, ni,
-                    CBLAS_SADDR(zone), &A2[lda2*(j+1)], lda2,
-                                       &A2[lda2*j],     1,
-                    CBLAS_SADDR(zone), work,            1);
-#ifdef COMPLEX
-                LAPACKE_zlacgv_work(ni, work, 1);
-#endif
-                plasma_complex64_t alpha = -conj(tau[j]);
+                    CBLAS_SADDR(zone), &A2[j+1], lda2,
+                    &A2[j], lda2,
+                    CBLAS_SADDR(zone), work, 1);
+
+                alpha = -(tau[j]);
                 cblas_zaxpy(
-                    ni, CBLAS_SADDR(alpha),
+                    mi, CBLAS_SADDR(alpha),
                     work, 1,
-                    &A1[lda1*(j+1)+j], lda1);
-#ifdef COMPLEX
-                LAPACKE_zlacgv_work(ni, work, 1);
-#endif
+                    &A1[lda1*j+j+1], 1);
+
                 cblas_zgerc(
                     CblasColMajor, mi, ni,
-                    CBLAS_SADDR(alpha), &A2[lda2*j], 1,
-                    work, 1,
-                    &A2[lda2*(j+1)], lda2);
+                    CBLAS_SADDR(alpha), work, 1,
+                    &A2[j], lda2,
+                    &A2[j+1], lda2);
             }
 
             // Calculate T.
-            // T(0:i-1, j) = alpha * A2(0:m-1, ii:j-1)^H * A2(0:m-1, j)
-            if (i > 0) {
+            if (i > 0 ) {
 
-                int l = imin(i, imax(0, m-ii));
-                plasma_complex64_t alpha = -(tau[j]);
-
+                int l = imin(i, imax(0, n-ii));
+                alpha = -(tau[j]);
                 core_zpemv(
-                        Plasma_ConjTrans, PlasmaColumnwise,
-                        imin(j, m), i, l,
-                        alpha, &A2[lda2*ii], lda2,
-                               &A2[lda2*j],  1,
-                        zzero, &T[ldt*j],    1,
+                        PlasmaNoTrans, PlasmaRowwise,
+                        i , imin(j, n), l,
+                        alpha, &A2[ii], lda2,
+                        &A2[j], lda2,
+                        zzero, &T[ldt*j], 1,
                         work);
 
-                // T(0:i-1, j) = T(0:i-1, ii:j-1) * T(0:i-1, j)
+                /* T(0:i-1, j) = T(0:i-1, ii:j-1) * T(0:i-1, j) */
                 cblas_ztrmv(
                         CblasColMajor, (CBLAS_UPLO)PlasmaUpper,
                         (CBLAS_TRANSPOSE)PlasmaNoTrans,
                         (CBLAS_DIAG)PlasmaNonUnit,
                         i, &T[ldt*ii], ldt,
-                           &T[ldt*j], 1);
+                        &T[ldt*j], 1);
 
             }
+
+#ifdef COMPLEX
+            LAPACKE_zlacgv_work(ni, &A2[j], lda2 );
+            LAPACKE_zlacgv_work(1, &A1[lda1*j+j], lda1 );
+#endif
 
             T[ldt*j+i] = tau[j];
         }
 
-        // Apply Q^H to the rest of the matrix from the left.
-        if (n > ii+sb) {
-            int mi = imin(ii+sb, m);
-            int ni = n-(ii+sb);
-            int l  = imin(sb, imax(0, mi-ii));
+        // Apply Q to the rest of the matrix to the right.
+        if (m > ii+sb) {
+            int mi = m-(ii+sb);
+            int ni = imin(ii+sb, n);
+            int l  = imin(sb, imax(0, ni-ii));
             core_zparfb(
-                PlasmaLeft, Plasma_ConjTrans,
-                PlasmaForward, PlasmaColumnwise,
-                ib, ni, mi, ni, sb, l,             //replaced sb by ib
-                &A1[lda1*(ii+sb)+ii], lda1,
-                &A2[lda2*(ii+sb)], lda2,
-                &A2[lda2*ii], lda2,
+                PlasmaRight, PlasmaNoTrans,
+                PlasmaForward, PlasmaRowwise,
+                mi, ib, mi, ni, sb, l,
+                &A1[lda1*ii+ii+sb], lda1,
+                &A2[ii+sb], lda2,
+                &A2[ii], lda2,
                 &T[ldt*ii], ldt,
-                work, sb);
+                work, m);
+
         }
     }
-
     return PlasmaSuccess;
 }
 
 /******************************************************************************/
-void core_omp_zttqrt(int m, int n, int ib, 
+void core_omp_zttlqt(int m, int n, int ib,
                      plasma_complex64_t *A1, int lda1,
                      plasma_complex64_t *A2, int lda2,
                      plasma_complex64_t *T,  int ldt,
@@ -251,7 +256,8 @@ void core_omp_zttqrt(int m, int n, int ib,
     // TODO: double check depend dimensions
     #pragma omp task depend(inout:A1[0:lda1*n]) \
                      depend(inout:A2[0:lda2*n]) \
-                     depend(out:T[0:ib*n])
+                     depend(out:T[0:ib*m]) // T should be mxib, but is stored
+                                           // as ibxm
     {
         if (sequence->status == PlasmaSuccess) {
             // Prepare workspaces.
@@ -259,15 +265,15 @@ void core_omp_zttqrt(int m, int n, int ib,
             plasma_complex64_t *tau = ((plasma_complex64_t*)work.spaces[tid]);
 
             // Call the kernel.
-            int info = core_zttqrt(m, n, ib,
+            int info = core_zttlqt(m, n, ib,
                                    A1, lda1,
                                    A2, lda2,
                                    T,  ldt,
                                    tau,
-                                   tau+n);
+                                   tau+m);
 
             if (info != PlasmaSuccess) {
-                plasma_error("core_zttqrt() failed");
+                plasma_error("core_ztslqt() failed");
                 plasma_request_fail(sequence, request, PlasmaErrorInternal);
             }
         }

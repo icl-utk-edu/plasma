@@ -187,6 +187,21 @@ int core_ztsqrt(int m, int n, int ib,
                 plasma_complex64_t *TAU,
                 plasma_complex64_t *work);
 
+int core_zttlqt(int m, int n, int ib,
+                plasma_complex64_t *A1, int lda1,
+                plasma_complex64_t *A2, int lda2,
+                plasma_complex64_t *T,  int ldt,
+                plasma_complex64_t *tau,
+                plasma_complex64_t *work);
+
+int core_zttmlq(plasma_enum_t side, plasma_enum_t trans,
+                int m1, int n1, int m2, int n2, int k, int ib,
+                      plasma_complex64_t *A1,   int lda1,
+                      plasma_complex64_t *A2,   int lda2,
+                const plasma_complex64_t *V,    int ldv,
+                const plasma_complex64_t *T,    int ldt,
+                      plasma_complex64_t *work, int ldwork);
+
 int core_zttmqr(plasma_enum_t side, plasma_enum_t trans,
                 int m1, int n1, int m2, int n2, int k, int ib,
                       plasma_complex64_t *A1,   int lda1,
@@ -383,6 +398,22 @@ void core_omp_ztsqrt(int m, int n, int ib,
                      plasma_complex64_t *A1, int lda1,
                      plasma_complex64_t *A2, int lda2,
                      plasma_complex64_t *T,  int ldt,
+                     plasma_workspace_t work,
+                     plasma_sequence_t *sequence, plasma_request_t *request);
+
+void core_omp_zttlqt(int m, int n, int ib, 
+                     plasma_complex64_t *A1, int lda1,
+                     plasma_complex64_t *A2, int lda2,
+                     plasma_complex64_t *T,  int ldt,
+                     plasma_workspace_t work,
+                     plasma_sequence_t *sequence, plasma_request_t *request);
+
+void core_omp_zttmlq(plasma_enum_t side, plasma_enum_t trans,
+                     int m1, int n1, int m2, int n2, int k, int ib,
+                           plasma_complex64_t *A1, int lda1,
+                           plasma_complex64_t *A2, int lda2,
+                     const plasma_complex64_t *V,  int ldv,
+                     const plasma_complex64_t *T,  int ldt,
                      plasma_workspace_t work,
                      plasma_sequence_t *sequence, plasma_request_t *request);
 
