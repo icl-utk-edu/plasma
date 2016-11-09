@@ -120,8 +120,8 @@ int plasma_zpotri(plasma_enum_t uplo,
         // Translate to tile layout.
         plasma_omp_zge2desc(pA, lda, A, sequence, &request);
 
-		// Perform computation.
-		plasma_omp_zpotri(uplo, A, sequence, &request);
+	// Perform computation.
+	plasma_omp_zpotri(uplo, A, sequence, &request);
 
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
