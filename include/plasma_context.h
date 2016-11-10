@@ -22,6 +22,8 @@ extern "C" {
 typedef struct {
     int nb;                  		///< PlasmaNb
     int ib;                  		///< PlasmaIb
+    int max_threads;				///< the value of OMP_NUM_THREADS
+    int num_panel_threads;			///< no. threads for panel factorization
     plasma_enum_t inplace_outplace; ///< PlasmaInplaceOutplace
 } plasma_context_t;
 

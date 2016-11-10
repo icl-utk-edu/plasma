@@ -28,96 +28,6 @@
 #define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
 
 /******************************************************************************/
-static void print_matrix(plasma_complex64_t *A, int m, int n, int nb)
-{
-    for (int j = 0; j < m; j++) {
-        for (int i = 0; i < n; i++) {
-
-            double v = cabs(A[j+i*m]);
-            char c;
-
-                 if (v < 0.0000000001) c = '.';
-            else if (v == 1.0) c = '#';
-            else c = 'o';
-
-            printf ("%c ", c);
-            if ((i+1) % nb == 0)
-                printf ("| ");
-
-            if (i%nb == 1)
-                i += (nb-4);
-        }
-        printf("\n");
-        if ((j+1) % nb == 0) {
-//          for (int i = 0; i < n + n/nb; i++)
-            for (int i = 0; i < n/nb*5; i++)
-                printf ("--");
-            printf("\n");
-        }
-        if (j%nb == 1)
-            j += (nb-4);
-    }
-}
-
-/******************************************************************************/
-void pzdesc2ge(plasma_desc_t A, plasma_complex64_t *pA, int lda)
-{
-    plasma_complex64_t *f77;
-    plasma_complex64_t *bdl;
-
-    int x1, y1;
-    int x2, y2;
-    int n, m, ldt;
-
-    for (m = 0; m < A.mt; m++) {
-        ldt = plasma_tile_mmain(A, m);
-        for (n = 0; n < A.nt; n++) {
-            x1 = n == 0 ? A.j%A.nb : 0;
-            y1 = m == 0 ? A.i%A.mb : 0;
-            x2 = n == A.nt-1 ? (A.j+A.n-1)%A.nb+1 : A.nb;
-            y2 = m == A.mt-1 ? (A.i+A.m-1)%A.mb+1 : A.mb;
-
-            f77 = &pA[(size_t)A.nb*lda*n + (size_t)A.mb*m];
-            bdl = (plasma_complex64_t*)plasma_tile_addr(A, m, n);
-
-            core_zlacpy(PlasmaGeneral,
-                        y2-y1, x2-x1,
-                        &(bdl[x1*A.nb+y1]), ldt,
-                        &(f77[x1*lda+y1]), lda);
-        }
-    }
-}
-
-/******************************************************************************/
-void pzge2desc(plasma_complex64_t *pA, int lda, plasma_desc_t A)
-{
-    plasma_complex64_t *f77;
-    plasma_complex64_t *bdl;
-
-    int x1, y1;
-    int x2, y2;
-    int n, m, ldt;
-
-    for (m = 0; m < A.mt; m++) {
-        ldt = plasma_tile_mmain(A, m);
-        for (n = 0; n < A.nt; n++) {
-            x1 = n == 0 ? A.j%A.nb : 0;
-            y1 = m == 0 ? A.i%A.mb : 0;
-            x2 = n == A.nt-1 ? (A.j+A.n-1)%A.nb+1 : A.nb;
-            y2 = m == A.mt-1 ? (A.i+A.m-1)%A.mb+1 : A.mb;
-
-            f77 = &pA[(size_t)A.nb*lda*n + (size_t)A.mb*m];
-            bdl = (plasma_complex64_t*)plasma_tile_addr(A, m, n);
-
-            core_zlacpy(PlasmaGeneral,
-                        y2-y1, x2-x1,
-                        &(f77[x1*lda+y1]), lda,
-                        &(bdl[x1*A.nb+y1]), ldt);
-        }
-    }
-}
-
-/******************************************************************************/
 void core_zlaswp(plasma_desc_t A, int k1, int k2, int *ipiv)
 {
     for (int m = k1-1; m <= k2-1; m++) {
@@ -137,8 +47,7 @@ void core_zlaswp(plasma_desc_t A, int k1, int k2, int *ipiv)
 }
 
 /******************************************************************************/
-void plasma_pzgetrf(plasma_desc_t A, int *ipiv, int ib,
-                    plasma_barrier_t *barrier,
+void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Check sequence status.
@@ -147,26 +56,16 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv, int ib,
         return;
     }
 
+    // Read parameters from the context.
+    plasma_context_t *plasma = plasma_context_self();
+    int num_panel_threads = plasma->num_panel_threads;
+    int ib = plasma->ib;
 
+    // Initialize barrier.
+    plasma_barrier_t barrier;
+    plasma_barrier_init(&barrier, num_panel_threads);
 
-    plasma_complex64_t *pA = (plasma_complex64_t*)malloc(
-        (size_t)A.m*A.n*sizeof(plasma_complex64_t));
-
-    plasma_complex64_t *pB = (plasma_complex64_t*)malloc(
-        (size_t)A.m*A.n*sizeof(plasma_complex64_t));
-
-
-
-    #pragma omp parallel
-    #pragma omp master
-        plasma_omp_zdesc2ge(A, pA, A.m, sequence, request);
-
-
-
-    memcpy(pB, pA, (size_t)A.m*A.n*sizeof(plasma_complex64_t));
-    LAPACKE_zgetrf(LAPACK_COL_MAJOR, A.m, A.n, pB, A.m, ipiv);
-
-trace_init();
+// trace_init();
 
 #pragma omp parallel
 #pragma omp master
@@ -190,13 +89,17 @@ trace_init();
                          depend(out:ipiv[k*A.mb:mvak]) \
                          priority(1)
         {
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < num_panel_threads; i++) {
                 #pragma omp task priority(1)
                 {
                     trace_event_start();
-                    core_zgetrf(plasma_desc_view(A, k*A.mb, k*A.nb,
-                                                 A.m-k*A.mb, nvak),
-                                &ipiv[k*A.mb], ib, i, 4, barrier);
+
+                    plasma_desc_t panel_view =
+                        plasma_desc_view(A, k*A.mb, k*A.nb, A.m-k*A.mb, nvak);
+
+                    core_zgetrf(panel_view, &ipiv[k*A.mb], ib, i,
+                                num_panel_threads, &barrier);
+
                     trace_event_stop(Tan);
                 }
             }
@@ -285,20 +188,5 @@ trace_init();
     }
 }
 
-trace_write("../trace.svg");
-
-    #pragma omp parallel
-    #pragma omp master
-        plasma_omp_zdesc2ge(A, pA, A.m, sequence, request);
-
-    plasma_complex64_t zmone = -1.0;
-    cblas_zaxpy((size_t)A.m*A.n, CBLAS_SADDR(zmone), pA, 1, pB, 1);
-    print_matrix(pB, A.m, A.n, A.nb);
-
-    #pragma omp parallel
-    #pragma omp master
-        plasma_omp_zge2desc(pA, A.m, A, sequence, request);
-
-    free(pA);
-    free(pB);
+// trace_write("../trace.svg");
 }

@@ -202,4 +202,6 @@ void plasma_context_init(plasma_context_t *context)
     context->nb = 256;
     context->ib = 64;
     context->inplace_outplace = PlasmaOutplace;
+    context->max_threads = omp_get_max_threads();
+    context->num_panel_threads = imax(1, context->max_threads/2);
 }
