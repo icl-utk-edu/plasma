@@ -227,8 +227,8 @@ void core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
                             CBLAS_SADDR(zone),  &ai[(k+kb)*ldai], ldai);           
             }
         }
+        plasma_barrier_wait(barrier);
     }
-    plasma_barrier_wait(barrier);
 
     //============================
     // left pivoting (all ranks)
