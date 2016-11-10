@@ -12,6 +12,7 @@
 #include "plasma_rh_tree.h"
 
 void plasma_rh_tree_greedy(int mt, int nt, int **operations, int *noperations);
+void plasma_rh_tree_plasma(int mt, int nt, int **operations, int *noperations);
 
 /***************************************************************************//**
  *  Routine for precomputing a given order of operations for tile 
@@ -47,7 +48,7 @@ void plasma_rh_tree_greedy(int mt, int nt, int **operations, int *noperations)
     // Allocate array of operations
     int nops = num_triangularized_tiles + num_anihilated_tiles;
 
-    *operations = (int *) malloc(nops*3*sizeof(int));
+    *operations = (int *) malloc(nops*4*sizeof(int));
 
     // Prepare memory for column counters.
     int *NZ = (int*) malloc(minnt*sizeof(int));
@@ -78,6 +79,7 @@ void plasma_rh_tree_greedy(int mt, int nt, int **operations, int *noperations)
                         // GEQRT(k,j)
                         if (debug) printf("GEQRT (%d,%d) ", k, j);
                         plasma_rh_tree_operation_insert(*operations, iops,
+                                                        PlasmaGEQRTKernel,
                                                         j, k, -1);
                         iops++;
                         if (debug) printf("\n ");
@@ -93,6 +95,7 @@ void plasma_rh_tree_greedy(int mt, int nt, int **operations, int *noperations)
                     // GEQRT(kk,j)
                     if (debug) printf("GEQRT (%d,%d) ", kk, j);
                     plasma_rh_tree_operation_insert(*operations, iops,
+                                                    PlasmaGEQRTKernel,
                                                     j, kk, -1);
                     iops++;
 
@@ -111,6 +114,7 @@ void plasma_rh_tree_greedy(int mt, int nt, int **operations, int *noperations)
                 // TTQRT(mt- kk - 1, pivpmkk, j)
                 if (debug) printf("TTQRT (%d,%d,%d) ", pmkk, pivpmkk, j);
                 plasma_rh_tree_operation_insert(*operations, iops,
+                                                PlasmaTTQRTKernel,
                                                 j, pmkk, pivpmkk);
                 iops++;
 
@@ -123,15 +127,64 @@ void plasma_rh_tree_greedy(int mt, int nt, int **operations, int *noperations)
         }
     }
 
+    // Check that we have reached the expected number of operations.
     if (iops != nops) {
         printf("I have not reached the expected number of operations.");
     }
 
-    // return number of operations
+    // Copy over the number of operations.
     *noperations = nops;
 
     // Deallocate column counters.
     free(NZ);
     free(NT);
+}
+
+/***************************************************************************//**
+ *  Parallel tile QR factorization based on the PLASMA-TREE algorithm from 
+ *  version 2.8.0.
+ * @see plasma_omp_zgeqrf
+ **/
+void plasma_rh_tree_plasma(int mt, int nt, int **operations, int *noperations)
+{
+    static const int debug = 0;
+
+    static const int BS = 5;
+
+    // how many columns to involve
+    int minnt = imin(mt, nt);
+
+    // tiles above diagonal are not triangularized
+    int num_triangularized_tiles  = mt*minnt - (minnt-1)*minnt/2; 
+    // tiles on diagonal and above are not anihilated
+    int num_anihilated_tiles      = mt*minnt - (minnt+1)*minnt/2; 
+
+    // Allocate array of operations
+    int nops = num_triangularized_tiles + num_anihilated_tiles;
+
+    *operations = (int *) malloc(nops*4*sizeof(int));
+
+    // counter of number of inserted operations
+    int iops = 0;
+    for (int k = 0; k < minnt; k++) {
+        for (int M = k; M < mt; M += BS) {
+            //zgeqrt(A(M,k), T(M,k))
+            for (int m = M+1; m < imin(M+BS, mt); m++) {
+                //ztsqrt(A(M, k), A(m, k), T(m, k))
+            }
+        }
+        for (int RD = BS; RD < mt-k; RD *= 2) {
+            for (int M = k; M+RD < mt; M += 2*RD) {
+                //zttqrt(A(M,k), A(M+RD,k), T2(M+RD,k))
+            }
+        }
+    }
+
+    if (iops != nops) {
+        printf("I have not reached the expected number of operations.");
+    }
+
+    // Copy over the number of operations.
+    *noperations = nops;
 }
 

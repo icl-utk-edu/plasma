@@ -49,7 +49,9 @@ void plasma_pzungqrrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
 
     for (int iop = noperations-1; iop >= 0; iop--) {
         int j, k, kpiv;
-        plasma_rh_tree_operation_get(operations, iop, &j, &k, &kpiv);
+        plasma_enum_t kernel;
+        plasma_rh_tree_operation_get(operations, iop, &kernel,
+                                     &j, &k, &kpiv);
 
         int nvaj = plasma_tile_nview(A, j);
         int mvak = plasma_tile_mview(A, k);
@@ -57,7 +59,7 @@ void plasma_pzungqrrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
         int mvqk = plasma_tile_mview(Q, k);
         int ldqk = plasma_tile_mmain(Q, k);
 
-        if (kpiv < 0) {
+        if (kernel == PlasmaGEKernel) {
             // triangularization
             for (int n = j; n < Q.nt; n++) {
                 int nvqn = plasma_tile_nview(Q, n);
@@ -75,7 +77,7 @@ void plasma_pzungqrrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
 
             if (debug) printf("\n ");
         }
-        else {
+        else if (kernel == PlasmaTTKernel) {
             // elimination of the tile
             int mvqkpiv = plasma_tile_mview(Q, kpiv);
             int ldqkpiv = plasma_tile_mmain(Q, kpiv);
@@ -96,6 +98,10 @@ void plasma_pzungqrrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
             }
 
             if (debug) printf("\n ");
+        }
+        else {
+            plasma_error("illegal kernel");
+            plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         }
     }
 
