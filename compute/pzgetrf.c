@@ -65,8 +65,6 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
     plasma_barrier_t barrier;
     plasma_barrier_init(&barrier, num_panel_threads);
 
-// trace_init();
-
 #pragma omp parallel
 #pragma omp master
 {
@@ -187,6 +185,4 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
         }
     }
 }
-
-// trace_write("../trace.svg");
 }

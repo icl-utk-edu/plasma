@@ -25,28 +25,6 @@
 
 #define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
 
-void pzdesc2ge(plasma_desc_t A, plasma_complex64_t *pA, int lda);
-void pzge2desc(plasma_complex64_t *pA, int lda, plasma_desc_t A);
-
-/******************************************************************************/
-static void print_matrix(plasma_complex64_t *A, int m, int n)
-{
-    for (int j = 0; j < m; j++) {
-        for (int i = 0; i < n; i++) {
-
-            double v = cabs(A[j+i*m]);
-            char c;
-
-                 if (v < 0.0000000001) c = '.';
-            else if (v == 1.0) c = '#';
-            else c = 'o';
-
-            printf ("%c ", c);
-        }
-        printf("\n");
-    }
-}
-
 #define COMPLEX
 
 /***************************************************************************//**
@@ -144,32 +122,6 @@ void test_zgetrf(param_value_t param[], char *info)
     plasma_time_t start = omp_get_wtime();
     plasma_zgetrf(m, n, A, lda, IPIV);
 
-
-
-    // int cores = 4;
-    // plasma_desc_t dA;
-    // retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-    //                                     m, n, 0, 0, m, n, &dA);
-    // assert(retval == PlasmaSuccess);
-
-    // pzge2desc(A, lda, dA);
-    // plasma_time_t start = omp_get_wtime();
-
-    // plasma_barrier_t barrier;
-    // plasma_barrier_init(&barrier, cores);
-
-    // #pragma omp parallel
-    // #pragma omp master
-    // {
-    //     for (int i = 0; i < cores; i++)
-    //         #pragma omp task
-    //             core_zgetrf(dA, IPIV, param[PARAM_IB].i, i, cores, &barrier);
-    // }
-    // plasma_time_t stop = omp_get_wtime();
-    // pzdesc2ge(dA, A, lda);
-
-
-
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
@@ -187,8 +139,6 @@ void test_zgetrf(param_value_t param[], char *info)
 
         plasma_complex64_t zmone = -1.0;
         cblas_zaxpy((size_t)lda*n, CBLAS_SADDR(zmone), Aref, 1, A, 1);
-
-// print_matrix(A, m, n);
 
         double work[1];
         double Anorm = LAPACKE_zlange_work(

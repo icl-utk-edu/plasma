@@ -29,13 +29,6 @@ static plasma_complex64_t *max_val;
 void core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
                  plasma_barrier_t *barrier)
 {
-// plasma_barrier_wait(barrier);
-// double start;
-// if (rank == 0)
-//     start = omp_get_wtime();
-
-
-
     // Allocate arrays for parallel max search.
     if (rank == 0) {
         max_idx = (int*)malloc(size*sizeof(int));
@@ -248,15 +241,10 @@ void core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
             }
         }
     }
+
     // Free arrays for parallel max search.
     if (rank == 0) {
         free(max_idx);
         free(max_val);
     }
-
-
-
-// plasma_barrier_wait(barrier);
-// if (rank == 0)
-//     printf("\t%lf\n", omp_get_wtime()-start);
 }
