@@ -38,7 +38,7 @@ void plasma_pzgelqfrh(plasma_desc_t A, plasma_desc_t T,
         return;
     }
 
-    // Precompute order of LQ operations - compute it as for QR 
+    // Precompute order of LQ operations - compute it as for QR
     // and transpose it.
     int *operations = NULL;
     int noperations;
@@ -76,7 +76,7 @@ void plasma_pzgelqfrh(plasma_desc_t A, plasma_desc_t T,
                 if (debug) printf("UNMLQ (%d,%d,%d) ", j, jj, k);
                 core_omp_zunmlq(
                     PlasmaRight, Plasma_ConjTrans,
-                    mvajj, nvak, imin(nvak, mvaj), ib,
+                    mvajj, nvak, imin(mvaj, nvak), ib,
                     A(j,  k), ldaj,
                     T(j,  k), T.mb,
                     A(jj, k), ldajj,
@@ -106,7 +106,38 @@ void plasma_pzgelqfrh(plasma_desc_t A, plasma_desc_t T,
                 if (debug) printf("TTMLQ (%d,%d,%d,%d)) ", j, jj, k, kpiv);
                 core_omp_zttmlq(
                     PlasmaRight, Plasma_ConjTrans,
-                    mvajj, nvakpiv, mvajj, nvak, imin(mvaj, nvakpiv), ib,
+                    mvajj, nvakpiv, mvajj, nvak, imin(mvaj, nvakpiv+nvak), ib,
+                    A(jj, kpiv), ldajj,
+                    A(jj, k),    ldajj,
+                    A(j,  k),    ldaj,
+                    T2(j, k),    T.mb,
+                    work,
+                    sequence, request);
+            }
+
+            if (debug) printf("\n ");
+        }
+        else if (kernel == PlasmaTSKernel) {
+            // elimination of the tile
+            int nvakpiv = plasma_tile_nview(A, kpiv);
+
+            if (debug) printf("TSLQT (%d,%d,%d) ", j, k, kpiv);
+            core_omp_ztslqt(
+                mvaj, nvak, ib,
+                A(j,  kpiv), ldaj,
+                A(j,  k),    ldaj,
+                T2(j, k),    T.mb,
+                work,
+                sequence, request);
+
+            for (int jj = j + 1; jj < A.mt; jj++) {
+                int mvajj = plasma_tile_mview(A, jj);
+                int ldajj = plasma_tile_mmain(A, jj);
+
+                if (debug) printf("TSMLQ (%d,%d,%d,%d)) ", j, jj, k, kpiv);
+                core_omp_ztsmlq(
+                    PlasmaRight, Plasma_ConjTrans,
+                    mvajj, nvakpiv, mvajj, nvak, imin(mvaj, nvakpiv+nvak), ib,
                     A(jj, kpiv), ldajj,
                     A(jj, k),    ldajj,
                     A(j,  k),    ldaj,

@@ -40,7 +40,7 @@ void plasma_pzunglqrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
         return;
     }
 
-    // Precompute order of LQ operations - compute it as for QR 
+    // Precompute order of LQ operations - compute it as for QR
     // and transpose it.
     int *operations = NULL;
     int noperations;
@@ -70,7 +70,7 @@ void plasma_pzunglqrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
 
                 if (debug) printf("UNMLQ (%d,%d,%d) ", j, k, m);
                 core_omp_zunmlq(PlasmaRight, PlasmaNoTrans,
-                                mvqm, nvqk, 
+                                mvqm, nvqk,
                                 imin(mvaj, nvak), ib,
                                 A(j, k), ldaj,
                                 T(j, k), T.mb,
@@ -93,7 +93,30 @@ void plasma_pzunglqrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
                 if (debug) printf("TTMLQ (%d,%d,%d,%d) ", j, m, k, kpiv);
                 core_omp_zttmlq(
                     PlasmaRight, PlasmaNoTrans,
-                    mvqm, nvqkpiv, mvqm, nvqk, imin(mvaj, nvakpiv), ib,
+                    mvqm, nvqkpiv, mvqm, nvqk, imin(mvaj, nvakpiv+nvak), ib,
+                    Q(m, kpiv), ldqm,
+                    Q(m, k),    ldqm,
+                    A(j, k),    ldaj,
+                    T2(j, k),   T.mb,
+                    work,
+                    sequence, request);
+            }
+
+            if (debug) printf("\n ");
+        }
+        else if (kernel == PlasmaTSKernel) {
+            // elimination of the tile
+            int nvqkpiv = plasma_tile_nview(Q, kpiv);
+            int nvakpiv = plasma_tile_nview(A, kpiv);
+
+            for (int m = j; m < Q.mt; m++) {
+                int mvqm = plasma_tile_mview(Q, m);
+                int ldqm = plasma_tile_mmain(Q, m);
+
+                if (debug) printf("TSMLQ (%d,%d,%d,%d) ", j, m, k, kpiv);
+                core_omp_ztsmlq(
+                    PlasmaRight, PlasmaNoTrans,
+                    mvqm, nvqkpiv, mvqm, nvqk, imin(mvaj, nvakpiv+nvak), ib,
                     Q(m, kpiv), ldqm,
                     Q(m, k),    ldqm,
                     A(j, k),    ldaj,

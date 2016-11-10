@@ -53,7 +53,7 @@ void plasma_pzgeqrf(plasma_desc_t A, plasma_desc_t T,
             int nvan = plasma_tile_nview(A, n);
             core_omp_zunmqr(
                 PlasmaLeft, Plasma_ConjTrans,
-                mvak, nvan, mvak, ib,
+                mvak, nvan, imin(mvak, nvak), ib,
                 A(k, k), ldak,
                 T(k, k), T.mb,
                 A(k, n), ldak,
@@ -75,7 +75,7 @@ void plasma_pzgeqrf(plasma_desc_t A, plasma_desc_t T,
                 int nvan = plasma_tile_nview(A, n);
                 core_omp_ztsmqr(
                     PlasmaLeft, Plasma_ConjTrans,
-                    A.mb, nvan, mvam, nvan, A.nb, ib,
+                    A.mb, nvan, mvam, nvan, nvak, ib,
                     A(k, n), ldak,
                     A(m, n), ldam,
                     A(m, k), ldam,

@@ -43,7 +43,7 @@ void plasma_pzunmlqrh(plasma_enum_t side, plasma_enum_t trans,
         return;
     }
 
-    // Precompute order of LQ operations - compute it as for QR 
+    // Precompute order of LQ operations - compute it as for QR
     // and transpose it.
     int *operations = NULL;
     int noperations;
@@ -83,7 +83,7 @@ void plasma_pzunmlqrh(plasma_enum_t side, plasma_enum_t trans,
 
                     if (debug) printf("UNMLQ (%d,%d,%d) ", j, k, n);
                     core_omp_zunmlq(side, trans,
-                                    mvbk, nvbn, 
+                                    mvbk, nvbn,
                                     imin(mvaj, nvak), ib,
                                     A(j, k), ldaj,
                                     T(j, k), T.mb,
@@ -118,6 +118,30 @@ void plasma_pzunmlqrh(plasma_enum_t side, plasma_enum_t trans,
 
                 if (debug) printf("\n ");
             }
+            else if (kernel == PlasmaTSKernel) {
+                // elimination of the tile
+                int nvakpiv = plasma_tile_nview(A, kpiv);
+
+                int mvbkpiv = plasma_tile_mview(B, kpiv);
+                int ldbkpiv = plasma_tile_mmain(B, kpiv);
+
+                for (int n = 0; n < B.nt; n++) {
+                    int nvbn = plasma_tile_nview(B, n);
+
+                    if (debug) printf("TSMLQ (%d,%d,%d,%d) ", j, n, k, kpiv);
+                    core_omp_ztsmlq(
+                        side, trans,
+                        mvbkpiv, nvbn, mvbk, nvbn, imin(mvaj, nvakpiv), ib,
+                        B(kpiv, n), ldbkpiv,
+                        B(k,    n), ldbk,
+                        A(j,    k), ldaj,
+                        T2(j,   k), T.mb,
+                        work,
+                        sequence, request);
+                }
+
+                if (debug) printf("\n ");
+            }
             else {
                 plasma_error("illegal kernel");
                 plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
@@ -126,7 +150,7 @@ void plasma_pzunmlqrh(plasma_enum_t side, plasma_enum_t trans,
     }
     else {
         //=================================
-        // PlasmaRight 
+        // PlasmaRight
         //=================================
         for (int iop = 0; iop < noperations; iop++) {
             int ind_operation;
@@ -178,6 +202,28 @@ void plasma_pzunmlqrh(plasma_enum_t side, plasma_enum_t trans,
 
                     if (debug) printf("TTMLQ (%d,%d,%d,%d)", j, m, k, kpiv);
                     core_omp_zttmlq(
+                        side, trans,
+                        mvbm, nvbkpiv, mvbm, nvbk, imin(mvaj, nvakpiv), ib,
+                        B(m, kpiv), ldbm,
+                        B(m, k),    ldbm,
+                        A(j,  k), ldaj,
+                        T2(j, k), T.mb,
+                        work,
+                        sequence, request);
+                }
+
+                if (debug) printf("\n ");
+            }
+            else if (kernel == PlasmaTSKernel) {
+                int nvbkpiv = plasma_tile_nview(B, kpiv);
+                int nvakpiv = plasma_tile_nview(A, kpiv);
+                // elimination of the tile
+                for (int m = 0; m < B.mt; m++) {
+                    int mvbm = plasma_tile_mview(B, m);
+                    int ldbm = plasma_tile_mmain(B, m);
+
+                    if (debug) printf("TSMLQ (%d,%d,%d,%d)", j, m, k, kpiv);
+                    core_omp_ztsmlq(
                         side, trans,
                         mvbm, nvbkpiv, mvbm, nvbk, imin(mvaj, nvakpiv), ib,
                         B(m, kpiv), ldbm,

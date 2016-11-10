@@ -30,6 +30,7 @@ void plasma_pzgeqrfrh(plasma_desc_t A, plasma_desc_t T,
                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
     static const int debug = 0;
+    if (debug) printf("executing pzgeqrfrh\n");
 
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
@@ -71,7 +72,7 @@ void plasma_pzgeqrfrh(plasma_desc_t A, plasma_desc_t T,
                 if (debug) printf("UNMQR (%d,%d,%d) ", k, j, jj);
                 core_omp_zunmqr(
                     PlasmaLeft, Plasma_ConjTrans,
-                    mvak, nvajj, imin(nvaj, mvak), ib,
+                    mvak, nvajj, imin(mvak, nvaj), ib,
                     A(k, j), ldak,
                     T(k, j), T.mb,
                     A(k, jj), ldak,
@@ -101,7 +102,38 @@ void plasma_pzgeqrfrh(plasma_desc_t A, plasma_desc_t T,
                 if (debug) printf("TTMQR (%d,%d,%d,%d)) ", k, kpiv, j, jj);
                 core_omp_zttmqr(
                     PlasmaLeft, Plasma_ConjTrans,
-                    mvakpiv, nvajj, mvak, nvajj, nvaj, ib,
+                    mvakpiv, nvajj, mvak, nvajj, imin(mvakpiv+mvak, nvaj), ib,
+                    A(kpiv, jj), ldakpiv,
+                    A(k,    jj), ldak,
+                    A(k,    j),  ldak,
+                    T2(k,   j),  T.mb,
+                    work,
+                    sequence, request);
+            }
+
+            if (debug) printf("\n ");
+        }
+        else if (kernel == PlasmaTSKernel) {
+            // elimination of the tile
+            int mvakpiv = plasma_tile_mview(A, kpiv);
+            int ldakpiv = plasma_tile_mmain(A, kpiv);
+
+            if (debug) printf("TSQRT (%d,%d,%d) ", k, kpiv, j);
+            core_omp_ztsqrt(
+                mvak, nvaj, ib,
+                A(kpiv, j), ldakpiv,
+                A(k,  j),   ldak,
+                T2(k, j),   T.mb,
+                work,
+                sequence, request);
+
+            for (int jj = j + 1; jj < A.nt; jj++) {
+                int nvajj = plasma_tile_nview(A, jj);
+
+                if (debug) printf("TSMQR (%d,%d,%d,%d)) ", k, kpiv, j, jj);
+                core_omp_ztsmqr(
+                    PlasmaLeft, Plasma_ConjTrans,
+                    mvakpiv, nvajj, mvak, nvajj, imin(mvakpiv+mvak, nvaj), ib,
                     A(kpiv, jj), ldakpiv,
                     A(k,    jj), ldak,
                     A(k,    j),  ldak,

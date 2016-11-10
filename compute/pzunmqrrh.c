@@ -34,6 +34,7 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
     static const int debug = 0;
+    if (debug) printf("executing pzunmqrrh\n");
 
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
@@ -78,8 +79,7 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
 
                     if (debug) printf("UNMQR (%d,%d,%d) ", k, j, n);
                     core_omp_zunmqr(side, trans,
-                                    mvbk, nvbn, 
-                                    imin(mvak, nvaj), ib,
+                                    mvbk, nvbn, imin(mvak, nvaj), ib,
                                     A(k, j), ldak,
                                     T(k, j), T.mb,
                                     B(k, n), ldbk,
@@ -101,7 +101,30 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
                     if (debug) printf("TTMQR (%d,%d,%d,%d) ", k, kpiv, j, n);
                     core_omp_zttmqr(
                         side, trans,
-                        mvbkpiv, nvbn, mvbk, nvbn, imin(mvakpiv, nvaj), ib,
+                        mvbkpiv, nvbn, mvbk, nvbn, imin(mvakpiv+mvak, nvaj), ib,
+                        B(kpiv, n), ldbkpiv,
+                        B(k,    n), ldbk,
+                        A(k,    j), ldak,
+                        T2(k,   j), T.mb,
+                        work,
+                        sequence, request);
+                }
+
+                if (debug) printf("\n ");
+            }
+            else if (kernel == PlasmaTSKernel) {
+                // elimination of the tile
+                int mvakpiv = plasma_tile_mview(A, kpiv);
+                int mvbkpiv = plasma_tile_mview(B, kpiv);
+                int ldbkpiv = plasma_tile_mmain(B, kpiv);
+
+                for (int n = 0; n < B.nt; n++) {
+                    int nvbn = plasma_tile_nview(B, n);
+
+                    if (debug) printf("TSMQR (%d,%d,%d,%d) ", k, kpiv, j, n);
+                    core_omp_ztsmqr(
+                        side, trans,
+                        mvbkpiv, nvbn, mvbk, nvbn, imin(mvakpiv+mvak, nvaj), ib,
                         B(kpiv, n), ldbkpiv,
                         B(k,    n), ldbk,
                         A(k,    j), ldak,
@@ -120,7 +143,7 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
     }
     else {
         //=================================
-        // PlasmaRight 
+        // PlasmaRight
         //=================================
         for (int iop = 0; iop < noperations; iop++) {
             int ind_operation;
@@ -151,7 +174,7 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
                     if (debug) printf("UNMQR (%d,%d,%d) ", k, j, m);
                     core_omp_zunmqr(
                         side, trans,
-                        mvbm, nvbk, imin(nvaj, mvak), ib,
+                        mvbm, nvbk, imin(mvak, nvaj), ib,
                         A(k, j), ldak,
                         T(k, j), T.mb,
                         B(m, k), ldbm,
@@ -172,7 +195,29 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
                     if (debug) printf("TTMQR (%d,%d,%d,%d)", k, kpiv, j, m);
                     core_omp_zttmqr(
                         side, trans,
-                        mvbm, nvbkpiv, mvbm, nvbk, imin(mvakpiv,nvaj), ib,
+                        mvbm, nvbkpiv, mvbm, nvbk, imin(mvakpiv+mvak,nvaj), ib,
+                        B(m, kpiv), ldbm,
+                        B(m, k),    ldbm,
+                        A(k,  j), ldak,
+                        T2(k, j), T.mb,
+                        work,
+                        sequence, request);
+                }
+
+                if (debug) printf("\n ");
+            }
+            else if (kernel == PlasmaTSKernel) {
+                int nvbkpiv = plasma_tile_nview(B, kpiv);
+                int mvakpiv = plasma_tile_mview(A, kpiv);
+                // elimination of the tile
+                for (int m = 0; m < B.mt; m++) {
+                    int mvbm = plasma_tile_mview(B, m);
+                    int ldbm = plasma_tile_mmain(B, m);
+
+                    if (debug) printf("TSMQR (%d,%d,%d,%d)", k, kpiv, j, m);
+                    core_omp_ztsmqr(
+                        side, trans,
+                        mvbm, nvbkpiv, mvbm, nvbk, imin(mvakpiv+mvak,nvaj), ib,
                         B(m, kpiv), ldbm,
                         B(m, k),    ldbm,
                         A(k,  j), ldak,

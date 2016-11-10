@@ -12,7 +12,11 @@
 #include "plasma_rh_tree.h"
 
 void plasma_rh_tree_greedy(int mt, int nt, int **operations, int *noperations);
-void plasma_rh_tree_plasma(int mt, int nt, int **operations, int *noperations);
+void plasma_rh_tree_plasmatree(int mt, int nt,
+                               int **operations, int *noperations);
+void plasma_rh_tree_flat(int mt, int nt,
+                         int **operations, int *noperations);
+
 
 /***************************************************************************//**
  *  Routine for precomputing a given order of operations for tile 
@@ -22,8 +26,17 @@ void plasma_rh_tree_plasma(int mt, int nt, int **operations, int *noperations);
 void plasma_rh_tree_operations(int mt, int nt,
                                int **operations, int *noperations)
 {
-    // Different algorithms can be implemented and plugged-in here.
-    plasma_rh_tree_greedy(mt, nt, operations, noperations);
+    // Different algorithms can be implemented and switched here:
+    
+    // Flat tree as in the standard geqrf routine.
+    // Combines only GE and TS kernels.
+    plasma_rh_tree_flat(mt, nt, operations, noperations);
+    
+    // PLASMA-Tree from PLASMA 2.8.0
+    //plasma_rh_tree_plasmatree(mt, nt, operations, noperations);
+
+    // Pure Greedy algorithm combining only GE and TT kernels.
+    //plasma_rh_tree_greedy(mt, nt, operations, noperations);
 }
 
 
@@ -37,17 +50,18 @@ void plasma_rh_tree_greedy(int mt, int nt, int **operations, int *noperations)
 {
     static const int debug = 0;
 
-    // how many columns to involve
+    // How many columns to involve?
     int minnt = imin(mt, nt);
 
-    // tiles above diagonal are not triangularized
+    // Tiles above diagonal are not triangularized.
     int num_triangularized_tiles  = mt*minnt - (minnt-1)*minnt/2; 
-    // tiles on diagonal and above are not anihilated
+    // Tiles on diagonal and above are not anihilated.
     int num_anihilated_tiles      = mt*minnt - (minnt+1)*minnt/2; 
 
-    // Allocate array of operations
+    // Number of operations can be determined exactly.
     int nops = num_triangularized_tiles + num_anihilated_tiles;
 
+    // Allocate array of operations.
     *operations = (int *) malloc(nops*4*sizeof(int));
 
     // Prepare memory for column counters.
@@ -79,7 +93,7 @@ void plasma_rh_tree_greedy(int mt, int nt, int **operations, int *noperations)
                         // GEQRT(k,j)
                         if (debug) printf("GEQRT (%d,%d) ", k, j);
                         plasma_rh_tree_operation_insert(*operations, iops,
-                                                        PlasmaGEQRTKernel,
+                                                        PlasmaGEKernel,
                                                         j, k, -1);
                         iops++;
                         if (debug) printf("\n ");
@@ -95,7 +109,7 @@ void plasma_rh_tree_greedy(int mt, int nt, int **operations, int *noperations)
                     // GEQRT(kk,j)
                     if (debug) printf("GEQRT (%d,%d) ", kk, j);
                     plasma_rh_tree_operation_insert(*operations, iops,
-                                                    PlasmaGEQRTKernel,
+                                                    PlasmaGEKernel,
                                                     j, kk, -1);
                     iops++;
 
@@ -114,7 +128,7 @@ void plasma_rh_tree_greedy(int mt, int nt, int **operations, int *noperations)
                 // TTQRT(mt- kk - 1, pivpmkk, j)
                 if (debug) printf("TTQRT (%d,%d,%d) ", pmkk, pivpmkk, j);
                 plasma_rh_tree_operation_insert(*operations, iops,
-                                                PlasmaTTQRTKernel,
+                                                PlasmaTTKernel,
                                                 j, pmkk, pivpmkk);
                 iops++;
 
@@ -133,7 +147,7 @@ void plasma_rh_tree_greedy(int mt, int nt, int **operations, int *noperations)
     }
 
     // Copy over the number of operations.
-    *noperations = nops;
+    *noperations = iops;
 
     // Deallocate column counters.
     free(NZ);
@@ -141,50 +155,136 @@ void plasma_rh_tree_greedy(int mt, int nt, int **operations, int *noperations)
 }
 
 /***************************************************************************//**
- *  Parallel tile QR factorization based on the PLASMA-TREE algorithm from 
- *  version 2.8.0.
+ *  Parallel tile communication avoiding QR factorization from 
+ *  PLASMA version 2.8.0.
+ *  Also known as PLASMA-TREE, it combines TS kernels within 
+ *  blocks of tiles of height BS and TT kernels on top of these blocks in 
+ *  a binary-tree fashion.
  * @see plasma_omp_zgeqrf
  **/
-void plasma_rh_tree_plasma(int mt, int nt, int **operations, int *noperations)
+void plasma_rh_tree_plasmatree(int mt, int nt,
+                               int **operations, int *noperations)
 {
     static const int debug = 0;
 
-    static const int BS = 5;
+    static const int BS = 4;
 
-    // how many columns to involve
+    // How many columns to involve?
     int minnt = imin(mt, nt);
 
-    // tiles above diagonal are not triangularized
-    int num_triangularized_tiles  = mt*minnt - (minnt-1)*minnt/2; 
-    // tiles on diagonal and above are not anihilated
+    // Tiles above diagonal are not triangularized.
+    int num_triangularized_tiles  = ((mt/BS)+1)*minnt;
+    // Tiles on diagonal and above are not anihilated.
     int num_anihilated_tiles      = mt*minnt - (minnt+1)*minnt/2; 
 
-    // Allocate array of operations
+    // An upper bound on the number of operations.
     int nops = num_triangularized_tiles + num_anihilated_tiles;
 
+    // Allocate array of operations.
     *operations = (int *) malloc(nops*4*sizeof(int));
 
-    // counter of number of inserted operations
+    // Initialize the array of operations.
+    //for (int i = 1; i < nops; i++) {
+    //    plasma_rh_tree_operation_insert(*operations, i,
+    //                                    -1, -1, -1, -1);
+    //}
+
+    // Counter of number of inserted operations.
     int iops = 0;
     for (int k = 0; k < minnt; k++) {
         for (int M = k; M < mt; M += BS) {
-            //zgeqrt(A(M,k), T(M,k))
+            //geqrt(A(M,k), T(M,k))
+            if (debug) printf("GEQRT (%d,%d) ", M, k);
+            plasma_rh_tree_operation_insert(*operations, iops,
+                                            PlasmaGEKernel,
+                                            k, M, -1);
+            iops++;
             for (int m = M+1; m < imin(M+BS, mt); m++) {
                 //ztsqrt(A(M, k), A(m, k), T(m, k))
+                if (debug) printf("TSQRT (%d,%d,%d) ", m, M, k);
+                plasma_rh_tree_operation_insert(*operations, iops,
+                                                PlasmaTSKernel,
+                                                k, m, M);
+                iops++;
             }
         }
-        for (int RD = BS; RD < mt-k; RD *= 2) {
-            for (int M = k; M+RD < mt; M += 2*RD) {
-                //zttqrt(A(M,k), A(M+RD,k), T2(M+RD,k))
+        for (int rd = BS; rd < mt-k; rd *= 2) {
+            for (int M = k; M+rd < mt; M += 2*rd) {
+                //zttqrt(A(M,k), A(M+rd,k), T2(M+rd,k))
+                if (debug) printf("TTQRT (%d,%d,%d)", M+rd, M, k);
+                plasma_rh_tree_operation_insert(*operations, iops,
+                                                PlasmaTTKernel,
+                                                k, M+rd, M);
+                iops++;
             }
+        }
+    }
+
+    if (iops > nops) {
+        printf("I have exceeded the expected number of operations.");
+    }
+
+    // Copy over the number of operations.
+    *noperations = iops;
+}
+
+/***************************************************************************//**
+ *  Parallel tile QR factorization using the flat tree.
+ *  This is the simplest tile-QR algorithm based on 
+ *  TS (Triangle on top of Square) kernels.
+ *  Implemented directly in the pzgeqrf and pzgelqf routines, it is included 
+ *  here mostly for debugging purposes.
+ * @see plasma_omp_zgeqrf
+ **/
+void plasma_rh_tree_flat(int mt, int nt,
+                         int **operations, int *noperations)
+{
+    static const int debug = 0;
+
+    // How many columns to involve?
+    int minnt = imin(mt, nt);
+
+    // Only diagonal tiles are triangularized.
+    int num_triangularized_tiles  = minnt;
+    // Tiles on diagonal and above are not anihilated.
+    int num_anihilated_tiles      = mt*minnt - (minnt+1)*minnt/2; 
+
+    // Number of operations can be directly computed.
+    int nops = num_triangularized_tiles + num_anihilated_tiles;
+
+    // Allocate array of operations.
+    *operations = (int *) malloc(nops*4*sizeof(int));
+
+    // Initialize the array of operations.
+    for (int i = 1; i < nops; i++) {
+        plasma_rh_tree_operation_insert(*operations, i,
+                                        -1, -1, -1, -1);
+    }
+
+    // Counter of number of inserted operations.
+    int iops = 0;
+    for (int k = 0; k < minnt; k++) {
+        //zgeqrt(A(k, k))
+        if (debug) printf("GEQRT (%d,%d) ", k, k);
+        plasma_rh_tree_operation_insert(*operations, iops,
+                                        PlasmaGEKernel,
+                                        k, k, -1);
+        iops++;
+
+        for (int m = k+1; m < mt; m++) {
+            //ztsqrt(A(m, k), A(k, k))
+            if (debug) printf("TSQRT (%d,%d,%d) ", m, k, k);
+            plasma_rh_tree_operation_insert(*operations, iops,
+                                            PlasmaTSKernel,
+                                            k, m, k);
+            iops++;
         }
     }
 
     if (iops != nops) {
-        printf("I have not reached the expected number of operations.");
+        printf("I have exceeded the expected number of operations.");
     }
 
     // Copy over the number of operations.
-    *noperations = nops;
+    *noperations = iops;
 }
-

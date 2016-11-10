@@ -32,6 +32,7 @@ void plasma_pzungqrrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
     static const int debug = 0;
+    if (debug) printf("executing pzungqrrh\n");
 
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
@@ -66,8 +67,7 @@ void plasma_pzungqrrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
 
                 if (debug) printf("UNMQR (%d,%d,%d) ", k, j, n);
                 core_omp_zunmqr(PlasmaLeft, PlasmaNoTrans,
-                                mvqk, nvqn, 
-                                imin(mvak, nvaj), ib,
+                                mvqk, nvqn, imin(mvak, nvaj), ib,
                                 A(k, j), ldak,
                                 T(k, j), T.mb,
                                 Q(k, n), ldqk,
@@ -79,6 +79,7 @@ void plasma_pzungqrrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
         }
         else if (kernel == PlasmaTTKernel) {
             // elimination of the tile
+            int mvakpiv = plasma_tile_mview(A, kpiv);
             int mvqkpiv = plasma_tile_mview(Q, kpiv);
             int ldqkpiv = plasma_tile_mmain(Q, kpiv);
 
@@ -88,7 +89,30 @@ void plasma_pzungqrrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
                 if (debug) printf("TTMQR (%d,%d,%d,%d) ", k, kpiv, j, n);
                 core_omp_zttmqr(
                     PlasmaLeft, PlasmaNoTrans,
-                    mvqkpiv, nvqn, mvqk, nvqn, nvaj, ib,
+                    mvqkpiv, nvqn, mvqk, nvqn, imin(mvakpiv+mvak, nvaj), ib,
+                    Q(kpiv, n), ldqkpiv,
+                    Q(k,    n), ldqk,
+                    A(k,    j), ldak,
+                    T2(k,   j), T.mb,
+                    work,
+                    sequence, request);
+            }
+
+            if (debug) printf("\n ");
+        }
+        else if (kernel == PlasmaTSKernel) {
+            // elimination of the tile
+            int mvakpiv = plasma_tile_mview(A, kpiv);
+            int mvqkpiv = plasma_tile_mview(Q, kpiv);
+            int ldqkpiv = plasma_tile_mmain(Q, kpiv);
+
+            for (int n = j; n < Q.nt; n++) {
+                int nvqn = plasma_tile_nview(Q, n);
+
+                if (debug) printf("TSMQR (%d,%d,%d,%d) ", k, kpiv, j, n);
+                core_omp_ztsmqr(
+                    PlasmaLeft, PlasmaNoTrans,
+                    mvqkpiv, nvqn, mvqk, nvqn, imin(mvakpiv+mvak, nvaj), ib,
                     Q(kpiv, n), ldqkpiv,
                     Q(k,    n), ldqk,
                     A(k,    j), ldak,
