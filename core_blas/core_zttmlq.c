@@ -19,7 +19,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup core_tsmlq
+ * @ingroup core_ttmlq
  *
  *  Overwrites the general complex m1-by-n1 tile A1 and
  *  m2-by-n2 tile A2 with
@@ -36,7 +36,7 @@
  *
  *    Q = H(k)^H . . . H(2)^H H(1)^H
  *
- *  as returned by core_ztslqt.
+ *  as returned by core_zttlqt.
  *
  *******************************************************************************
  *
@@ -56,11 +56,9 @@
  *
  * @param[in] m2
  *         The number of rows of the tile A2. m2 >= 0.
- *         m2 = m1 if side == PlasmaRight.
  *
  * @param[in] n2
  *         The number of columns of the tile A2. n2 >= 0.
- *         n2 = n1 if side == PlasmaLeft.
  *
  * @param[in] k
  *         The number of elementary reflectors whose product defines
@@ -86,12 +84,12 @@
  * @param[in] V
  *         The i-th row must contain the vector which defines the
  *         elementary reflector H(i), for i = 1,2,...,k, as returned by
- *         core_ztslqt in the first k rows of its array argument V.
+ *         core_zttlqt in the first k rows of its array argument V.
  *
  * @param[in] ldv
  *         The leading dimension of the array V. ldv >= max(1,k).
  *
- * @param[in] T
+ * @param[out] T
  *         The ib-by-k triangular factor T of the block reflector.
  *         T is upper triangular by block (economic storage);
  *         The rest of the array is not referenced.
@@ -115,7 +113,7 @@
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int core_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
+int core_zttmlq(plasma_enum_t side, plasma_enum_t trans,
                 int m1, int n1, int m2, int n2, int k, int ib,
                       plasma_complex64_t *A1,   int lda1,
                       plasma_complex64_t *A2,   int lda2,
@@ -204,8 +202,8 @@ int core_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
         return PlasmaSuccess;
 
     int i1, i3;
-    if ((side == PlasmaLeft  && trans == PlasmaNoTrans) ||
-        (side == PlasmaRight && trans != PlasmaNoTrans)) {
+    if (((side == PlasmaLeft)  && (trans == PlasmaNoTrans)) ||
+        ((side == PlasmaRight) && (trans != PlasmaNoTrans))) {
         i1 = 0;
         i3 = ib;
     }
@@ -216,42 +214,50 @@ int core_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
 
     if (trans == PlasmaNoTrans)
         trans = Plasma_ConjTrans;
-    else
+    else 
         trans = PlasmaNoTrans;
 
-    for (int i = i1; i > -1 && i < k; i += i3) {
-        int kb = imin(ib, k-i);
-        int ic = 0;
-        int jc = 0;
-        int mi = m1;
-        int ni = n1;
+
+
+    for (int i = i1; (i > -1) && (i < k); i+=i3) {
+        int kb  = imin(ib, k-i);
+        int ic  = 0;
+        int jc  = 0;
+        int mi  = m1;
+        int mi2 = m2;
+        int ni  = n1;
+        int ni2 = n2;
+        int l;
 
         if (side == PlasmaLeft) {
-            // H or H^H is applied to C(i:m,1:n).
-            mi = m1 - i;
-            ic = i;
+            mi = kb; // m1 - i;
+            mi2 = imin(i+kb, m2);
+            l   = imin(kb, imax(0, m2-i));
+            ic  = i;
         }
         else {
-            // H or H^H is applied to C(1:m,i:n).
-            ni = n1 - i;
-            jc = i;
+            ni = kb;
+            ni2 = imin(i+kb, n2);
+            l   = imin(kb, imax(0, n2-i));
+            jc  = i;
         }
 
         // Apply H or H^H.
-        core_zparfb(side, trans, PlasmaForward, PlasmaRowwise,
-                    mi, ni, m2, n2, kb, 0,
-                    &A1[lda1*jc+ic], lda1,
-                    A2, lda2,
-                    &V[i], ldv,
-                    &T[ldt*i], ldt,
-                    work, ldwork);
+        core_zparfb(
+            side, trans, PlasmaForward, PlasmaRowwise,
+            mi, ni, mi2, ni2, kb, l,
+            &A1[lda1*jc+ic], lda1,
+            A2, lda2,
+            &V[i], ldv,
+            &T[ldt*i], ldt,
+            work, ldwork);
     }
 
     return PlasmaSuccess;
 }
 
 /******************************************************************************/
-void core_omp_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
+void core_omp_zttmlq(plasma_enum_t side, plasma_enum_t trans,
                      int m1, int n1, int m2, int n2, int k, int ib,
                            plasma_complex64_t *A1, int lda1,
                            plasma_complex64_t *A2, int lda2,
@@ -273,7 +279,7 @@ void core_omp_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
             int ldwork = side == PlasmaLeft ? ib : n1;  // TODO: double check
 
             // Call the kernel.
-            int info = core_ztsmlq(side, trans,
+            int info = core_zttmlq(side, trans,
                                    m1, n1, m2, n2, k, ib,
                                    A1, lda1,
                                    A2, lda2,
@@ -282,7 +288,7 @@ void core_omp_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
                                    W,  ldwork);
 
             if (info != PlasmaSuccess) {
-                plasma_error("core_ztsmlq() failed");
+                plasma_error("core_zttmlq() failed");
                 plasma_request_fail(sequence, request, PlasmaErrorInternal);
             }
         }

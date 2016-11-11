@@ -49,16 +49,18 @@ void test_zgelqf(param_value_t param[], char *info)
             print_usage(PARAM_PADA);
             print_usage(PARAM_NB);
             print_usage(PARAM_IB);
+            print_usage(PARAM_HMODE);
         }
         else {
             // Return column labels.
             snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s %*s %*s",
+                     "%*s %*s %*s %*s %*s %*s %*s",
                      InfoSpacing, "M",
                      InfoSpacing, "N",
                      InfoSpacing, "PadA",
                      InfoSpacing, "NB",
                      InfoSpacing, "IB",
+                     InfoSpacing, "Hous. mode",
                      InfoSpacing, "Ortho.");
         }
         return;
@@ -66,12 +68,13 @@ void test_zgelqf(param_value_t param[], char *info)
     // Return column values.
     // ortho. column appended later.
     snprintf(info, InfoLen,
-             "%*d %*d %*d %*d %*d",
+             "%*d %*d %*d %*d %*d %*c",
              InfoSpacing, param[PARAM_M].i,
              InfoSpacing, param[PARAM_N].i,
              InfoSpacing, param[PARAM_PADA].i,
              InfoSpacing, param[PARAM_NB].i,
-             InfoSpacing, param[PARAM_IB].i);
+             InfoSpacing, param[PARAM_IB].i,
+             InfoSpacing, param[PARAM_HMODE].c);
 
     //================================================================
     // Set parameters.
@@ -89,6 +92,12 @@ void test_zgelqf(param_value_t param[], char *info)
     //================================================================
     plasma_set(PlasmaNb, param[PARAM_NB].i);
     plasma_set(PlasmaIb, param[PARAM_IB].i);
+    if (param[PARAM_HMODE].c == 't') {
+        plasma_set(PlasmaHouseholderMode, PlasmaTreeHouseholder);
+    }
+    else {
+        plasma_set(PlasmaHouseholderMode, PlasmaFlatHouseholder);
+    }
 
     //================================================================
     // Allocate and initialize arrays.
@@ -143,6 +152,14 @@ void test_zgelqf(param_value_t param[], char *info)
 
         // Build Q.
         plasma_zunglq(minmn, n, minmn, A, lda, T, Q, ldq);
+
+        //printf("Matrix Q\n");
+        //for (int i = 0; i < minmn; i++) {
+        //    for (int j = 0; j < n; j++) {
+        //        printf(" (%lf + %lfi) ", creal(Q[j*ldq + i]), cimag(Q[j*ldq + i]));
+        //    }
+        //    printf("\n");
+        //}
 
         // Build the identity matrix
         plasma_complex64_t *Id =

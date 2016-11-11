@@ -99,6 +99,7 @@ int plasma_zgelqf(int m, int n,
     // Set tiling parameters.
     int ib = plasma->ib;
     int nb = plasma->nb;
+    int householder_mode = plasma->householder_mode;
 
     // Create tile matrix.
     plasma_desc_t A;
@@ -111,7 +112,7 @@ int plasma_zgelqf(int m, int n,
     }
 
     // Prepare descriptor T.
-    retval = plasma_descT_create(A, ib, T);
+    retval = plasma_descT_create(A, ib, householder_mode, T);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_descT_create() failed");
         return retval;
@@ -250,5 +251,10 @@ void plasma_omp_zgelqf(plasma_desc_t A, plasma_desc_t T,
         return;
 
     // Call the parallel function.
-    plasma_pzgelqf(A, T, work, sequence, request);
+    if (plasma->householder_mode == PlasmaTreeHouseholder) {
+        plasma_pzgelqfrh(A, T, work, sequence, request);
+    }
+    else {
+        plasma_pzgelqf(A, T, work, sequence, request);
+    }
 }

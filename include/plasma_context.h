@@ -23,6 +23,7 @@ typedef struct {
     int nb;                         ///< PlasmaNb
     int ib;                         ///< PlasmaIb
     plasma_enum_t inplace_outplace; ///< PlasmaInplaceOutplace
+    plasma_enum_t householder_mode; ///< PlasmaHouseholderMode
 } plasma_context_t;
 
 typedef struct {

@@ -101,9 +101,15 @@ enum {
 };
 
 enum {
+    PlasmaFlatHouseholder,
+    PlasmaTreeHouseholder
+};
+
+enum {
     PlasmaNb,
     PlasmaIb,
-    PlasmaInplaceOutplace
+    PlasmaInplaceOutplace,
+    PlasmaHouseholderMode
 };
 
 /******************************************************************************/

@@ -273,9 +273,16 @@ void plasma_omp_zgeqrs(plasma_desc_t A, plasma_desc_t T,
         return;
 
     // Find Y = Q^H * B.
-    plasma_pzunmqr(PlasmaLeft, Plasma_ConjTrans,
-                   A, T, B, work,
-                   sequence, request);
+    if (plasma->householder_mode == PlasmaTreeHouseholder) {
+        plasma_pzunmqrrh(PlasmaLeft, Plasma_ConjTrans,
+                         A, T, B, work,
+                         sequence, request);
+    }
+    else {
+        plasma_pzunmqr(PlasmaLeft, Plasma_ConjTrans,
+                       A, T, B, work,
+                       sequence, request);
+    }
 
     // Solve R * X = Y.
     plasma_pztrsm(PlasmaLeft, PlasmaUpper,
