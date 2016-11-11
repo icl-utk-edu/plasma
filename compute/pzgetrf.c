@@ -24,24 +24,22 @@
 void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
-        return;
-    }
-
-    // Read parameters from the context.
-    plasma_context_t *plasma = plasma_context_self();
-    int num_panel_threads = plasma->num_panel_threads;
-    int ib = plasma->ib;
-
-    // Initialize barrier.
-    plasma_barrier_t barrier;
-    plasma_barrier_init(&barrier, num_panel_threads);
 
 #pragma omp parallel
 #pragma omp master
 {
+    // Check sequence status.
+    if (sequence->status != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorSequence);
+//      return;
+    }
+
+    // Read parameters from the context.
+    plasma_context_t *plasma = plasma_context_self();
+    int ib = plasma->ib;
+    int num_panel_threads = plasma->num_panel_threads;
+    plasma_barrier_t *barrier = &plasma->barrier;
+
     for (int k = 0; k < imin(A.mt, A.nt); k++)
     {
         plasma_complex64_t *a00 = A(k, k);
@@ -68,7 +66,7 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                         plasma_desc_view(A, k*A.mb, k*A.nb, A.m-k*A.mb, nvak);
 
                     core_zgetrf(view, &ipiv[k*A.mb], ib, i,
-                                num_panel_threads, &barrier);
+                                num_panel_threads, barrier);
                 }
             }
             #pragma omp taskwait
