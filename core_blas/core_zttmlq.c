@@ -214,12 +214,10 @@ int core_zttmlq(plasma_enum_t side, plasma_enum_t trans,
 
     if (trans == PlasmaNoTrans)
         trans = Plasma_ConjTrans;
-    else 
+    else
         trans = PlasmaNoTrans;
 
-
-
-    for (int i = i1; (i > -1) && (i < k); i+=i3) {
+    for (int i = i1; (i > -1) && (i < k); i += i3) {
         int kb  = imin(ib, k-i);
         int ic  = 0;
         int jc  = 0;

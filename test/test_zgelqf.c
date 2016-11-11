@@ -153,14 +153,6 @@ void test_zgelqf(param_value_t param[], char *info)
         // Build Q.
         plasma_zunglq(minmn, n, minmn, A, lda, T, Q, ldq);
 
-        //printf("Matrix Q\n");
-        //for (int i = 0; i < minmn; i++) {
-        //    for (int j = 0; j < n; j++) {
-        //        printf(" (%lf + %lfi) ", creal(Q[j*ldq + i]), cimag(Q[j*ldq + i]));
-        //    }
-        //    printf("\n");
-        //}
-
         // Build the identity matrix
         plasma_complex64_t *Id =
             (plasma_complex64_t *) malloc((size_t)minmn*minmn*

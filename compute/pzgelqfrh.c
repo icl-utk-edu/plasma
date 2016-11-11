@@ -49,7 +49,6 @@ void plasma_pzgelqfrh(plasma_desc_t A, plasma_desc_t T,
     int ib = T.mb;
 
     for (int iop = 0; iop < noperations; iop++) {
-
         int j, k, kpiv;
         plasma_enum_t kernel;
         // j is row, k and kpiv are columns

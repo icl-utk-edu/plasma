@@ -407,6 +407,5 @@ void plasma_omp_zgels(plasma_enum_t trans,
                            A, T, B,
                            work, sequence, request);
         }
-
     }
 }

@@ -38,7 +38,7 @@ void plasma_rh_tree_operation_insert(int *operations, int iops,
  * @see plasma_omp_zgeqrf
  **/
 void plasma_rh_tree_operation_get(int *operations, int iops,
-                                  plasma_enum_t *kernel, 
+                                  plasma_enum_t *kernel,
                                   int *col, int *row, int *rowpiv)
 {
     *kernel = operations[iops*4];
@@ -48,7 +48,7 @@ void plasma_rh_tree_operation_get(int *operations, int iops,
 }
 
 /***************************************************************************//**
- *  Routine for precomputing a given order of operations for tile 
+ *  Routine for precomputing a given order of operations for tile
  *  QR and LQ factorization.
  * @see plasma_omp_zgeqrf
  **/
@@ -56,11 +56,11 @@ void plasma_rh_tree_operations(int mt, int nt,
                                int **operations, int *noperations)
 {
     // Different algorithms can be implemented and switched here:
-    
+
     // Flat tree as in the standard geqrf routine.
     // Combines only GE and TS kernels. Included mainly for debugging.
     //plasma_rh_tree_flat(mt, nt, operations, noperations);
-    
+
     // PLASMA-Tree from PLASMA 2.8.0
     //plasma_rh_tree_plasmatree(mt, nt, operations, noperations);
 
@@ -68,9 +68,8 @@ void plasma_rh_tree_operations(int mt, int nt,
     plasma_rh_tree_greedy(mt, nt, operations, noperations);
 }
 
-
 /***************************************************************************//**
- *  Parallel tile QR factorization based on the GREEDY algorithm from 
+ *  Parallel tile QR factorization based on the GREEDY algorithm from
  *  H. Bouwmeester, M. Jacquelin, J. Langou, Y. Robert
  *  Tiled QR factorization algorithms. INRIA Report no. 7601, 2011.
  * @see plasma_omp_zgeqrf
@@ -83,9 +82,9 @@ void plasma_rh_tree_greedy(int mt, int nt, int **operations, int *noperations)
     int minnt = imin(mt, nt);
 
     // Tiles above diagonal are not triangularized.
-    int num_triangularized_tiles  = mt*minnt - (minnt-1)*minnt/2; 
+    int num_triangularized_tiles  = mt*minnt - (minnt-1)*minnt/2;
     // Tiles on diagonal and above are not anihilated.
-    int num_anihilated_tiles      = mt*minnt - (minnt+1)*minnt/2; 
+    int num_anihilated_tiles      = mt*minnt - (minnt+1)*minnt/2;
 
     // Number of operations can be determined exactly.
     int nops = num_triangularized_tiles + num_anihilated_tiles;
@@ -101,18 +100,18 @@ void plasma_rh_tree_greedy(int mt, int nt, int **operations, int *noperations)
     for (int j = 0; j < minnt; j++) {
         // NZ[j] is the number of tiles which have been eliminated in column j
         NZ[j] = 0;
-        // NT[j] is the number of tiles which have been triangularized in column j
+        // NT[j] is the number of tiles which have been triangularized
+        // in column j
         NT[j] = 0;
     }
 
-    int nZnew = 0; 
+    int nZnew = 0;
     int nTnew = 0;
     int iops  = 0;
     // Until the last column is finished...
     while ((NT[minnt-1] < mt - minnt + 1) ||
            (NZ[minnt-1] < mt - minnt)    ) {
         for (int j = minnt-1; j >= 0; j--) {
-
             if (j == 0) {
                 // Triangularize the first column if not yet done.
                 nTnew = NT[j] + (mt-NT[j]);
@@ -154,7 +153,7 @@ void plasma_rh_tree_greedy(int mt, int nt, int **operations, int *noperations)
                 int pmkk    = mt-kk-1;  // row index of a tile to be zeroed
                 int pivpmkk = pmkk-batch; // row index of the anihilator tile
 
-                // TTQRT(mt- kk - 1, pivpmkk, j)
+                // TTQRT(mt - kk - 1, pivpmkk, j)
                 if (debug) printf("TTQRT (%d,%d,%d) ", pmkk, pivpmkk, j);
                 plasma_rh_tree_operation_insert(*operations, iops,
                                                 PlasmaTTKernel,
@@ -184,10 +183,10 @@ void plasma_rh_tree_greedy(int mt, int nt, int **operations, int *noperations)
 }
 
 /***************************************************************************//**
- *  Parallel tile communication avoiding QR factorization from 
+ *  Parallel tile communication avoiding QR factorization from
  *  PLASMA version 2.8.0.
- *  Also known as PLASMA-TREE, it combines TS kernels within 
- *  blocks of tiles of height BS and TT kernels on top of these blocks in 
+ *  Also known as PLASMA-TREE, it combines TS kernels within
+ *  blocks of tiles of height BS and TT kernels on top of these blocks in
  *  a binary-tree fashion.
  * @see plasma_omp_zgeqrf
  **/
@@ -204,7 +203,7 @@ void plasma_rh_tree_plasmatree(int mt, int nt,
     // Tiles above diagonal are not triangularized.
     int num_triangularized_tiles  = ((mt/BS)+1)*minnt;
     // Tiles on diagonal and above are not anihilated.
-    int num_anihilated_tiles      = mt*minnt - (minnt+1)*minnt/2; 
+    int num_anihilated_tiles      = mt*minnt - (minnt+1)*minnt/2;
 
     // An upper bound on the number of operations.
     int nops = num_triangularized_tiles + num_anihilated_tiles;
@@ -259,9 +258,9 @@ void plasma_rh_tree_plasmatree(int mt, int nt,
 
 /***************************************************************************//**
  *  Parallel tile QR factorization using the flat tree.
- *  This is the simplest tile-QR algorithm based on 
+ *  This is the simplest tile-QR algorithm based on
  *  TS (Triangle on top of Square) kernels.
- *  Implemented directly in the pzgeqrf and pzgelqf routines, it is included 
+ *  Implemented directly in the pzgeqrf and pzgelqf routines, it is included
  *  here mostly for debugging purposes.
  * @see plasma_omp_zgeqrf
  **/
@@ -276,7 +275,7 @@ void plasma_rh_tree_flat(int mt, int nt,
     // Only diagonal tiles are triangularized.
     int num_triangularized_tiles  = minnt;
     // Tiles on diagonal and above are not anihilated.
-    int num_anihilated_tiles      = mt*minnt - (minnt+1)*minnt/2; 
+    int num_anihilated_tiles      = mt*minnt - (minnt+1)*minnt/2;
 
     // Number of operations can be directly computed.
     int nops = num_triangularized_tiles + num_anihilated_tiles;

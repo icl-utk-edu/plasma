@@ -1,19 +1,15 @@
 /**
  *
- * @file core_zttlqt.c
+ * @file
  *
- *  PLASMA core_blas kernel
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of California Berkeley and Univ. of Colorado Denver
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
- * @version 2.8.0
- * @author Hatem Ltaief
- * @author Mathieu Faverge
- * @author Dulceneia Becker
- * @date 2010-11-15
  * @precisions normal z -> c d s
  *
  **/
+
 #include "core_blas.h"
 #include "plasma_types.h"
 #include "plasma_internal.h"
@@ -158,7 +154,7 @@ int core_zttlqt(int m, int n, int ib,
             int mi = sb-i-1;
             int ni = imin( j + 1, n);
 
-            // Generate elementary reflector H(ii*ib+i) to annihilate 
+            // Generate elementary reflector H(ii*ib+i) to annihilate
             // A(ii*ib+i, ii*ib+i:m).
 #ifdef COMPLEX
             LAPACKE_zlacgv_work(ni, &A2[j], lda2);
@@ -196,18 +192,17 @@ int core_zttlqt(int m, int n, int ib,
 
             // Calculate T.
             if (i > 0 ) {
-
                 int l = imin(i, imax(0, n-ii));
                 alpha = -(tau[j]);
                 core_zpemv(
                         PlasmaNoTrans, PlasmaRowwise,
-                        i , imin(j, n), l,
+                        i, imin(j, n), l,
                         alpha, &A2[ii], lda2,
                         &A2[j], lda2,
                         zzero, &T[ldt*j], 1,
                         work);
 
-                /* T(0:i-1, j) = T(0:i-1, ii:j-1) * T(0:i-1, j) */
+                // T(0:i-1, j) = T(0:i-1, ii:j-1) * T(0:i-1, j)
                 cblas_ztrmv(
                         CblasColMajor, (CBLAS_UPLO)PlasmaUpper,
                         (CBLAS_TRANSPOSE)PlasmaNoTrans,
@@ -221,7 +216,6 @@ int core_zttlqt(int m, int n, int ib,
             LAPACKE_zlacgv_work(ni, &A2[j], lda2 );
             LAPACKE_zlacgv_work(1, &A1[lda1*j+j], lda1 );
 #endif
-
             T[ldt*j+i] = tau[j];
         }
 

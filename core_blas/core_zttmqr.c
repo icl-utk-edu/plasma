@@ -145,7 +145,7 @@ int core_zttmqr(plasma_enum_t side, plasma_enum_t trans,
         coreblas_error("illegal value of m2");
         return -5;
     }
-    if ( (n2 < 0) || ((n2 != n1) && (side == PlasmaLeft))) {
+    if ((n2 < 0) || ((n2 != n1) && (side == PlasmaLeft))) {
         coreblas_error("illegal value of n2");
         return -6;
     }
@@ -163,7 +163,7 @@ int core_zttmqr(plasma_enum_t side, plasma_enum_t trans,
         coreblas_error("NULL A1");
         return -9;
     }
-    if (lda1 < imax(1,m1)) {
+    if (lda1 < imax(1, m1)) {
         coreblas_error("illegal value of lda1");
         return -10;
     }
@@ -171,7 +171,7 @@ int core_zttmqr(plasma_enum_t side, plasma_enum_t trans,
         coreblas_error("NULL A2");
         return -11;
     }
-    if (lda2 < imax(1,m2)){
+    if (lda2 < imax(1, m2)) {
         coreblas_error("illegal value of lda2");
         return -12;
     }
@@ -187,7 +187,7 @@ int core_zttmqr(plasma_enum_t side, plasma_enum_t trans,
         coreblas_error("NULL T");
         return -15;
     }
-    if (ldt < imax(1,ib)){
+    if (ldt < imax(1,ib)) {
         coreblas_error("illegal value of ldt");
         return -16;
     }
@@ -216,7 +216,7 @@ int core_zttmqr(plasma_enum_t side, plasma_enum_t trans,
         i3 = -ib;
     }
 
-    for (int i = i1; i > -1 && i < k; i+=i3) {
+    for (int i = i1; i > -1 && i < k; i += i3) {
         int kb = imin(ib, k-i);
         int ic = 0;
         int jc = 0;

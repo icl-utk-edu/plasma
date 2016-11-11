@@ -89,7 +89,6 @@ int core_zttqrt(int m, int n, int ib,
                 plasma_complex64_t *tau,
                 plasma_complex64_t *work)
 {
-
     // Check input arguments.
     if (m < 0) {
         coreblas_error("illegal value of m");
@@ -143,7 +142,7 @@ int core_zttqrt(int m, int n, int ib,
     static plasma_complex64_t zone  = 1.0;
     static plasma_complex64_t zzero = 0.0;
 
-    // TODO: Need to check why some cases require this to avoid 
+    // TODO: Need to check why some cases require this to avoid
     // uninitialized values
     //core_zlaset(PlasmaGeneral, ib, n, zzero, zzero, T, ldt);
 
@@ -216,7 +215,6 @@ int core_zttqrt(int m, int n, int ib,
                            &T[ldt*j], 1);
 
             }
-
             T[ldt*j+i] = tau[j];
         }
 
@@ -241,7 +239,7 @@ int core_zttqrt(int m, int n, int ib,
 }
 
 /******************************************************************************/
-void core_omp_zttqrt(int m, int n, int ib, 
+void core_omp_zttqrt(int m, int n, int ib,
                      plasma_complex64_t *A1, int lda1,
                      plasma_complex64_t *A2, int lda2,
                      plasma_complex64_t *T,  int ldt,

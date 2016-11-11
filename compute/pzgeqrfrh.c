@@ -47,7 +47,6 @@ void plasma_pzgeqrfrh(plasma_desc_t A, plasma_desc_t T,
     int ib = T.mb;
 
     for (int iop = 0; iop < noperations; iop++) {
-
         int j, k, kpiv;
         plasma_enum_t kernel;
         plasma_rh_tree_operation_get(operations, iop, &kernel, &j, &k, &kpiv);

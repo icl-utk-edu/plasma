@@ -401,7 +401,7 @@ void core_omp_ztsqrt(int m, int n, int ib,
                      plasma_workspace_t work,
                      plasma_sequence_t *sequence, plasma_request_t *request);
 
-void core_omp_zttlqt(int m, int n, int ib, 
+void core_omp_zttlqt(int m, int n, int ib,
                      plasma_complex64_t *A1, int lda1,
                      plasma_complex64_t *A2, int lda2,
                      plasma_complex64_t *T,  int ldt,
@@ -426,7 +426,7 @@ void core_omp_zttmqr(plasma_enum_t side, plasma_enum_t trans,
                      plasma_workspace_t work,
                      plasma_sequence_t *sequence, plasma_request_t *request);
 
-void core_omp_zttqrt(int m, int n, int ib, 
+void core_omp_zttqrt(int m, int n, int ib,
                      plasma_complex64_t *A1, int lda1,
                      plasma_complex64_t *A2, int lda2,
                      plasma_complex64_t *T,  int ldt,
