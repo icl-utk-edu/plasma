@@ -10,41 +10,15 @@
  *
  **/
 
-#include "core_blas.h"
 #include "plasma_async.h"
-#include "plasma_barrier.h"
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
 #include "plasma_types.h"
 #include "plasma_workspace.h"
-
-#include "plasma_z.h"
-#include "mkl_lapacke.h"
-#include "mkl_cblas.h" 
-
-#include "../trace/trace.h"
+#include "core_blas.h"
 
 #define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
-
-/******************************************************************************/
-void core_zlaswp(plasma_desc_t A, int k1, int k2, int *ipiv)
-{
-    for (int m = k1-1; m <= k2-1; m++) {
-        if (ipiv[m]-1 != m) {
-
-            int m1 = m;
-            int m2 = ipiv[m]-1;
-
-            int lda1 = plasma_tile_mmain(A, m1/A.mb);
-            int lda2 = plasma_tile_mmain(A, m2/A.mb);
-
-            cblas_zswap(A.n,
-                        A(m1/A.mb, 0) + m1%A.mb, lda1,
-                        A(m2/A.mb, 0) + m2%A.mb, lda2);
-        }
-    }
-}
 
 /******************************************************************************/
 void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
@@ -90,15 +64,11 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
             for (int i = 0; i < num_panel_threads; i++) {
                 #pragma omp task priority(1)
                 {
-                    trace_event_start();
-
-                    plasma_desc_t panel_view =
+                    plasma_desc_t view =
                         plasma_desc_view(A, k*A.mb, k*A.nb, A.m-k*A.mb, nvak);
 
-                    core_zgetrf(panel_view, &ipiv[k*A.mb], ib, i,
+                    core_zgetrf(view, &ipiv[k*A.mb], ib, i,
                                 num_panel_threads, &barrier);
-
-                    trace_event_stop(Tan);
                 }
             }
             #pragma omp taskwait
@@ -131,18 +101,14 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                 // laswp
                 int k1 = k*A.mb+1;
                 int k2 = imin(k*A.mb+A.mb, A.m);
-                trace_event_start();
                 core_zlaswp(plasma_desc_view(A, 0, n*A.nb, A.m, nvan), k1, k2, ipiv);
-                trace_event_stop(RoyalBlue);
 
                 // trsm
-                trace_event_start();
                 core_ztrsm(PlasmaLeft, PlasmaLower,
                            PlasmaNoTrans, PlasmaUnit,
                            mvak, nvan,
                            1.0, A(k, k), ldak,
                                 A(k, n), ldak);
-                trace_event_stop(MediumPurple);
 
                 // gemm
                 for (int m = k+1; m < A.mt; m++) {
@@ -151,14 +117,12 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
 
                     #pragma omp task priority(n == k+1)
                     {
-                        trace_event_start();
                         core_zgemm(
                             PlasmaNoTrans, PlasmaNoTrans,
                             mvam, nvan, A.nb,
                             -1.0, A(m, k), ldam,
                                   A(k, n), ldak,
                             1.0,  A(m, n), ldam);
-                        trace_event_stop(n == k+1 ? Lime : MediumAquamarine);
                     }
                 }
                 #pragma omp taskwait
@@ -179,9 +143,8 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
             int k1 = k*A.mb+1;
             int k2 = imin(A.m, A.n);
             int ione = 1;
-            trace_event_start();
-            core_zlaswp(plasma_desc_view(A, 0, (k-1)*A.nb, A.m, A.nb), k1, k2, ipiv);
-            trace_event_stop(DodgerBlue);
+            plasma_desc_t view = plasma_desc_view(A, 0, (k-1)*A.nb, A.m, A.nb);
+            core_zlaswp(view, k1, k2, ipiv);
         }
     }
 }
