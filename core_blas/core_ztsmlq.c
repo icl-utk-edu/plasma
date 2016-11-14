@@ -260,7 +260,6 @@ void core_omp_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
                      plasma_workspace_t work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // TODO: double check depend dimensions
     #pragma omp task depend(inout:A1[0:lda1*n1]) \
                      depend(inout:A2[0:lda2*n2]) \
                      depend(in:V[0:ldv*n2]) \

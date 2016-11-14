@@ -240,14 +240,7 @@ void core_omp_zunmqr(plasma_enum_t side, plasma_enum_t trans,
                      plasma_workspace_t work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    int ak;
-    if (side == PlasmaLeft)
-        ak = n;
-    else
-        ak = m;
-
-    // TODO: double check depend dimensions
-    #pragma omp task depend(in:A[0:lda*ak]) \
+    #pragma omp task depend(in:A[0:lda*k]) \
                      depend(in:T[0:ib*k]) \
                      depend(inout:C[0:ldc*n])
     {

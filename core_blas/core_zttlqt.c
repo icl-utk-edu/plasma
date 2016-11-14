@@ -247,8 +247,7 @@ void core_omp_zttlqt(int m, int n, int ib,
                      plasma_workspace_t work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // TODO: double check depend dimensions
-    #pragma omp task depend(inout:A1[0:lda1*n]) \
+    #pragma omp task depend(inout:A1[0:lda1*m]) \
                      depend(inout:A2[0:lda2*n]) \
                      depend(out:T[0:ib*m]) // T should be mxib, but is stored
                                            // as ibxm

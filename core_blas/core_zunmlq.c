@@ -249,7 +249,6 @@ void core_omp_zunmlq(plasma_enum_t side, plasma_enum_t trans,
     else
         ak = n;
 
-    // TODO: double check depend dimensions
     #pragma omp task depend(in:A[0:lda*ak]) \
                      depend(in:T[0:ib*k]) \
                      depend(inout:C[0:ldc*n])
