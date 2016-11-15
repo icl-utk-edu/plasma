@@ -24,7 +24,6 @@
 void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-
 #pragma omp parallel
 #pragma omp master
 {
@@ -40,8 +39,8 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
     int num_panel_threads = plasma->num_panel_threads;
     plasma_barrier_t *barrier = &plasma->barrier;
 
-    for (int k = 0; k < imin(A.mt, A.nt); k++)
-    {
+    for (int k = 0; k < imin(A.mt, A.nt); k++) {
+
         plasma_complex64_t *a00 = A(k, k);
         plasma_complex64_t *a20 = A(A.mt-1, k);
 
@@ -74,7 +73,6 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
             for (int i = k*A.mb+1; i <= A.m; i++)
                 ipiv[i-1] += k*A.mb;
         }
-
         // update
         for (int n = k+1; n < A.nt; n++) {
 
@@ -99,7 +97,8 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                 // laswp
                 int k1 = k*A.mb+1;
                 int k2 = imin(k*A.mb+A.mb, A.m);
-                core_zlaswp(plasma_desc_view(A, 0, n*A.nb, A.m, nvan), k1, k2, ipiv);
+                plasma_desc_t view = plasma_desc_view(A, 0, n*A.nb, A.m, nvan);
+                core_zlaswp(view, k1, k2, ipiv);
 
                 // trsm
                 core_ztrsm(PlasmaLeft, PlasmaLower,
@@ -110,6 +109,7 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
 
                 // gemm
                 for (int m = k+1; m < A.mt; m++) {
+
                     int mvam = plasma_tile_mview(A, m);
                     int ldam = plasma_tile_mmain(A, m);
 
@@ -127,7 +127,6 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
             }
         }
     }
-
     // pivoting to the left
     for (int k = 1; k < imin(A.mt, A.nt); k++) {
 

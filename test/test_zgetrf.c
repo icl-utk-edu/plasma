@@ -52,27 +52,30 @@ void test_zgetrf(param_value_t param[], char *info)
             print_usage(PARAM_PADA);
             print_usage(PARAM_NB);
             print_usage(PARAM_IB);
+            print_usage(PARAM_NTPF);
         }
         else {
             // Return column labels.
             snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s %*s",
+                     "%*s %*s %*s %*s %*s %*s",
                      InfoSpacing, "M",
                      InfoSpacing, "N",
                      InfoSpacing, "PadA",
                      InfoSpacing, "NB",
-                     InfoSpacing, "IB");
+                     InfoSpacing, "IB",
+                     InfoSpacing, "NTPF");
         }
         return;
     }
     // Return column values.
     snprintf(info, InfoLen,
-             "%*d %*d %*d %*d %*d",
+             "%*d %*d %*d %*d %*d %*d",
              InfoSpacing, param[PARAM_M].i,
              InfoSpacing, param[PARAM_N].i,
              InfoSpacing, param[PARAM_PADA].i,
              InfoSpacing, param[PARAM_NB].i,
-             InfoSpacing, param[PARAM_IB].i);
+             InfoSpacing, param[PARAM_IB].i,
+             InfoSpacing, param[PARAM_NTPF].i);
 
     //================================================================
     // Set parameters.
@@ -90,6 +93,7 @@ void test_zgetrf(param_value_t param[], char *info)
     //================================================================
     plasma_set(PlasmaNb, param[PARAM_NB].i);
     plasma_set(PlasmaIb, param[PARAM_IB].i);
+    plasma_set(PlasmaNumPanelThreads, param[PARAM_NTPF].i);
 
     //================================================================
     // Allocate and initialize arrays.

@@ -441,6 +441,9 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--padc="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_PADC]);
 
+        else if (param_starts_with(argv[i], "--ntpf="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NTPF]);
+
         //--------------------------------------------------
         // Scan double precision parameters.
         //--------------------------------------------------
@@ -528,6 +531,9 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_int(0, &param[PARAM_PADB]);
     if (param[PARAM_PADC].num == 0)
         param_add_int(0, &param[PARAM_PADC]);
+
+    if (param[PARAM_NTPF].num == 0)
+        param_add_int(1, &param[PARAM_NTPF]);
 
     //--------------------------------------------------
     // Set double precision parameters.

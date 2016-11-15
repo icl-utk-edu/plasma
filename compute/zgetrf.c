@@ -84,8 +84,13 @@ int plasma_zgetrf(int m, int n,
         plasma_omp_zge2desc(pA, lda, A, sequence, &request);
     }
 
+// #pragma omp parallel
+// #pragma omp master
+// {
     // Call the tile async function.
     plasma_omp_zgetrf(A, IPIV, sequence, &request);
+
+// }
 
     #pragma omp parallel
     #pragma omp master

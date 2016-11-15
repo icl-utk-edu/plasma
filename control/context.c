@@ -79,8 +79,15 @@ int plasma_set(plasma_enum_t param, int value)
         }
         plasma->ib = value;
         break;
+    case PlasmaNumPanelThreads:
+        if (value <= 0) {
+            plasma_error("invalid number of panel threads");
+            return PlasmaErrorIllegalValue;
+        }
+        plasma->num_panel_threads = value;
+        break;
     default:
-        plasma_error("Unknown parameter");
+        plasma_error("unknown parameter");
         return PlasmaErrorIllegalValue;
     }
     return PlasmaSuccess;
@@ -203,5 +210,5 @@ void plasma_context_init(plasma_context_t *context)
     context->ib = 64;
     context->inplace_outplace = PlasmaOutplace;
     context->max_threads = omp_get_max_threads();
-    context->num_panel_threads = imax(1, context->max_threads/2);
+    context->num_panel_threads = 1;
 }
