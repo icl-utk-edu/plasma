@@ -13,6 +13,7 @@
 #define ICL_PLASMA_INTERNAL_Z_H
 
 #include "plasma_async.h"
+#include "plasma_barrier.h"
 #include "plasma_descriptor.h"
 #include "plasma_types.h"
 #include "plasma_workspace.h"
@@ -54,6 +55,9 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
 
 void plasma_pzgeqrf(plasma_desc_t A, plasma_desc_t T,
                     plasma_workspace_t work,
+                    plasma_sequence_t *sequence, plasma_request_t *request);
+
+void plasma_pzgetrf(plasma_desc_t A, int *IPIV,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,

@@ -103,7 +103,8 @@ enum {
 enum {
     PlasmaNb,
     PlasmaIb,
-    PlasmaInplaceOutplace
+    PlasmaInplaceOutplace,
+    PlasmaNumPanelThreads
 };
 
 /******************************************************************************/
