@@ -281,6 +281,9 @@ void plasma_omp_zposv(plasma_enum_t uplo, plasma_desc_t A, plasma_desc_t B,
 void plasma_omp_zpotrf(plasma_enum_t uplo, plasma_desc_t A,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 
+void plasma_omp_zpotri(plasma_enum_t uplo, plasma_desc_t A,
+					   plasma_sequence_t *sequence, plasma_request_t *request);
+
 void plasma_omp_zpotrs(plasma_enum_t uplo, plasma_desc_t A, plasma_desc_t B,
                         plasma_sequence_t *sequence, plasma_request_t *request);
 
