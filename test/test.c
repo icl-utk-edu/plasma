@@ -61,6 +61,11 @@ struct routines_t routines[] =
     { "cgeqrs", test_cgeqrs },
     { "sgeqrs", test_sgeqrs },
 
+    { "zgetrf", test_zgetrf },
+    { "dgetrf", test_dgetrf },
+    { "cgetrf", test_cgetrf },
+    { "sgetrf", test_sgetrf },
+
     { "zhemm", test_zherk },
     { "", NULL },  // blank to keep test -h nicely aligned
     { "chemm", test_cherk },
@@ -460,6 +465,9 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--padc="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_PADC]);
 
+        else if (param_starts_with(argv[i], "--ntpf="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NTPF]);
+
         //--------------------------------------------------
         // Scan double precision parameters.
         //--------------------------------------------------
@@ -550,6 +558,9 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_int(0, &param[PARAM_PADB]);
     if (param[PARAM_PADC].num == 0)
         param_add_int(0, &param[PARAM_PADC]);
+
+    if (param[PARAM_NTPF].num == 0)
+        param_add_int(1, &param[PARAM_NTPF]);
 
     //--------------------------------------------------
     // Set double precision parameters.

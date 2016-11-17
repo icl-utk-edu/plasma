@@ -109,6 +109,7 @@ enum {
     PlasmaNb,
     PlasmaIb,
     PlasmaInplaceOutplace,
+    PlasmaNumPanelThreads,
     PlasmaHouseholderMode
 };
 

@@ -27,7 +27,7 @@
 void plasma_pzlag2c(plasma_desc_t A, plasma_desc_t As,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // Check sequence status
+    // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;

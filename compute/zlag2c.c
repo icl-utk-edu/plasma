@@ -59,14 +59,14 @@ int plasma_zlag2c(int m, int n,
                   plasma_complex64_t *pA,  int lda,
                   plasma_complex32_t *pAs, int ldas)
 {
-    // Get PLASMA context
+    // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
         return PlasmaErrorNotInitialized;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if (m < 0) {
         plasma_error("illegal value of m");
         return -1;
@@ -84,25 +84,24 @@ int plasma_zlag2c(int m, int n,
         return -6;
     }
 
-    // Quick return
+    // quick return
     if (imin(n, m) == 0)
       return PlasmaSuccess;
 
-    // Set tiling parameters
+    // Set tiling parameters.
     int nb = plasma->nb;
 
-    // Create tile matrices
+    // Create tile matrices.
     plasma_desc_t A;
     plasma_desc_t As;
     int retval;
-
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
                                         m, n, 0, 0, m, n, &A);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
-    retval = plasma_desc_general_create(PlasmaComplexFloat,  nb, nb,
+    retval = plasma_desc_general_create(PlasmaComplexFloat, nb, nb,
                                         m, n, 0, 0, m, n, &As);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
@@ -110,7 +109,7 @@ int plasma_zlag2c(int m, int n,
         return retval;
     }
 
-    // Create sequence
+    // Create sequence.
     plasma_sequence_t *sequence = NULL;
     retval = plasma_sequence_create(&sequence);
     if (retval != PlasmaSuccess) {
@@ -118,34 +117,34 @@ int plasma_zlag2c(int m, int n,
         return retval;
     }
 
-    // Initialize request
+    // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
 
-    // Asynchronous block
+    // asynchronous block
     #pragma omp parallel
     #pragma omp master
     {
-        // Translate to tile layout
+        // Translate to tile layout.
         plasma_omp_zge2desc(pA,  lda,  A,  sequence, &request);
         plasma_omp_cge2desc(pAs, ldas, As, sequence, &request);
 
-        // Call tile async function
+        // Call tile async function.
         plasma_omp_zlag2c(A, As, sequence, &request);
 
-        // Translate back to LAPACK layout
+        // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(A,  pA,  lda,  sequence, &request);
         plasma_omp_cdesc2ge(As, pAs, ldas, sequence, &request);
     }
-    // Implicit synchronization
+    // implicit synchronization
 
-    // Free matrices in tile layout
+    // Free matrices in tile layout.
     plasma_desc_destroy(&A);
     plasma_desc_destroy(&As);
 
-    // Destroy sequence
+    // Destroy sequence.
     plasma_sequence_destroy(sequence);
 
-    // Return status
+    // Return status.
     int status = sequence->status;
     return status;
 }
@@ -194,7 +193,7 @@ int plasma_zlag2c(int m, int n,
 void plasma_omp_zlag2c(plasma_desc_t A, plasma_desc_t As,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // Get PLASMA context
+    // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
@@ -202,7 +201,7 @@ void plasma_omp_zlag2c(plasma_desc_t A, plasma_desc_t As,
         return;
     }
 
-    // Check descriptors for correctness
+    // Check input arguments.
     if (plasma_desc_check(A) != PlasmaSuccess) {
         plasma_error("invalid A");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
@@ -210,11 +209,6 @@ void plasma_omp_zlag2c(plasma_desc_t A, plasma_desc_t As,
     }
     if (plasma_desc_check(As) != PlasmaSuccess) {
         plasma_error("invalid As");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
-    if (A.nb != A.mb) {
-        plasma_error("only square tiles supported");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
@@ -229,10 +223,10 @@ void plasma_omp_zlag2c(plasma_desc_t A, plasma_desc_t As,
         return;
     }
 
-    // Quick return
+    // quick return
     if (imin(A.m, A.n) == 0)
         return;
 
-    // Call parallel function
+    // Call the parallel function.
     plasma_pzlag2c(A, As, sequence, request);
 }

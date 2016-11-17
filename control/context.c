@@ -79,6 +79,13 @@ int plasma_set(plasma_enum_t param, int value)
         }
         plasma->ib = value;
         break;
+    case PlasmaNumPanelThreads:
+        if (value <= 0) {
+            plasma_error("invalid number of panel threads");
+            return PlasmaErrorIllegalValue;
+        }
+        plasma->num_panel_threads = value;
+        break;
     case PlasmaHouseholderMode:
         if (value != PlasmaFlatHouseholder && value != PlasmaTreeHouseholder) {
             plasma_error("invalid Householder mode");
@@ -87,7 +94,7 @@ int plasma_set(plasma_enum_t param, int value)
         plasma->householder_mode = value;
         break;
     default:
-        plasma_error("Unknown parameter");
+        plasma_error("unknown parameter");
         return PlasmaErrorIllegalValue;
     }
     return PlasmaSuccess;
@@ -213,5 +220,7 @@ void plasma_context_init(plasma_context_t *context)
     context->nb = 256;
     context->ib = 64;
     context->inplace_outplace = PlasmaOutplace;
+    context->max_threads = omp_get_max_threads();
+    context->num_panel_threads = 1;
     context->householder_mode = PlasmaFlatHouseholder;
 }

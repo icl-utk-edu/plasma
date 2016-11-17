@@ -43,6 +43,7 @@ typedef enum {
     PARAM_PADA,   // padding of A
     PARAM_PADB,   // padding of B
     PARAM_PADC,   // padding of C
+    PARAM_NTPF,   // number of threads for panel factorization
 
     //------------------------------------------------------
     // output parameters
@@ -91,6 +92,7 @@ static const char * const ParamUsage[][2] = {
     {"--pada=", "padding added to lda [default: 0]"},
     {"--padb=", "padding added to ldb [default: 0]"},
     {"--padc=", "padding added to ldc [default: 0]"},
+    {"--ntpf=", "number of threads for panel factorization [default: 1]"},
 
     //------------------------------------------------------
     // output parameters
