@@ -61,7 +61,7 @@
  *         Scalar alpha.
  *
  * @param[in] A
- *         Array of size lda-by-n.  On entry, the leading m by n part
+ *         Array of size lda-by-n.  On entry, the leading m-by-n part
  *         of the array A must contain the matrix of coefficients.
  *
  * @param[in] lda
@@ -117,8 +117,6 @@ int core_zpemv(plasma_enum_t trans, int storev,
                plasma_complex64_t *Y, int incy,
                plasma_complex64_t *work)
 {
-
-    int k;
     static plasma_complex64_t zzero = 0.0;
 
     // Check input arguments.
@@ -145,11 +143,11 @@ int core_zpemv(plasma_enum_t trans, int storev,
         coreblas_error("Illegal value of n");
         return -4;
     }
-    if (l > imin(m ,n)) {
+    if (l > imin(m, n)) {
         coreblas_error("Illegal value of l");
         return -5;
     }
-    if (lda < imax(1,m)) {
+    if (lda < imax(1, m)) {
         coreblas_error("Illegal value of lda");
         return -8;
     }
@@ -227,7 +225,7 @@ int core_zpemv(plasma_enum_t trans, int storev,
 
             // n-l bottom rows of Y
             if (n > l) {
-                k = n - l;
+                int k = n - l;
                 cblas_zgemv(CblasColMajor, (CBLAS_TRANSPOSE)trans,
                             m, k, CBLAS_SADDR(alpha), &A[lda*l], lda,
                             X, incx, CBLAS_SADDR(beta), &Y[incy*l], incy);
@@ -263,7 +261,6 @@ int core_zpemv(plasma_enum_t trans, int storev,
 
                     // y_1 = y_1 + alpha * w
                     cblas_zaxpy(l, CBLAS_SADDR(alpha), work, 1, Y, incy);
-
                 }
                 else {
                     // y_1 = y_1 + alpha * w

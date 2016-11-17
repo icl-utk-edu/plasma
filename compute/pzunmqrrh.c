@@ -33,9 +33,6 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
                       plasma_workspace_t work,
                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    static const int debug = 0;
-    if (debug) printf("executing pzunmqrrh\n");
-
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorSequence);
@@ -44,26 +41,26 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
 
     // Precompute order of QR operations.
     int *operations = NULL;
-    int noperations;
-    plasma_rh_tree_operations(A.mt, A.nt, &operations, &noperations);
+    int num_operations;
+    plasma_rh_tree_operations(A.mt, A.nt, &operations, &num_operations);
 
     // Set inner blocking from the T tile row-dimension.
     int ib = T.mb;
 
     if (side == PlasmaLeft) {
-        for (int iop = 0; iop < noperations; iop++) {
+        for (int iop = 0; iop < num_operations; iop++) {
             int ind_operation;
             // revert the order of Householder reflectors for nontranspose
             if (trans == Plasma_ConjTrans) {
                 ind_operation = iop;
             }
             else {
-                ind_operation = noperations - 1 - iop;
+                ind_operation = num_operations - 1 - iop;
             }
 
             int j, k, kpiv;
             plasma_enum_t kernel;
-            plasma_rh_tree_operation_get(operations,ind_operation,
+            plasma_rh_tree_get_operation(operations,ind_operation,
                                          &kernel, &j, &k, &kpiv);
 
             int nvaj = plasma_tile_nview(A, j);
@@ -72,12 +69,11 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
             int mvbk = plasma_tile_mview(B, k);
             int ldbk = plasma_tile_mmain(B, k);
 
-            if (kernel == PlasmaGEKernel) {
+            if (kernel == PlasmaGeKernel) {
                 // triangularization
                 for (int n = 0; n < B.nt; n++) {
                     int nvbn = plasma_tile_nview(B, n);
 
-                    if (debug) printf("UNMQR (%d,%d,%d) ", k, j, n);
                     core_omp_zunmqr(side, trans,
                                     mvbk, nvbn, imin(mvak, nvaj), ib,
                                     A(k, j), ldak,
@@ -86,10 +82,8 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
                                     work,
                                     sequence, request);
                 }
-
-                if (debug) printf("\n ");
             }
-            else if (kernel == PlasmaTTKernel) {
+            else if (kernel == PlasmaTtKernel) {
                 // elimination of the tile
                 int mvakpiv = plasma_tile_mview(A, kpiv);
                 int mvbkpiv = plasma_tile_mview(B, kpiv);
@@ -98,7 +92,6 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
                 for (int n = 0; n < B.nt; n++) {
                     int nvbn = plasma_tile_nview(B, n);
 
-                    if (debug) printf("TTMQR (%d,%d,%d,%d) ", k, kpiv, j, n);
                     core_omp_zttmqr(
                         side, trans,
                         mvbkpiv, nvbn, mvbk, nvbn, imin(mvakpiv+mvak, nvaj), ib,
@@ -109,10 +102,8 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
                         work,
                         sequence, request);
                 }
-
-                if (debug) printf("\n ");
             }
-            else if (kernel == PlasmaTSKernel) {
+            else if (kernel == PlasmaTsKernel) {
                 // elimination of the tile
                 int mvakpiv = plasma_tile_mview(A, kpiv);
                 int mvbkpiv = plasma_tile_mview(B, kpiv);
@@ -121,7 +112,6 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
                 for (int n = 0; n < B.nt; n++) {
                     int nvbn = plasma_tile_nview(B, n);
 
-                    if (debug) printf("TSMQR (%d,%d,%d,%d) ", k, kpiv, j, n);
                     core_omp_ztsmqr(
                         side, trans,
                         mvbkpiv, nvbn, mvbk, nvbn, imin(mvakpiv+mvak, nvaj), ib,
@@ -132,8 +122,6 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
                         work,
                         sequence, request);
                 }
-
-                if (debug) printf("\n ");
             }
             else {
                 plasma_error("illegal kernel");
@@ -145,11 +133,11 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
         //=================================
         // PlasmaRight
         //=================================
-        for (int iop = 0; iop < noperations; iop++) {
+        for (int iop = 0; iop < num_operations; iop++) {
             int ind_operation;
             // revert the order of Householder reflectors for transpose
             if (trans == Plasma_ConjTrans) {
-                ind_operation = noperations - 1 - iop;
+                ind_operation = num_operations - 1 - iop;
             }
             else {
                 ind_operation = iop;
@@ -157,7 +145,7 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
 
             int j, k, kpiv;
             plasma_enum_t kernel;
-            plasma_rh_tree_operation_get(operations,ind_operation,
+            plasma_rh_tree_get_operation(operations,ind_operation,
                                          &kernel, &j, &k, &kpiv);
 
             int nvbk = plasma_tile_nview(B, k);
@@ -165,13 +153,12 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
             int nvaj = plasma_tile_nview(A, j);
             int ldak = plasma_tile_mmain(A, k);
 
-            if (kernel == PlasmaGEKernel) {
+            if (kernel == PlasmaGeKernel) {
                 // triangularization
                 for (int m = 0; m < B.mt; m++) {
                     int mvbm = plasma_tile_mview(B, m);
                     int ldbm = plasma_tile_mmain(B, m);
 
-                    if (debug) printf("UNMQR (%d,%d,%d) ", k, j, m);
                     core_omp_zunmqr(
                         side, trans,
                         mvbm, nvbk, imin(mvak, nvaj), ib,
@@ -181,10 +168,8 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
                         work,
                         sequence, request);
                 }
-
-                if (debug) printf("\n ");
             }
-            else if (kernel == PlasmaTTKernel) {
+            else if (kernel == PlasmaTtKernel) {
                 int nvbkpiv = plasma_tile_nview(B, kpiv);
                 int mvakpiv = plasma_tile_mview(A, kpiv);
                 // elimination of the tile
@@ -192,7 +177,6 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
                     int mvbm = plasma_tile_mview(B, m);
                     int ldbm = plasma_tile_mmain(B, m);
 
-                    if (debug) printf("TTMQR (%d,%d,%d,%d)", k, kpiv, j, m);
                     core_omp_zttmqr(
                         side, trans,
                         mvbm, nvbkpiv, mvbm, nvbk, imin(mvakpiv+mvak,nvaj), ib,
@@ -203,10 +187,8 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
                         work,
                         sequence, request);
                 }
-
-                if (debug) printf("\n ");
             }
-            else if (kernel == PlasmaTSKernel) {
+            else if (kernel == PlasmaTsKernel) {
                 int nvbkpiv = plasma_tile_nview(B, kpiv);
                 int mvakpiv = plasma_tile_mview(A, kpiv);
                 // elimination of the tile
@@ -214,7 +196,6 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
                     int mvbm = plasma_tile_mview(B, m);
                     int ldbm = plasma_tile_mmain(B, m);
 
-                    if (debug) printf("TSMQR (%d,%d,%d,%d)", k, kpiv, j, m);
                     core_omp_ztsmqr(
                         side, trans,
                         mvbm, nvbkpiv, mvbm, nvbk, imin(mvakpiv+mvak,nvaj), ib,
@@ -225,8 +206,6 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
                         work,
                         sequence, request);
                 }
-
-                if (debug) printf("\n ");
             }
             else {
                 plasma_error("illegal kernel");

@@ -194,7 +194,6 @@ int core_zttqrt(int m, int n, int ib,
             // Calculate T.
             // T(0:i-1, j) = alpha * A2(0:m-1, ii:j-1)^H * A2(0:m-1, j)
             if (i > 0) {
-
                 int l = imin(i, imax(0, m-ii));
                 plasma_complex64_t alpha = -(tau[j]);
 
@@ -213,7 +212,6 @@ int core_zttqrt(int m, int n, int ib,
                         (CBLAS_DIAG)PlasmaNonUnit,
                         i, &T[ldt*ii], ldt,
                            &T[ldt*j], 1);
-
             }
             T[ldt*j+i] = tau[j];
         }

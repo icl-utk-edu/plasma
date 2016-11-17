@@ -31,9 +31,6 @@ void plasma_pzungqrrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
                       plasma_workspace_t work,
                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    static const int debug = 0;
-    if (debug) printf("executing pzungqrrh\n");
-
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorSequence);
@@ -42,16 +39,16 @@ void plasma_pzungqrrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
 
     // Precompute order of QR operations.
     int *operations = NULL;
-    int noperations;
-    plasma_rh_tree_operations(A.mt, A.nt, &operations, &noperations);
+    int num_operations;
+    plasma_rh_tree_operations(A.mt, A.nt, &operations, &num_operations);
 
     // Set inner blocking from the T tile row-dimension.
     int ib = T.mb;
 
-    for (int iop = noperations-1; iop >= 0; iop--) {
+    for (int iop = num_operations-1; iop >= 0; iop--) {
         int j, k, kpiv;
         plasma_enum_t kernel;
-        plasma_rh_tree_operation_get(operations, iop, &kernel,
+        plasma_rh_tree_get_operation(operations, iop, &kernel,
                                      &j, &k, &kpiv);
 
         int nvaj = plasma_tile_nview(A, j);
@@ -60,12 +57,11 @@ void plasma_pzungqrrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
         int mvqk = plasma_tile_mview(Q, k);
         int ldqk = plasma_tile_mmain(Q, k);
 
-        if (kernel == PlasmaGEKernel) {
+        if (kernel == PlasmaGeKernel) {
             // triangularization
             for (int n = j; n < Q.nt; n++) {
                 int nvqn = plasma_tile_nview(Q, n);
 
-                if (debug) printf("UNMQR (%d,%d,%d) ", k, j, n);
                 core_omp_zunmqr(PlasmaLeft, PlasmaNoTrans,
                                 mvqk, nvqn, imin(mvak, nvaj), ib,
                                 A(k, j), ldak,
@@ -74,10 +70,8 @@ void plasma_pzungqrrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
                                 work,
                                 sequence, request);
             }
-
-            if (debug) printf("\n ");
         }
-        else if (kernel == PlasmaTTKernel) {
+        else if (kernel == PlasmaTtKernel) {
             // elimination of the tile
             int mvakpiv = plasma_tile_mview(A, kpiv);
             int mvqkpiv = plasma_tile_mview(Q, kpiv);
@@ -86,7 +80,6 @@ void plasma_pzungqrrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
             for (int n = j; n < Q.nt; n++) {
                 int nvqn = plasma_tile_nview(Q, n);
 
-                if (debug) printf("TTMQR (%d,%d,%d,%d) ", k, kpiv, j, n);
                 core_omp_zttmqr(
                     PlasmaLeft, PlasmaNoTrans,
                     mvqkpiv, nvqn, mvqk, nvqn, imin(mvakpiv+mvak, nvaj), ib,
@@ -97,10 +90,8 @@ void plasma_pzungqrrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
                     work,
                     sequence, request);
             }
-
-            if (debug) printf("\n ");
         }
-        else if (kernel == PlasmaTSKernel) {
+        else if (kernel == PlasmaTsKernel) {
             // elimination of the tile
             int mvakpiv = plasma_tile_mview(A, kpiv);
             int mvqkpiv = plasma_tile_mview(Q, kpiv);
@@ -109,7 +100,6 @@ void plasma_pzungqrrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
             for (int n = j; n < Q.nt; n++) {
                 int nvqn = plasma_tile_nview(Q, n);
 
-                if (debug) printf("TSMQR (%d,%d,%d,%d) ", k, kpiv, j, n);
                 core_omp_ztsmqr(
                     PlasmaLeft, PlasmaNoTrans,
                     mvqkpiv, nvqn, mvqk, nvqn, imin(mvakpiv+mvak, nvaj), ib,
@@ -120,8 +110,6 @@ void plasma_pzungqrrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
                     work,
                     sequence, request);
             }
-
-            if (debug) printf("\n ");
         }
         else {
             plasma_error("illegal kernel");

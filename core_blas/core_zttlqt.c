@@ -89,7 +89,6 @@ int core_zttlqt(int m, int n, int ib,
                 plasma_complex64_t *tau,
                 plasma_complex64_t *work)
 {
-
     // Check input arguments.
     if (m < 0) {
         coreblas_error("illegal value of m");
@@ -209,7 +208,6 @@ int core_zttlqt(int m, int n, int ib,
                         (CBLAS_DIAG)PlasmaNonUnit,
                         i, &T[ldt*ii], ldt,
                         &T[ldt*j], 1);
-
             }
 
 #ifdef COMPLEX

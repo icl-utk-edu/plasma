@@ -29,9 +29,6 @@ void plasma_pzgeqrfrh(plasma_desc_t A, plasma_desc_t T,
                       plasma_workspace_t work,
                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    static const int debug = 0;
-    if (debug) printf("executing pzgeqrfrh\n");
-
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorSequence);
@@ -40,24 +37,23 @@ void plasma_pzgeqrfrh(plasma_desc_t A, plasma_desc_t T,
 
     // Precompute order of QR operations.
     int *operations = NULL;
-    int noperations;
-    plasma_rh_tree_operations(A.mt, A.nt, &operations, &noperations);
+    int num_operations;
+    plasma_rh_tree_operations(A.mt, A.nt, &operations, &num_operations);
 
     // Set inner blocking from the T tile row-dimension.
     int ib = T.mb;
 
-    for (int iop = 0; iop < noperations; iop++) {
+    for (int iop = 0; iop < num_operations; iop++) {
         int j, k, kpiv;
         plasma_enum_t kernel;
-        plasma_rh_tree_operation_get(operations, iop, &kernel, &j, &k, &kpiv);
+        plasma_rh_tree_get_operation(operations, iop, &kernel, &j, &k, &kpiv);
 
         int nvaj    = plasma_tile_nview(A, j);
         int mvak    = plasma_tile_mview(A, k);
         int ldak    = plasma_tile_mmain(A, k);
 
-        if (kernel == PlasmaGEKernel) {
+        if (kernel == PlasmaGeKernel) {
             // triangularization
-            if (debug) printf("GEQRT (%d,%d) ", k, j);
             core_omp_zgeqrt(
                 mvak, nvaj, ib,
                 A(k, j), ldak,
@@ -68,7 +64,6 @@ void plasma_pzgeqrfrh(plasma_desc_t A, plasma_desc_t T,
             for (int jj = j + 1; jj < A.nt; jj++) {
                 int nvajj = plasma_tile_nview(A, jj);
 
-                if (debug) printf("UNMQR (%d,%d,%d) ", k, j, jj);
                 core_omp_zunmqr(
                     PlasmaLeft, Plasma_ConjTrans,
                     mvak, nvajj, imin(mvak, nvaj), ib,
@@ -78,15 +73,12 @@ void plasma_pzgeqrfrh(plasma_desc_t A, plasma_desc_t T,
                     work,
                     sequence, request);
             }
-
-            if (debug) printf("\n ");
         }
-        else if (kernel == PlasmaTTKernel) {
+        else if (kernel == PlasmaTtKernel) {
             // elimination of the tile
             int mvakpiv = plasma_tile_mview(A, kpiv);
             int ldakpiv = plasma_tile_mmain(A, kpiv);
 
-            if (debug) printf("TTQRT (%d,%d,%d) ", k, kpiv, j);
             core_omp_zttqrt(
                 mvak, nvaj, ib,
                 A(kpiv, j), ldakpiv,
@@ -98,7 +90,6 @@ void plasma_pzgeqrfrh(plasma_desc_t A, plasma_desc_t T,
             for (int jj = j + 1; jj < A.nt; jj++) {
                 int nvajj = plasma_tile_nview(A, jj);
 
-                if (debug) printf("TTMQR (%d,%d,%d,%d)) ", k, kpiv, j, jj);
                 core_omp_zttmqr(
                     PlasmaLeft, Plasma_ConjTrans,
                     mvakpiv, nvajj, mvak, nvajj, imin(mvakpiv+mvak, nvaj), ib,
@@ -109,15 +100,12 @@ void plasma_pzgeqrfrh(plasma_desc_t A, plasma_desc_t T,
                     work,
                     sequence, request);
             }
-
-            if (debug) printf("\n ");
         }
-        else if (kernel == PlasmaTSKernel) {
+        else if (kernel == PlasmaTsKernel) {
             // elimination of the tile
             int mvakpiv = plasma_tile_mview(A, kpiv);
             int ldakpiv = plasma_tile_mmain(A, kpiv);
 
-            if (debug) printf("TSQRT (%d,%d,%d) ", k, kpiv, j);
             core_omp_ztsqrt(
                 mvak, nvaj, ib,
                 A(kpiv, j), ldakpiv,
@@ -129,7 +117,6 @@ void plasma_pzgeqrfrh(plasma_desc_t A, plasma_desc_t T,
             for (int jj = j + 1; jj < A.nt; jj++) {
                 int nvajj = plasma_tile_nview(A, jj);
 
-                if (debug) printf("TSMQR (%d,%d,%d,%d)) ", k, kpiv, j, jj);
                 core_omp_ztsmqr(
                     PlasmaLeft, Plasma_ConjTrans,
                     mvakpiv, nvajj, mvak, nvajj, imin(mvakpiv+mvak, nvaj), ib,
@@ -140,8 +127,6 @@ void plasma_pzgeqrfrh(plasma_desc_t A, plasma_desc_t T,
                     work,
                     sequence, request);
             }
-
-            if (debug) printf("\n ");
         }
         else {
             plasma_error("illegal kernel");

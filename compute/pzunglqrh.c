@@ -31,9 +31,6 @@ void plasma_pzunglqrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
                       plasma_workspace_t work,
                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    static const int debug = 0;
-    if (debug) printf("executing pzunglqrh\n");
-
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorSequence);
@@ -43,17 +40,17 @@ void plasma_pzunglqrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
     // Precompute order of LQ operations - compute it as for QR
     // and transpose it.
     int *operations = NULL;
-    int noperations;
+    int num_operations;
     // Transpose m and n to reuse the QR tree.
-    plasma_rh_tree_operations(A.nt, A.mt, &operations, &noperations);
+    plasma_rh_tree_operations(A.nt, A.mt, &operations, &num_operations);
 
     // Set inner blocking from the T tile row-dimension.
     int ib = T.mb;
 
-    for (int iop = noperations-1; iop >= 0; iop--) {
+    for (int iop = num_operations-1; iop >= 0; iop--) {
         int j, k, kpiv;
         plasma_enum_t kernel;
-        plasma_rh_tree_operation_get(operations, iop,
+        plasma_rh_tree_get_operation(operations, iop,
                                      &kernel, &j, &k, &kpiv);
 
         int mvaj = plasma_tile_mview(A, j);
@@ -62,13 +59,12 @@ void plasma_pzunglqrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
 
         int nvqk = plasma_tile_nview(Q, k);
 
-        if (kernel == PlasmaGEKernel) {
+        if (kernel == PlasmaGeKernel) {
             // triangularization
             for (int m = j; m < Q.mt; m++) {
                 int mvqm = plasma_tile_mview(Q, m);
                 int ldqm = plasma_tile_mmain(Q, m);
 
-                if (debug) printf("UNMLQ (%d,%d,%d) ", j, k, m);
                 core_omp_zunmlq(PlasmaRight, PlasmaNoTrans,
                                 mvqm, nvqk,
                                 imin(mvaj, nvak), ib,
@@ -78,10 +74,8 @@ void plasma_pzunglqrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
                                 work,
                                 sequence, request);
             }
-
-            if (debug) printf("\n ");
         }
-        else if (kernel == PlasmaTTKernel) {
+        else if (kernel == PlasmaTtKernel) {
             // elimination of the tile
             int nvqkpiv = plasma_tile_nview(Q, kpiv);
             int nvakpiv = plasma_tile_nview(A, kpiv);
@@ -90,7 +84,6 @@ void plasma_pzunglqrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
                 int mvqm = plasma_tile_mview(Q, m);
                 int ldqm = plasma_tile_mmain(Q, m);
 
-                if (debug) printf("TTMLQ (%d,%d,%d,%d) ", j, m, k, kpiv);
                 core_omp_zttmlq(
                     PlasmaRight, PlasmaNoTrans,
                     mvqm, nvqkpiv, mvqm, nvqk, imin(mvaj, nvakpiv+nvak), ib,
@@ -101,10 +94,8 @@ void plasma_pzunglqrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
                     work,
                     sequence, request);
             }
-
-            if (debug) printf("\n ");
         }
-        else if (kernel == PlasmaTSKernel) {
+        else if (kernel == PlasmaTsKernel) {
             // elimination of the tile
             int nvqkpiv = plasma_tile_nview(Q, kpiv);
             int nvakpiv = plasma_tile_nview(A, kpiv);
@@ -113,7 +104,6 @@ void plasma_pzunglqrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
                 int mvqm = plasma_tile_mview(Q, m);
                 int ldqm = plasma_tile_mmain(Q, m);
 
-                if (debug) printf("TSMLQ (%d,%d,%d,%d) ", j, m, k, kpiv);
                 core_omp_ztsmlq(
                     PlasmaRight, PlasmaNoTrans,
                     mvqm, nvqkpiv, mvqm, nvqk, imin(mvaj, nvakpiv+nvak), ib,
@@ -124,8 +114,6 @@ void plasma_pzunglqrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
                     work,
                     sequence, request);
             }
-
-            if (debug) printf("\n ");
         }
         else {
             plasma_error("illegal kernel");
