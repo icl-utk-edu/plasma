@@ -54,11 +54,12 @@ void test_zunmlq(param_value_t param[], char *info)
             print_usage(PARAM_PADB);
             print_usage(PARAM_NB);
             print_usage(PARAM_IB);
+            print_usage(PARAM_HMODE);
         }
         else {
             // Return column labels.
             snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s %*s %*s %*s %*s %*s",
+                     "%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s",
                      InfoSpacing, "side",
                      InfoSpacing, "trans",
                      InfoSpacing, "M",
@@ -67,13 +68,14 @@ void test_zunmlq(param_value_t param[], char *info)
                      InfoSpacing, "PadA",
                      InfoSpacing, "PadB",
                      InfoSpacing, "NB",
-                     InfoSpacing, "IB");
+                     InfoSpacing, "IB",
+                     InfoSpacing, "Hous. mode");
         }
         return;
     }
     // Return column values.
     snprintf(info, InfoLen,
-             "%*c %*c %*d %*d %*d %*d %*d %*d %*d",
+             "%*c %*c %*d %*d %*d %*d %*d %*d %*d %*c",
              InfoSpacing, param[PARAM_SIDE].c,
              InfoSpacing, param[PARAM_TRANS].c,
              InfoSpacing, param[PARAM_M].i,
@@ -82,7 +84,8 @@ void test_zunmlq(param_value_t param[], char *info)
              InfoSpacing, param[PARAM_PADA].i,
              InfoSpacing, param[PARAM_PADB].i,
              InfoSpacing, param[PARAM_NB].i,
-             InfoSpacing, param[PARAM_IB].i);
+             InfoSpacing, param[PARAM_IB].i,
+             InfoSpacing, param[PARAM_HMODE].i);
 
     //================================================================
     // Set parameters.
@@ -132,6 +135,12 @@ void test_zunmlq(param_value_t param[], char *info)
     //================================================================
     plasma_set(PlasmaNb, param[PARAM_NB].i);
     plasma_set(PlasmaIb, param[PARAM_IB].i);
+    if (param[PARAM_HMODE].c == 't') {
+        plasma_set(PlasmaHouseholderMode, PlasmaTreeHouseholder);
+    }
+    else {
+        plasma_set(PlasmaHouseholderMode, PlasmaFlatHouseholder);
+    }
 
     //================================================================
     // Allocate and initialize array A for construction of matrix Q as

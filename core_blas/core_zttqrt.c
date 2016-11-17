@@ -23,11 +23,11 @@
 
 /***************************************************************************//**
  *
- * @ingroup core_tsqrt
+ * @ingroup core_ttqrt
  *
  * Computes a QR factorization of a rectangular matrix
  * formed by coupling an n-by-n upper triangular tile A1
- * on top of an m-by-n tile A2:
+ * on top of an m-by-n upper triangular tile A2:
  *
  *    | A1 | = Q * R
  *    | A2 |
@@ -51,13 +51,13 @@
  *         the elements below the diagonal are not referenced.
  *
  * @param[in] lda1
- *         The leading dimension of the array A1. LDA1 >= max(1,N).
+ *         The leading dimension of the array A1. lda1 >= max(1,n).
  *
  * @param[in,out] A2
- *         On entry, the m-by-n tile A2.
- *         On exit, all the elements with the array tau, represent
+ *         On entry, the m-by-n upper triangular tile A2.
+ *         On exit, the elements on and above the diagonal of the array
+ *         with the matrix T represent
  *         the unitary tile Q as a product of elementary reflectors
- *         (see Further Details).
  *
  * @param[in] lda2
  *         The leading dimension of the tile A2. lda2 >= max(1,m).
@@ -82,7 +82,7 @@
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int core_ztsqrt(int m, int n, int ib,
+int core_zttqrt(int m, int n, int ib,
                 plasma_complex64_t *A1, int lda1,
                 plasma_complex64_t *A2, int lda2,
                 plasma_complex64_t *T,  int ldt,
@@ -136,72 +136,100 @@ int core_ztsqrt(int m, int n, int ib,
     }
 
     // quick return
-    if (m == 0 || n == 0 || ib == 0)
+    if ((m == 0) || (n == 0) || (ib == 0))
         return PlasmaSuccess;
 
     static plasma_complex64_t zone  = 1.0;
     static plasma_complex64_t zzero = 0.0;
 
+    // TODO: Need to check why some cases require this to avoid
+    // uninitialized values
+    //core_zlaset(PlasmaGeneral, ib, n, zzero, zzero, T, ldt);
+
     for (int ii = 0; ii < n; ii += ib) {
         int sb = imin(n-ii, ib);
         for (int i = 0; i < sb; i++) {
-            // Generate elementary reflector H( II*IB+I ) to annihilate
-            // A( II*IB+I:M, II*IB+I ).
-            LAPACKE_zlarfg_work(m+1, &A1[lda1*(ii+i)+ii+i], &A2[lda2*(ii+i)], 1,
-                                &tau[ii+i]);
+            int j  = ii + i;
+            int mi = imin(j+1, m);
+            int ni = sb-i-1;
 
-            if (ii+i+1 < n) {
-                // Apply H( II*IB+I ) to A( II*IB+I:M, II*IB+I+1:II*IB+IB )
-                // from the left.
-                plasma_complex64_t alpha = -conj(tau[ii+i]);
-                cblas_zcopy(sb-i-1, &A1[lda1*(ii+i+1)+(ii+i)], lda1, work, 1);
+            // Generate elementary reflector H(j) to annihilate A2(1:mi, j).
+            LAPACKE_zlarfg_work(
+                    mi+1, &A1[lda1*j+j], &A2[lda2*j], 1, &tau[j]);
+
+            if (ni > 0) {
+                // Apply H(j-1) to A(j:m, j+1:ii+ib) from the left.
+                cblas_zcopy(
+                    ni,
+                    &A1[lda1*(j+1)+j], lda1,
+                    work, 1);
+
 #ifdef COMPLEX
-                LAPACKE_zlacgv_work(sb-i-1, work, 1);
+                LAPACKE_zlacgv_work(ni, work, 1);
 #endif
-                cblas_zgemv(CblasColMajor, (CBLAS_TRANSPOSE)Plasma_ConjTrans,
-                            m, sb-i-1,
-                            CBLAS_SADDR(zone), &A2[lda2*(ii+i+1)], lda2,
-                            &A2[lda2*(ii+i)], 1,
-                            CBLAS_SADDR(zone), work, 1);
+                cblas_zgemv(
+                    CblasColMajor, (CBLAS_TRANSPOSE)Plasma_ConjTrans,
+                    mi, ni,
+                    CBLAS_SADDR(zone), &A2[lda2*(j+1)], lda2,
+                                       &A2[lda2*j],     1,
+                    CBLAS_SADDR(zone), work,            1);
 #ifdef COMPLEX
-                LAPACKE_zlacgv_work(sb-i-1, work, 1);
+                LAPACKE_zlacgv_work(ni, work, 1);
 #endif
-                cblas_zaxpy(sb-i-1, CBLAS_SADDR(alpha), work, 1,
-                            &A1[lda1*(ii+i+1)+ii+i], lda1);
+                plasma_complex64_t alpha = -conj(tau[j]);
+                cblas_zaxpy(
+                    ni, CBLAS_SADDR(alpha),
+                    work, 1,
+                    &A1[lda1*(j+1)+j], lda1);
 #ifdef COMPLEX
-                LAPACKE_zlacgv_work(sb-i-1, work, 1);
+                LAPACKE_zlacgv_work(ni, work, 1);
 #endif
-                cblas_zgerc(CblasColMajor,
-                            m, sb-i-1,
-                            CBLAS_SADDR(alpha), &A2[lda2*(ii+i)], 1,
-                            work, 1,
-                            &A2[lda2*(ii+i+1)], lda2);
+                cblas_zgerc(
+                    CblasColMajor, mi, ni,
+                    CBLAS_SADDR(alpha), &A2[lda2*j], 1,
+                    work, 1,
+                    &A2[lda2*(j+1)], lda2);
             }
-            // Calculate T.
-            plasma_complex64_t alpha = -tau[ii+i];
-            cblas_zgemv(CblasColMajor, (CBLAS_TRANSPOSE)Plasma_ConjTrans,
-                        m, i,
-                        CBLAS_SADDR(alpha), &A2[lda2*ii], lda2,
-                        &A2[lda2*(ii+i)], 1,
-                        CBLAS_SADDR(zzero), &T[ldt*(ii+i)], 1);
 
-            cblas_ztrmv(CblasColMajor, (CBLAS_UPLO)PlasmaUpper,
+            // Calculate T.
+            // T(0:i-1, j) = alpha * A2(0:m-1, ii:j-1)^H * A2(0:m-1, j)
+            if (i > 0) {
+                int l = imin(i, imax(0, m-ii));
+                plasma_complex64_t alpha = -(tau[j]);
+
+                core_zpemv(
+                        Plasma_ConjTrans, PlasmaColumnwise,
+                        imin(j, m), i, l,
+                        alpha, &A2[lda2*ii], lda2,
+                               &A2[lda2*j],  1,
+                        zzero, &T[ldt*j],    1,
+                        work);
+
+                // T(0:i-1, j) = T(0:i-1, ii:j-1) * T(0:i-1, j)
+                cblas_ztrmv(
+                        CblasColMajor, (CBLAS_UPLO)PlasmaUpper,
                         (CBLAS_TRANSPOSE)PlasmaNoTrans,
                         (CBLAS_DIAG)PlasmaNonUnit,
-                        i,
-                        &T[ldt*ii], ldt,
-                        &T[ldt*(ii+i)], 1);
-
-            T[ldt*(ii+i)+i] = tau[ii+i];
+                        i, &T[ldt*ii], ldt,
+                           &T[ldt*j], 1);
+            }
+            T[ldt*j+i] = tau[j];
         }
+
+        // Apply Q^H to the rest of the matrix from the left.
         if (n > ii+sb) {
-            core_ztsmqr(PlasmaLeft, Plasma_ConjTrans,
-                        sb, n-(ii+sb), m, n-(ii+sb), ib, ib,
-                        &A1[lda1*(ii+sb)+ii], lda1,
-                        &A2[lda2*(ii+sb)], lda2,
-                        &A2[lda2*ii], lda2,
-                        &T[ldt*ii], ldt,
-                        work, sb);
+            int mi = imin(ii+sb, m);
+            int ni = n-(ii+sb);
+            int l  = imin(sb, imax(0, mi-ii));
+            core_zparfb(
+                PlasmaLeft, Plasma_ConjTrans,
+                PlasmaForward, PlasmaColumnwise,
+                ib, ni, mi, ni, sb, l,             //replaced sb by ib
+                &A1[lda1*(ii+sb)+ii], lda1,
+                &A2[lda2*(ii+sb)], lda2,
+                &A2[lda2*ii], lda2,
+                &T[ldt*ii], ldt,
+                work, sb);
         }
     }
 
@@ -209,7 +237,7 @@ int core_ztsqrt(int m, int n, int ib,
 }
 
 /******************************************************************************/
-void core_omp_ztsqrt(int m, int n, int ib,
+void core_omp_zttqrt(int m, int n, int ib,
                      plasma_complex64_t *A1, int lda1,
                      plasma_complex64_t *A2, int lda2,
                      plasma_complex64_t *T,  int ldt,
@@ -226,7 +254,7 @@ void core_omp_ztsqrt(int m, int n, int ib,
             plasma_complex64_t *tau = ((plasma_complex64_t*)work.spaces[tid]);
 
             // Call the kernel.
-            int info = core_ztsqrt(m, n, ib,
+            int info = core_zttqrt(m, n, ib,
                                    A1, lda1,
                                    A2, lda2,
                                    T,  ldt,
@@ -234,7 +262,7 @@ void core_omp_ztsqrt(int m, int n, int ib,
                                    tau+n);
 
             if (info != PlasmaSuccess) {
-                plasma_error("core_ztsqrt() failed");
+                plasma_error("core_zttqrt() failed");
                 plasma_request_fail(sequence, request, PlasmaErrorInternal);
             }
         }

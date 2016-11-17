@@ -174,7 +174,6 @@ void core_omp_zgeqrt(int m, int n, int ib,
                      plasma_workspace_t work,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // TODO: double check depend dimensions
     #pragma omp task depend(inout:A[0:lda*n]) \
                      depend(out:T[0:ib*n])
     {

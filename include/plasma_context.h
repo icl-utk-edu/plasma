@@ -10,7 +10,6 @@
 #ifndef ICL_PLASMA_CONTEXT_H
 #define ICL_PLASMA_CONTEXT_H
 
-#include "plasma_barrier.h"
 #include "plasma_types.h"
 
 #include <pthread.h>
@@ -27,6 +26,7 @@ typedef struct {
     int max_threads;                ///< the value of OMP_NUM_THREADS
     int num_panel_threads;          ///< no. threads for panel factorization
     plasma_barrier_t barrier;       ///< thread barrier for multithreaded tasks
+    plasma_enum_t householder_mode; ///< PlasmaHouseholderMode
 } plasma_context_t;
 
 typedef struct {

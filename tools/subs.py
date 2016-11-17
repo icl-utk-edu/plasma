@@ -256,6 +256,7 @@ lapack = [
     ('sort01',               'dort01',               'cunt01',               'zunt01'              ),
     ('spack',                'dpack',                'cpack',                'zpack'               ),
     ('spamm',                'dpamm',                'cpamm',                'zpamm'               ),
+    ('spemv',                'dpemv',                'cpemv',                'zpemv'               ),
     ('sparfb',               'dparfb',               'cparfb',               'zparfb'              ),
     ('spbsv',                'dpbsv',                'cpbsv',                'zpbsv'               ),
     ('spbtrf',               'dpbtrf',               'cpbtrf',               'zpbtrf'              ),
@@ -308,6 +309,10 @@ lapack = [
     ('stsqrt',               'dtsqrt',               'ctsqrt',               'ztsqrt'              ),
     ('stslqt',               'dtslqt',               'ctslqt',               'ztslqt'              ),
     ('ststrf',               'dtstrf',               'ctstrf',               'ztstrf'              ),
+    ('sttmqr',               'dttmqr',               'cttmqr',               'zttmqr'              ),
+    ('sttmlq',               'dttmlq',               'cttmlq',               'zttmlq'              ),
+    ('sttqrt',               'dttqrt',               'cttqrt',               'zttqrt'              ),
+    ('sttlqt',               'dttlqt',               'cttlqt',               'zttlqt'              ),
 ]
 
 

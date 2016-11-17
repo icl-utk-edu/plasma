@@ -301,7 +301,8 @@ plasma_desc_t plasma_desc_view(plasma_desc_t A, int i, int j, int m, int n)
 }
 
 /******************************************************************************/
-int plasma_descT_create(plasma_desc_t A, int ib, plasma_desc_t *T)
+int plasma_descT_create(plasma_desc_t A, int ib, plasma_enum_t householder_mode,
+                        plasma_desc_t *T)
 {
     // T uses tiles ib x nb, typically, ib < nb, and these tiles are
     // rectangular. This dimension is the same for QR and LQ factorizations.
@@ -311,8 +312,10 @@ int plasma_descT_create(plasma_desc_t A, int ib, plasma_desc_t *T)
     // Number of tile rows and columns in T is the same as for T.
     int mt = A.mt;
     int nt = A.nt;
-    // nt should be doubled if tree-reduction QR is performed,
-    // not implemented now
+    // nt is doubled for tree-reduction QR and LQ
+    if (householder_mode == PlasmaTreeHouseholder) {
+        nt = 2*nt;
+    }
 
     // Dimension of the matrix as whole multiples of the tiles.
     int m = mt*mb;
