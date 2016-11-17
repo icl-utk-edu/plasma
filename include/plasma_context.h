@@ -10,6 +10,7 @@
 #ifndef ICL_PLASMA_CONTEXT_H
 #define ICL_PLASMA_CONTEXT_H
 
+#include "plasma_barrier.h"
 #include "plasma_types.h"
 
 #include <pthread.h>
