@@ -186,6 +186,7 @@ lapack = [
     ('sgerfs',               'dgerfs',               'cgerfs',               'zgerfs'              ),
     ('sgesdd',               'dgesdd',               'cgesdd',               'zgesdd'              ),
     ('sgessm',               'dgessm',               'cgessm',               'zgessm'              ),
+    ('sgessq',               'dgessq',               'cgessq',               'zgessq'              ),
     ('sgesv',                'dgesv',                'cgesv',                'zgesv'               ),  # also does zgesvd
     ('sget22',               'dget22',               'cget22',               'zget22'              ),
     ('sgetf2',               'dgetf2',               'cgetf2',               'zgetf2'              ),

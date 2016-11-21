@@ -85,6 +85,14 @@ int plasma_zlacpy(plasma_enum_t uplo,
                   plasma_complex64_t *pA, int lda,
                   plasma_complex64_t *pB, int ldb);
 
+double plasma_zlange(plasma_enum_t norm,
+                     int m, int n,
+                     plasma_complex64_t *pA, int lda);
+
+double plasma_zlanhe(plasma_enum_t norm, plasma_enum_t uplo,
+                     int n,
+                     plasma_complex64_t *pA, int lda);
+
 int plasma_zlauum(plasma_enum_t uplo, int n,
                   plasma_complex64_t *pA, int lda);
 
@@ -93,14 +101,14 @@ int plasma_zpbsv(plasma_enum_t uplo,
                  plasma_complex64_t *pAB, int ldab,
                  plasma_complex64_t *pB,  int ldb);
 
+int plasma_zpbtrf(plasma_enum_t uplo,
+                  int n, int kd,
+                  plasma_complex64_t *pAB, int ldab);
+
 int plasma_zpbtrs(plasma_enum_t uplo,
                   int n, int kd, int nrhs,
                   plasma_complex64_t *pAB, int ldab,
                   plasma_complex64_t *pB,  int ldb);
-
-int plasma_zpbtrf(plasma_enum_t uplo,
-                  int n, int kd,
-                  plasma_complex64_t *pAB, int ldab);
 
 int plasma_zposv(plasma_enum_t uplo,
                  int n, int nrhs,
@@ -182,11 +190,6 @@ int plasma_zunmqr(plasma_enum_t side, plasma_enum_t trans,
 /***************************************************************************//**
  *  Tile asynchronous interface.
  **/
-void plasma_omp_zgeadd(plasma_enum_t transa,
-                       plasma_complex64_t alpha, plasma_desc_t A,
-                       plasma_complex64_t beta,  plasma_desc_t B,
-                       plasma_sequence_t *sequence, plasma_request_t  *request);
-
 void plasma_omp_zdesc2ge(plasma_desc_t A,
                          plasma_complex64_t *pA, int lda,
                          plasma_sequence_t *sequence,
@@ -202,10 +205,10 @@ void plasma_omp_zge2desc(plasma_complex64_t *pA, int lda,
                          plasma_sequence_t *sequence,
                          plasma_request_t *request);
 
-void plasma_omp_zge2desc(plasma_complex64_t *pA, int lda,
-                           plasma_desc_t A,
-                           plasma_sequence_t *sequence,
-                           plasma_request_t *request);
+void plasma_omp_zgeadd(plasma_enum_t transa,
+                       plasma_complex64_t alpha, plasma_desc_t A,
+                       plasma_complex64_t beta,  plasma_desc_t B,
+                       plasma_sequence_t *sequence, plasma_request_t  *request);
 
 void plasma_omp_zgelqf(plasma_desc_t A, plasma_desc_t T,
                        plasma_workspace_t work,
@@ -255,6 +258,14 @@ void plasma_omp_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                       plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_omp_zlacpy(plasma_enum_t uplo, plasma_desc_t A, plasma_desc_t B,
+                       plasma_sequence_t *sequence, plasma_request_t *request);
+
+void plasma_omp_zlange(plasma_enum_t norm, plasma_desc_t A,
+                       double *work, double *value,
+                       plasma_sequence_t *sequence, plasma_request_t *request);
+
+void plasma_omp_zlanhe(plasma_enum_t norm, plasma_enum_t uplo, plasma_desc_t A,
+                       double *work, double *value,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_omp_zlauum(plasma_enum_t uplo,

@@ -32,8 +32,8 @@ typedef enum {
     PARAM_M,      // M dimension
     PARAM_N,      // N dimension
     PARAM_K,      // K dimension
-    PARAM_KL,     // Lower bandwidth
-    PARAM_KU,     // Upper bandwidth
+    PARAM_KL,     // lower bandwidth
+    PARAM_KU,     // upper bandwidth
     PARAM_NRHS,   // number of RHS
     PARAM_NB,     // tile size NBxNB
     PARAM_IB,     // inner blocking size
@@ -44,6 +44,7 @@ typedef enum {
     PARAM_PADB,   // padding of B
     PARAM_PADC,   // padding of C
     PARAM_NTPF,   // number of threads for panel factorization
+    PARAM_NORM,   // type of matrix norm
 
     //------------------------------------------------------
     // output parameters
@@ -93,6 +94,8 @@ static const char * const ParamUsage[][2] = {
     {"--padb=", "padding added to ldb [default: 0]"},
     {"--padc=", "padding added to ldc [default: 0]"},
     {"--ntpf=", "number of threads for panel factorization [default: 1]"},
+    {"--norm=",
+        "type of matrix norm (one, two, frobenius, inf, max) [default: o]"},
 
     //------------------------------------------------------
     // output parameters

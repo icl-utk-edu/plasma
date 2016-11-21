@@ -66,9 +66,9 @@ struct routines_t routines[] =
     { "cgetrf", test_cgetrf },
     { "sgetrf", test_sgetrf },
 
-    { "zhemm", test_zherk },
+    { "zhemm", test_zhemm },
     { "", NULL },  // blank to keep test -h nicely aligned
-    { "chemm", test_cherk },
+    { "chemm", test_chemm },
     { "", NULL },
 
     { "zher2k", test_zher2k },
@@ -81,6 +81,16 @@ struct routines_t routines[] =
     { "cherk", test_cherk },
     { "", NULL },
 
+    { "zlange", test_zlange },
+    { "dlange", test_dlange },
+    { "clange", test_clange },
+    { "slange", test_slange },
+
+    { "zlanhe", test_zlanhe },
+    { "", NULL },
+    { "clanhe", test_clanhe },
+    { "", NULL },
+
     { "zpbsv", test_zpbsv },
     { "dpbsv", test_dpbsv },
     { "cpbsv", test_cpbsv },
@@ -91,25 +101,25 @@ struct routines_t routines[] =
     { "cpbtrf", test_cpbtrf },
     { "spbtrf", test_spbtrf },
 
-    { "zposv", test_zpotrf },
-    { "dposv", test_dpotrf },
-    { "cposv", test_cpotrf },
-    { "sposv", test_spotrf },
+    { "zposv", test_zposv },
+    { "dposv", test_dposv },
+    { "cposv", test_cposv },
+    { "sposv", test_sposv },
 
     { "zpotrf", test_zpotrf },
     { "dpotrf", test_dpotrf },
     { "cpotrf", test_cpotrf },
     { "spotrf", test_spotrf },
 
-    { "zpotrs", test_zpotrf },
-    { "dpotrs", test_dpotrf },
-    { "cpotrs", test_cpotrf },
-    { "spotrs", test_spotrf },
+    { "zpotrs", test_zpotrs },
+    { "dpotrs", test_dpotrs },
+    { "cpotrs", test_cpotrs },
+    { "spotrs", test_spotrs },
 
-    { "zsymm", test_zsyrk },
-    { "dsymm", test_dsyrk },
-    { "csymm", test_csyrk },
-    { "ssymm", test_ssyrk },
+    { "zsymm", test_zsymm },
+    { "dsymm", test_dsymm },
+    { "csymm", test_csymm },
+    { "ssymm", test_ssymm },
 
     { "zsyrk", test_zsyrk },
     { "dsyrk", test_dsyrk },
@@ -468,6 +478,9 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--ntpf="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NTPF]);
 
+        else if (param_starts_with(argv[i], "--norm="))
+            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_NORM]);
+
         //--------------------------------------------------
         // Scan double precision parameters.
         //--------------------------------------------------
@@ -561,6 +574,9 @@ int param_read(int argc, char **argv, param_t param[])
 
     if (param[PARAM_NTPF].num == 0)
         param_add_int(1, &param[PARAM_NTPF]);
+
+    if (param[PARAM_NORM].num == 0)
+        param_add_char('o', &param[PARAM_NORM]);
 
     //--------------------------------------------------
     // Set double precision parameters.

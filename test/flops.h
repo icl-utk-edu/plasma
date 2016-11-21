@@ -804,6 +804,58 @@ static double  flops_clauum(double n)
 static double  flops_slauum(double n)
     { return 0.25 * n * n * n;}
 
+//------------------------------------------------------------ lange
+static double fmuls_lange(double m, double n, plasma_enum_t norm)
+    { return norm == PlasmaFrobeniusNorm ? m*n : 0.0; }
+
+static double fadds_lange(double m, double n, plasma_enum_t norm)
+{
+    switch (norm) {
+    case PlasmaOneNorm:       return (m-1)*n;
+    case PlasmaInfNorm:       return (n-1)*m;
+    case PlasmaFrobeniusNorm: return m*n-1;
+    default:                  return 0.0;
+    }
+}
+
+static double flops_zlange(double m, double n, plasma_enum_t norm)
+    { return 6.*fmuls_lange(m, n, norm) + 2.*fadds_lange(m, n, norm); }
+
+static double flops_clange(double m, double n, plasma_enum_t norm)
+    { return 6.*fmuls_lange(m, n, norm) + 2.*fadds_lange(m, n, norm); }
+
+static double flops_dlange(double m, double n, plasma_enum_t norm)
+    { return    fmuls_lange(m, n, norm) +    fadds_lange(m, n, norm); }
+
+static double flops_slange(double m, double n, plasma_enum_t norm)
+    { return    fmuls_lange(m, n, norm) +    fadds_lange(m, n, norm); }
+
+//------------------------------------------------------------ lanhe
+static double fmuls_lanhe(double n, plasma_enum_t norm)
+    { return norm == PlasmaFrobeniusNorm ? n*(n+1)/2 : 0.0; }
+
+static double fadds_lanhe(double n, plasma_enum_t norm)
+{
+    switch (norm) {
+    case PlasmaOneNorm:       return (n-1)*n;
+    case PlasmaInfNorm:       return (n-1)*n;
+    case PlasmaFrobeniusNorm: return n*n-1;
+    default:                  return 0.0;
+    }
+}
+
+static double flops_zlanhe(double n, plasma_enum_t norm)
+    { return 6.*fmuls_lanhe(n, norm) + 2.*fadds_lanhe(n, norm); }
+
+static double flops_clanhe(double n, plasma_enum_t norm)
+    { return 6.*fmuls_lanhe(n, norm) + 2.*fadds_lanhe(n, norm); }
+
+static double flops_dlanhe(double n, plasma_enum_t norm)
+    { return    fmuls_lanhe(n, norm) +    fadds_lanhe(n, norm); }
+
+static double flops_slanhe(double n, plasma_enum_t norm)
+    { return    fmuls_lanhe(n, norm) +    fadds_lanhe(n, norm); }
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

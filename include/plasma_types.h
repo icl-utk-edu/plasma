@@ -56,32 +56,41 @@ enum {
  *
  **/
 enum {
-    PlasmaInvalid     = -1,
+    PlasmaInvalid       = -1,
 
-    PlasmaNoTrans     = 111,
-    PlasmaTrans       = 112,
-    PlasmaConjTrans   = 113,
-    Plasma_ConjTrans  = PlasmaConjTrans,
+    PlasmaNoTrans       = 111,
+    PlasmaTrans         = 112,
+    PlasmaConjTrans     = 113,
+    Plasma_ConjTrans    = PlasmaConjTrans,
 
-    PlasmaUpper       = 121,
-    PlasmaLower       = 122,
-    PlasmaGeneral     = 123,
-    PlasmaGeneralBand = 124,
+    PlasmaUpper         = 121,
+    PlasmaLower         = 122,
+    PlasmaGeneral       = 123,
+    PlasmaGeneralBand   = 124,
 
-    PlasmaNonUnit     = 131,
-    PlasmaUnit        = 132,
+    PlasmaNonUnit       = 131,
+    PlasmaUnit          = 132,
 
-    PlasmaLeft        = 141,
-    PlasmaRight       = 142,
+    PlasmaLeft          = 141,
+    PlasmaRight         = 142,
 
-    PlasmaForward     = 391,
-    PlasmaBackward    = 392,
+    PlasmaOneNorm       = 171,
+    PlasmaRealOneNorm   = 172,
+    PlasmaTwoNorm       = 173,
+    PlasmaFrobeniusNorm = 174,
+    PlasmaInfNorm       = 175,
+    PlasmaRealInfNorm   = 176,
+    PlasmaMaxNorm       = 177,
+    PlasmaRealMaxNorm   = 178,
 
-    PlasmaColumnwise  = 401,
-    PlasmaRowwise     = 402,
+    PlasmaForward       = 391,
+    PlasmaBackward      = 392,
 
-    PlasmaW           = 501,
-    PlasmaA2          = 502
+    PlasmaColumnwise    = 401,
+    PlasmaRowwise       = 402,
+
+    PlasmaW             = 501,
+    PlasmaA2            = 502
 };
 
 enum {
@@ -120,12 +129,13 @@ typedef float  _Complex plasma_complex32_t;
 typedef double _Complex plasma_complex64_t;
 
 /******************************************************************************/
+plasma_enum_t plasma_diag_const_t(char lapack_char);
+plasma_enum_t plasma_direct_const_t(char lapack_char);
+plasma_enum_t plasma_norm_const_t(char lapack_char);
+plasma_enum_t plasma_side_const_t(char lapack_char);
+plasma_enum_t plasma_storev_const_t(char lapack_char);
 plasma_enum_t plasma_trans_const_t(char lapack_char);
 plasma_enum_t plasma_uplo_const_t(char lapack_char);
-plasma_enum_t plasma_diag_const_t(char lapack_char);
-plasma_enum_t plasma_side_const_t(char lapack_char);
-plasma_enum_t plasma_direct_const_t(char lapack_char);
-plasma_enum_t plasma_storev_const_t(char lapack_char);
 
 #ifdef __cplusplus
 }  // extern "C"
