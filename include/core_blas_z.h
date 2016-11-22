@@ -266,6 +266,12 @@ void core_omp_zgessq(int m, int n, const plasma_complex64_t *A, int lda,
                      double *scale, double *sumsq,
                      plasma_sequence_t *sequence, plasma_request_t *request);
 
+void core_omp_zgessq_aux(int n,
+                         double *scale, double *sumsq,
+                         double *value,
+                         plasma_sequence_t *sequence,
+                         plasma_request_t *request);
+
 void core_omp_zhemm(
     plasma_enum_t side, plasma_enum_t uplo,
     int m, int n,
@@ -310,6 +316,12 @@ void core_omp_zlange(int norm, int m, int n,
                      const plasma_complex64_t *A, int lda,
                      double *work, double *result,
                      plasma_sequence_t *sequence, plasma_request_t *request);
+
+void core_omp_zlange_aux(int norm, int m, int n,
+                         const plasma_complex64_t *A, int lda,
+                         double *value,
+                         plasma_sequence_t *sequence,
+                         plasma_request_t *request);
 
 void core_omp_zlaset(plasma_enum_t uplo,
                      int mb, int nb,

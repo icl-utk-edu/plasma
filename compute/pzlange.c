@@ -35,7 +35,7 @@ void plasma_pzlange(plasma_enum_t norm, plasma_desc_t A,
     }
 
     switch (norm) {
-    double temp;
+    double stub;
     double *workspace;
     double *scale;
     double *sumsq;
@@ -51,7 +51,7 @@ void plasma_pzlange(plasma_enum_t norm, plasma_desc_t A,
                 core_omp_zlange(PlasmaMaxNorm,
                 				mvam, nvan,
                                 A(m, n), ldam, 
-                                &temp, &work[A.mt*n+m],
+                                &stub, &work[A.mt*n+m],
                                 sequence, request);
             }
         }
@@ -59,7 +59,7 @@ void plasma_pzlange(plasma_enum_t norm, plasma_desc_t A,
         core_omp_dlange(PlasmaMaxNorm,
         				A.mt, A.nt,
                         work, A.mt,
-                        &temp, value,
+                        &stub, value,
                         sequence, request);
         break;
     //================
@@ -74,7 +74,7 @@ void plasma_pzlange(plasma_enum_t norm, plasma_desc_t A,
                 core_omp_zlange_aux(PlasmaOneNorm,
                 				    mvam, nvan,
                                     A(m, n), ldam, 
-                                    &temp, &work[A.n*m+n*A.nb],
+                                    &work[A.n*m+n*A.nb],
                                     sequence, request);
             }
         }
@@ -98,7 +98,7 @@ void plasma_pzlange(plasma_enum_t norm, plasma_desc_t A,
                 core_omp_zlange_aux(PlasmaInfNorm,
                 				    mvam, nvan,
                                     A(m, n), ldam, 
-                                    &temp, &work[A.m*n+m*A.mb],
+                                    &work[A.m*n+m*A.mb],
                                     sequence, request);
             }
         }
