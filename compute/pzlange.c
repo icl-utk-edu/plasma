@@ -121,27 +121,29 @@ void plasma_pzlange(plasma_enum_t norm, plasma_desc_t A,
             int ldam = plasma_tile_mmain(A, m);
             for (int n = 0; n < A.nt; n++) {
                 int nvan = plasma_tile_nview(A, n);
-                core_omp_zlange(PlasmaFrobeniusNorm,
-                				mvam, nvan,
-                                A(m, n), ldam, 
-                                &temp, &work[A.mt*n+m],
-                                sequence, request);
-                // core_omp_zgessq(mvam, nvan,
-                // 				A(m, n), ldam,
-                //                 &scale[A.mt*n+m], &sumsq[A.mt*n+m],
-                //         		sequence, request);
+                // core_omp_zlange(PlasmaFrobeniusNorm,
+                // 				mvam, nvan,
+                //                 A(m, n), ldam, 
+                //                 &temp, &work[A.mt*n+m],
+                //                 sequence, request);
+
+                core_omp_zgessq(mvam, nvan,
+                				A(m, n), ldam,
+                                &scale[A.mt*n+m], &sumsq[A.mt*n+m],
+                        		sequence, request);
             }
         }
         #pragma omp taskwait
-        core_omp_dlange(PlasmaFrobeniusNorm,
-        				A.mt, A.nt,
-                        work, A.mt,
-                        &temp, value,
-                        sequence, request);
-        // core_omp_dgessq_aux(A.mt*A.nt,
-        //                     scale, sumsq,
-        //                     value,
-        //                     sequence, request);
+        // core_omp_dlange(PlasmaFrobeniusNorm,
+        // 				A.mt, A.nt,
+        //                 work, A.mt,
+        //                 &temp, value,
+        //                 sequence, request);
+
+        core_omp_dgessq_aux(A.mt*A.nt,
+                            scale, sumsq,
+                            value,
+                            sequence, request);
         break;
     }
 }

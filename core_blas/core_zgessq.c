@@ -19,9 +19,8 @@ void core_zgessq(int m, int n, const plasma_complex64_t *A, int lda,
                  double *scale, double *sumsq)
 {
     int ione = 1;
-    for (int j = 0; j < n; j++) {
+    for (int j = 0; j < n; j++)
         zlassq(&m, &A[j*lda], &ione, scale, sumsq);
-    }
 }
 
 /******************************************************************************/
