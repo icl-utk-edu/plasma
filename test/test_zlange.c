@@ -131,9 +131,6 @@ void test_zlange(param_value_t param[], char *info)
             LAPACKE_zlange(LAPACK_COL_MAJOR, lapack_const(norm),
                            m, n, Aref, lda);
 
-printf("%le\n", value);
-printf("%le\n", valueRef);
-
         // Calculate relative error
         double error = fabs(value-valueRef) / valueRef;
         double tol = eps;

@@ -187,6 +187,7 @@ lapack = [
     ('sgesdd',               'dgesdd',               'cgesdd',               'zgesdd'              ),
     ('sgessm',               'dgessm',               'cgessm',               'zgessm'              ),
     ('sgessq',               'dgessq',               'cgessq',               'zgessq'              ),
+    ('sgessq',               'dgessq',               'sgessq',               'dgessq'              ),
     ('sgesv',                'dgesv',                'cgesv',                'zgesv'               ),  # also does zgesvd
     ('sget22',               'dget22',               'cget22',               'zget22'              ),
     ('sgetf2',               'dgetf2',               'cgetf2',               'zgetf2'              ),
@@ -217,6 +218,7 @@ lapack = [
     ('slamch',               'dlamch',               'slamch',               'dlamch'              ),
     ('slamrg',               'dlamrg',               'slamrg',               'dlamrg'              ),
     ('slange',               'dlange',               'clange',               'zlange'              ),
+    ('slange',               'dlange',               'slange',               'dlange'              ),
     ('slanst',               'dlanst',               'clanht',               'zlanht'              ),
     ('slansy',               'dlansy',               'clanhe',               'zlanhe'              ),
     ('slansy',               'dlansy',               'clansy',               'zlansy'              ),
