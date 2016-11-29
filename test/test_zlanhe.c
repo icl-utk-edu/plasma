@@ -6,7 +6,7 @@
  *  University of Tennessee,  US,
  *  University of Manchester, UK.
  *
- * @precisions normal z -> c
+ * @precisions normal z -> s d c
  *
  **/
 
@@ -77,7 +77,7 @@ void test_zlanhe(param_value_t param[], char *info)
     // Set parameters.
     //================================================================
     plasma_enum_t norm = plasma_norm_const_t(param[PARAM_NORM].c);
-    plasma_enum_t uplo = plasma_norm_const_t(param[PARAM_UPLO].c);
+    plasma_enum_t uplo = plasma_uplo_const_t(param[PARAM_UPLO].c);
 
     int n = param[PARAM_N].i;
 
@@ -104,12 +104,16 @@ void test_zlanhe(param_value_t param[], char *info)
     assert(retval == 0);
 
     plasma_complex64_t *Aref = NULL;
+    plasma_complex64_t *work = NULL;
     if (test) {
         Aref = (plasma_complex64_t*)malloc(
             (size_t)lda*n*sizeof(plasma_complex64_t));
         assert(Aref != NULL);
 
         memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
+
+        work = (plasma_complex64_t*)malloc(n*sizeof(plasma_complex64_t));
+        assert(work != NULL);
     }
 
     //================================================================
@@ -127,10 +131,10 @@ void test_zlanhe(param_value_t param[], char *info)
     // Test results by comparing to a reference implementation.
     //================================================================
     if (test) {
-        double valueRef =
-            LAPACKE_zlanhe(LAPACK_COL_MAJOR,
-            			   lapack_const(norm), lapack_const(uplo),
-            			   n, Aref, lda);
+        double valueRef = 
+            LAPACKE_zlanhe_work(LAPACK_COL_MAJOR,
+                                lapack_const(norm), lapack_const(uplo),
+                                n, Aref, lda, work);
 
         // Calculate relative error
         double error = fabs(value-valueRef) / valueRef;
@@ -159,6 +163,8 @@ void test_zlanhe(param_value_t param[], char *info)
     // Free arrays.
     //================================================================
     free(A);
-    if (test)
+    if (test) {
         free(Aref);
+        free(work);
+    }
 }

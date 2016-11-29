@@ -839,7 +839,7 @@ static double fadds_lanhe(double n, plasma_enum_t norm)
     switch (norm) {
     case PlasmaOneNorm:       return (n-1)*n;
     case PlasmaInfNorm:       return (n-1)*n;
-    case PlasmaFrobeniusNorm: return n*n-1;
+    case PlasmaFrobeniusNorm: return n*(n+1)/2-1;
     default:                  return 0.0;
     }
 }
@@ -850,10 +850,10 @@ static double flops_zlanhe(double n, plasma_enum_t norm)
 static double flops_clanhe(double n, plasma_enum_t norm)
     { return 6.*fmuls_lanhe(n, norm) + 2.*fadds_lanhe(n, norm); }
 
-static double flops_dlanhe(double n, plasma_enum_t norm)
+static double flops_dlansy(double n, plasma_enum_t norm)
     { return    fmuls_lanhe(n, norm) +    fadds_lanhe(n, norm); }
 
-static double flops_slanhe(double n, plasma_enum_t norm)
+static double flops_slansy(double n, plasma_enum_t norm)
     { return    fmuls_lanhe(n, norm) +    fadds_lanhe(n, norm); }
 
 #ifdef __cplusplus

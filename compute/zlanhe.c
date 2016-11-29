@@ -124,12 +124,22 @@ double plasma_zlanhe(plasma_enum_t norm, plasma_enum_t uplo,
 
     // Allocate workspace.
     double *work;
-
-
-
-
-
-
+    switch (norm) {
+    case PlasmaMaxNorm:
+        work = (double*)malloc((size_t)A.mt*A.nt*sizeof(double));
+        break;
+    case PlasmaOneNorm:
+    case PlasmaInfNorm:
+        work = (double*)malloc(((size_t)A.mt*A.n+A.n)*sizeof(double));
+        break;
+    case PlasmaFrobeniusNorm:
+        work = (double*)malloc((size_t)2*A.mt*A.nt*sizeof(double));
+        break;
+    }
+    if (work == NULL) {
+        plasma_error("malloc() failed");
+        return PlasmaErrorOutOfMemory;
+    }
 
     // Create sequence.
     plasma_sequence_t *sequence = NULL;

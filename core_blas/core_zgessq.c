@@ -15,7 +15,8 @@
 #include "core_lapack.h"
 
 /******************************************************************************/
-void core_zgessq(int m, int n, const plasma_complex64_t *A, int lda,
+void core_zgessq(int m, int n,
+                 const plasma_complex64_t *A, int lda,
                  double *scale, double *sumsq)
 {
     int ione = 1;
@@ -24,7 +25,8 @@ void core_zgessq(int m, int n, const plasma_complex64_t *A, int lda,
 }
 
 /******************************************************************************/
-void core_omp_zgessq(int m, int n, const plasma_complex64_t *A, int lda,
+void core_omp_zgessq(int m, int n,
+                     const plasma_complex64_t *A, int lda,
                      double *scale, double *sumsq,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
@@ -42,7 +44,7 @@ void core_omp_zgessq(int m, int n, const plasma_complex64_t *A, int lda,
 
 /******************************************************************************/
 void core_omp_zgessq_aux(int n,
-                         double *scale, double *sumsq,
+                         const double *scale, const double *sumsq,
                          double *value,
                          plasma_sequence_t *sequence, plasma_request_t *request)
 {
@@ -55,14 +57,14 @@ void core_omp_zgessq_aux(int n,
             double sum = 1.0;
             for (int i = 0; i < n; i++) {
                 if (scl < scale[i]) {
-                    sum = sumsq[i] + (sum * ((scl/scale[i]) * (scl/scale[i])));
+                    sum = sumsq[i] + sum*((scl/scale[i])*(scl/scale[i]));
                     scl = scale[i];
                 }
                 else {
-                    sum = sum + (sumsq[i] * (scale[i]/scl) * (scale[i]/scl));
+                    sum = sum + sumsq[i]*(scale[i]/scl)*(scale[i]/scl);
                 }
             }
-            *value = scl * sqrt(sum);
+            *value = scl*sqrt(sum);
         }
     }
 } 

@@ -87,9 +87,9 @@ struct routines_t routines[] =
     { "slange", test_slange },
 
     { "zlanhe", test_zlanhe },
-    { "", NULL },
+    { "dlansy", test_dlansy },
     { "clanhe", test_clanhe },
-    { "", NULL },
+    { "slansy", test_slansy },
 
     { "zpbsv", test_zpbsv },
     { "dpbsv", test_dpbsv },
