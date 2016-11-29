@@ -117,17 +117,7 @@ static inline void *plasma_tile_addr_general(plasma_desc_t A, int m, int n)
 /******************************************************************************/
 static inline void *plasma_tile_addr_general_band(plasma_desc_t A, int m, int n)
 {
-    int kut;
-    if (A.uplo == PlasmaGeneral) {
-        kut = (A.kl+A.kl+A.nb-1)/A.nb;
-    }
-    else if (A.uplo == PlasmaUpper) {
-        kut = (A.ku+A.nb-1)/A.nb;
-    }
-    else {
-        kut = 0;
-    }
-    return plasma_tile_addr_general(A, kut+m-n, n);
+    return plasma_tile_addr_general(A, (A.kut-1)+m-n, n);
 }
 
 /******************************************************************************/
@@ -206,19 +196,9 @@ static inline int plasma_tile_nview(plasma_desc_t A, int k)
 }
 
 /******************************************************************************/
-static inline int BLKLDD_BAND(plasma_enum_t uplo, plasma_desc_t A, int m, int n)
+static inline int plasma_tile_mmain_band(plasma_desc_t A, int m, int n)
 {
-    int kut;
-    if (uplo == PlasmaGeneral) {
-        kut = (A.kl+A.kl+A.nb-1)/A.nb;
-    }
-    else if (uplo == PlasmaUpper) {
-        kut = (A.ku+A.nb-1)/A.nb;
-    }
-    else {
-        kut = 0;
-    }
-    return plasma_tile_mmain(A, kut+m-n);
+    return plasma_tile_mmain(A, (A.kut-1)+m-n);
 }
 
 /******************************************************************************/

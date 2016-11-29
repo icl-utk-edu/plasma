@@ -18,8 +18,9 @@
 #include "plasma_workspace.h"
 #include "core_blas.h"
 
+#define offset (A.uplo == PlasmaUpper ? A.ku : (A.uplo == PlasmaLower ? 0 : A.ku+A.kl))
+#define bandA(m, n) (&(pA[lda*(A.nb*(n)) + offset+A.mb*((m)-(n))]))
 #define tileA(m, n) ((plasma_complex64_t*)plasma_tile_addr(A, (m), (n)))
-#define bandA(m, n) (&(pA[lda*(A.nb*(n)) + (A.uplo == PlasmaUpper ? A.ku : 0)+A.mb*((m)-(n))]))
 
 /******************************************************************************/
 void plasma_pzdesc2pb(plasma_desc_t A,
@@ -57,7 +58,7 @@ void plasma_pzdesc2pb(plasma_desc_t A,
             core_omp_zlacpy_tile2lapack_band(
                    A.uplo, m, n,
                    mb, nb, A.mb, A.kl, A.ku,
-                   tileA(m, n), BLKLDD_BAND(A.uplo, A, m, n),
+                   tileA(m, n), plasma_tile_mmain_band(A, m, n),
                    bandA(m, n), lda-1);
                    //tileA(m_start,n), nb*nb, INOUT | GATHERV);
         }

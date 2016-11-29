@@ -46,7 +46,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                 // ==========================================
                 for (int k = 0; k < B.mt; k++) {
                     int mvbk = plasma_tile_mview(B, B.mt-k-1);
-                    int ldak = BLKLDD_BAND(uplo, A, B.mt-k-1, B.mt-k-1);
+                    int ldak = plasma_tile_mmain_band(A, B.mt-k-1, B.mt-k-1);
                     int ldbk = plasma_tile_mmain(B, B.mt-k-1);
                     plasma_complex64_t lalpha = k == 0 ? alpha : 1.0;
                     for (int n = 0; n < B.nt; n++) {
@@ -59,7 +59,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                             sequence, request);
                     }
                     for (int m = imax(0, (B.mt-k-1)-A.kut+1); m < B.mt-k-1; m++) {
-                        int ldam = BLKLDD_BAND(uplo, A, m, B.mt-k-1);
+                        int ldam = plasma_tile_mmain_band(A, m, B.mt-k-1);
                         int ldbm = plasma_tile_mmain(B, m);
                         for (int n = 0; n < B.nt; n++) {
                             int nvbn = plasma_tile_nview(B, n);
@@ -80,7 +80,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                 // ==============================================
                 for (int k = 0; k < B.mt; k++) {
                     int mvbk = plasma_tile_mview(B, k);
-                    int ldak = BLKLDD_BAND(uplo, A, k, k);
+                    int ldak = plasma_tile_mmain_band(A, k, k);
                     int ldbk = plasma_tile_mmain(B, k);
                     plasma_complex64_t lalpha = k == 0 ? alpha : 1.0;
                     for (int n = 0; n < B.nt; n++) {
@@ -94,7 +94,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                     }
                     for (int m = k+1; m < imin(A.mt, k+A.kut); m++) {
                         int mvbm = plasma_tile_mview(B, m);
-                        int ldam = BLKLDD_BAND(uplo, A, k, m);
+                        int ldam = plasma_tile_mmain_band(A, k, m);
                         int ldbm = plasma_tile_mmain(B, m);
                         for (int n = 0; n < B.nt; n++) {
                             int nvbn = plasma_tile_nview(B, n);
@@ -117,18 +117,18 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                 // ==========================================
                 for (int k = 0; k < B.mt; k++) {
                     int mvbk = plasma_tile_mview(B, k);
-                    int ldak = BLKLDD_BAND(uplo, A, B.mt-k-1, B.mt-k-1);
+                    int ldak = plasma_tile_mmain_band(A, k, k);
                     int ldbk = plasma_tile_mmain(B, k);
                     plasma_complex64_t lalpha = k == 0 ? alpha : 1.0;
                     for (int n = 0; n < B.nt; n++) {
                         int nvbn = plasma_tile_nview(B, n);
                         if (IPIV != NULL) {
+                            #define ZLASWP_ONTILE
                             #ifdef ZLASWP_ONTILE
-                            // commented out because it takes descriptor
-                            tempi = k*B.mb;
-                            core_omp_zlaswp_ontile(
-                                B, k, n, B.m-tempi, tempnn,
-                                1, tempkm, IPIV(k), 1);
+                            plasma_desc_t view = plasma_desc_view(B, 0, n*A.nb, A.m, nvbn);
+                            view.type = PlasmaGeneral;
+                            #pragma omp taskwait
+                            core_zlaswp(view, k*A.nb+1, k*A.nb+mvbk, IPIV);
                             #endif
                         }
                         core_omp_ztrsm(
@@ -140,7 +140,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                     }
                     for (int m = k+1; m < imin(k+A.klt, A.mt); m++) {
                         int mvbm = plasma_tile_mview(B, m);
-                        int ldam = BLKLDD_BAND(uplo, A, m, k);
+                        int ldam = plasma_tile_mmain_band(A, m, k);
                         int ldbm = plasma_tile_mmain(B, m);
                         for (int n = 0; n < B.nt; n++) {
                             int nvbn = plasma_tile_nview(B, n);
@@ -161,12 +161,12 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                 // ==============================================
                 for (int k = 0; k < B.mt; k++) {
                     int mvbk = plasma_tile_mview(B, B.mt-k-1);
-                    int ldak = BLKLDD_BAND(uplo, A, B.mt-k-1, B.mt-k-1);
+                    int ldak = plasma_tile_mmain_band(A, B.mt-k-1, B.mt-k-1);
                     int ldbk = plasma_tile_mmain(B, B.mt-k-1);
                     plasma_complex64_t lalpha = k == 0 ? alpha : 1.0;
                     for (int m = (B.mt-k-1)+1; m < imin((B.mt-k-1)+A.klt, A.mt); m++) {
                         int mvbm = plasma_tile_mview(B, m);
-                        int ldam = BLKLDD_BAND(uplo, A, m, B.mt-k-1);
+                        int ldam = plasma_tile_mmain_band(A, m, B.mt-k-1);
                         int ldbm = plasma_tile_mmain(B, m);
                         for (int n = 0; n < B.nt; n++) {
                             int nvbn = plasma_tile_nview(B, n);
@@ -189,11 +189,11 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                             sequence, request);
                         if (IPIV != NULL) {
                             #ifdef ZLASWP_ONTILE
-                            // commented out because it takes descriptor
-                            int tempi = (B.mt-k-1)*B.mb;
-                            core_omp_zlaswp_ontile(
-                                B, B.mt-k-1, n, B.m-tempi, tempnn,
-                                1, tempkm, IPIV(B.mt-k-1), -1);
+                            int k1 = (B.mt-k-1)*A.nb;
+                            int k2 = k1+mvbk-1;
+                            plasma_desc_t view = plasma_desc_view(A, (B.mt-k-1)*A.nb, n*A.nb, k*A.nb, mvbk);
+                            view.type = PlasmaGeneral;
+                            core_zlaswp(view, k1, k2, &IPIV[k1]);
                             #endif
                         }
                     }

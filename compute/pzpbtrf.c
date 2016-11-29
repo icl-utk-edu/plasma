@@ -39,7 +39,7 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
         //==============
         for (int k = 0; k < A.mt; k++) {
             int mvak  = plasma_tile_mview(A, k);
-            int ldakk = BLKLDD_BAND(uplo, A, k, k);
+            int ldakk = plasma_tile_mmain_band(A, k, k);
             core_omp_zpotrf(
                 PlasmaLower, mvak,
                 A(k, k), ldakk,
@@ -47,8 +47,8 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
                 sequence, request);
             for (int m = k+1; m < imin(A.nt, k+A.klt); m++) {
                 int mvam  = plasma_tile_mview(A, m);
-                int ldamk = BLKLDD_BAND(uplo, A, m, k);
-                int ldamm = BLKLDD_BAND(uplo, A, m, m);
+                int ldamk = plasma_tile_mmain_band(A, m, k);
+                int ldamm = plasma_tile_mmain_band(A, m, m);
                 core_omp_ztrsm(
                     PlasmaRight, PlasmaLower,
                     PlasmaConjTrans, PlasmaNonUnit,
@@ -64,8 +64,8 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
                     sequence, request);
                 for (int n = imax(k+1, m-A.klt); n < m; n++) {
                     int nvan  = plasma_tile_nview(A, n);
-                    int ldank = BLKLDD_BAND(uplo, A, n, k);
-                    int ldamn = BLKLDD_BAND(uplo, A, m, n);
+                    int ldank = plasma_tile_mmain_band(A, n, k);
+                    int ldamn = plasma_tile_mmain_band(A, m, n);
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaConjTrans,
                         mvam, nvan, mvak,
@@ -83,7 +83,7 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
         //==============
         for (int k = 0; k < A.nt; k++) {
             int mvak  = plasma_tile_mview(A, k);
-            int ldakk = BLKLDD_BAND(uplo, A, k, k);
+            int ldakk = plasma_tile_mmain_band(A, k, k);
             core_omp_zpotrf(
                 PlasmaUpper, mvak,
                 A(k, k), ldakk,
@@ -91,8 +91,8 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
                 sequence, request);
             for (int m = k+1; m < imin(A.nt, k+A.kut); m++) {
                 int mvam  = plasma_tile_mview(A, m);
-                int ldakm = BLKLDD_BAND(uplo, A, k, m);
-                int ldamm = BLKLDD_BAND(uplo, A, m, m);
+                int ldakm = plasma_tile_mmain_band(A, k, m);
+                int ldamm = plasma_tile_mmain_band(A, m, m);
                 core_omp_ztrsm(
                     PlasmaLeft, PlasmaUpper,
                     PlasmaConjTrans, PlasmaNonUnit,
@@ -107,8 +107,8 @@ void plasma_pzpbtrf(plasma_enum_t uplo, plasma_desc_t A,
                      1.0, A(m, m), ldamm,
                     sequence, request);
                 for (int n = imax(k+1, m-A.kut); n < m; n++) {
-                    int ldakn = BLKLDD_BAND(uplo, A, k, n);
-                    int ldanm = BLKLDD_BAND(uplo, A, n, m);
+                    int ldakn = plasma_tile_mmain_band(A, k, n);
+                    int ldanm = plasma_tile_mmain_band(A, n, m);
                     core_omp_zgemm(
                         PlasmaConjTrans, PlasmaNoTrans,
                         A.mb, mvam, A.mb,
