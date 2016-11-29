@@ -41,7 +41,7 @@
 void test_zpbtrf(param_value_t param[], char *info)
 {
     //================================================================
-    // Print usage info or return column labels or values.
+    // Print usage info or return column labels.
     //================================================================
     if (param == NULL) {
         if (info == NULL) {
@@ -49,6 +49,7 @@ void test_zpbtrf(param_value_t param[], char *info)
             //  pbtrf params
             print_usage(PARAM_UPLO);
             print_usage(PARAM_N);
+            print_usage(PARAM_KU);
             print_usage(PARAM_KL);
             print_usage(PARAM_PADA);
             print_usage(PARAM_NB);
@@ -70,16 +71,6 @@ void test_zpbtrf(param_value_t param[], char *info)
         }
         return;
     }
-    // Return column values.
-    snprintf(info, InfoLen,
-        "%*c %*d %*d %*d %*d %*d %*d",
-        InfoSpacing, param[PARAM_UPLO].c,
-        InfoSpacing, param[PARAM_N].i,
-        InfoSpacing, param[PARAM_KL].i,
-        InfoSpacing, param[PARAM_PADA].i,
-        InfoSpacing, param[PARAM_NB].i,
-        InfoSpacing, param[PARAM_NRHS].i,
-        InfoSpacing, param[PARAM_PADB].i);
 
     //================================================================
     // Set parameters.
@@ -93,6 +84,19 @@ void test_zpbtrf(param_value_t param[], char *info)
 
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
+
+    //================================================================
+    // Return column values.
+    //================================================================
+    snprintf(info, InfoLen,
+        "%*c %*d %*d %*d %*d %*d %*d",
+        InfoSpacing, param[PARAM_UPLO].c,
+        InfoSpacing, param[PARAM_N].i,
+        InfoSpacing, kd,
+        InfoSpacing, param[PARAM_PADA].i,
+        InfoSpacing, param[PARAM_NB].i,
+        InfoSpacing, param[PARAM_NRHS].i,
+        InfoSpacing, param[PARAM_PADB].i);
 
     //================================================================
     // Set tuning parameters.
