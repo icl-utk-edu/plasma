@@ -6,7 +6,7 @@
  *  University of Tennessee,  US,
  *  University of Manchester, UK.
  *
- * @precisions normal z -> c
+ * @precisions normal z -> s d c
  *
  **/
 
@@ -24,7 +24,7 @@
  *  Parallel tile calculation of max, one, infinity or Frobenius matrix norm
  *  for a Hermitian matrix.
  ******************************************************************************/
-void plasma_pzlanhe(plasma_enum_t norm, plasma_enum_t uplo, plasma_desc_t A,
+void plasma_pzlansy(plasma_enum_t norm, plasma_enum_t uplo, plasma_desc_t A,
                     double *work, double *value,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
@@ -66,7 +66,7 @@ void plasma_pzlanhe(plasma_enum_t norm, plasma_enum_t uplo, plasma_desc_t A,
                                     sequence, request);
                 }
             }
-            core_omp_zlanhe(PlasmaMaxNorm, uplo,
+            core_omp_zlansy(PlasmaMaxNorm, uplo,
                             mvam,
                             A(m, m), ldam, 
                             &stub, &work[A.mt*m+m],
@@ -117,7 +117,7 @@ void plasma_pzlanhe(plasma_enum_t norm, plasma_enum_t uplo, plasma_desc_t A,
                                         sequence, request);
                 }                
             }
-            core_omp_zlanhe_aux(PlasmaOneNorm, uplo,
+            core_omp_zlansy_aux(PlasmaOneNorm, uplo,
                                 mvam,
                                 A(m, m), ldam, 
                                 &work[A.n*m+m*A.nb],
@@ -158,7 +158,7 @@ void plasma_pzlanhe(plasma_enum_t norm, plasma_enum_t uplo, plasma_desc_t A,
                                     sequence, request);
                 }
             }
-            core_omp_zhessq(uplo,
+            core_omp_zsyssq(uplo,
                             mvam,
                             A(m, m), ldam,
                             &scale[A.mt*m+m], &sumsq[A.mt*m+m],

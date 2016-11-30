@@ -6,7 +6,7 @@
  *  University of Tennessee,  US,
  *  University of Manchester, UK.
  *
- * @precisions normal z -> c
+ * @precisions normal z -> s d c
  *
  **/
 
@@ -28,7 +28,7 @@
 
 /***************************************************************************//**
  *
- * @brief Tests ZLANHE.
+ * @brief Tests ZLANSY.
  *
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
@@ -38,7 +38,7 @@
  * If param is non-NULL and info is non-NULL, set info to column values
  * and run test.
  ******************************************************************************/
-void test_zlanhe(param_value_t param[], char *info)
+void test_zlansy(param_value_t param[], char *info)
 {
     //================================================================
     // Print usage info or return column labels or values.
@@ -120,7 +120,7 @@ void test_zlanhe(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    double value = plasma_zlanhe(norm, uplo, n, A, lda);
+    double value = plasma_zlansy(norm, uplo, n, A, lda);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
@@ -132,7 +132,7 @@ void test_zlanhe(param_value_t param[], char *info)
     //================================================================
     if (test) {
         double valueRef = 
-            LAPACKE_zlanhe_work(LAPACK_COL_MAJOR,
+            LAPACKE_zlansy_work(LAPACK_COL_MAJOR,
                                 lapack_const(norm), lapack_const(uplo),
                                 n, Aref, lda, work);
 

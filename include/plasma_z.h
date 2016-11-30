@@ -93,6 +93,10 @@ double plasma_zlanhe(plasma_enum_t norm, plasma_enum_t uplo,
                      int n,
                      plasma_complex64_t *pA, int lda);
 
+double plasma_zlansy(plasma_enum_t norm, plasma_enum_t uplo,
+                     int n,
+                     plasma_complex64_t *pA, int lda);
+
 int plasma_zlauum(plasma_enum_t uplo, int n,
                   plasma_complex64_t *pA, int lda);
 
@@ -265,6 +269,10 @@ void plasma_omp_zlange(plasma_enum_t norm, plasma_desc_t A,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_omp_zlanhe(plasma_enum_t norm, plasma_enum_t uplo, plasma_desc_t A,
+                       double *work, double *value,
+                       plasma_sequence_t *sequence, plasma_request_t *request);
+
+void plasma_omp_zlansy(plasma_enum_t norm, plasma_enum_t uplo, plasma_desc_t A,
                        double *work, double *value,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 

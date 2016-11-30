@@ -6,7 +6,7 @@
  *  University of Tennessee, US,
  *  University of Manchester, UK.
  *
- * @precisions normal z -> c d s
+ * @precisions normal z -> c
  *
  **/
 
@@ -64,46 +64,3 @@ void core_omp_zhessq(int uplo,
         }
     }
 }
-
-/******************************************************************************/
-void core_omp_zhessq_aux(int m, int n,
-                         const double *scale, const double *sumsq,
-                         double *value,
-                         plasma_sequence_t *sequence, plasma_request_t *request)
-{
-    #pragma omp task depend(in:scale[0:n]) \
-                     depend(in:sumsq[0:n]) \
-                     depend(out:value[0:1])
-    {
-        if (sequence->status == PlasmaSuccess) {
-            double scl = 0.0;
-            double sum = 1.0;
-            for (int j = 0; j < n; j++) {
-                for (int i = j+1; i < n; i++) {
-                    int idx = m*j+i;
-                    if (scl < scale[idx]) {
-                        sum = sumsq[idx] +
-                            sum*((scl/scale[idx])*(scl/scale[idx]));
-                        scl = scale[idx];
-                    }
-                    else {
-                        sum = sum +
-                            sumsq[idx]*((scale[idx]/scl)*(scale[idx]/scl));
-                    }
-                }
-            }
-            sum = 2.0*sum;
-            for (int j = 0; j < n; j++) {
-                int idx = m*j+j;
-                if (scl < scale[idx]) {
-                    sum = sumsq[idx] + sum*((scl/scale[idx])*(scl/scale[idx]));
-                    scl = scale[idx];
-                }
-                else {
-                    sum = sum + sumsq[idx]*((scale[idx]/scl)*(scale[idx]/scl));
-                }
-            }
-            *value = scl*sqrt(sum);
-        }
-    }
-} 

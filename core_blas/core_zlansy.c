@@ -6,7 +6,7 @@
  *  University of Tennessee, US,
  *  University of Manchester, UK.
  *
- * @precisions normal z -> c
+ * @precisions normal z -> c d s
  *
  **/
 
@@ -15,19 +15,19 @@
 #include "core_lapack.h"
 
 /******************************************************************************/
-void core_zlanhe(plasma_enum_t norm, plasma_enum_t uplo,
+void core_zlansy(plasma_enum_t norm, plasma_enum_t uplo,
                  int n,
                  const plasma_complex64_t *A, int lda,
                  double *work, double *value)
 {
-    *value = LAPACKE_zlanhe_work(LAPACK_COL_MAJOR,
+    *value = LAPACKE_zlansy_work(LAPACK_COL_MAJOR,
                                  lapack_const(norm),
                                  lapack_const(uplo),
                                  n, A, lda, work);
 }
 
 /******************************************************************************/
-void core_omp_zlanhe(plasma_enum_t norm, plasma_enum_t uplo,
+void core_omp_zlansy(plasma_enum_t norm, plasma_enum_t uplo,
                      int n,
                      const plasma_complex64_t *A, int lda,
                      double *work, double *value,
@@ -37,12 +37,12 @@ void core_omp_zlanhe(plasma_enum_t norm, plasma_enum_t uplo,
                      depend(out:value[0:1])
     {
         if (sequence->status == PlasmaSuccess)
-            core_zlanhe(norm, uplo, n, A, lda, work, value);
+            core_zlansy(norm, uplo, n, A, lda, work, value);
     }
 }
 
 /******************************************************************************/
-void core_omp_zlanhe_aux(plasma_enum_t norm, plasma_enum_t uplo,
+void core_omp_zlansy_aux(plasma_enum_t norm, plasma_enum_t uplo,
                          int n,
                          const plasma_complex64_t *A, int lda,
                          double *value,
@@ -64,7 +64,7 @@ void core_omp_zlanhe_aux(plasma_enum_t norm, plasma_enum_t uplo,
                             value[i] += cabs(A[lda*j+i]);
                             value[j] += cabs(A[lda*j+i]);
                         }
-                        value[j] += cabs((double)A[lda*j+j]);
+                        value[j] += cabs(A[lda*j+j]);
                     }
                 }
                 else { // PlasmaLower
@@ -72,7 +72,7 @@ void core_omp_zlanhe_aux(plasma_enum_t norm, plasma_enum_t uplo,
                         value[i] = 0.0;
 
                     for (int j = 0; j < n; j++) {
-                        value[j] += cabs((double)A[lda*j+j]);
+                        value[j] += cabs(A[lda*j+j]);
                         for (int i = j+1; i < n; i++) {
                             value[i] += cabs(A[lda*j+i]);
                             value[j] += cabs(A[lda*j+i]);

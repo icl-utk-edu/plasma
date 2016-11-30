@@ -6,7 +6,7 @@
  *  University of Tennessee,  US,
  *  University of Manchester, UK.
  *
- * @precisions normal z -> c
+ * @precisions normal z -> s d c
  *
  **/
 
@@ -19,11 +19,11 @@
 
 /***************************************************************************//**
  *
- * @ingroup plasma_lanhe
+ * @ingroup plasma_lansy
  *
  *  Returns the norm of a Hermitian matrix as
  *
- *     zlanhe = ( max(abs(A(i,j))), NORM = PlasmaMaxNorm
+ *     zlansy = ( max(abs(A(i,j))), NORM = PlasmaMaxNorm
  *              (
  *              ( norm1(A),         NORM = PlasmaOneNorm
  *              (
@@ -70,11 +70,13 @@
  *
  *******************************************************************************
  *
- * @sa plasma_omp_zlanhe
- * @sa plasma_clanhe
+ * @sa plasma_omp_zlansy
+ * @sa plasma_clansy
+ * @sa plasma_dlansy
+ * @sa plasma_slansy
  *
  ******************************************************************************/
-double plasma_zlanhe(plasma_enum_t norm, plasma_enum_t uplo,
+double plasma_zlansy(plasma_enum_t norm, plasma_enum_t uplo,
 					 int n,
                      plasma_complex64_t *pA, int lda)
 {
@@ -162,7 +164,7 @@ double plasma_zlanhe(plasma_enum_t norm, plasma_enum_t uplo,
         plasma_omp_zge2desc(pA, lda, A, sequence, &request);
 
         // Call tile async function.
-        plasma_omp_zlanhe(norm, uplo, A, work, &value, sequence, &request);
+        plasma_omp_zlansy(norm, uplo, A, work, &value, sequence, &request);
     }
     // implicit synchronization
 
@@ -180,10 +182,10 @@ double plasma_zlanhe(plasma_enum_t norm, plasma_enum_t uplo,
 
 /***************************************************************************//**
  *
- * @ingroup plasma_lanhe
+ * @ingroup plasma_lansy
  *
  *  Calculates the max, one, infinity or Frobenius norm of a Hermitian matrix.
- *  Non-blocking equivalent of plasma_zlanhe(). May return before the
+ *  Non-blocking equivalent of plasma_zlansy(). May return before the
  *  computation is finished. Operates on matrices stored by tiles. All matrices
  *  are passed through descriptors. All dimensions are taken from the
  *  descriptors. Allows for pipelining of operations at runtime.
@@ -222,11 +224,13 @@ double plasma_zlanhe(plasma_enum_t norm, plasma_enum_t uplo,
  *
  *******************************************************************************
  *
- * @sa plasma_zlanhe
- * @sa plasma_omp_clanhe
+ * @sa plasma_zlansy
+ * @sa plasma_omp_clansy
+ * @sa plasma_omp_dlansy
+ * @sa plasma_omp_slansy
  *
  ******************************************************************************/
-void plasma_omp_zlanhe(plasma_enum_t norm, plasma_enum_t uplo, plasma_desc_t A,
+void plasma_omp_zlansy(plasma_enum_t norm, plasma_enum_t uplo, plasma_desc_t A,
                        double *work, double *value,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {
@@ -274,5 +278,5 @@ void plasma_omp_zlanhe(plasma_enum_t norm, plasma_enum_t uplo, plasma_desc_t A,
     }
 
     // Call the parallel function.
-    plasma_pzlanhe(norm, uplo, A, work, value, sequence, request);
+    plasma_pzlansy(norm, uplo, A, work, value, sequence, request);
 }

@@ -32,6 +32,7 @@ void test_zlacpy(param_value_t param[], char *info);
 void test_zlag2c(param_value_t param[], char *info);
 void test_zlange(param_value_t param[], char *info);
 void test_zlanhe(param_value_t param[], char *info);
+void test_zlansy(param_value_t param[], char *info);
 void test_zlauum(param_value_t param[], char *info);
 void test_zpbsv(param_value_t param[], char *info);
 void test_zpbtrf(param_value_t param[], char *info);

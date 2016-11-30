@@ -297,6 +297,7 @@ lapack = [
     ('ssygv',                'dsygv',                'chegv',                'zhegv'               ),
     ('ssyssq',               'dsyssq',               'chessq',               'zhessq'              ),
     ('ssyssq',               'dsyssq',               'ssyssq',               'dsyssq'              ),
+    ('ssyssq',               'dsyssq',               'csyssq',               'zsyssq'              ),
     ('ssysv',                'dsysv',                'chesv',                'zhesv'               ),
     ('ssysv',                'dsysv',                'csysv',                'zsysv'               ),
     ('ssyt21',               'dsyt21',               'chet21',               'zhet21'              ),
