@@ -87,12 +87,20 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
 void plasma_pzlacpy(plasma_enum_t uplo, plasma_desc_t A, plasma_desc_t B,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_pzlange(plasma_enum_t norm, plasma_desc_t A,
-                    double *work, double *value,
+void plasma_pzlange(plasma_enum_t norm,
+                    plasma_desc_t A, double *work, double *value,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_pzlanhe(plasma_enum_t norm, plasma_enum_t uplo, plasma_desc_t A,
-                    double *work, double *value,
+void plasma_pzlanhe(plasma_enum_t norm, plasma_enum_t uplo,
+                    plasma_desc_t A, double *work, double *value,
+                    plasma_sequence_t *sequence, plasma_request_t *request);
+
+void plasma_pzlansy(plasma_enum_t norm, plasma_enum_t uplo,
+                    plasma_desc_t A, double *work, double *value,
+                    plasma_sequence_t *sequence, plasma_request_t *request);
+
+void plasma_pzlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
+                    plasma_desc_t A, double *work, double *value,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzlaset(plasma_enum_t uplo,

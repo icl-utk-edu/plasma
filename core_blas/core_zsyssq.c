@@ -15,7 +15,7 @@
 #include "core_lapack.h"
 
 /******************************************************************************/
-void core_zsyssq(int uplo,
+void core_zsyssq(plasma_enum_t uplo,
                  int n,
                  const plasma_complex64_t *A, int lda,
                  double *scale, double *sumsq)
@@ -23,11 +23,13 @@ void core_zsyssq(int uplo,
     int ione = 1;
     if (uplo == PlasmaUpper) {
         for (int j = 1; j < n; j++)
+            // TODO: Inline this operation.
             zlassq(&j, &A[lda*j], &ione, scale, sumsq);
     }
     else { // PlasmaLower
         for (int j = 0; j < n-1; j++) {
             int len = n-j-1;
+            // TODO: Inline this operation.
             zlassq(&len, &A[lda*j+j+1], &ione, scale, sumsq);
         }
     }
@@ -47,7 +49,7 @@ void core_zsyssq(int uplo,
 }
 
 /******************************************************************************/
-void core_omp_zsyssq(int uplo,
+void core_omp_zsyssq(plasma_enum_t uplo,
                      int n,
                      const plasma_complex64_t *A, int lda,
                      double *scale, double *sumsq,

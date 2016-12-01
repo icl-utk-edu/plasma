@@ -21,6 +21,7 @@ void core_zgessq(int m, int n,
 {
     int ione = 1;
     for (int j = 0; j < n; j++)
+        // TODO: Inline this operation.
         zlassq(&m, &A[j*lda], &ione, scale, sumsq);
 }
 

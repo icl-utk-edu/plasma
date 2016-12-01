@@ -24,8 +24,8 @@
  *  Parallel tile calculation of max, one, infinity or Frobenius matrix norm
  *  for a Hermitian matrix.
  ******************************************************************************/
-void plasma_pzlansy(plasma_enum_t norm, plasma_enum_t uplo, plasma_desc_t A,
-                    double *work, double *value,
+void plasma_pzlansy(plasma_enum_t norm, plasma_enum_t uplo,
+                    plasma_desc_t A, double *work, double *value,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Check sequence status.

@@ -1,0 +1,195 @@
+/**
+ *
+ * @file
+ *
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
+ *
+ * @precisions normal z -> c d s
+ *
+ **/
+
+#include "core_blas.h"
+#include "plasma_types.h"
+#include "core_lapack.h"
+
+// This is already defined in plasma_internal.h
+static inline int imin(int a, int b)
+{
+    if (a < b)
+        return a;
+    else
+        return b;
+}
+
+/******************************************************************************/
+void core_zlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
+                 int m, int n,
+                 const plasma_complex64_t *A, int lda,
+                 double *work, double *value)
+{
+    // Due to a bug in LAPACKE, this function always returns zero.
+    // *value = LAPACKE_zlantr_work(LAPACK_COL_MAJOR,
+    //                              lapack_const(norm), lapack_const(uplo),
+    //                              lapack_const(diag),
+    //                              m, n, A, lda, work);
+
+    // Calling LAPACK directly instead.
+    double zlantr(char*, char*, char*, int*, int*, void*, int*, void*);
+    char nrm = lapack_const(norm);
+    char upl = lapack_const(uplo);
+    char dia = lapack_const(diag);
+    *value = zlantr(&nrm, &upl, &dia, &m, &n, A, &lda, work);
+}
+
+/******************************************************************************/
+void core_omp_zlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
+                     int m, int n,
+                     const plasma_complex64_t *A, int lda,
+                     double *work, double *value,
+                     plasma_sequence_t *sequence, plasma_request_t *request)
+{
+    #pragma omp task depend(in:A[0:lda*n]) \
+                     depend(out:value[0:1])
+    {
+        if (sequence->status == PlasmaSuccess)
+            core_zlantr(norm, uplo, diag, m, n, A, lda, work, value);
+    }
+}
+
+/******************************************************************************/
+void core_omp_zlantr_aux(plasma_enum_t norm, plasma_enum_t uplo,
+                         plasma_enum_t diag,
+                         int m, int n,
+                         const plasma_complex64_t *A, int lda,
+                         double *value,
+                         plasma_sequence_t *sequence, plasma_request_t *request)
+{
+    switch (norm) {
+    case PlasmaOneNorm:
+        #pragma omp task depend(in:A[0:lda*n]) \
+                         depend(out:value[0:n])
+        {
+            if (sequence->status == PlasmaSuccess) {
+                if (uplo == PlasmaUpper) {
+                    if (diag == PlasmaNonUnit) {
+                        for (int j = 0; j < n; j++) {
+                            value[j] = cabs(A[lda*j]);
+                            for (int i = 1; i < imin(j+1, m); i++) {
+                                value[j] += cabs(A[lda*j+i]);
+                            }
+                        }
+                    }
+                    else { // PlasmaUnit
+                        int j;
+                        for (j = 0; j < imin(n, m); j++) {
+                            value[j] = 1.0;
+                            for (int i = 0; i < j; i++) {
+                                value[j] += cabs(A[lda*j+i]);
+                            }
+                        }
+                        for (; j < n; j++) {
+                            value[j] = cabs(A[lda*j]);
+                            for (int i = 1; i < m; i++) {
+                                value[j] += cabs(A[lda*j+i]);
+                            }
+                        }
+                    }
+                }
+                else { // PlasmaLower
+                    if (diag == PlasmaNonUnit) {
+                        int j;
+                        for (j = 0; j < imin(n, m); j++) {
+                            value[j] = cabs(A[lda*j+j]);
+                            for (int i = j+1; i < m; i++) {
+                                value[j] += cabs(A[lda*j+i]);
+                            }
+                        }
+                        for (; j < n; j++)
+                            value[j] = 0.0;
+                    }
+                    else { // PlasmaUnit
+                        int j;
+                        for (j = 0; j < imin(n, m); j++) {
+                            value[j] = 1.0;
+                            for (int i = j+1; i < m; i++) {
+                                value[j] += cabs(A[lda*j+i]);
+                            }
+                        }
+                        for (; j < n; j++)
+                            value[j] = 0.0;
+                    }
+                }
+            }
+        }
+        break;
+    case PlasmaInfNorm:
+        #pragma omp task depend(in:A[0:lda*n]) \
+                         depend(out:value[0:m])
+        {
+            if (sequence->status == PlasmaSuccess) {
+
+                if (uplo == PlasmaUpper) {            
+                    if (diag == PlasmaNonUnit) {
+                        for (int i = 0; i < m; i++)
+                            value[i] = 0.0;
+
+                        for (int j = 0; j < n; j++) {
+                            for (int i = 0; i < imin(j+1, m); i++) {
+                                value[i] += cabs(A[lda*j+i]);
+                            }
+                        }
+                    }
+                    else { // PlasmaUnit
+                        int i;
+                        for (i = 0; i < imin(m, n); i++)
+                            value[i] = 1.0;
+
+                        for (; i < m; i++)
+                            value[i] = 0.0;
+
+                        int j;
+                        for (j = 0; j < imin(n, m); j++) {
+                            for (int i = 0; i < j; i++) {
+                                value[i] += cabs(A[lda*j+i]);
+                            }
+                        }
+                        for (; j < n; j++) {
+                            for (int i = 0; i < m; i++) {
+                                value[i] += cabs(A[lda*j+i]);
+                            }
+                        }
+                    }
+                }
+                else { // PlasmaLower
+                    if (diag == PlasmaNonUnit) {
+                        for (int i = 0; i < m; i++)
+                            value[i] = 0.0;
+
+                        for (int j = 0; j < imin(n, m); j++) {
+                            for (int i = j; i < m; i++) {
+                                value[i] += cabs(A[lda*j+i]);
+                            }
+                        }
+                    }
+                    else { // PlasmaUnit
+                        int i;
+                        for (i = 0; i < imin(m, n); i++)
+                            value[i] = 1.0;
+
+                        for (; i < m; i++)
+                            value[i] = 0.0;
+
+                        for (int j = 0; j < imin(n, m); j++) {
+                            for (int i = j+1; i < m; i++) {
+                                value[i] += cabs(A[lda*j+i]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        break;
+    }
+}

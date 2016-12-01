@@ -96,6 +96,11 @@ struct routines_t routines[] =
     { "clansy", test_clansy },
     { "slansy", test_slansy },
 
+    { "zlantr", test_zlantr },
+    { "dlantr", test_dlantr },
+    { "clantr", test_clantr },
+    { "slantr", test_slantr },
+
     { "zpbsv", test_zpbsv },
     { "dpbsv", test_dpbsv },
     { "cpbsv", test_cpbsv },

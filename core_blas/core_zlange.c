@@ -49,7 +49,7 @@
  *          The specified norm of the given matrix A
  *
  ******************************************************************************/
-void core_zlange(int norm, int m, int n,
+void core_zlange(plasma_enum_t norm, int m, int n,
                  const plasma_complex64_t *A, int lda,
                  double *work, double *value)
 {

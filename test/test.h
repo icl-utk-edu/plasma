@@ -94,8 +94,8 @@ static const char * const ParamUsage[][2] = {
     {"--padb=", "padding added to ldb [default: 0]"},
     {"--padc=", "padding added to ldc [default: 0]"},
     {"--ntpf=", "number of threads for panel factorization [default: 1]"},
-    {"--norm=",
-        "type of matrix norm (one, two, frobenius, inf, max) [default: o]"},
+    {"--norm=[m|o|i|f]",
+        "type of matrix norm (max, one, inf, frobenius) [default: o]"},
 
     //------------------------------------------------------
     // output parameters

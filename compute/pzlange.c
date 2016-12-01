@@ -24,8 +24,8 @@
  *  Parallel tile calculation of max, one, infinity or Frobenius matrix norm
  *  for a general matrix.
  ******************************************************************************/
-void plasma_pzlange(plasma_enum_t norm, plasma_desc_t A,
-                    double *work, double *value,
+void plasma_pzlange(plasma_enum_t norm,
+                    plasma_desc_t A, double *work, double *value,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Check sequence status.
