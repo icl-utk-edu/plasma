@@ -22,6 +22,9 @@ extern "C" {
 #endif
 
 /******************************************************************************/
+void plasma_pzgbtrf(plasma_desc_t A, int *IPIV,
+                    plasma_sequence_t *sequence, plasma_request_t *request);
+
 void plasma_pzdesc2ge(plasma_desc_t A,
                       plasma_complex64_t *pA, int lda,
                       plasma_sequence_t *sequence,
