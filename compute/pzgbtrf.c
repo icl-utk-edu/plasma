@@ -79,7 +79,7 @@ void plasma_pzgbtrf(plasma_desc_t A, int *ipiv,
             int size_a11 = (A.gm-(k+1)*A.mb)*nvan;
 
             #pragma omp task depend(in:a00[0:size_a00]) \
-                             depend(in:ipivk[0:size_i]) \
+                             depend(inout:ipivk[0:size_i]) \
                              depend(inout:a01[0:size_a01]) \
                              depend(inout:a11[0:size_a11]) \
                              priority(n == k+1)
@@ -116,9 +116,10 @@ void plasma_pzgbtrf(plasma_desc_t A, int *ipiv,
             }
         }
         #pragma omp task depend(in:ipivk[0:size_i])
-        {
-            for (int i = k*A.mb+1; i <= A.m; i++)
-                ipiv[i-1] += k*A.mb;
+        if (k > 0) {
+            for (int i = 0; i < imin(mak, nvak); i++) {
+                ipiv[k*A.mb+i] += k*A.mb;
+            }
         }
     }
 }
