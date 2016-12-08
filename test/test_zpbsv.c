@@ -84,7 +84,7 @@ void test_zpbsv(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    plasma_enum_t uplo = plasma_uplo_const_t(param[PARAM_UPLO].c);
+    plasma_enum_t uplo = plasma_uplo_const(param[PARAM_UPLO].c);
     int pada = param[PARAM_PADA].i;
     int n    = param[PARAM_N].i;
     int lda  = imax(1, n + pada);

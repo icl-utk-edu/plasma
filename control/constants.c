@@ -29,7 +29,7 @@
  * @retval PlasmaNonUnit if lapack_char = 'N'
  * @retval PlasmaUnit    if lapack_char = 'U'
  ******************************************************************************/
-plasma_enum_t plasma_diag_const_t(char lapack_char)
+plasma_enum_t plasma_diag_const(char lapack_char)
 {
     switch (lapack_char) {
     case 'N': case 'n': return PlasmaNonUnit;
@@ -42,7 +42,7 @@ plasma_enum_t plasma_diag_const_t(char lapack_char)
  * @retval PlasmaForward  if lapack_char = 'F'
  * @retval PlasmaBackward if lapack_char = 'B'
  ******************************************************************************/
-plasma_enum_t plasma_direct_const_t(char lapack_char)
+plasma_enum_t plasma_direct_const(char lapack_char)
 {
     switch (lapack_char) {
     case 'F': case 'f': return PlasmaForward;
@@ -58,7 +58,7 @@ plasma_enum_t plasma_direct_const_t(char lapack_char)
  * @retval PlasmaInfNorm       if lapack_char = 'I|i'
  * @retval PlasmaMaxNorm       if lapack_char = 'M|m'
  ******************************************************************************/
-plasma_enum_t plasma_norm_const_t(char lapack_char)
+plasma_enum_t plasma_norm_const(char lapack_char)
 {
     switch(lapack_char) {
     case 'O': case 'o': case '1':           return PlasmaOneNorm;
@@ -78,7 +78,7 @@ plasma_enum_t plasma_norm_const_t(char lapack_char)
  * @retval PlasmaRight     if lapack_char = 'R'
  ******************************************************************************/
 // @retval PlasmaBothSides if lapack_char = 'B'  // for trevc
-plasma_enum_t plasma_side_const_t(char lapack_char)
+plasma_enum_t plasma_side_const(char lapack_char)
 {
     switch (lapack_char) {
     case 'L': case 'l': return PlasmaLeft;
@@ -93,7 +93,7 @@ plasma_enum_t plasma_side_const_t(char lapack_char)
  * @retval PlasmaColumnwise if lapack_char = 'C'
  * @retval PlasmaRowwise    if lapack_char = 'R'
  ******************************************************************************/
-plasma_enum_t plasma_storev_const_t(char lapack_char)
+plasma_enum_t plasma_storev_const(char lapack_char)
 {
     switch (lapack_char) {
     case 'C': case 'c': return PlasmaColumnwise;
@@ -107,7 +107,7 @@ plasma_enum_t plasma_storev_const_t(char lapack_char)
  * @retval PlasmaTrans     if lapack_char = 'T'
  * @retval PlasmaConjTrans if lapack_char = 'C'
  ******************************************************************************/
-plasma_enum_t plasma_trans_const_t(char lapack_char)
+plasma_enum_t plasma_trans_const(char lapack_char)
 {
     switch (lapack_char) {
     case 'N': case 'n': return PlasmaNoTrans;
@@ -122,7 +122,7 @@ plasma_enum_t plasma_trans_const_t(char lapack_char)
  * @retval PlasmaLower   if lapack_char = 'L'
  * @retval PlasmaGeneral otherwise
  ******************************************************************************/
-plasma_enum_t plasma_uplo_const_t(char lapack_char)
+plasma_enum_t plasma_uplo_const(char lapack_char)
 {
     switch (lapack_char) {
     case 'U': case 'u': return PlasmaUpper;

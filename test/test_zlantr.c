@@ -82,9 +82,9 @@ void test_zlantr(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    plasma_enum_t norm = plasma_norm_const_t(param[PARAM_NORM].c);
-    plasma_enum_t uplo = plasma_uplo_const_t(param[PARAM_UPLO].c);
-    plasma_enum_t diag = plasma_diag_const_t(param[PARAM_DIAG].c);
+    plasma_enum_t norm = plasma_norm_const(param[PARAM_NORM].c);
+    plasma_enum_t uplo = plasma_uplo_const(param[PARAM_UPLO].c);
+    plasma_enum_t diag = plasma_diag_const(param[PARAM_DIAG].c);
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;

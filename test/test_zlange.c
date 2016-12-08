@@ -76,7 +76,7 @@ void test_zlange(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    plasma_enum_t norm = plasma_norm_const_t(param[PARAM_NORM].c);
+    plasma_enum_t norm = plasma_norm_const(param[PARAM_NORM].c);
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
