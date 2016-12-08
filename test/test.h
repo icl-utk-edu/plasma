@@ -29,6 +29,7 @@ typedef enum {
     PARAM_SIDE,   // left of right side application
     PARAM_UPLO,   // general rectangular or upper or lower triangular
     PARAM_DIAG,   // non-unit or unit diagonal
+    PARAM_STOREV, // columnwise or rowwise operation
     PARAM_M,      // M dimension
     PARAM_N,      // N dimension
     PARAM_K,      // K dimension
@@ -79,6 +80,7 @@ static const char * const ParamUsage[][2] = {
     {"--uplo=[g|u|l]",
         "general rectangular or upper or lower triangular matrix [default: l]"},
     {"--diag=[n|u]", "not unit triangular or unit matrix [default: n]"},
+    {"--storev=[c|r]", "columnwise or rowwise [default: c]"},
     {"--m=", "M dimension (number of rows) [default: 1000]"},
     {"--n=", "N dimension (number of columns) [default: 1000]"},
     {"--k=", "K dimension (number of rows or columns) [default: 1000]"},

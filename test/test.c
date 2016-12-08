@@ -26,6 +26,11 @@ struct routines_t {
 
 struct routines_t routines[] =
 {
+    { "dzamax", test_dzamax },
+    { "damax",  test_damax  },
+    { "scamax", test_scamax },
+    { "samax",  test_samax  },
+
     { "zgbtrf", test_zgbtrf },
     { "dgbtrf", test_dgbtrf },
     { "cgbtrf", test_cgbtrf },
@@ -455,6 +460,9 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--diag="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_DIAG]);
 
+        else if (param_starts_with(argv[i], "--storev="))
+            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_STOREV]);
+
         //--------------------------------------------------
         // Scan integer parameters.
         //--------------------------------------------------
@@ -555,6 +563,8 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_char('l', &param[PARAM_UPLO]);
     if (param[PARAM_DIAG].num == 0)
         param_add_char('n', &param[PARAM_DIAG]);
+    if (param[PARAM_STOREV].num == 0)
+        param_add_char('c', &param[PARAM_STOREV]);
 
     //--------------------------------------------------
     // Set integer parameters.

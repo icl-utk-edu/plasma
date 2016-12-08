@@ -269,6 +269,11 @@ int core_zunmqr(plasma_enum_t side, plasma_enum_t trans,
                       plasma_complex64_t *work, int ldwork);
 
 /******************************************************************************/
+void core_omp_dzamax(int storev, int m, int n,
+                     const plasma_complex64_t *A, int lda,
+                     double *values,
+                     plasma_sequence_t *sequence, plasma_request_t *request);
+
 void core_omp_zgeadd(
     plasma_enum_t transa, int m, int n,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,

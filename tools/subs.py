@@ -119,6 +119,7 @@ blas = [
     ('isamax',               'idamax',               'icamax',               'izamax'              ),
     ('isamax',               'idamax',               'isamax',               'idamax'              ),
     ('isamin',               'idamin',               'icamin',               'izamin'              ),
+    ('samax',                'damax',                'scamax',               'dzamax'              ),
     ('sasum',                'dasum',                'scasum',               'dzasum'              ),
     ('saxpy',                'daxpy',                'caxpy',                'zaxpy'               ),
     ('scopy',                'dcopy',                'ccopy',                'zcopy'               ),

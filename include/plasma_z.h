@@ -25,6 +25,10 @@ extern "C" {
 /***************************************************************************//**
  *  Standard interface.
  **/
+int plasma_dzamax(plasma_enum_t storev,
+                  int m, int n,
+                  plasma_complex64_t *pA, int lda, double *values);
+
 int plasma_zgbtrf(int m, int n, int kl, int ku,
                   plasma_complex64_t *pA, int lda, int *IPIV);
 
@@ -206,6 +210,10 @@ int plasma_zunmqr(plasma_enum_t side, plasma_enum_t trans,
 /***************************************************************************//**
  *  Tile asynchronous interface.
  **/
+void plasma_omp_dzamax(plasma_enum_t storev, plasma_desc_t A,
+                       double *work, double *values,
+                       plasma_sequence_t *sequence, plasma_request_t *request);
+
 void plasma_omp_zgbtrf(plasma_desc_t A, int *IPIV,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 void plasma_omp_zgbtrs(plasma_desc_t AB, int *IPIV, plasma_desc_t B,
