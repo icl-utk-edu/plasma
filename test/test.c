@@ -26,6 +26,11 @@ struct routines_t {
 
 struct routines_t routines[] =
 {
+    { "clag2z", test_clag2z },
+    { "", NULL },
+    { "", NULL },
+    { "", NULL },
+
     { "dzamax", test_dzamax },
     { "damax",  test_damax  },
     { "scamax", test_scamax },
@@ -77,7 +82,7 @@ struct routines_t routines[] =
     { "sgetrf", test_sgetrf },
 
     { "zhemm", test_zhemm },
-    { "", NULL },  // blank to keep test -h nicely aligned
+    { "", NULL },
     { "chemm", test_chemm },
     { "", NULL },
 
@@ -89,6 +94,16 @@ struct routines_t routines[] =
     { "zherk", test_zherk },
     { "", NULL },
     { "cherk", test_cherk },
+    { "", NULL },
+
+    { "zlacpy", test_zlacpy },
+    { "dlacpy", test_dlacpy },
+    { "clacpy", test_clacpy },
+    { "slacpy", test_slacpy },
+
+    { "zlag2c", test_zlag2c },
+    { "", NULL },
+    { "", NULL },
     { "", NULL },
 
     { "zlange", test_zlange },
@@ -121,6 +136,11 @@ struct routines_t routines[] =
     { "claset", test_claset },
     { "slaset", test_slaset },
 
+    { "zlauum", test_zlauum },
+    { "dlauum", test_dlauum },
+    { "clauum", test_clauum },
+    { "slauum", test_slauum },
+
     { "zpbsv", test_zpbsv },
     { "dpbsv", test_dpbsv },
     { "cpbsv", test_cpbsv },
@@ -141,6 +161,11 @@ struct routines_t routines[] =
     { "cpotrf", test_cpotrf },
     { "spotrf", test_spotrf },
 
+    { "zpotri", test_zpotri },
+    { "dpotri", test_dpotri },
+    { "cpotri", test_cpotri },
+    { "spotri", test_spotri },
+
     { "zpotrs", test_zpotrs },
     { "dpotrs", test_dpotrs },
     { "cpotrs", test_cpotrs },
@@ -151,15 +176,15 @@ struct routines_t routines[] =
     { "csymm", test_csymm },
     { "ssymm", test_ssymm },
 
-    { "zsyrk", test_zsyrk },
-    { "dsyrk", test_dsyrk },
-    { "csyrk", test_csyrk },
-    { "ssyrk", test_ssyrk },
-
     { "zsyr2k", test_zsyr2k },
     { "dsyr2k", test_dsyr2k },
     { "csyr2k", test_csyr2k },
     { "ssyr2k", test_ssyr2k },
+
+    { "zsyrk", test_zsyrk },
+    { "dsyrk", test_dsyrk },
+    { "csyrk", test_csyrk },
+    { "ssyrk", test_ssyrk },
 
     { "ztradd", test_ztradd },
     { "dtradd", test_dtradd },
