@@ -112,6 +112,11 @@ void core_zlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
                  const plasma_complex64_t *A, int lda,
                  double *work, double *value);
 
+void core_zlascl(plasma_enum_t uplo,
+                 double cfrom, double cto,
+                 int m, int n,
+                 const plasma_complex64_t *A, int lda);
+
 void core_zlaset(plasma_enum_t uplo,
                  int m, int n,
                  plasma_complex64_t alpha, plasma_complex64_t beta,
@@ -421,6 +426,12 @@ void core_omp_zlantr_aux(plasma_enum_t norm, plasma_enum_t uplo,
                          double *value,
                          plasma_sequence_t *sequence,
                          plasma_request_t *request);
+
+void core_omp_zlascl(plasma_enum_t uplo,
+                     double cfrom, double cto,
+                     int m, int n,
+                     const plasma_complex64_t *A, int lda,
+                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void core_omp_zlaset(plasma_enum_t uplo,
                      int mb, int nb,

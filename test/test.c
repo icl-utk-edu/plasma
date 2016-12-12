@@ -111,6 +111,11 @@ struct routines_t routines[] =
     { "clantr", test_clantr },
     { "slantr", test_slantr },
 
+    { "zlascl", test_zlascl },
+    { "dlascl", test_dlascl },
+    { "clascl", test_clascl },
+    { "slascl", test_slascl },
+
     { "zlaset", test_zlaset },
     { "dlaset", test_dlaset },
     { "claset", test_claset },
