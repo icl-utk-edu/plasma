@@ -22,9 +22,8 @@
  *
  * @ingroup plasma_gbtrs
  *
- *  Solves a system of linear equations A * X = B with a Hermitian positive definite
- *  matrix A using the Cholesky factorization of A (i.e., A = L*L^T or A = U^T*U)
- *  computed by plasma_zpbtrf.
+ *  Solves a system of linear equations A * X = B with triangular factorization
+ *  computed by plasma_zpbtrf or plasma_zgbtrf.
  *
  *******************************************************************************
  *
@@ -88,27 +87,27 @@ int plasma_zgbtrs(int n, int kl, int ku, int nrhs,
     // Check input arguments.
     if (n < 0) {
         plasma_error("illegal value of n");
-        return -2;
+        return -1;
     }
     if (kl < 0) {
         plasma_error("illegal value of kd");
-        return -3;
+        return -2;
     }
     if (ku < 0) {
         plasma_error("illegal value of ku");
-        return -4;
+        return -3;
     }
     if (nrhs < 0) {
         plasma_error("illegal value of nrhs");
-        return -5;
+        return -4;
     }
     if (ldab < imax(1, 1+kl+ku)) {
         plasma_error("illegal value of ldab");
-        return -7;
+        return -6;
     }
     if (ldb < imax(1, n)) {
         plasma_error("illegal value of ldb");
-        return -10;
+        return -9;
     }
 
     // quick return
@@ -184,7 +183,7 @@ int plasma_zgbtrs(int n, int kl, int ku, int nrhs,
  * @ingroup plasma_gbtrs
  *
  *  Solves a system of linear equations using previously
- *  computed Cholesky factorization.
+ *  computed factorization.
  *  Non-blocking tile version of plasma_zgbtrs().
  *  May return before the computation is finished.
  *  Operates on matrices stored by tiles.
