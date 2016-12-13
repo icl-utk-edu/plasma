@@ -22,6 +22,34 @@
 
 /***************************************************************************//**
  *
+ * @ingroup plasma_gbtrf
+ *
+ * Computes an LU factorization of a real m-by-n band matrix A
+ * using partial pivoting with row interchanges.
+ *
+ * @param[in] m
+ *          The number of rows of the matrix A. n >= 0.
+ *
+ * @param[in] n
+ *          The number of columns of the matrix A. n >= 0.
+ *
+ * @param[in] kl
+ *          The number of subdiagonals within the band of A. kl >= 0.
+ *
+ * @param[in] ku
+ *          The number of superdiagonals within the band of A. ku >= 0.
+ *
+ * @param[in,out] AB
+ *          Details of the LU factorization of the band matrix A, as
+ *          computed by plasma_zgbtrf.
+ *
+ * @param[in] ldab
+ *          The leading dimension of the array AB.
+ *
+ * @param[out] IPIV
+ *          The pivot indices; for 1 <= i <= min(m,n), row i of the
+ *          matrix was interchanged with row IPIV(i).
+ *
  ******************************************************************************/
 int plasma_zgbtrf(int m, int n, int kl, int ku,
                   plasma_complex64_t *pAB, int ldab, int *IPIV)
