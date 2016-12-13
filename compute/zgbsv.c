@@ -166,7 +166,8 @@ int plasma_zgbsv(int n, int kl, int ku, int nrhs,
         plasma_omp_zdesc2ge(B, pB, ldb, sequence, &request);
     }
 
-    // Free matrix A in tile layout.
+    // Free matrices  in tile layout.
+    plasma_desc_destroy(&B);
     plasma_desc_destroy(&AB);
 
     // Return status.
