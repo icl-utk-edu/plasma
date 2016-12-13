@@ -70,7 +70,7 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
             }
             #pragma omp taskwait
 
-            for (int i = k*A.mb+1; i <= A.m; i++)
+            for (int i = k*A.mb+1; i <= imin(A.m, k*A.mb+nvak); i++)
                 ipiv[i-1] += k*A.mb;
         }
         // update
