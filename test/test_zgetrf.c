@@ -87,6 +87,7 @@ void test_zgetrf(param_value_t param[], char *info)
 
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
+    tol *= sqrt(m*n);
 
     //================================================================
     // Set tuning parameters.
