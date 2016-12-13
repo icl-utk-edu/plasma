@@ -29,10 +29,14 @@ int plasma_dzamax(plasma_enum_t storev,
                   int m, int n,
                   plasma_complex64_t *pA, int lda, double *values);
 
+int plasma_zgbsv(int n, int kl, int ku, int nrhs,
+                 plasma_complex64_t *pAB, int ldab, int *IPIV,
+                 plasma_complex64_t *pB,  int ldb);
+
 int plasma_zgbtrf(int m, int n, int kl, int ku,
                   plasma_complex64_t *pA, int lda, int *IPIV);
 
-int plasma_zgbtrs(int m, int n, int kl, int ku, int nrhs,
+int plasma_zgbtrs(int n, int kl, int ku, int nrhs,
                   plasma_complex64_t *pAB, int ldab,
                   int *ipiv,
                   plasma_complex64_t *pB,  int ldb);
@@ -224,8 +228,12 @@ void plasma_omp_dzamax(plasma_enum_t storev, plasma_desc_t A,
                        double *work, double *values,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 
+void plasma_omp_zgbsv(plasma_desc_t AB, int *IPIV, plasma_desc_t B,
+                      plasma_sequence_t *sequence, plasma_request_t *request);
+
 void plasma_omp_zgbtrf(plasma_desc_t A, int *IPIV,
                        plasma_sequence_t *sequence, plasma_request_t *request);
+
 void plasma_omp_zgbtrs(plasma_desc_t AB, int *IPIV, plasma_desc_t B,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 

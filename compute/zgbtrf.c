@@ -22,6 +22,36 @@
 
 /***************************************************************************//**
  *
+ * @ingroup plasma_gbtrf
+ *
+ * Computes an LU factorization of a real m-by-n band matrix A
+ * using partial pivoting with row interchanges.
+ *
+ * *******************************************************************************
+ *
+ * @param[in] m
+ *          The number of rows of the matrix A. n >= 0.
+ *
+ * @param[in] n
+ *          The number of columns of the matrix A. n >= 0.
+ *
+ * @param[in] kl
+ *          The number of subdiagonals within the band of A. kl >= 0.
+ *
+ * @param[in] ku
+ *          The number of superdiagonals within the band of A. ku >= 0.
+ *
+ * @param[in,out] AB
+ *          Details of the LU factorization of the band matrix A, as
+ *          computed by plasma_zgbtrf.
+ *
+ * @param[in] ldab
+ *          The leading dimension of the array AB.
+ *
+ * @param[out] IPIV
+ *          The pivot indices; for 1 <= i <= min(m,n), row i of the
+ *          matrix was interchanged with row IPIV(i).
+ *
  ******************************************************************************/
 int plasma_zgbtrf(int m, int n, int kl, int ku,
                   plasma_complex64_t *pAB, int ldab, int *IPIV)
@@ -120,6 +150,38 @@ int plasma_zgbtrf(int m, int n, int kl, int ku,
 }
 
 /***************************************************************************//**
+ *
+ * Computes an LU factorization of a real m-by-n band matrix A
+ * using partial pivoting with row interchanges.
+ * Non-blocking tile version of plasma_zgbsv().
+ * Operates on matrices stored by tiles.
+ * All matrices are passed through descriptors.
+ * All dimensions are taken from the descriptors.
+ * Allows for pipelining of operations at runtime.
+ *
+ * *******************************************************************************
+ *
+ * @param[in,out] AB
+ *          Descriptor of matrix A.
+ *
+ * @param[out] IPIV
+ *          The pivot indices; for 1 <= i <= min(m,n), row i of the
+ *          matrix was interchanged with row IPIV(i).
+ *
+ * @param[in] sequence
+ *          Identifies the sequence of function calls that this call belongs to
+ *          (for completion checks and exception handling purposes).  Check
+ *          the sequence->status for errors.
+ *
+ * @param[out] request
+ *          Identifies this function call (for exception handling purposes).
+ *
+ * @retval void
+ *          Errors are returned by setting sequence->status and
+ *          request->status to error values.  The sequence->status and
+ *          request->status should never be set to PlasmaSuccess (the
+ *          initial values) since another async call may be setting a
+ *          failure value at the same time.
  *
  ******************************************************************************/
 void plasma_omp_zgbtrf(plasma_desc_t AB, int *IPIV,

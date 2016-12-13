@@ -36,6 +36,11 @@ struct routines_t routines[] =
     { "scamax", test_scamax },
     { "samax",  test_samax  },
 
+    { "zgbsv",  test_zgbsv },
+    { "dgbsv",  test_dgbsv },
+    { "cgbsv",  test_cgbsv },
+    { "sgbsv",  test_sgbsv },
+
     { "zgbtrf", test_zgbtrf },
     { "dgbtrf", test_dgbtrf },
     { "cgbtrf", test_cgbtrf },
