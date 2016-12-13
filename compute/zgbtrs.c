@@ -28,33 +28,29 @@
  *
  *******************************************************************************
  *
- * @param[in] uplo
- *          - PlasmaUpper: Upper triangle of A is stored;
- *          - PlasmaLower: Lower triangle of A is stored.
- *
  * @param[in] n
  *          The order of the matrix A. n >= 0.
  *
- * @param[in] kd
- *          The number of suuperdiagonals within the band of A if uplo is upper,
- *          or the number of suuperdiagonals if uplo is lower. kd >= 0.
+ * @param[in] kl
+ *          The number of subdiagonals within the band of A. kl >= 0.
+ *
+ * @param[in] ku
+ *          The number of superdiagonals within the band of A. ku >= 0.
  *
  * @param[in] nrhs
  *          The number of right hand sides, i.e., the number of
  *          columns of the matrix B. nrhs >= 0.
  *
  * @param[in,out] AB
- *          The triangular factor U or L from the Cholesky
- *          factorization A = U^H*U or A = L*L^H, computed by
- *          plasma_zpotrf.
- *          Remark: If out-of-place layout translation is used, the
- *          matrix A can be considered as input, however if inplace
- *          layout translation is enabled, the content of A will be
- *          reordered for computation and restored before exiting the
- *          function.
+ *          Details of the LU factorization of the band matrix A, as
+ *          computed by plasma_zgbtrf.
  *
  * @param[in] ldab
  *          The leading dimension of the array AB.
+ *
+ * @param[in] IPIV
+ *          The pivot indices; for 1 <= i <= min(m,n), row i of the
+ *          matrix was interchanged with row IPIV(i).
  *
  * @param[in,out] B
  *          On entry, the n-by-nrhs right hand side matrix B.
@@ -77,7 +73,7 @@
  * @sa plasma_zpbtrf
  *
  ******************************************************************************/
-int plasma_zgbtrs(int m, int n, int kl, int ku, int nrhs,
+int plasma_zgbtrs(int n, int kl, int ku, int nrhs,
                   plasma_complex64_t *pAB, int ldab,
                   int *IPIV,
                   plasma_complex64_t *pB,  int ldb)
@@ -90,10 +86,6 @@ int plasma_zgbtrs(int m, int n, int kl, int ku, int nrhs,
     }
 
     // Check input arguments.
-    if (m < 0) {
-        plasma_error("illegal value of m");
-        return -1;
-    }
     if (n < 0) {
         plasma_error("illegal value of n");
         return -2;
@@ -136,14 +128,14 @@ int plasma_zgbtrs(int m, int n, int kl, int ku, int nrhs,
                                // and we need extra NB space on the bottom
     int retval;
     retval = plasma_desc_general_band_create(PlasmaComplexDouble, PlasmaGeneral,
-                                             nb, nb, lm, n, 0, 0, m, n, kl, ku,
+                                             nb, nb, lm, n, 0, 0, n, n, kl, ku,
                                              &AB);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_band_create() failed");
         return retval;
     }
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        m, nrhs, 0, 0, m, nrhs, &B);
+                                        n, nrhs, 0, 0, n, nrhs, &B);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         plasma_desc_destroy(&AB);

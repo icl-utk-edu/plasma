@@ -174,7 +174,7 @@ void test_zgbtrf(param_value_t param[], char *info)
         if (m == n) {
             // compute the residual norm ||A-bx||
             int nrhs = param[PARAM_NRHS].i;
-            int ldb = imax(1, m + param[PARAM_PADB].i);
+            int ldb = imax(1, n + param[PARAM_PADB].i);
 
             // set up right-hand-side B
             plasma_complex64_t *B = NULL;
@@ -189,26 +189,26 @@ void test_zgbtrf(param_value_t param[], char *info)
             plasma_complex64_t *X = NULL;
             X = (plasma_complex64_t*)malloc((size_t)ldx*nrhs*sizeof(plasma_complex64_t));
             assert(X != NULL);
-            LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'F', m, nrhs, B, ldb, X, ldx);
+            LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'F', n, nrhs, B, ldb, X, ldx);
 
             // solve for X
-            int iinfo = plasma_zgbtrs(m, n, kl, ku, nrhs, AB, ldab, IPIV, X, ldb);
+            int iinfo = plasma_zgbtrs(n, kl, ku, nrhs, AB, ldab, IPIV, X, ldb);
             if (iinfo != 0) printf( " zpbtrs failed with info = %d\n", iinfo );
 
             // compute residual vector
-            cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, nrhs, n,
+            cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, nrhs, n,
                         CBLAS_SADDR(zmone), Aref, lda,
                                             X, ldx,
                         CBLAS_SADDR(zone),  B, ldb);
 
             // compute various norms
             double *work = NULL;
-            work = (double*)malloc((size_t)m*sizeof(double));
+            work = (double*)malloc((size_t)n*sizeof(double));
             assert(work != NULL);
 
-            double Anorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'F', m, n,    A, lda, work);
-            double Xnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', m, nrhs, X, ldb, work);
-            double Rnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', m, nrhs, B, ldb, work);
+            double Anorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'F', n, n,    A, lda, work);
+            double Xnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', n, nrhs, X, ldb, work);
+            double Rnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', n, nrhs, B, ldb, work);
             double residual = Rnorm/(n*Anorm*Xnorm);
 
             param[PARAM_ERROR].d = residual;
