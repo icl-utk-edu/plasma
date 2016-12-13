@@ -29,7 +29,7 @@
 
 /***************************************************************************//**
  *
- * @brief Tests ZGBTRF.
+ * @brief Tests ZGBSV.
  *
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
@@ -125,7 +125,7 @@ void test_zgbsv(param_value_t param[], char *info)
     lapack_int retval;
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*nrhs, X);
     assert(retval == 0);
-    // copy X to B
+    // copy X to B for test
     plasma_complex64_t *B = NULL;
     if (test) {
         B = (plasma_complex64_t*)malloc((size_t)ldb*nrhs*sizeof(plasma_complex64_t));
