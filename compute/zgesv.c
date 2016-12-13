@@ -23,8 +23,10 @@
 /***************************************************************************//**
  *
  ******************************************************************************/
-int plasma_zgetrf(int m, int n,
-                  plasma_complex64_t *pA, int lda, int *IPIV)
+int plasma_zgesv(int n, int nrhs,
+                 plasma_complex64_t *pA, int lda,
+                 int *IPIV,
+                 plasma_complex64_t *pB, int ldb)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -33,21 +35,25 @@ int plasma_zgetrf(int m, int n,
         return PlasmaErrorNotInitialized;
     }
 
-    if (m < 0) {
-        plasma_error("illegal value of m");
-        return -1;
-    }
     if (n < 0) {
         plasma_error("illegal value of n");
+        return -1;
+    }
+    if (nrhs < 0) {
+        plasma_error("illegal value of nrhs");
         return -2;
     }
-    if (lda < imax(1, m)) {
+    if (lda < imax(1, n)) {
         plasma_error("illegal value of lda");
         return -4;
     }
+    if (ldb < imax(1, n)) {
+        plasma_error("illegal value of ldb");
+        return -7;
+    }
 
     // quick return
-    if (imin(m, n) == 0)
+    if (imin(n, nrhs) == 0)
         return PlasmaSuccess;
 
     // Set tiling parameters.
@@ -60,9 +66,16 @@ int plasma_zgetrf(int m, int n,
 
     // Create tile matrix.
     plasma_desc_t A;
+    plasma_desc_t B;
     int retval;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        m, n, 0, 0, m, n, &A);
+                                        n, n, 0, 0, n, n, &A);
+    if (retval != PlasmaSuccess) {
+        plasma_error("plasma_desc_general_create() failed");
+        return retval;
+    }
+    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
+                                        n, nrhs, 0, 0, n, nrhs, &B);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
@@ -84,13 +97,14 @@ int plasma_zgetrf(int m, int n,
     {
         // Translate to tile layout.
         plasma_omp_zge2desc(pA, lda, A, sequence, &request);
+        plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
     }
 
 // #pragma omp parallel
 // #pragma omp master
 // {
-    // Call the tile async function.
-    plasma_omp_zgetrf(A, IPIV, sequence, &request);
+        // Call the tile async function.
+        plasma_omp_zgesv(A, IPIV, B, sequence, &request);
 
 // }
 
@@ -99,10 +113,12 @@ int plasma_zgetrf(int m, int n,
     {
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
+        plasma_omp_zdesc2ge(B, pB, ldb, sequence, &request);
     }
 
     // Free matrix A in tile layout.
     plasma_desc_destroy(&A);
+    plasma_desc_destroy(&B);
 
     // Return status.
     int status = sequence->status;
@@ -113,8 +129,9 @@ int plasma_zgetrf(int m, int n,
 /***************************************************************************//**
  *
  ******************************************************************************/
-void plasma_omp_zgetrf(plasma_desc_t A, int *IPIV,
-                       plasma_sequence_t *sequence, plasma_request_t *request)
+void plasma_omp_zgesv(plasma_desc_t A, int *IPIV,
+                      plasma_desc_t B,
+                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -130,6 +147,11 @@ void plasma_omp_zgetrf(plasma_desc_t A, int *IPIV,
         plasma_error("invalid A");
         return;
     }
+    if (plasma_desc_check(B) != PlasmaSuccess) {
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        plasma_error("invalid B");
+        return;
+    }
     if (sequence == NULL) {
         plasma_fatal_error("NULL sequence");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
@@ -142,9 +164,31 @@ void plasma_omp_zgetrf(plasma_desc_t A, int *IPIV,
     }
 
     // quick return
-    if (A.m == 0 || A.n == 0)
+    if (A.n == 0 || B.n == 0)
         return;
 
-    // Call the parallel function.
+    // Call the parallel functions.
     plasma_pzgetrf(A, IPIV, sequence, request);
+
+
+    for (int n = 0; n < B.nt; n++) {
+        int nvbn = plasma_tile_nview(B, n);
+        plasma_desc_t view = plasma_desc_view(B, 0, n*A.nb, B.m, nvbn);
+        core_zlaswp(view, 1, B.m, IPIV, 1);
+    }
+
+
+#pragma omp parallel
+#pragma omp master
+{
+    plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
+                  1.0, A,
+                       B,
+                  sequence, request);
+
+    plasma_pztrsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans, PlasmaNonUnit,
+                  1.0, A,
+                       B,
+                  sequence, request);
+}
 }

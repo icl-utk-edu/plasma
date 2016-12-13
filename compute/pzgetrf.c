@@ -137,10 +137,9 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
         #pragma omp task depend(in:ipiv[(imin(A.mt, A.nt)-1)*A.mb]) \
                          depend(inout:akk[0:makk*nakk])
         {
+            plasma_desc_t view = plasma_desc_view(A, 0, (k-1)*A.nb, A.m, A.nb);
             int k1 = k*A.mb+1;
             int k2 = imin(A.m, A.n);
-            int ione = 1;
-            plasma_desc_t view = plasma_desc_view(A, 0, (k-1)*A.nb, A.m, A.nb);
             core_zlaswp(view, k1, k2, ipiv, 1);
         }
     }
