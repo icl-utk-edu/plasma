@@ -192,7 +192,7 @@ void test_zgbtrf(param_value_t param[], char *info)
             LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'F', n, nrhs, B, ldb, X, ldx);
 
             // solve for X
-            int iinfo = plasma_zgbtrs(n, kl, ku, nrhs, AB, ldab, IPIV, X, ldb);
+            int iinfo = plasma_zgbtrs(PlasmaNoTrans, n, kl, ku, nrhs, AB, ldab, IPIV, X, ldb);
             if (iinfo != 0) printf( " zpbtrs failed with info = %d\n", iinfo );
 
             // compute residual vector

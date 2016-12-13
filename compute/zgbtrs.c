@@ -27,6 +27,11 @@
  *
  *******************************************************************************
  *
+ * @param[in] trans
+ *          - PlasmaNoTrans:   A is not transposed,
+ *          - PlasmaTrans:     A is transposed,
+ *          - PlasmaConjTrans: A is conjugate transposed.
+ *
  * @param[in] n
  *          The order of the matrix A. n >= 0.
  *
@@ -72,7 +77,7 @@
  * @sa plasma_zpbtrf
  *
  ******************************************************************************/
-int plasma_zgbtrs(int n, int kl, int ku, int nrhs,
+int plasma_zgbtrs(plasma_enum_t trans, int n, int kl, int ku, int nrhs,
                   plasma_complex64_t *pAB, int ldab,
                   int *IPIV,
                   plasma_complex64_t *pB,  int ldb)
@@ -85,29 +90,35 @@ int plasma_zgbtrs(int n, int kl, int ku, int nrhs,
     }
 
     // Check input arguments.
+    if ((trans != PlasmaNoTrans) &&
+        (trans != PlasmaTrans) &&
+        (trans != PlasmaConjTrans)) {
+        plasma_error("illegal value of trans");
+        return -1;
+    }
     if (n < 0) {
         plasma_error("illegal value of n");
-        return -1;
+        return -2;
     }
     if (kl < 0) {
         plasma_error("illegal value of kd");
-        return -2;
+        return -3;
     }
     if (ku < 0) {
         plasma_error("illegal value of ku");
-        return -3;
+        return -4;
     }
     if (nrhs < 0) {
         plasma_error("illegal value of nrhs");
-        return -4;
+        return -5;
     }
     if (ldab < imax(1, 1+kl+ku)) {
         plasma_error("illegal value of ldab");
-        return -6;
+        return -7;
     }
     if (ldb < imax(1, n)) {
         plasma_error("illegal value of ldb");
-        return -9;
+        return -10;
     }
 
     // quick return
@@ -161,7 +172,7 @@ int plasma_zgbtrs(int n, int kl, int ku, int nrhs,
         plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
 
         // Call the tile async function.
-        plasma_omp_zgbtrs(AB, IPIV, B, sequence, &request);
+        plasma_omp_zgbtrs(trans, AB, IPIV, B, sequence, &request);
 
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(B, pB, ldb, sequence, &request);
@@ -193,9 +204,10 @@ int plasma_zgbtrs(int n, int kl, int ku, int nrhs,
  *
  *******************************************************************************
  *
- * @param[in] uplo
- *          - PlasmaUpper: Upper triangle of A is stored;
- *          - PlasmaLower: Lower triangle of A is stored.
+ * @param[in] trans
+ *          - PlasmaNoTrans:   A is not transposed,
+ *          - PlasmaTrans:     A is transposed,
+ *          - PlasmaConjTrans: A is conjugate transposed.
  *
  * @param[in] AB
  *          The triangular factor U or L from the Cholesky factorization
@@ -230,7 +242,7 @@ int plasma_zgbtrs(int n, int kl, int ku, int nrhs,
  * @sa plasma_omp_zgbtrf
  *
  ******************************************************************************/
-void plasma_omp_zgbtrs(plasma_desc_t AB, int *IPIV, plasma_desc_t B,
+void plasma_omp_zgbtrs(plasma_enum_t trans, plasma_desc_t AB, int *IPIV, plasma_desc_t B,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
@@ -242,6 +254,13 @@ void plasma_omp_zgbtrs(plasma_desc_t AB, int *IPIV, plasma_desc_t B,
     }
 
     // Check input arguments.
+    if ((trans != PlasmaNoTrans) &&
+        (trans != PlasmaTrans) &&
+        (trans != PlasmaConjTrans)) {
+        plasma_error("illegal value of trans");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
     if (plasma_desc_check(AB) != PlasmaSuccess) {
         plasma_error("invalid A");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
@@ -268,16 +287,31 @@ void plasma_omp_zgbtrs(plasma_desc_t AB, int *IPIV, plasma_desc_t B,
         return;
 
     // Call the parallel functions.
-    plasma_pztbsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans,
-                  PlasmaUnit,
-                  1.0, AB,
-                       B,
-                  IPIV,
-                  sequence, request);
-    plasma_pztbsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans,
-                  PlasmaNonUnit,
-                  1.0, AB,
-                       B,
-                  IPIV,
-                  sequence, request);
+    if (trans == PlasmaNoTrans) {
+        plasma_pztbsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans,
+                      PlasmaUnit,
+                      1.0, AB,
+                           B,
+                      IPIV,
+                      sequence, request);
+        plasma_pztbsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans,
+                      PlasmaNonUnit,
+                      1.0, AB,
+                           B,
+                      IPIV,
+                      sequence, request);
+    } else {
+        plasma_pztbsm(PlasmaLeft, PlasmaUpper, trans,
+                      PlasmaNonUnit,
+                      1.0, AB,
+                           B,
+                      IPIV,
+                      sequence, request);
+        plasma_pztbsm(PlasmaLeft, PlasmaLower, trans,
+                      PlasmaUnit,
+                      1.0, AB,
+                           B,
+                      IPIV,
+                      sequence, request);
+    }
 }

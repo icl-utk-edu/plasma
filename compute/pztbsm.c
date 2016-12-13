@@ -186,12 +186,12 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                                     B(B.mt-k-1,        n), ldbk,
                             sequence, request);
                         if (IPIV != NULL) {
-                            int k1 = (B.mt-k-1)*A.nb;
+                            int k1 = 1+(B.mt-k-1)*A.nb;
                             int k2 = k1+mvbk-1;
-                            plasma_desc_t view = plasma_desc_view(A, (B.mt-k-1)*A.nb, n*A.nb, k*A.nb, mvbk);
+                            plasma_desc_t view = plasma_desc_view(B, 0, n*A.nb, A.m, nvbn);
                             view.type = PlasmaGeneral;
                             #pragma omp taskwait
-                            core_zlaswp(view, k1, k2, &IPIV[k1], 1);
+                            core_zlaswp(view, k1, k2, IPIV, -1);
                         }
                     }
                 }
