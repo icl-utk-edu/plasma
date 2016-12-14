@@ -27,8 +27,8 @@ void core_zlaswp(plasma_desc_t A, int k1, int k2, int *ipiv, int incx)
                 int m1 = m;
                 int m2 = ipiv[m]-1;
 
-                int lda1 = plasma_tile_mmain(A, m1/A.mb);
-                int lda2 = plasma_tile_mmain(A, m2/A.mb);
+                int lda1 = plasma_tile_mview(A, m1/A.mb);
+                int lda2 = plasma_tile_mview(A, m2/A.mb);
 
                 cblas_zswap(A.n,
                             A(m1/A.mb, 0) + m1%A.mb, lda1,
@@ -43,8 +43,8 @@ void core_zlaswp(plasma_desc_t A, int k1, int k2, int *ipiv, int incx)
                 int m1 = m;
                 int m2 = ipiv[m]-1;
 
-                int lda1 = plasma_tile_mmain(A, m1/A.mb);
-                int lda2 = plasma_tile_mmain(A, m2/A.mb);
+                int lda1 = plasma_tile_mview(A, m1/A.mb);
+                int lda2 = plasma_tile_mview(A, m2/A.mb);
 
                 cblas_zswap(A.n,
                             A(m1/A.mb, 0) + m1%A.mb, lda1,

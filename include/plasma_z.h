@@ -76,6 +76,10 @@ int plasma_zgeqrs(int m, int n, int nrhs,
                   plasma_desc_t T,
                   plasma_complex64_t *pB, int ldb);
 
+int plasma_zgesv(int n, int nrhs,
+                 plasma_complex64_t *pA, int lda, int *IPIV,
+                 plasma_complex64_t *pB, int ldb);
+
 int plasma_zgetrf(int m, int n,
                   plasma_complex64_t *pA, int lda, int *IPIV);
 
@@ -283,6 +287,10 @@ void plasma_omp_zgeqrf(plasma_desc_t A, plasma_desc_t T,
 void plasma_omp_zgeqrs(plasma_desc_t A, plasma_desc_t T,
                        plasma_desc_t B, plasma_workspace_t work,
                        plasma_sequence_t *sequence, plasma_request_t *request);
+
+void plasma_omp_zgesv(plasma_desc_t A, int *IPIV,
+                      plasma_desc_t B,
+                      plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_omp_zgetrf(plasma_desc_t A, int *IPIV,
                        plasma_sequence_t *sequence, plasma_request_t *request);

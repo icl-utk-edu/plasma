@@ -24,8 +24,7 @@
  *
  ******************************************************************************/
 int plasma_zgesv(int n, int nrhs,
-                 plasma_complex64_t *pA, int lda,
-                 int *IPIV,
+                 plasma_complex64_t *pA, int lda, int *IPIV,
                  plasma_complex64_t *pB, int ldb)
 {
     // Get PLASMA context.
