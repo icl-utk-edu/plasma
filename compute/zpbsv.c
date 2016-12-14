@@ -1,6 +1,6 @@
 /**
  *
- * @file zpbsv.c
+ * @file
  *
  *  PLASMA is a software package provided by:
  *  University of Tennessee, US,
@@ -284,7 +284,7 @@ void plasma_omp_zpbsv(plasma_enum_t uplo, plasma_desc_t AB, plasma_desc_t B,
     plasma_pzpbtrf(uplo, AB, sequence, request);
 
     plasma_pztbsm(PlasmaLeft, uplo,
-                  uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans, 
+                  uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans,
                   PlasmaNonUnit,
                   1.0, AB,
                        B,
@@ -292,7 +292,7 @@ void plasma_omp_zpbsv(plasma_enum_t uplo, plasma_desc_t AB, plasma_desc_t B,
                   sequence, request);
 
     plasma_pztbsm(PlasmaLeft, uplo,
-                  uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans, 
+                  uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans,
                   PlasmaNonUnit,
                   1.0, AB,
                        B,

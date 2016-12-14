@@ -300,7 +300,8 @@ void plasma_omp_zgbtrs(plasma_enum_t trans, plasma_desc_t AB, int *IPIV, plasma_
                            B,
                       IPIV,
                       sequence, request);
-    } else {
+    }
+    else {
         plasma_pztbsm(PlasmaLeft, PlasmaUpper, trans,
                       PlasmaNonUnit,
                       1.0, AB,

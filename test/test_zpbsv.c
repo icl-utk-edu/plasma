@@ -1,6 +1,6 @@
 /**
  *
- * @file test_zpbtrf.c
+ * @file
  *
  *  PLASMA is a software package provided by:
  *  University of Tennessee, US,
@@ -139,7 +139,8 @@ void test_zpbsv(param_value_t param[], char *info)
         for (i = 0; i < ldab; i++) AB[i + j*ldab] = 0.0;
         if (uplo == PlasmaUpper) {
             for (i = imax(0, j-kd); i <= j; i++) AB[i-j+kd + j*ldab] = A(i, j);
-        } else {
+        }
+        else {
             for (i = j; i <= imin(n-1, j+kd); i++) AB[i-j + j*ldab] = A(i, j);
         }
     }
@@ -153,7 +154,7 @@ void test_zpbsv(param_value_t param[], char *info)
 
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldx*nrhs, X);
     assert(retval == 0);
-    
+
     // copy B to X
     int ldb = ldx;
     plasma_complex64_t *B = NULL;
