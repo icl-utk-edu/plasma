@@ -231,7 +231,8 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
     }
 
     // Allocate tiled workspace for Infinity norm calculations
-    double *work  = (double*)malloc(((size_t)A.mt*A.n+A.n)*sizeof(double));
+    size_t lwork = imax((size_t)A.nt*A.n+A.n, (size_t)X.mt*X.n+(size_t)R.mt*R.n);
+    double *work  = (double*)malloc(((size_t)lwork)*sizeof(double));
     double *Rnorm = (double*)malloc(((size_t)R.n)*sizeof(double));
     double *Xnorm = (double*)malloc(((size_t)X.n)*sizeof(double));
 
@@ -419,6 +420,10 @@ void plasma_omp_zcposv(plasma_enum_t uplo,
     if (A.n == 0 || B.n == 0)
         return;
 
+    // Workspace for dzamax
+    double *workX = work;
+    double *workR = &work[X.mt*X.n];
+
     // Compute some constants.
     double cte;
     double eps = LAPACKE_dlamch_work('E');
@@ -452,8 +457,8 @@ void plasma_omp_zcposv(plasma_enum_t uplo,
 
     // Check whether the nrhs normwise backward error satisfies the
     // stopping criterion. If yes, set iter=0 and return.
-    plasma_pdzamax(PlasmaColumnwise, X, work, Xnorm, sequence, request);
-    plasma_pdzamax(PlasmaColumnwise, R, work, Rnorm, sequence, request);
+    plasma_pdzamax(PlasmaColumnwise, X, workX, Xnorm, sequence, request);
+    plasma_pdzamax(PlasmaColumnwise, R, workR, Rnorm, sequence, request);
     #pragma omp taskwait
     {
         cte = Anorm * eps * sqrt((double)A.n) * bwdmax;
@@ -493,8 +498,8 @@ void plasma_omp_zcposv(plasma_enum_t uplo,
 
         // Check, whether nrhs normwise backward error satisfies the
         // stopping criterion. If yes, set iter = iiter > 0 and return
-        plasma_pdzamax(PlasmaColumnwise, X, work, Xnorm, sequence, request);
-        plasma_pdzamax(PlasmaColumnwise, R, work, Rnorm, sequence, request);
+        plasma_pdzamax(PlasmaColumnwise, X, workX, Xnorm, sequence, request);
+        plasma_pdzamax(PlasmaColumnwise, R, workR, Rnorm, sequence, request);
         #pragma omp taskwait
         {
             int flag = 1;

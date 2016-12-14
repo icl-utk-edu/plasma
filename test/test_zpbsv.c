@@ -84,12 +84,13 @@ void test_zpbsv(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    plasma_enum_t uplo = plasma_uplo_const(param[PARAM_UPLO].c);
-    int pada = param[PARAM_PADA].i;
-    int n    = param[PARAM_N].i;
-    int lda  = imax(1, n + pada);
+    char uplo_ = param[PARAM_UPLO].c;
+    int pada   = param[PARAM_PADA].i;
+    int n      = param[PARAM_N].i;
+    int lda    = imax(1, n + pada);
 
-    int kd   = (uplo == PlasmaUpper ? param[PARAM_KU].i : param[PARAM_KL].i);
+    plasma_enum_t uplo = plasma_uplo_const(uplo_);
+    int kd = (uplo == PlasmaUpper ? param[PARAM_KU].i : param[PARAM_KL].i);
 
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
@@ -186,7 +187,7 @@ void test_zpbsv(param_value_t param[], char *info)
         plasma_complex64_t zmone = -1.0;
 
         // compute residual vector
-        cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, nrhs, n,
+        cblas_zhemm(CblasColMajor, CblasLeft, (CBLAS_UPLO) uplo, n, nrhs,
                     CBLAS_SADDR(zmone), A, lda,
                                         X, ldx,
                     CBLAS_SADDR(zone),  B, ldb);
@@ -196,7 +197,7 @@ void test_zpbsv(param_value_t param[], char *info)
         work = (double*)malloc((size_t)n*sizeof(double));
         assert(work != NULL);
 
-        double Anorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'F', n, n,    A, lda, work);
+        double Anorm = LAPACKE_zlanhe_work(LAPACK_COL_MAJOR, 'F', uplo_, n, A, lda, work);
         double Xnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', n, nrhs, X, ldb, work);
         double Rnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', n, nrhs, B, ldb, work);
         double residual = Rnorm/(n*Anorm*Xnorm);

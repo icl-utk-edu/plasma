@@ -72,10 +72,12 @@ blas_mixed = [
 
     # ----- mixed "zc" routines
     ('dsposv',               'zcposv'              ),
+    ('dsgesv',               'zcgesv'              ),
 
     # ----- regular routines
     ('daxpy',                'zaxpy'               ),
     ('ddot',                 'zdotc'               ),
+    ('dgeadd',               'zgeadd'              ),
     ('dgemm',                'zgemm'               ),
     ('dgeqrf',               'zgeqrf'              ),
     ('dgeqrs',               'zgeqrs'              ),
@@ -103,6 +105,7 @@ blas_mixed = [
     ('idamax',               'izamax'              ),
     ('slag2d',               'clag2z'              ),
     ('slansy',               'clanhe'              ),
+    ('slaswp',               'claswp'              ),
     ('slat2d',               'clat2z'              ),
     ('spotrf',               'cpotrf'              ),
     ('strmm',                'ctrmm'               ),
