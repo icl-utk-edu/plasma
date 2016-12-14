@@ -23,7 +23,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup plasma_zcposv
+ * @ingroup plasma_posv
  *
  *  Computes the solution to a system of linear equations A * X = B, where A is
  *  an n-by-n Hermitian positive definite matrix and X and B are n-by-nrhs matrices.
@@ -69,14 +69,13 @@
  *          matrix B. nrhs >= 0.
  *
  * @param[in,out] A
- *          The n-by-n symmetric positive definite (or Hermitian) coefficient
- *          matrix A. If uplo = PlasmaUpper, the leading n-by-n upper
- *          triangular part of A contains the upper triangular part of the
- *          matrix A, and the strictly lower triangular part of A is not
- *          referenced. If uplo = PlasmaLower, the leading n-by-n lower
- *          triangular part of A contains the lower triangular part of the
- *          matrix A, and the strictly upper triangular part of A is not
- *          referenced.
+ *          The n-by-n Hermitian positive definite coefficient matrix A.
+ *          If uplo = PlasmaUpper, the leading n-by-n upper triangular part of
+ *          A contains the upper triangular part of the matrix A, and the
+ *          strictly lower triangular part of A is not referenced.
+ *          If uplo = PlasmaLower, the leading n-by-n lower triangular part of
+ *          A contains the lower triangular part of the matrix A, and the
+ *          strictly upper triangular part of A is not referenced.
  *          On exit, contains the lower Cholesky factor matrix L,
  *          if uplo == PlasmaLower and upper Cholesky factor conj(L^T),
  *          otherwise.
@@ -257,7 +256,7 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
 
         // Call tile async function
         plasma_omp_zcposv(uplo, A, B, X, As, Xs, R, work, Rnorm, Xnorm, iter, sequence, &request);
-    
+
         // Translate back to LAPACK layout
         plasma_omp_zdesc2ge(X, pX, ldx, sequence, &request);
     }
@@ -282,7 +281,7 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
 
 /***************************************************************************//**
  *
- * @ingroup plasma_zcposv
+ * @ingroup plasma_posv
  *
  *  Solves a Hermitian positive definite system using iterative refinement
  *  with the Cholesky factor computed using plasma_cpotrf.
@@ -348,10 +347,10 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
  * @sa plasma_omp_zposv
  *
  ******************************************************************************/
-void plasma_omp_zcposv(plasma_enum_t uplo, 
-                       plasma_desc_t A,  plasma_desc_t B,  plasma_desc_t X, 
-                       plasma_desc_t As, plasma_desc_t Xs, plasma_desc_t R, 
-                       double *work,  double *Rnorm, double *Xnorm, int *iter,
+void plasma_omp_zcposv(plasma_enum_t uplo,
+                       plasma_desc_t A,  plasma_desc_t B,  plasma_desc_t X,
+                       plasma_desc_t As, plasma_desc_t Xs, plasma_desc_t R,
+                       double *work, double *Rnorm, double *Xnorm, int *iter,
                        plasma_sequence_t *sequence,
                        plasma_request_t  *request)
 {
@@ -471,7 +470,6 @@ void plasma_omp_zcposv(plasma_enum_t uplo,
 
     // Iterative refinement
     for (int iiter = 0; iiter < itermax; iiter++) {
-
         // Convert R from double to single precision, store result in Xs.
         plasma_pzlag2c(R, Xs, sequence, request);
 
@@ -518,7 +516,7 @@ void plasma_omp_zcposv(plasma_enum_t uplo,
 
     // Compute Cholesky factorization of A.
     plasma_pzpotrf(uplo, A, sequence, request);
-    
+
     // Solve the system A * X = B.
     plasma_pzlacpy(PlasmaGeneral, B, X, sequence, request);
     plasma_pztrsm(PlasmaLeft, uplo,

@@ -125,7 +125,7 @@ void test_zcposv(param_value_t param[], char *info)
         for (int j = 0; j < i; ++j) {
             A(j,i) = conj(A(i,j));
         }
-    } 
+    }
 
     // Initialize B
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*nrhs, B);
@@ -176,11 +176,11 @@ void test_zcposv(param_value_t param[], char *info)
                                            lda, work);
         double Xnorm = LAPACKE_zlange_work(mtrxLayout, mtrxNorm, n, nrhs, X,
                                            ldx, work);
-    
+
         // Calculate residual R = A*X-B, store result in B
         cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, nrhs, n,
-                    CBLAS_SADDR(alpha), Aref, lda, 
-                                        X,    ldx, 
+                    CBLAS_SADDR(alpha), Aref, lda,
+                                        X,    ldx,
                     CBLAS_SADDR(beta),  B,    ldb);
 
         // Calculate infinite norm of residual matrix R
@@ -188,7 +188,7 @@ void test_zcposv(param_value_t param[], char *info)
                                            ldb, work);
         // Calculate relative error
         double residual = Rnorm / ( n*Anorm*Xnorm );
-    
+
         param[PARAM_ERROR].d   = residual;
         param[PARAM_SUCCESS].i = residual < tol;
 

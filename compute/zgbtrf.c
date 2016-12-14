@@ -27,7 +27,7 @@
  * Computes an LU factorization of a real m-by-n band matrix A
  * using partial pivoting with row interchanges.
  *
- * *******************************************************************************
+ *******************************************************************************
  *
  * @param[in] m
  *          The number of rows of the matrix A. n >= 0.
@@ -101,7 +101,7 @@ int plasma_zgbtrf(int m, int n, int kl, int ku,
                                // this could fill the last tile of the panel,
                                // and we need extra NB space on the bottom
     int retval;
-    retval = plasma_desc_general_band_create(PlasmaComplexDouble, PlasmaGeneral, 
+    retval = plasma_desc_general_band_create(PlasmaComplexDouble, PlasmaGeneral,
                                              nb, nb, lm, n, 0, 0, m, n, kl, ku, &AB);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
@@ -159,7 +159,7 @@ int plasma_zgbtrf(int m, int n, int kl, int ku,
  * All dimensions are taken from the descriptors.
  * Allows for pipelining of operations at runtime.
  *
- * *******************************************************************************
+ *******************************************************************************
  *
  * @param[in,out] AB
  *          Descriptor of matrix A.
