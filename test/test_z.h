@@ -29,6 +29,7 @@ void test_zgeqrf(param_value_t param[], char *info);
 void test_zgeqrs(param_value_t param[], char *info);
 void test_zgesv(param_value_t param[], char *info);
 void test_zgetrf(param_value_t param[], char *info);
+void test_zgetrs(param_value_t param[], char *info);
 void test_zhemm(param_value_t param[], char *info);
 void test_zher2k(param_value_t param[], char *info);
 void test_zherk(param_value_t param[], char *info);

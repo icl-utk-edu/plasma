@@ -52,7 +52,6 @@ int plasma_zgetrf(int m, int n,
 
     // Set tiling parameters.
     int nb = plasma->nb;
-    int ib = plasma->ib;
 
     // Initialize barrier.
     int num_panel_threads = plasma->num_panel_threads;

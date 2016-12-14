@@ -124,7 +124,6 @@ void test_zgetrf(param_value_t param[], char *info)
     //================================================================
     plasma_time_t start = omp_get_wtime();
     plasma_zgetrf(m, n, A, lda, IPIV);
-
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
