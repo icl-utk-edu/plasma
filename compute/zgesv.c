@@ -169,13 +169,11 @@ void plasma_omp_zgesv(plasma_desc_t A, int *IPIV,
     // Call the parallel functions.
     plasma_pzgetrf(A, IPIV, sequence, request);
 
-
-    for (int n = 0; n < B.nt; n++) {
-        int nvbn = plasma_tile_nview(B, n);
-        plasma_desc_t view = plasma_desc_view(B, 0, n*A.nb, B.m, nvbn);
-        core_zlaswp(view, 1, B.m, IPIV, 1);
-    }
-
+#pragma omp parallel
+#pragma omp master
+{
+    plasma_pzlaswp(B, IPIV, 1, sequence, request);
+}
 
 #pragma omp parallel
 #pragma omp master
