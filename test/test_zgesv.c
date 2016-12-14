@@ -91,7 +91,6 @@ void test_zgesv(param_value_t param[], char *info)
 
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
-    tol *= sqrt(n*n);
 
     //================================================================
     // Set tuning parameters.
@@ -119,20 +118,23 @@ void test_zgesv(param_value_t param[], char *info)
     lapack_int retval;
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
+
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*nrhs, B);
     assert(retval == 0);
 
     plasma_complex64_t *Aref = NULL;
     plasma_complex64_t *Bref = NULL;
+    double *work = NULL;
     if (test) {
         Aref = (plasma_complex64_t*)malloc(
             (size_t)lda*n*sizeof(plasma_complex64_t));
         assert(Aref != NULL);
-        memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
 
         Bref = (plasma_complex64_t*)malloc(
             (size_t)ldb*nrhs*sizeof(plasma_complex64_t));
         assert(Bref != NULL);
+
+        memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
         memcpy(Bref, B, (size_t)ldb*nrhs*sizeof(plasma_complex64_t));
     }
 
@@ -144,46 +146,42 @@ void test_zgesv(param_value_t param[], char *info)
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
+    double flops = flops_zgetrf(n, n) + flops_zgetrs(n, nrhs);
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = flops_zgetrf(n, n) / time / 1e9;
+    param[PARAM_GFLOPS].d = flops / time / 1e9;
 
     //================================================================
-    // Test results by comparing to a reference implementation.
+    // Test results by checking the residual
+    //
+    //                      || B - AX ||_I
+    //                --------------------------- < epsilon
+    //                 || A ||_I * || X ||_I * N
+    //
     //================================================================
     if (test) {
-        LAPACKE_zgesv(
-            LAPACK_COL_MAJOR,
-            n, nrhs,
-            Aref, lda,
-            IPIV,
-            Bref, ldb);
-
+        plasma_complex64_t zone  =  1.0;
         plasma_complex64_t zmone = -1.0;
-        cblas_zaxpy((size_t)lda*n, CBLAS_SADDR(zmone), Aref, 1, A, 1);
 
-        cblas_zaxpy((size_t)ldb*nrhs, CBLAS_SADDR(zmone), Bref, 1, B, 1);
+        work = (double*)malloc((size_t)n*sizeof(double));
+        assert(work != NULL);
 
-        double work[1];
         double Anorm = LAPACKE_zlange_work(
-            LAPACK_COL_MAJOR, 'F', n, n, Aref, lda, work);
+            LAPACK_COL_MAJOR, 'I', n, n, Aref, lda, work);
+        double Xnorm = LAPACKE_zlange_work(
+            LAPACK_COL_MAJOR, 'I', n, nrhs, B, ldb, work);
 
-        double Bnorm = LAPACKE_zlange_work(
-            LAPACK_COL_MAJOR, 'F', n, nrhs, Bref, ldb, work);
+        // Bref -= Aref*B
+        cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, nrhs, n,
+                    CBLAS_SADDR(zmone), Aref, lda,
+                                        B,    ldb,
+                    CBLAS_SADDR(zone),  Bref, ldb);
 
-        double errorA = LAPACKE_zlange_work(
-            LAPACK_COL_MAJOR, 'F', n, n, A, lda, work);
+        double Rnorm = LAPACKE_zlange_work(
+            LAPACK_COL_MAJOR, 'I', n, nrhs, Bref, ldb, work);
+        double residual = Rnorm/(n*Anorm*Xnorm);
 
-        double errorB = LAPACKE_zlange_work(
-            LAPACK_COL_MAJOR, 'F', n, nrhs, B, ldb, work);
-
-        if (Anorm != 0)
-            errorA /= Anorm;
-
-        if (Anorm != 0)
-            errorB /= Bnorm;
-
-        param[PARAM_ERROR].d = errorB;
-        param[PARAM_SUCCESS].i = errorB < tol;
+        param[PARAM_ERROR].d = residual;
+        param[PARAM_SUCCESS].i = residual < tol;
     }
 
     //================================================================
@@ -195,5 +193,6 @@ void test_zgesv(param_value_t param[], char *info)
     if (test) {
         free(Aref);
         free(Bref);
+        free(work);
     }
 }
