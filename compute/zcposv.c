@@ -429,6 +429,7 @@ void plasma_omp_zcposv(plasma_enum_t uplo,
     plasma_pzlag2c(B, Xs, sequence, request);
 
     // Convert A from double to single precision, store result in As.
+    // TODO: need zlat2c
     plasma_pzlag2c(A, As, sequence, request);
 
     // Compute the Cholesky factorization of As.
