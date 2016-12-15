@@ -84,6 +84,9 @@ struct routines_t routines[] =
     { "cgeqrs", test_cgeqrs },
     { "sgeqrs", test_sgeqrs },
 
+    { "zcgesv", test_zcgesv },
+    { "dsgesv", test_dsgesv },
+
     { "zgesv", test_zgesv },
     { "dgesv", test_dgesv },
     { "cgesv", test_cgesv },

@@ -91,6 +91,7 @@ blas_mixed = [
     ('dlansy',               'zlanhe'              ),
     ('dlansy',               'zlansy'              ),
     ('dlarnv',               'zlarnv'              ),
+    ('dlaswp',               'zlaswp'              ),
     ('dlat2s',               'zlat2c'              ),
     ('dnrm2',                'dznrm2'              ),
     ('dormqr',               'zunmqr'              ),
@@ -102,7 +103,9 @@ blas_mixed = [
     ('dtrmm',                'ztrmm'               ),
     ('dtrsm',                'ztrsm'               ),
     ('dtrsv',                'ztrsv'               ),
+    ('damax',                'dzamax'              ),
     ('idamax',               'izamax'              ),
+    ('sgetrf',               'cgetrf',             ),
     ('slag2d',               'clag2z'              ),
     ('slansy',               'clanhe'              ),
     ('slaswp',               'claswp'              ),
@@ -381,6 +384,8 @@ subs = {
     ('float',                'magmaFloatComplex'   ),
     ('double',               'plasma_complex64_t'  ),
     ('float',                'plasma_complex32_t'  ),
+    ('PlasmaRealDouble',     'PlasmaComplexDouble' ),
+    ('PlasmaRealFloat',      'PlasmaComplexFloat'  ),
 
     # ----- PLASMA / MAGMA functions, alphabetic order
     ('ddesc2ge',             'zdesc2ge'            ),

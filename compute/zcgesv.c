@@ -23,12 +23,12 @@
 
 /***************************************************************************//**
  *
- * @ingroup plasma_posv
+ * @ingroup plasma_gesv
  *
  *  Computes the solution to a system of linear equations A * X = B, where A is
- *  an n-by-n Hermitian positive definite matrix and X and B are n-by-nrhs matrices.
+ *  an n-by-n matrix and X and B are n-by-nrhs matrices.
  *
- *  plasma_zcposv first factorizes the matrix using plasma_cpotrf and uses
+ *  plasma_zcgesv first factorizes the matrix using plasma_cgetrf and uses
  *  this factorization within an iterative refinement procedure to produce a
  *  solution with COMPLEX*16 normwise backward error quality (see below). If
  *  the approach fails the method falls back to a COMPLEX*16 factorization and
@@ -55,11 +55,6 @@
  *
  *******************************************************************************
  *
- * @param[in] uplo
- *          Specifies, whether the matrix A is upper or lower triangular:
- *          - PlasmaUpper: Upper triangle of A is stored;
- *          - PlasmaLower: Lower triangle of A is stored.
- *
  * @param[in] n
  *          The number of linear equations, i.e., the order of the matrix A.
  *          n >= 0.
@@ -69,19 +64,15 @@
  *          matrix B. nrhs >= 0.
  *
  * @param[in,out] A
- *          The n-by-n Hermitian positive definite coefficient matrix A.
- *          If uplo = PlasmaUpper, the leading n-by-n upper triangular part of
- *          A contains the upper triangular part of the matrix A, and the
- *          strictly lower triangular part of A is not referenced.
- *          If uplo = PlasmaLower, the leading n-by-n lower triangular part of
- *          A contains the lower triangular part of the matrix A, and the
- *          strictly upper triangular part of A is not referenced.
- *          On exit, contains the lower Cholesky factor matrix L,
- *          if uplo == PlasmaLower and upper Cholesky factor conj(L^T),
- *          otherwise.
+ *          The n-by-n matrix A.
+ *          On exit, contains the LU factors of A.
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,n).
+ *
+ * @param[out] IPIV
+ *          The pivot indices; for 1 <= i <= min(m,n), row i of the
+ *          matrix was interchanged with row IPIV(i).
  *
  * @param[in] B
  *          The n-by-nrhs matrix of right hand side matrix B.
@@ -107,13 +98,13 @@
  *
  *******************************************************************************
  *
- * @sa plasma_omp_zcposv
- * @sa plasma_dsposv
- * @sa plasma_zposv
+ * @sa plasma_omp_zcgesv
+ * @sa plasma_dsgesv
+ * @sa plasma_zgesv
  *
  ******************************************************************************/
-int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
-                  plasma_complex64_t *pA, int lda,
+int plasma_zcgesv(int n, int nrhs,
+                  plasma_complex64_t *pA, int lda, int *IPIV,
                   plasma_complex64_t *pB, int ldb,
                   plasma_complex64_t *pX, int ldx, int *iter)
 {
@@ -125,21 +116,17 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
     }
 
     // Check input arguments
-    if (uplo != PlasmaUpper && uplo != PlasmaLower) {
-        plasma_error("illegal value of uplo");
-        return -1;
-    }
     if (n < 0) {
         plasma_error("illegal value of n");
-        return -2;
+        return -1;
     }
     if (nrhs < 0) {
         plasma_error("illegal value of nrhs");
-        return -3;
+        return -2;
     }
     if (lda < imax(1, n)) {
         plasma_error("illegal value of lda");
-        return -5;
+        return -4;
     }
     if (ldb < imax(1, n)) {
         plasma_error("illegal value of ldb");
@@ -220,7 +207,7 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
 
     // Allocate tiled workspace for Infinity norm calculations
     size_t lwork = imax((size_t)A.nt*A.n+A.n, (size_t)X.mt*X.n+(size_t)R.mt*R.n);
-    double *work  = (double*)malloc(((size_t)lwork)*sizeof(double));
+    double *work  = (double*)malloc((lwork)*sizeof(double));
     double *Rnorm = (double*)malloc(((size_t)R.n)*sizeof(double));
     double *Xnorm = (double*)malloc(((size_t)X.n)*sizeof(double));
 
@@ -235,6 +222,10 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
     // Initialize request
     plasma_request_t request = PlasmaRequestInitializer;
 
+    // Initialize barrier.
+    int num_panel_threads = plasma->num_panel_threads;
+    plasma_barrier_init(&plasma->barrier, num_panel_threads);
+
     // Asynchronous block
     #pragma omp parallel
     #pragma omp master
@@ -244,7 +235,8 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
         plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
 
         // Call tile async function
-        plasma_omp_zcposv(uplo, A, B, X, As, Xs, R, work, Rnorm, Xnorm, iter, sequence, &request);
+        plasma_omp_zcgesv(A, IPIV, B, X, As, Xs, R, work, Rnorm, Xnorm, iter,
+                          sequence, &request);
 
         // Translate back to LAPACK layout
         plasma_omp_zdesc2ge(X, pX, ldx, sequence, &request);
@@ -270,11 +262,11 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
 
 /***************************************************************************//**
  *
- * @ingroup plasma_posv
+ * @ingroup plasma_gesv
  *
- *  Solves a Hermitian positive definite system using iterative refinement
- *  with the Cholesky factor computed using plasma_cpotrf.
- *  Non-blocking tile version of plasma_zcposv().
+ *  Solves a general linear system of equations using iterative refinement
+ *  with the LU factor computed using plasma_cgetrf.
+ *  Non-blocking tile version of plasma_zcgesv().
  *  Operates on matrices stored by tiles.
  *  All matrices are passed through descriptors.
  *  All dimensions are taken from the descriptors.
@@ -284,6 +276,10 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
  *
  * @param[in] A
  *          Descriptor of matrix A.
+ *
+ * @param[out] IPIV
+ *          The pivot indices; for 1 <= i <= min(m,n), row i of the
+ *          matrix was interchanged with row IPIV(i).
  *
  * @param[in] B
  *          Descriptor of matrix B.
@@ -331,13 +327,13 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
  *
  *******************************************************************************
  *
- * @sa plasma_zcposv
- * @sa plasma_omp_dsposv
- * @sa plasma_omp_zposv
+ * @sa plasma_zcgesv
+ * @sa plasma_omp_dsgesv
+ * @sa plasma_omp_zgesv
  *
  ******************************************************************************/
-void plasma_omp_zcposv(plasma_enum_t uplo,
-                       plasma_desc_t A,  plasma_desc_t B,  plasma_desc_t X,
+void plasma_omp_zcgesv(plasma_desc_t A,  int *IPIV,
+                       plasma_desc_t B,  plasma_desc_t X,
                        plasma_desc_t As, plasma_desc_t Xs, plasma_desc_t R,
                        double *work, double *Rnorm, double *Xnorm, int *iter,
                        plasma_sequence_t *sequence,
@@ -358,11 +354,6 @@ void plasma_omp_zcposv(plasma_enum_t uplo,
     }
 
     // Check input arguments
-    if (uplo != PlasmaUpper && uplo != PlasmaLower) {
-        plasma_error("illegal value of uplo");
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
-        return;
-    }
     if (plasma_desc_check(A) != PlasmaSuccess) {
         plasma_error("invalid A");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
@@ -408,7 +399,7 @@ void plasma_omp_zcposv(plasma_enum_t uplo,
     if (A.n == 0 || B.n == 0)
         return;
 
-    // Workspace for dzamax
+    // Workspaces for dzamax
     double *workX = work;
     double *workR = &work[X.mt*X.n];
 
@@ -416,32 +407,37 @@ void plasma_omp_zcposv(plasma_enum_t uplo,
     double cte;
     double eps = LAPACKE_dlamch_work('E');
     double Anorm;
-    plasma_pzlanhe(PlasmaInfNorm, uplo, A, work, &Anorm, sequence, request);
+    plasma_pzlange(PlasmaInfNorm, A, work, &Anorm, sequence, request);
 
     // Convert B from double to single precision, store result in Xs.
     plasma_pzlag2c(B, Xs, sequence, request);
 
     // Convert A from double to single precision, store result in As.
-    // TODO: need zlat2c
     plasma_pzlag2c(A, As, sequence, request);
 
-    // Compute the Cholesky factorization of As.
-    plasma_pcpotrf(uplo, As, sequence, request);
+    // Compute the LU factorization of As.
+    #pragma omp taskwait
+    plasma_pcgetrf(As, IPIV, sequence, request);
 
     // Solve the system As * Xs = Bs.
-    plasma_pctrsm(PlasmaLeft, uplo,
-                  uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans,
-                  PlasmaNonUnit, 1.0, As, Xs, sequence, request);
-    plasma_pctrsm(PlasmaLeft, uplo,
-                  uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans,
-                  PlasmaNonUnit, 1.0, As, Xs, sequence, request);
+    #pragma omp taskwait
+    for (int n = 0; n < Xs.nt; n++) {
+        int nvbn = plasma_tile_nview(Xs, n);
+        plasma_desc_t view = plasma_desc_view(Xs, 0, n*A.nb, Xs.m, nvbn);
+        core_claswp(view, 1, Xs.m, IPIV, 1);
+    }
+    plasma_pctrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
+                  1.0, As, Xs, sequence, request);
+    plasma_pctrsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans, PlasmaNonUnit,
+                  1.0, As, Xs, sequence, request);
 
     // Convert Xs to double precision.
     plasma_pclag2z(Xs, X, sequence, request);
 
     // Compute R = B - A * X.
     plasma_pzlacpy(PlasmaGeneral, B, R, sequence, request);
-    plasma_pzhemm(PlasmaLeft, uplo, zmone, A, X, zone, R, sequence, request);
+    plasma_pzgemm(PlasmaNoTrans, PlasmaNoTrans,
+                  zmone, A, X, zone, R, sequence, request);
 
     // Check whether the nrhs normwise backward error satisfies the
     // stopping criterion. If yes, set iter=0 and return.
@@ -468,12 +464,16 @@ void plasma_omp_zcposv(plasma_enum_t uplo,
         plasma_pzlag2c(R, Xs, sequence, request);
 
         // Solve the system As * Xs = Rs.
-        plasma_pctrsm(PlasmaLeft, uplo,
-                      uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans,
-                      PlasmaNonUnit, 1.0, As, Xs, sequence, request);
-        plasma_pctrsm(PlasmaLeft, uplo,
-                      uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans,
-                      PlasmaNonUnit, 1.0, As, Xs, sequence, request);
+        #pragma omp taskwait
+        for (int n = 0; n < Xs.nt; n++) {
+            int nvbn = plasma_tile_nview(Xs, n);
+            plasma_desc_t view = plasma_desc_view(Xs, 0, n*A.nb, Xs.m, nvbn);
+            core_claswp(view, 1, Xs.m, IPIV, 1);
+        }
+        plasma_pctrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
+                      1.0, As, Xs, sequence, request);
+        plasma_pctrsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans, PlasmaNonUnit,
+                      1.0, As, Xs, sequence, request);
 
         // Convert Xs back to double precision and update the current iterate.
         plasma_pclag2z(Xs, R, sequence, request);
@@ -481,11 +481,11 @@ void plasma_omp_zcposv(plasma_enum_t uplo,
 
         // Compute R = B - A * X
         plasma_pzlacpy(PlasmaGeneral, B, R, sequence, request);
-        plasma_pzhemm(PlasmaLeft, uplo, zmone, A, X, zone, R,
+        plasma_pzgemm(PlasmaNoTrans, PlasmaNoTrans, zmone, A, X, zone, R,
                       sequence, request);
 
         // Check whether nrhs normwise backward error satisfies the
-        // stopping criterion. If yes, set iter = iiter > 0 and return.
+        // stopping criterion. If yes, set iter = iiter > 0 and return
         plasma_pdzamax(PlasmaColumnwise, X, workX, Xnorm, sequence, request);
         plasma_pdzamax(PlasmaColumnwise, R, workR, Rnorm, sequence, request);
         #pragma omp taskwait
@@ -508,15 +508,20 @@ void plasma_omp_zcposv(plasma_enum_t uplo,
     // set up the iter flag accordingly and follow up with double precision routine.
     *iter = -itermax - 1;
 
-    // Compute Cholesky factorization of A.
-    plasma_pzpotrf(uplo, A, sequence, request);
+    // Compute LU factorization of A.
+    #pragma omp taskwait
+    plasma_pzgetrf(A, IPIV, sequence, request);
 
     // Solve the system A * X = B.
     plasma_pzlacpy(PlasmaGeneral, B, X, sequence, request);
-    plasma_pztrsm(PlasmaLeft, uplo,
-                  uplo == PlasmaUpper ? PlasmaConjTrans : PlasmaNoTrans,
-                  PlasmaNonUnit, 1.0, A, X, sequence, request);
-    plasma_pztrsm(PlasmaLeft, uplo,
-                  uplo == PlasmaUpper ? PlasmaNoTrans : PlasmaConjTrans,
-                  PlasmaNonUnit, 1.0, A, X, sequence, request);
+    #pragma omp taskwait
+    for (int n = 0; n < X.nt; n++) {
+        int nvbn = plasma_tile_nview(X, n);
+        plasma_desc_t view = plasma_desc_view(X, 0, n*A.nb, X.m, nvbn);
+        core_zlaswp(view, 1, X.m, IPIV, 1);
+    }
+    plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
+                  1.0, A, X, sequence, request);
+    plasma_pztrsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans, PlasmaNonUnit,
+                  1.0, A, X, sequence, request);
 }
