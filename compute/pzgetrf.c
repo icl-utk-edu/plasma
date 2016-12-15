@@ -58,14 +58,21 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                          depend(out:ipiv[k*A.mb:mvak]) \
                          priority(1)
         {
-            for (int i = 0; i < num_panel_threads; i++) {
-                #pragma omp task priority(1)
-                {
-                    plasma_desc_t view =
-                        plasma_desc_view(A, k*A.mb, k*A.nb, A.m-k*A.mb, nvak);
+            if (sequence->status == PlasmaSuccess) {
+                for (int rank = 0; rank < num_panel_threads; rank++) {
+                    #pragma omp task priority(1)
+                    {
+                        plasma_desc_t view =
+                            plasma_desc_view(A,
+                                             k*A.mb, k*A.nb,
+                                             A.m-k*A.mb, nvak);
 
-                    core_zgetrf(view, &ipiv[k*A.mb], ib, i,
-                                num_panel_threads, barrier);
+                        int info = core_zgetrf(view, &ipiv[k*A.mb], ib,
+                                               rank, num_panel_threads,
+                                               barrier);
+                        if (info != 0)
+                            plasma_request_fail(sequence, request, k*A.mb+info);
+                    }
                 }
             }
             #pragma omp taskwait
@@ -94,33 +101,35 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                              depend(inout:a21[0:lda21*nvan]) \
                              priority(n == k+1)
             {
-                // laswp
-                int k1 = k*A.mb+1;
-                int k2 = imin(k*A.mb+A.mb, A.m);
-                plasma_desc_t view = plasma_desc_view(A, 0, n*A.nb, A.m, nvan);
-                core_zlaswp(view, k1, k2, ipiv, 1);
+                if (sequence->status == PlasmaSuccess) {
+                    // laswp
+                    int k1 = k*A.mb+1;
+                    int k2 = imin(k*A.mb+A.mb, A.m);
+                    plasma_desc_t view = plasma_desc_view(A, 0, n*A.nb, A.m, nvan);
+                    core_zlaswp(view, k1, k2, ipiv, 1);
 
-                // trsm
-                core_ztrsm(PlasmaLeft, PlasmaLower,
-                           PlasmaNoTrans, PlasmaUnit,
-                           mvak, nvan,
-                           1.0, A(k, k), ldak,
-                                A(k, n), ldak);
+                    // trsm
+                    core_ztrsm(PlasmaLeft, PlasmaLower,
+                               PlasmaNoTrans, PlasmaUnit,
+                               mvak, nvan,
+                               1.0, A(k, k), ldak,
+                                    A(k, n), ldak);
 
-                // gemm
-                for (int m = k+1; m < A.mt; m++) {
+                    // gemm
+                    for (int m = k+1; m < A.mt; m++) {
 
-                    int mvam = plasma_tile_mview(A, m);
-                    int ldam = plasma_tile_mmain(A, m);
+                        int mvam = plasma_tile_mview(A, m);
+                        int ldam = plasma_tile_mmain(A, m);
 
-                    #pragma omp task priority(n == k+1)
-                    {
-                        core_zgemm(
-                            PlasmaNoTrans, PlasmaNoTrans,
-                            mvam, nvan, A.nb,
-                            -1.0, A(m, k), ldam,
-                                  A(k, n), ldak,
-                            1.0,  A(m, n), ldam);
+                        #pragma omp task priority(n == k+1)
+                        {
+                            core_zgemm(
+                                PlasmaNoTrans, PlasmaNoTrans,
+                                mvam, nvan, A.nb,
+                                -1.0, A(m, k), ldam,
+                                      A(k, n), ldak,
+                                1.0,  A(m, n), ldam);
+                        }
                     }
                 }
                 #pragma omp taskwait
@@ -137,10 +146,13 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
         #pragma omp task depend(in:ipiv[(imin(A.mt, A.nt)-1)*A.mb]) \
                          depend(inout:akk[0:makk*nakk])
         {
-            plasma_desc_t view = plasma_desc_view(A, 0, (k-1)*A.nb, A.m, A.nb);
-            int k1 = k*A.mb+1;
-            int k2 = imin(A.m, A.n);
-            core_zlaswp(view, k1, k2, ipiv, 1);
+            if (sequence->status == PlasmaSuccess) {
+                plasma_desc_t view =
+                    plasma_desc_view(A, 0, (k-1)*A.nb, A.m, A.nb);
+                int k1 = k*A.mb+1;
+                int k2 = imin(A.m, A.n);
+                core_zlaswp(view, k1, k2, ipiv, 1);
+            }
         }
     }
 }

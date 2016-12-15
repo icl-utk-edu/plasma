@@ -32,10 +32,8 @@ void plasma_pzdesc2ge(plasma_desc_t A,
     int n, m, ldt;
 
     // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
+    if (sequence->status != PlasmaSuccess)
         return;
-    }
 
     for (m = 0; m < A.mt; m++) {
         ldt = plasma_tile_mmain(A, m);

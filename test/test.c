@@ -516,6 +516,9 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--storev="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_STOREV]);
 
+        else if (param_starts_with(argv[i], "--norm="))
+            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_NORM]);
+
         //--------------------------------------------------
         // Scan integer parameters.
         //--------------------------------------------------
@@ -554,8 +557,8 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--ntpf="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NTPF]);
 
-        else if (param_starts_with(argv[i], "--norm="))
-            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_NORM]);
+        else if (param_starts_with(argv[i], "--zerocol="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_ZEROCOL]);
 
         //--------------------------------------------------
         // Scan double precision parameters.
@@ -618,6 +621,8 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_char('n', &param[PARAM_DIAG]);
     if (param[PARAM_STOREV].num == 0)
         param_add_char('c', &param[PARAM_STOREV]);
+    if (param[PARAM_NORM].num == 0)
+        param_add_char('o', &param[PARAM_NORM]);
 
     //--------------------------------------------------
     // Set integer parameters.
@@ -652,9 +657,8 @@ int param_read(int argc, char **argv, param_t param[])
 
     if (param[PARAM_NTPF].num == 0)
         param_add_int(1, &param[PARAM_NTPF]);
-
-    if (param[PARAM_NORM].num == 0)
-        param_add_char('o', &param[PARAM_NORM]);
+    if (param[PARAM_ZEROCOL].num == 0)
+        param_add_int(-1, &param[PARAM_ZEROCOL]);
 
     //--------------------------------------------------
     // Set double precision parameters.

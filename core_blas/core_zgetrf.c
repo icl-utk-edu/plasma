@@ -22,17 +22,19 @@
 
 static int *max_idx;
 static plasma_complex64_t *max_val;
+static volatile int info;
 
 #define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
 
 /******************************************************************************/
-void core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
-                 plasma_barrier_t *barrier)
+int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
+                plasma_barrier_t *barrier)
 {
     // Allocate arrays for parallel max search.
     if (rank == 0) {
         max_idx = (int*)malloc(size*sizeof(int));
         max_val = (plasma_complex64_t*)malloc(size*sizeof(plasma_complex64_t));
+        info = 0;
     }
     plasma_barrier_wait(barrier);
     assert(max_idx != NULL);
@@ -100,13 +102,21 @@ void core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
                 int jp = j+max_idx[0];
                 ipiv[j] = jp-k+1;
 
-                // pivot swap
-                plasma_complex64_t *ap = A(jp/A.mb, 0);
-                int ldap = plasma_tile_mmain(A, jp/A.mb);
+                // singularity check
+                if (info == 0 && max_val[0] == 0.0) {
+                    info = j+1;
+                }
+                else {
+                    // pivot swap
+                    if (jp != j) {
+                        plasma_complex64_t *ap = A(jp/A.mb, 0);
+                        int ldap = plasma_tile_mmain(A, jp/A.mb);
 
-                cblas_zswap(kb,
-                            &a0[j+k*lda0], lda0,
-                            &ap[jp%A.mb+k*ldap], ldap);
+                        cblas_zswap(kb,
+                                    &a0[j+k*lda0], lda0,
+                                    &ap[jp%A.mb+k*ldap], ldap);
+                    }
+                }
             }
             plasma_barrier_wait(barrier);
 
@@ -117,24 +127,27 @@ void core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
                 int ldal = plasma_tile_mmain(A, l);
                 int mval = plasma_tile_mview(A, l);
 
-                // column scaling
-                if (cabs(a0[j+j*lda0]) >= sfmin) {
-                    if (l == 0) {
-                        for (int i = 1; i < mva0-j; i++)
-                            a0[j+i+j*lda0] /= a0[j+j*lda0];
+                if (info == 0) {
+                    // column scaling
+                    if (cabs(a0[j+j*lda0]) >= sfmin) {
+                        if (l == 0) {
+                            for (int i = 1; i < mva0-j; i++)
+                                a0[j+i+j*lda0] /= a0[j+j*lda0];
+                        }
+                        else {
+                            for (int i = 0; i < mval; i++)
+                                al[i+j*ldal] /= a0[j+j*lda0];
+                        }
                     }
                     else {
-                        for (int i = 0; i < mval; i++)
-                            al[i+j*ldal] /= a0[j+j*lda0];
+                        plasma_complex64_t scal = 1.0/a0[j+j*lda0];
+                        if (l == 0)
+                            cblas_zscal(mva0-j-1, CBLAS_SADDR(scal),
+                                        &a0[j+1+j*lda0], 1);
+                        else
+                            cblas_zscal(mval, CBLAS_SADDR(scal),
+                                        &al[j*ldal], 1);
                     }
-                }
-                else {
-                    plasma_complex64_t scal = 1.0/a0[j+j*lda0];
-                    if (l == 0)
-                        cblas_zscal(mva0-j-1, CBLAS_SADDR(scal),
-                                    &a0[j+1+j*lda0], 1);
-                    else
-                        cblas_zscal(mval, CBLAS_SADDR(scal), &al[j*ldal], 1);
                 }
 
                 // trailing update
@@ -248,4 +261,10 @@ void core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
         free(max_idx);
         free(max_val);
     }
+
+    // Only rank 0 returns errors.
+    if (rank == 0)
+        return info;
+    else
+        return 0;
 }
