@@ -98,13 +98,12 @@ int plasma_zgetrs(int n, int nrhs,
         plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
     }
 
-// #pragma omp parallel
-// #pragma omp master
-// {
+    #pragma omp parallel
+    #pragma omp master
+    {
         // Call the tile async function.
         plasma_omp_zgetrs(A, IPIV, B, sequence, &request);
-
-// }
+    }
 
     #pragma omp parallel
     #pragma omp master
@@ -165,15 +164,8 @@ void plasma_omp_zgetrs(plasma_desc_t A, int *IPIV,
         return;
 
     // Call the parallel functions.
-#pragma omp parallel
-#pragma omp master
-{
     plasma_pzlaswp(B, IPIV, 1, sequence, request);
-}
 
-#pragma omp parallel
-#pragma omp master
-{
     plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
                   1.0, A,
                        B,
@@ -183,5 +175,4 @@ void plasma_omp_zgetrs(plasma_desc_t A, int *IPIV,
                   1.0, A,
                        B,
                   sequence, request);
-}
 }

@@ -24,13 +24,10 @@
 void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-#pragma omp parallel
-#pragma omp master
-{
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorSequence);
-//      return;
+        return;
     }
 
     // Read parameters from the context.
@@ -155,5 +152,4 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
             }
         }
     }
-}
 }
