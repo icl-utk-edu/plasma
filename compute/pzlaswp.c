@@ -22,11 +22,9 @@
 void plasma_pzlaswp(plasma_desc_t A, int *IPIV, int incx,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
+    // Return if failed sequence.
+    if (sequence->status != PlasmaSuccess)
         return;
-    }
 
     for (int n = 0; n < A.nt; n++) {
 

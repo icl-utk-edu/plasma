@@ -31,11 +31,9 @@ void plasma_pztrmm(plasma_enum_t side, plasma_enum_t uplo,
                                              plasma_desc_t B,
                    plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
+    // Return if failed sequence.
+    if (sequence->status != PlasmaSuccess)
         return;
-    }
 
     if (side == PlasmaLeft) {
         if (uplo == PlasmaUpper) {

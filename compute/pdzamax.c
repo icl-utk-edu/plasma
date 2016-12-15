@@ -25,11 +25,9 @@ void plasma_pdzamax(plasma_enum_t storev,
                     plasma_desc_t A, double *work, double *values,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
+    // Return if failed sequence.
+    if (sequence->status != PlasmaSuccess)
         return;
-    }
 
     switch (storev) {
     //===================

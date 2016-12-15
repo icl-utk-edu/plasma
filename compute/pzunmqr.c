@@ -31,11 +31,9 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
                     plasma_workspace_t work,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
+    // Return if failed sequence.
+    if (sequence->status != PlasmaSuccess)
         return;
-    }
 
     // Set inner blocking from the T tile row-dimension.
     int ib = T.mb;

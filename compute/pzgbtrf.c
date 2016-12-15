@@ -24,11 +24,9 @@
 void plasma_pzgbtrf(plasma_desc_t A, int *ipiv,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
-//      return;
-    }
+    // Return if failed sequence.
+    if (sequence->status != PlasmaSuccess)
+        return;
 
     // Read parameters from the context.
     plasma_context_t *plasma = plasma_context_self();

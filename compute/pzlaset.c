@@ -31,14 +31,12 @@ void plasma_pzlaset(plasma_enum_t uplo,
                     plasma_desc_t A,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
+    // Return if failed sequence.
+    if (sequence->status != PlasmaSuccess)
+        return;
+
     int i, j;
     int m, n;
-
-    // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
-        return;
-    }
 
     int lm1 = A.gm/A.mb;
     int ln1 = A.gn/A.nb;

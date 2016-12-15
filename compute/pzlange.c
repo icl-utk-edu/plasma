@@ -28,11 +28,9 @@ void plasma_pzlange(plasma_enum_t norm,
                     plasma_desc_t A, double *work, double *value,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
+    // Return if failed sequence.
+    if (sequence->status != PlasmaSuccess)
         return;
-    }
 
     switch (norm) {
     double stub;

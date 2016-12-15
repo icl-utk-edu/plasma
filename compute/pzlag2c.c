@@ -27,11 +27,9 @@
 void plasma_pzlag2c(plasma_desc_t A, plasma_desc_t As,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
+    // Return if failed sequence.
+    if (sequence->status != PlasmaSuccess)
         return;
-    }
 
     for (int m = 0; m < A.mt; m++) {
         int am  = plasma_tile_mview(A,  m);
