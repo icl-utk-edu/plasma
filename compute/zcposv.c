@@ -137,25 +137,13 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
         plasma_error("illegal value of nrhs");
         return -3;
     }
-    if (pA == NULL) {
-        plasma_error("NULL pA");
-        return -4;
-    }
     if (lda < imax(1, n)) {
         plasma_error("illegal value of lda");
         return -5;
     }
-    if (pB == NULL) {
-        plasma_error("NULL pB");
-        return -6;
-    }
     if (ldb < imax(1, n)) {
         plasma_error("illegal value of ldb");
         return -7;
-    }
-    if (pX == NULL) {
-        plasma_error("NULL pX");
-        return -8;
     }
     if (ldx < imax(1, n)) {
         plasma_error("illegal value of ldx");
@@ -496,8 +484,8 @@ void plasma_omp_zcposv(plasma_enum_t uplo,
         plasma_pzhemm(PlasmaLeft, uplo, zmone, A, X, zone, R,
                       sequence, request);
 
-        // Check, whether nrhs normwise backward error satisfies the
-        // stopping criterion. If yes, set iter = iiter > 0 and return
+        // Check whether nrhs normwise backward error satisfies the
+        // stopping criterion. If yes, set iter = iiter > 0 and return.
         plasma_pdzamax(PlasmaColumnwise, X, workX, Xnorm, sequence, request);
         plasma_pdzamax(PlasmaColumnwise, R, workR, Rnorm, sequence, request);
         #pragma omp taskwait
