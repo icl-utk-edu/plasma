@@ -24,6 +24,11 @@ extern "C" {
 /***************************************************************************//**
  *  Standard interface
  **/
+int plasma_zcgesv(int n, int nrhs,
+                  plasma_complex64_t *pA, int lda, int *IPIV,
+                  plasma_complex64_t *pB, int ldb,
+                  plasma_complex64_t *pX, int ldx, int *iter);
+
 int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
                   plasma_complex64_t *pA, int lda,
                   plasma_complex64_t *pB, int ldb,
@@ -40,6 +45,13 @@ int plasma_clag2z(int m, int n,
 /***************************************************************************//**
  *  Tile asynchronous interface
  **/
+void plasma_omp_zcgesv(plasma_desc_t A,  int *IPIV,
+                       plasma_desc_t B,  plasma_desc_t X,
+                       plasma_desc_t As, plasma_desc_t Xs, plasma_desc_t R,
+                       double *work, double *Rnorm, double *Xnorm, int *iter,
+                       plasma_sequence_t *sequence,
+                       plasma_request_t  *request);
+
 void plasma_omp_zcposv(plasma_enum_t uplo,
                        plasma_desc_t A,  plasma_desc_t B,  plasma_desc_t X,
                        plasma_desc_t As, plasma_desc_t Xs, plasma_desc_t R,
