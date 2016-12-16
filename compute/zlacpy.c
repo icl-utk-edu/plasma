@@ -157,11 +157,12 @@ int plasma_zlacpy(plasma_enum_t uplo,
     plasma_desc_destroy(&A);
     plasma_desc_destroy(&B);
 
+    // Return status.
+    int status = sequence->status;
+
     // Destroy sequence.
     plasma_sequence_destroy(sequence);
 
-    // Return status.
-    int status = sequence->status;
     return status;
 }
 
