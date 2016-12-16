@@ -48,13 +48,13 @@
  * @param[in] ldab
  *          The leading dimension of the array AB.
  *
- * @param[out] IPIV
+ * @param[out] ipiv
  *          The pivot indices; for 1 <= i <= min(m,n), row i of the
- *          matrix was interchanged with row IPIV(i).
+ *          matrix was interchanged with row ipiv(i).
  *
  ******************************************************************************/
 int plasma_zgbtrf(int m, int n, int kl, int ku,
-                  plasma_complex64_t *pAB, int ldab, int *IPIV)
+                  plasma_complex64_t *pAB, int ldab, int *ipiv)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -130,7 +130,7 @@ int plasma_zgbtrf(int m, int n, int kl, int ku,
     #pragma omp master
     {
         // Call the tile async function.
-        plasma_omp_zgbtrf(AB, IPIV, sequence, &request);
+        plasma_omp_zgbtrf(AB, ipiv, sequence, &request);
     }
 
     #pragma omp parallel
@@ -164,9 +164,9 @@ int plasma_zgbtrf(int m, int n, int kl, int ku,
  * @param[in,out] AB
  *          Descriptor of matrix A.
  *
- * @param[out] IPIV
+ * @param[out] ipiv
  *          The pivot indices; for 1 <= i <= min(m,n), row i of the
- *          matrix was interchanged with row IPIV(i).
+ *          matrix was interchanged with row ipiv(i).
  *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to
@@ -184,7 +184,7 @@ int plasma_zgbtrf(int m, int n, int kl, int ku,
  *          failure value at the same time.
  *
  ******************************************************************************/
-void plasma_omp_zgbtrf(plasma_desc_t AB, int *IPIV,
+void plasma_omp_zgbtrf(plasma_desc_t AB, int *ipiv,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
@@ -213,5 +213,5 @@ void plasma_omp_zgbtrf(plasma_desc_t AB, int *IPIV,
     }
 
     // Call the parallel function.
-    plasma_pzgbtrf(AB, IPIV, sequence, request);
+    plasma_pzgbtrf(AB, ipiv, sequence, request);
 }

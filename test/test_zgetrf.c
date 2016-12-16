@@ -105,8 +105,8 @@ void test_zgetrf(param_value_t param[], char *info)
         (plasma_complex64_t*)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
-    int *IPIV = (int*)malloc((size_t)m*sizeof(int));
-    assert(IPIV != NULL);
+    int *ipiv = (int*)malloc((size_t)m*sizeof(int));
+    assert(ipiv != NULL);
 
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
@@ -130,7 +130,7 @@ void test_zgetrf(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    int plainfo = plasma_zgetrf(m, n, A, lda, IPIV);
+    int plainfo = plasma_zgetrf(m, n, A, lda, ipiv);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
@@ -144,7 +144,7 @@ void test_zgetrf(param_value_t param[], char *info)
         int lapinfo = LAPACKE_zgetrf(
             LAPACK_COL_MAJOR,
             m, n,
-            Aref, lda, IPIV);
+            Aref, lda, ipiv);
 
         if (lapinfo == 0) {
             plasma_complex64_t zmone = -1.0;
@@ -179,7 +179,7 @@ void test_zgetrf(param_value_t param[], char *info)
     // Free arrays.
     //================================================================
     free(A);
-    free(IPIV);
+    free(ipiv);
     if (test)
         free(Aref);
 }

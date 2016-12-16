@@ -117,8 +117,8 @@ void test_zgbsv(param_value_t param[], char *info)
     plasma_complex64_t *X =
         (plasma_complex64_t*)malloc((size_t)ldx*nrhs*sizeof(plasma_complex64_t));
     assert(X != NULL);
-    int *IPIV = (int*)malloc((size_t)n*sizeof(int));
-    assert(IPIV != NULL);
+    int *ipiv = (int*)malloc((size_t)n*sizeof(int));
+    assert(ipiv != NULL);
 
     // set up right-hand-sides X
     int seed[] = {0, 0, 0, 1};
@@ -175,7 +175,7 @@ void test_zgbsv(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    plasma_zgbsv(n, kl, ku, nrhs, AB, ldab, IPIV, X, ldx);
+    plasma_zgbsv(n, kl, ku, nrhs, AB, ldab, ipiv, X, ldx);
 
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
@@ -217,6 +217,6 @@ void test_zgbsv(param_value_t param[], char *info)
     //================================================================
     free(A);
     free(AB);
-    free(IPIV);
+    free(ipiv);
     free(B);
 }

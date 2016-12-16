@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 int plasma_zgesv(int n, int nrhs,
-                 plasma_complex64_t *pA, int lda, int *IPIV,
+                 plasma_complex64_t *pA, int lda, int *ipiv,
                  plasma_complex64_t *pB, int ldb)
 {
     // Get PLASMA context.
@@ -102,7 +102,7 @@ int plasma_zgesv(int n, int nrhs,
     #pragma omp master
     {
         // Call the tile async function.
-        plasma_omp_zgesv(A, IPIV, B, sequence, &request);
+        plasma_omp_zgesv(A, ipiv, B, sequence, &request);
     }
 
     #pragma omp parallel
@@ -126,7 +126,7 @@ int plasma_zgesv(int n, int nrhs,
 /***************************************************************************//**
  *
  ******************************************************************************/
-void plasma_omp_zgesv(plasma_desc_t A, int *IPIV,
+void plasma_omp_zgesv(plasma_desc_t A, int *ipiv,
                       plasma_desc_t B,
                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
@@ -165,9 +165,9 @@ void plasma_omp_zgesv(plasma_desc_t A, int *IPIV,
         return;
 
     // Call the parallel functions.
-    plasma_pzgetrf(A, IPIV, sequence, request);
+    plasma_pzgetrf(A, ipiv, sequence, request);
 
-    plasma_pzlaswp(B, IPIV, 1, sequence, request);
+    plasma_pzlaswp(B, ipiv, 1, sequence, request);
 
     plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
                   1.0, A,

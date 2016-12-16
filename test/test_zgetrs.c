@@ -111,8 +111,8 @@ void test_zgetrs(param_value_t param[], char *info)
             (size_t)ldb*nrhs*sizeof(plasma_complex64_t));
     assert(B != NULL);
 
-    int *IPIV = (int*)malloc((size_t)n*sizeof(int));
-    assert(IPIV != NULL);
+    int *ipiv = (int*)malloc((size_t)n*sizeof(int));
+    assert(ipiv != NULL);
 
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
@@ -141,13 +141,13 @@ void test_zgetrs(param_value_t param[], char *info)
     //================================================================
     // Run GETRF
     //================================================================
-    plasma_zgetrf(n, n, A, lda, IPIV);
+    plasma_zgetrf(n, n, A, lda, ipiv);
 
     //================================================================
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    plasma_zgetrs(n, nrhs, A, lda, IPIV, B, ldb);
+    plasma_zgetrs(n, nrhs, A, lda, ipiv, B, ldb);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
@@ -193,7 +193,7 @@ void test_zgetrs(param_value_t param[], char *info)
     //================================================================
     free(A);
     free(B);
-    free(IPIV);
+    free(ipiv);
     if (test) {
         free(Aref);
         free(Bref);

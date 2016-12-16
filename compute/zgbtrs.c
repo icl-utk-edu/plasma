@@ -52,9 +52,9 @@
  * @param[in] ldab
  *          The leading dimension of the array AB.
  *
- * @param[in] IPIV
+ * @param[in] ipiv
  *          The pivot indices; for 1 <= i <= min(m,n), row i of the
- *          matrix was interchanged with row IPIV(i).
+ *          matrix was interchanged with row ipiv(i).
  *
  * @param[in,out] B
  *          On entry, the n-by-nrhs right hand side matrix B.
@@ -79,7 +79,7 @@
  ******************************************************************************/
 int plasma_zgbtrs(plasma_enum_t trans, int n, int kl, int ku, int nrhs,
                   plasma_complex64_t *pAB, int ldab,
-                  int *IPIV,
+                  int *ipiv,
                   plasma_complex64_t *pB,  int ldb)
 {
     // Get PLASMA context.
@@ -172,7 +172,7 @@ int plasma_zgbtrs(plasma_enum_t trans, int n, int kl, int ku, int nrhs,
         plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
 
         // Call the tile async function.
-        plasma_omp_zgbtrs(trans, AB, IPIV, B, sequence, &request);
+        plasma_omp_zgbtrs(trans, AB, ipiv, B, sequence, &request);
 
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(B, pB, ldb, sequence, &request);
@@ -242,7 +242,7 @@ int plasma_zgbtrs(plasma_enum_t trans, int n, int kl, int ku, int nrhs,
  * @sa plasma_omp_zgbtrf
  *
  ******************************************************************************/
-void plasma_omp_zgbtrs(plasma_enum_t trans, plasma_desc_t AB, int *IPIV, plasma_desc_t B,
+void plasma_omp_zgbtrs(plasma_enum_t trans, plasma_desc_t AB, int *ipiv, plasma_desc_t B,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
@@ -292,13 +292,13 @@ void plasma_omp_zgbtrs(plasma_enum_t trans, plasma_desc_t AB, int *IPIV, plasma_
                       PlasmaUnit,
                       1.0, AB,
                            B,
-                      IPIV,
+                      ipiv,
                       sequence, request);
         plasma_pztbsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans,
                       PlasmaNonUnit,
                       1.0, AB,
                            B,
-                      IPIV,
+                      ipiv,
                       sequence, request);
     }
     else {
@@ -306,13 +306,13 @@ void plasma_omp_zgbtrs(plasma_enum_t trans, plasma_desc_t AB, int *IPIV, plasma_
                       PlasmaNonUnit,
                       1.0, AB,
                            B,
-                      IPIV,
+                      ipiv,
                       sequence, request);
         plasma_pztbsm(PlasmaLeft, PlasmaLower, trans,
                       PlasmaUnit,
                       1.0, AB,
                            B,
-                      IPIV,
+                      ipiv,
                       sequence, request);
     }
 }

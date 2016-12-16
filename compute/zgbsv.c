@@ -49,9 +49,9 @@
  * @param[in] ldab
  *          The leading dimension of the array AB.
  *
- * @param[out] IPIV
+ * @param[out] ipiv
  *          The pivot indices; for 1 <= i <= min(m,n), row i of the
- *          matrix was interchanged with row IPIV(i).
+ *          matrix was interchanged with row ipiv(i).
  *
  * @param[in,out] B
  *          On entry, the n-by-nrhs right hand side matrix B.
@@ -62,7 +62,7 @@
  *
  ******************************************************************************/
 int plasma_zgbsv(int n, int kl, int ku, int nrhs,
-                 plasma_complex64_t *pAB, int ldab, int *IPIV,
+                 plasma_complex64_t *pAB, int ldab, int *ipiv,
                  plasma_complex64_t *pB,  int ldb)
 {
     // Get PLASMA context.
@@ -155,7 +155,7 @@ int plasma_zgbsv(int n, int kl, int ku, int nrhs,
     #pragma omp master
     {
         // Call the tile async function.
-        plasma_omp_zgbsv(AB, IPIV, B, sequence, &request);
+        plasma_omp_zgbsv(AB, ipiv, B, sequence, &request);
     }
 
     #pragma omp parallel
@@ -191,9 +191,9 @@ int plasma_zgbsv(int n, int kl, int ku, int nrhs,
  * @param[in,out] AB
  *          Descriptor of matrix A.
  *
- * @param[out] IPIV
+ * @param[out] ipiv
  *          The pivot indices; for 1 <= i <= min(m,n), row i of the
- *          matrix was interchanged with row IPIV(i).
+ *          matrix was interchanged with row ipiv(i).
  *
  * @param[in,out] B
  *          Descriptor of right-hand-sides B.
@@ -214,7 +214,7 @@ int plasma_zgbsv(int n, int kl, int ku, int nrhs,
  *          failure value at the same time.
  *
  ******************************************************************************/
-void plasma_omp_zgbsv(plasma_desc_t AB, int *IPIV, plasma_desc_t B,
+void plasma_omp_zgbsv(plasma_desc_t AB, int *ipiv, plasma_desc_t B,
                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
@@ -252,17 +252,17 @@ void plasma_omp_zgbsv(plasma_desc_t AB, int *IPIV, plasma_desc_t B,
         return;
 
     // Call the parallel function.
-    plasma_pzgbtrf(AB, IPIV, sequence, request);
+    plasma_pzgbtrf(AB, ipiv, sequence, request);
     plasma_pztbsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans,
                   PlasmaUnit,
                   1.0, AB,
                        B,
-                  IPIV,
+                  ipiv,
                   sequence, request);
     plasma_pztbsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans,
                   PlasmaNonUnit,
                   1.0, AB,
                        B,
-                  IPIV,
+                  ipiv,
                   sequence, request);
 }

@@ -101,8 +101,8 @@ void test_zcgesv(param_value_t param[], char *info)
         (plasma_complex64_t *)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
-    int *IPIV = (int*)malloc((size_t)n*sizeof(int));
-    assert(IPIV != NULL);
+    int *ipiv = (int*)malloc((size_t)n*sizeof(int));
+    assert(ipiv != NULL);
 
     plasma_complex64_t *B =
         (plasma_complex64_t *)malloc((size_t)ldb*nrhs*sizeof(plasma_complex64_t));
@@ -133,7 +133,7 @@ void test_zcgesv(param_value_t param[], char *info)
     // Run and time PLASMA
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    retval = plasma_zcgesv(n, nrhs, A, lda, IPIV, B, ldb, X, ldx, &ITER);
+    retval = plasma_zcgesv(n, nrhs, A, lda, ipiv, B, ldb, X, ldx, &ITER);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
     double flops = flops_zgetrf(n, n) + flops_zgetrs(n, nrhs);
@@ -189,5 +189,5 @@ void test_zcgesv(param_value_t param[], char *info)
     //================================================================
     // Free arrays
     //================================================================
-    free(A); free(IPIV); free(B); free(X);
+    free(A); free(ipiv); free(B); free(X);
 }

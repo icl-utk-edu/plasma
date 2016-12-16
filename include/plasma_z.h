@@ -30,11 +30,11 @@ int plasma_dzamax(plasma_enum_t storev,
                   plasma_complex64_t *pA, int lda, double *values);
 
 int plasma_zgbsv(int n, int kl, int ku, int nrhs,
-                 plasma_complex64_t *pAB, int ldab, int *IPIV,
+                 plasma_complex64_t *pAB, int ldab, int *ipiv,
                  plasma_complex64_t *pB,  int ldb);
 
 int plasma_zgbtrf(int m, int n, int kl, int ku,
-                  plasma_complex64_t *pA, int lda, int *IPIV);
+                  plasma_complex64_t *pA, int lda, int *ipiv);
 
 int plasma_zgbtrs(plasma_enum_t transa, int n, int kl, int ku, int nrhs,
                   plasma_complex64_t *pAB, int ldab,
@@ -77,14 +77,14 @@ int plasma_zgeqrs(int m, int n, int nrhs,
                   plasma_complex64_t *pB, int ldb);
 
 int plasma_zgesv(int n, int nrhs,
-                 plasma_complex64_t *pA, int lda, int *IPIV,
+                 plasma_complex64_t *pA, int lda, int *ipiv,
                  plasma_complex64_t *pB, int ldb);
 
 int plasma_zgetrf(int m, int n,
-                  plasma_complex64_t *pA, int lda, int *IPIV);
+                  plasma_complex64_t *pA, int lda, int *ipiv);
 
 int plasma_zgetrs(int n, int nrhs,
-                  plasma_complex64_t *pA, int lda, int *IPIV,
+                  plasma_complex64_t *pA, int lda, int *ipiv,
                   plasma_complex64_t *pB, int ldb);
 
 int plasma_zhemm(plasma_enum_t side, plasma_enum_t uplo,
@@ -236,13 +236,13 @@ void plasma_omp_dzamax(plasma_enum_t storev, plasma_desc_t A,
                        double *work, double *values,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_omp_zgbsv(plasma_desc_t AB, int *IPIV, plasma_desc_t B,
+void plasma_omp_zgbsv(plasma_desc_t AB, int *ipiv, plasma_desc_t B,
                       plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_omp_zgbtrf(plasma_desc_t A, int *IPIV,
+void plasma_omp_zgbtrf(plasma_desc_t A, int *ipiv,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_omp_zgbtrs(plasma_enum_t transa, plasma_desc_t AB, int *IPIV, plasma_desc_t B,
+void plasma_omp_zgbtrs(plasma_enum_t transa, plasma_desc_t AB, int *ipiv, plasma_desc_t B,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_omp_zdesc2ge(plasma_desc_t A,
@@ -292,14 +292,14 @@ void plasma_omp_zgeqrs(plasma_desc_t A, plasma_desc_t T,
                        plasma_desc_t B, plasma_workspace_t work,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_omp_zgesv(plasma_desc_t A, int *IPIV,
+void plasma_omp_zgesv(plasma_desc_t A, int *ipiv,
                       plasma_desc_t B,
                       plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_omp_zgetrf(plasma_desc_t A, int *IPIV,
+void plasma_omp_zgetrf(plasma_desc_t A, int *ipiv,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_omp_zgetrs(plasma_desc_t A, int *IPIV,
+void plasma_omp_zgetrs(plasma_desc_t A, int *ipiv,
                        plasma_desc_t B,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 

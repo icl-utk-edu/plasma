@@ -113,8 +113,8 @@ void test_zgbtrf(param_value_t param[], char *info)
         (plasma_complex64_t*)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
-    int *IPIV = (int*)malloc((size_t)m*sizeof(int));
-    assert(IPIV != NULL);
+    int *ipiv = (int*)malloc((size_t)m*sizeof(int));
+    assert(ipiv != NULL);
 
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
@@ -159,7 +159,7 @@ void test_zgbtrf(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    plasma_zgbtrf(m, n, kl, ku, AB, ldab, IPIV);
+    plasma_zgbtrf(m, n, kl, ku, AB, ldab, ipiv);
 
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
@@ -192,7 +192,7 @@ void test_zgbtrf(param_value_t param[], char *info)
             LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'F', n, nrhs, B, ldb, X, ldx);
 
             // solve for X
-            int iinfo = plasma_zgbtrs(PlasmaNoTrans, n, kl, ku, nrhs, AB, ldab, IPIV, X, ldb);
+            int iinfo = plasma_zgbtrs(PlasmaNoTrans, n, kl, ku, nrhs, AB, ldab, ipiv, X, ldb);
             if (iinfo != 0) printf( " zpbtrs failed with info = %d\n", iinfo );
 
             // compute residual vector
@@ -240,7 +240,7 @@ void test_zgbtrf(param_value_t param[], char *info)
                     for (int i = jnb; i > j; i--) {
                         iw = kd - (j-i);
                         alpha = AB[iw-1 + (j-1)*ldab];
-                        int ip = IPIV[i-1];
+                        int ip = ipiv[i-1];
                         if (i != ip) {
                             ip = kd - (j-ip);
                             AB[iw-1 + (j-1)*ldab] = AB[ip-1 + (j-1)*ldab];
@@ -261,7 +261,7 @@ void test_zgbtrf(param_value_t param[], char *info)
                             alpha = work[iw-1];
                             cblas_zaxpy(il, CBLAS_SADDR(alpha), &AB[kd + (i-1)*ldab], 1, &work[iw], 1);
                             // revert the i-th pivot
-                            int ip = IPIV[i-1];
+                            int ip = ipiv[i-1];
                             if (i != ip) {
                                 ip = ip - j + ju + 1;
                                 work[iw-1] = work[ip-1];
@@ -288,5 +288,5 @@ void test_zgbtrf(param_value_t param[], char *info)
     //================================================================
     free(A);
     free(AB);
-    free(IPIV);
+    free(ipiv);
 }

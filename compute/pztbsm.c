@@ -20,7 +20,6 @@
 
 #define A(m,n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
 #define B(m,n) (plasma_complex64_t*)plasma_tile_addr(B, m, n)
-#define IPIV(k) &(IPIV[B.mb*(k)])
 
 /***************************************************************************//**
  *  Parallel tile triangular solve - dynamic scheduling
@@ -29,7 +28,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                    plasma_enum_t trans, plasma_enum_t diag,
                    plasma_complex64_t alpha, plasma_desc_t A,
                                              plasma_desc_t B,
-                   const int *IPIV,
+                   const int *ipiv,
                    plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Return if failed sequence.
@@ -120,12 +119,12 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                     plasma_complex64_t lalpha = k == 0 ? alpha : 1.0;
                     for (int n = 0; n < B.nt; n++) {
                         int nvbn = plasma_tile_nview(B, n);
-                        if (IPIV != NULL) {
+                        if (ipiv != NULL) {
                             plasma_desc_t view = plasma_desc_view(B, 0, n*A.nb, A.m, nvbn);
                             view.type = PlasmaGeneral;
                             // TODO: nested parallelization like getrf
                             #pragma omp taskwait
-                            core_zlaswp(view, k*A.nb+1, k*A.nb+mvbk, IPIV, 1);
+                            core_zlaswp(view, k*A.nb+1, k*A.nb+mvbk, ipiv, 1);
                         }
                         core_omp_ztrsm(
                             side, uplo, trans, diag,
@@ -183,13 +182,13 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                             lalpha, A(B.mt-k-1, B.mt-k-1), ldak,
                                     B(B.mt-k-1,        n), ldbk,
                             sequence, request);
-                        if (IPIV != NULL) {
+                        if (ipiv != NULL) {
                             int k1 = 1+(B.mt-k-1)*A.nb;
                             int k2 = k1+mvbk-1;
                             plasma_desc_t view = plasma_desc_view(B, 0, n*A.nb, A.m, nvbn);
                             view.type = PlasmaGeneral;
                             #pragma omp taskwait
-                            core_zlaswp(view, k1, k2, IPIV, -1);
+                            core_zlaswp(view, k1, k2, ipiv, -1);
                         }
                     }
                 }

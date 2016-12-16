@@ -19,7 +19,7 @@
 #define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
 
 /******************************************************************************/
-void plasma_pzlaswp(plasma_desc_t A, int *IPIV, int incx,
+void plasma_pzlaswp(plasma_desc_t A, int *ipiv, int incx,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Return if failed sequence.
@@ -42,7 +42,7 @@ void plasma_pzlaswp(plasma_desc_t A, int *IPIV, int incx,
         {
             int nvbn = plasma_tile_nview(A, n);
             plasma_desc_t view = plasma_desc_view(A, 0, n*A.nb, A.m, nvbn);
-            core_zlaswp(view, 1, A.m, IPIV, incx);
+            core_zlaswp(view, 1, A.m, ipiv, incx);
         }
     }
 }

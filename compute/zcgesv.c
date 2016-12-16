@@ -70,9 +70,9 @@
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,n).
  *
- * @param[out] IPIV
+ * @param[out] ipiv
  *          The pivot indices; for 1 <= i <= min(m,n), row i of the
- *          matrix was interchanged with row IPIV(i).
+ *          matrix was interchanged with row ipiv(i).
  *
  * @param[in] B
  *          The n-by-nrhs matrix of right hand side matrix B.
@@ -104,7 +104,7 @@
  *
  ******************************************************************************/
 int plasma_zcgesv(int n, int nrhs,
-                  plasma_complex64_t *pA, int lda, int *IPIV,
+                  plasma_complex64_t *pA, int lda, int *ipiv,
                   plasma_complex64_t *pB, int ldb,
                   plasma_complex64_t *pX, int ldx, int *iter)
 {
@@ -235,7 +235,7 @@ int plasma_zcgesv(int n, int nrhs,
         plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
 
         // Call tile async function
-        plasma_omp_zcgesv(A, IPIV, B, X, As, Xs, R, work, Rnorm, Xnorm, iter,
+        plasma_omp_zcgesv(A, ipiv, B, X, As, Xs, R, work, Rnorm, Xnorm, iter,
                           sequence, &request);
 
         // Translate back to LAPACK layout
@@ -277,9 +277,9 @@ int plasma_zcgesv(int n, int nrhs,
  * @param[in] A
  *          Descriptor of matrix A.
  *
- * @param[out] IPIV
+ * @param[out] ipiv
  *          The pivot indices; for 1 <= i <= min(m,n), row i of the
- *          matrix was interchanged with row IPIV(i).
+ *          matrix was interchanged with row ipiv(i).
  *
  * @param[in] B
  *          Descriptor of matrix B.
@@ -332,7 +332,7 @@ int plasma_zcgesv(int n, int nrhs,
  * @sa plasma_omp_zgesv
  *
  ******************************************************************************/
-void plasma_omp_zcgesv(plasma_desc_t A,  int *IPIV,
+void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
                        plasma_desc_t B,  plasma_desc_t X,
                        plasma_desc_t As, plasma_desc_t Xs, plasma_desc_t R,
                        double *work, double *Rnorm, double *Xnorm, int *iter,
@@ -417,14 +417,14 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *IPIV,
 
     // Compute the LU factorization of As.
     #pragma omp taskwait
-    plasma_pcgetrf(As, IPIV, sequence, request);
+    plasma_pcgetrf(As, ipiv, sequence, request);
 
     // Solve the system As * Xs = Bs.
     #pragma omp taskwait
     for (int n = 0; n < Xs.nt; n++) {
         int nvbn = plasma_tile_nview(Xs, n);
         plasma_desc_t view = plasma_desc_view(Xs, 0, n*A.nb, Xs.m, nvbn);
-        core_claswp(view, 1, Xs.m, IPIV, 1);
+        core_claswp(view, 1, Xs.m, ipiv, 1);
     }
     plasma_pctrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
                   1.0, As, Xs, sequence, request);
@@ -468,7 +468,7 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *IPIV,
         for (int n = 0; n < Xs.nt; n++) {
             int nvbn = plasma_tile_nview(Xs, n);
             plasma_desc_t view = plasma_desc_view(Xs, 0, n*A.nb, Xs.m, nvbn);
-            core_claswp(view, 1, Xs.m, IPIV, 1);
+            core_claswp(view, 1, Xs.m, ipiv, 1);
         }
         plasma_pctrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
                       1.0, As, Xs, sequence, request);
@@ -510,7 +510,7 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *IPIV,
 
     // Compute LU factorization of A.
     #pragma omp taskwait
-    plasma_pzgetrf(A, IPIV, sequence, request);
+    plasma_pzgetrf(A, ipiv, sequence, request);
 
     // Solve the system A * X = B.
     plasma_pzlacpy(PlasmaGeneral, B, X, sequence, request);
@@ -518,7 +518,7 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *IPIV,
     for (int n = 0; n < X.nt; n++) {
         int nvbn = plasma_tile_nview(X, n);
         plasma_desc_t view = plasma_desc_view(X, 0, n*A.nb, X.m, nvbn);
-        core_zlaswp(view, 1, X.m, IPIV, 1);
+        core_zlaswp(view, 1, X.m, ipiv, 1);
     }
     plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
                   1.0, A, X, sequence, request);

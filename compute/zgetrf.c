@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 int plasma_zgetrf(int m, int n,
-                  plasma_complex64_t *pA, int lda, int *IPIV)
+                  plasma_complex64_t *pA, int lda, int *ipiv)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -89,7 +89,7 @@ int plasma_zgetrf(int m, int n,
     #pragma omp master
     {
         // Call the tile async function.
-        plasma_omp_zgetrf(A, IPIV, sequence, &request);
+        plasma_omp_zgetrf(A, ipiv, sequence, &request);
     }
 
     #pragma omp parallel
@@ -111,7 +111,7 @@ int plasma_zgetrf(int m, int n,
 /***************************************************************************//**
  *
  ******************************************************************************/
-void plasma_omp_zgetrf(plasma_desc_t A, int *IPIV,
+void plasma_omp_zgetrf(plasma_desc_t A, int *ipiv,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
@@ -144,5 +144,5 @@ void plasma_omp_zgetrf(plasma_desc_t A, int *IPIV,
         return;
 
     // Call the parallel function.
-    plasma_pzgetrf(A, IPIV, sequence, request);
+    plasma_pzgetrf(A, ipiv, sequence, request);
 }
