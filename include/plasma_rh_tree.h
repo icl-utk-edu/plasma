@@ -21,15 +21,39 @@ enum {
  *  QR and LQ factorization.
  * @see plasma_omp_zgeqrf
  **/
-static inline void plasma_rh_tree_insert_operation(int *operations,
-                                                   int ind_op,
-                                                   plasma_enum_t kernel,
-                                                   int col, int row, int rowpiv)
+static inline int plasma_rh_tree_insert_operation(int *operations,
+                                                  int loperations,
+                                                  int ind_op,
+                                                  plasma_enum_t kernel,
+                                                  int col, int row, int rowpiv)
 {
+    static const int debug = 1;
+    if (debug) {
+        switch (kernel) {
+            case PlasmaGeKernel:
+                printf("GEQRT(%d,  %d)\n",row,col);
+                break;
+            case PlasmaTsKernel:
+                printf("TSQRT(%d:%d,%d)\n",rowpiv,row,col);
+                break;
+            case PlasmaTtKernel:
+                printf("TTQRT(%d:%d,%d)\n",rowpiv,row,col);
+                break;
+            default:
+                assert(-1);
+        }
+    }
+
+    assert(ind_op < loperations);
+
     operations[ind_op*4]   = kernel;
     operations[ind_op*4+1] = col;
     operations[ind_op*4+2] = row;
     operations[ind_op*4+3] = rowpiv;
+
+    ind_op++;
+
+    return ind_op;
 }
 
 /***************************************************************************//**
