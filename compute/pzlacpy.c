@@ -31,9 +31,9 @@ void plasma_pzlacpy(plasma_enum_t uplo, plasma_desc_t A, plasma_desc_t B,
         return;
 
     switch (uplo) {
-    //=============
+    //==============
     // PlasmaUpper
-    //=============
+    //==============
     case PlasmaUpper:
         for (int m = 0; m < A.mt; m++) {
             int mvam = plasma_tile_mview(A, m);
@@ -59,9 +59,9 @@ void plasma_pzlacpy(plasma_enum_t uplo, plasma_desc_t A, plasma_desc_t B,
             }
         }
         break;
-    //=============
+    //==============
     // PlasmaLower
-    //=============
+    //==============
     case PlasmaLower:
         for (int m = 0; m < A.mt; m++) {
             int mvam = plasma_tile_mview(A, m);
@@ -87,9 +87,9 @@ void plasma_pzlacpy(plasma_enum_t uplo, plasma_desc_t A, plasma_desc_t B,
             }
         }
         break;
-    //===============
+    //================
     // PlasmaGeneral
-    //===============
+    //================
     case PlasmaGeneral:
     default:
         for (int m = 0; m < A.mt; m++) {

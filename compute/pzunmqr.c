@@ -120,10 +120,10 @@ void plasma_pzunmqr(plasma_enum_t side, plasma_enum_t trans,
             }
         }
     }
+    //=================================
+    // PlasmaRight / Plasma_ConjTrans
+    //=================================
     else {
-        //=================================
-        // PlasmaRight / Plasma_ConjTrans
-        //=================================
         if (trans == Plasma_ConjTrans) {
             for (int k = imin(A.mt, A.nt)-1; k >= 0; k--) {
                 int nvbk = plasma_tile_nview(B, k);

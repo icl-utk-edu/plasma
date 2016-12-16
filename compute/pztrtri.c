@@ -32,9 +32,9 @@ void plasma_pztrtri(plasma_enum_t uplo, plasma_enum_t diag,
     if (sequence->status != PlasmaSuccess)
         return;
 
-    //===========================================
+    //==============
     // PlasmaLower
-    //===========================================
+    //==============
     if (uplo == PlasmaLower) {
         for (int k = 0; k < A.nt; k++) {
             int mvak = plasma_tile_mview(A, k);
@@ -80,9 +80,9 @@ void plasma_pztrtri(plasma_enum_t uplo, plasma_enum_t diag,
                 sequence, request);
         }
     }
-    //===========================================
+    //==============
     // PlasmaUpper
-    //===========================================
+    //==============
     else {
         for (int k = 0; k < A.mt; k++) {
             int mvak = plasma_tile_mview(A, k);

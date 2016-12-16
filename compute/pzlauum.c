@@ -31,9 +31,9 @@ void plasma_pzlauum(plasma_enum_t uplo, plasma_desc_t A,
     if (sequence->status != PlasmaSuccess)
         return;
 
-    //===========================================
+    //==============
     // PlasmaLower
-    //===========================================
+    //==============
     if (uplo == PlasmaLower) {
         for (int k = 0; k < A.mt; k++) {
             int kvam = plasma_tile_mview(A, k);
@@ -72,9 +72,9 @@ void plasma_pzlauum(plasma_enum_t uplo, plasma_desc_t A,
                 sequence, request);
         }
     }
-    //===========================================
+    //==============
     // PlasmaLower
-    //===========================================
+    //==============
     else {
         for (int k = 0; k < A.mt; k++) {
             int kvan = plasma_tile_nview(A, k);

@@ -47,6 +47,9 @@ void plasma_pzunmlqrh(plasma_enum_t side, plasma_enum_t trans,
     // Set inner blocking from the T tile row-dimension.
     int ib = T.mb;
 
+    //==============
+    // PlasmaLeft
+    //==============
     if (side == PlasmaLeft) {
         for (int iop = 0; iop < num_operations; iop++) {
             int ind_operation;
@@ -133,10 +136,10 @@ void plasma_pzunmlqrh(plasma_enum_t side, plasma_enum_t trans,
             }
         }
     }
+    //==============
+    // PlasmaRight
+    //==============
     else {
-        //=================================
-        // PlasmaRight
-        //=================================
         for (int iop = 0; iop < num_operations; iop++) {
             int ind_operation;
             // revert the order of Householder reflectors for transpose

@@ -27,7 +27,6 @@ void plasma_pzlaswp(plasma_desc_t A, int *ipiv, int incx,
         return;
 
     for (int n = 0; n < A.nt; n++) {
-
         plasma_complex64_t *a00 = A(0, n);
         plasma_complex64_t *a10 = A(A.mt-1, n);
 
