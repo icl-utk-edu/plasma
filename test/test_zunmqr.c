@@ -90,8 +90,8 @@ void test_zunmqr(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    plasma_enum_t trans = plasma_trans_const_t(param[PARAM_TRANS].c);
-    plasma_enum_t side  = plasma_side_const_t(param[PARAM_SIDE].c);
+    plasma_enum_t trans = plasma_trans_const(param[PARAM_TRANS].c);
+    plasma_enum_t side  = plasma_side_const(param[PARAM_SIDE].c);
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;

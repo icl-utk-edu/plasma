@@ -1,0 +1,282 @@
+/**
+ *
+ * @file
+ *
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee,  US,
+ *  University of Manchester, UK.
+ *
+ * @precisions normal z -> s d c
+ *
+ **/
+
+#include "plasma.h"
+#include "plasma_async.h"
+#include "plasma_context.h"
+#include "plasma_descriptor.h"
+#include "plasma_internal.h"
+#include "plasma_types.h"
+
+/***************************************************************************//**
+ *
+ * @ingroup plasma_lansy
+ *
+ *  Returns the norm of a Hermitian matrix as
+ *
+ *     zlansy = ( max(abs(A(i,j))), NORM = PlasmaMaxNorm
+ *              (
+ *              ( norm1(A),         NORM = PlasmaOneNorm
+ *              (
+ *              ( normI(A),         NORM = PlasmaInfNorm
+ *              (
+ *              ( normF(A),         NORM = PlasmaFrobeniusNorm
+ *
+ *  where norm1 denotes the one norm of a matrix (maximum column sum),
+ *  normI denotes the infinity norm of a matrix (maximum row sum) and
+ *  normF denotes the Frobenius norm of a matrix (square root of sum
+ *  of squares). Note that max(abs(A(i,j))) is not a consistent matrix
+ *  norm.
+ *
+ *******************************************************************************
+ *
+ * @param[in] norm
+ *          - PlasmaMaxNorm: Max norm
+ *          - PlasmaOneNorm: One norm
+ *          - PlasmaInfNorm: Infinity norm
+ *          - PlasmaFrobeniusNorm: Frobenius norm
+ *
+ * @param[in] uplo
+ *          - PlasmaUpper: Upper triangle of A is stored;
+ *          - PlasmaLower: Lower triangle of A is stored.
+ *
+ * @param[in] n
+ *          The order of the matrix A. n >= 0.
+ *
+ * @param[in,out] A
+ *          On entry, the Hermitian positive definite matrix A.
+ *          If uplo = PlasmaUpper, the leading N-by-N upper triangular part of A
+ *          contains the upper triangular part of the matrix A, and the strictly
+ *          lower triangular part of A is not referenced.
+ *          If uplo = PlasmaLower, the leading N-by-N lower triangular part of A
+ *          contains the lower triangular part of the matrix A, and the strictly
+ *          upper triangular part of A is not referenced.
+ *
+ * @param[in] lda
+ *          The leading dimension of the array A. lda >= max(1,m).
+ *
+ *******************************************************************************
+ *
+ * @return the specified norm of the Hermitian matrix A
+ *
+ *******************************************************************************
+ *
+ * @sa plasma_omp_zlansy
+ * @sa plasma_clansy
+ * @sa plasma_dlansy
+ * @sa plasma_slansy
+ *
+ ******************************************************************************/
+double plasma_zlansy(plasma_enum_t norm, plasma_enum_t uplo,
+					 int n,
+                     plasma_complex64_t *pA, int lda)
+{
+    // Get PLASMA context.
+    plasma_context_t *plasma = plasma_context_self();
+    if (plasma == NULL) {
+        plasma_error("PLASMA not initialized");
+        return PlasmaErrorNotInitialized;
+    }
+
+    // Check input arguments.
+    if ((norm != PlasmaMaxNorm) && (norm != PlasmaOneNorm) &&
+        (norm != PlasmaInfNorm) && (norm != PlasmaFrobeniusNorm) ) {
+        plasma_error("illegal value of norm");
+        return -1;
+    }
+    if ((uplo != PlasmaUpper) &&
+        (uplo != PlasmaLower)) {
+        plasma_error("illegal value of uplo");
+        return -2;
+    }
+    if (n < 0) {
+        plasma_error("illegal value of n");
+        return -3;
+    }
+    if (lda < imax(1, n)) {
+        plasma_error("illegal value of lda");
+        return -5;
+    }
+
+    // quick return
+    if (n == 0)
+      return 0.0;
+
+    // Set tiling parameters.
+    int nb = plasma->nb;
+
+    // Create tile matrices.
+    plasma_desc_t A;
+    int retval;
+    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
+                                        n, n, 0, 0, n, n, &A);
+    if (retval != PlasmaSuccess) {
+        plasma_error("plasma_desc_general_create() failed");
+        return retval;
+    }
+
+    // Allocate workspace.
+    double *work;
+    switch (norm) {
+    case PlasmaMaxNorm:
+        work = (double*)malloc((size_t)A.mt*A.nt*sizeof(double));
+        break;
+    case PlasmaOneNorm:
+    case PlasmaInfNorm:
+        work = (double*)malloc(((size_t)A.mt*A.n+A.n)*sizeof(double));
+        break;
+    case PlasmaFrobeniusNorm:
+        work = (double*)malloc((size_t)2*A.mt*A.nt*sizeof(double));
+        break;
+    }
+    if (work == NULL) {
+        plasma_error("malloc() failed");
+        return PlasmaErrorOutOfMemory;
+    }
+
+    // Create sequence.
+    plasma_sequence_t *sequence = NULL;
+    retval = plasma_sequence_create(&sequence);
+    if (retval != PlasmaSuccess) {
+        plasma_error("plasma_sequence_create() failed");
+        return retval;
+    }
+
+    // Initialize request.
+    plasma_request_t request = PlasmaRequestInitializer;
+
+    double value;
+
+    // asynchronous block
+    #pragma omp parallel
+    #pragma omp master
+    {
+        // Translate to tile layout.
+        plasma_omp_zge2desc(pA, lda, A, sequence, &request);
+
+        // Call tile async function.
+        plasma_omp_zlansy(norm, uplo, A, work, &value, sequence, &request);
+    }
+    // implicit synchronization
+
+    free(work);
+
+    // Free matrix in tile layout.
+    plasma_desc_destroy(&A);
+
+    // Destroy sequence.
+    plasma_sequence_destroy(sequence);
+
+    // Return the norm.
+    return value;
+}
+
+/***************************************************************************//**
+ *
+ * @ingroup plasma_lansy
+ *
+ *  Calculates the max, one, infinity or Frobenius norm of a Hermitian matrix.
+ *  Non-blocking equivalent of plasma_zlansy(). May return before the
+ *  computation is finished. Operates on matrices stored by tiles. All matrices
+ *  are passed through descriptors. All dimensions are taken from the
+ *  descriptors. Allows for pipelining of operations at runtime.
+ *
+ *******************************************************************************
+ *
+ * @param[in] norm
+ *          - PlasmaMaxNorm: Max norm
+ *          - PlasmaOneNorm: One norm
+ *          - PlasmaInfNorm: Infinity norm
+ *          - PlasmaFrobeniusNorm: Frobenius norm
+ *
+ * @param[in] uplo
+ *          - PlasmaUpper: Upper triangle of A is stored;
+ *          - PlasmaLower: Lower triangle of A is stored.
+ *
+ * @param[in] A
+ *          The descriptor of matrix A.
+ *
+ * @param[out] value
+ *          The calculated value of the norm requested.
+ *
+ * @param[in] sequence
+ *          Identifies the sequence of function calls that this call belongs to
+ *          (for completion checks and exception handling purposes).
+ *
+ * @param[out] request
+ *          Identifies this function call (for exception handling purposes).
+ *
+ * @retval void
+ *          Errors are returned by setting sequence->status and
+ *          request->status to error values. The sequence->status and
+ *          request->status should never be set to PlasmaSuccess (the
+ *          initial values) since another async call may be setting a
+ *          failure value at the same time.
+ *
+ *******************************************************************************
+ *
+ * @sa plasma_zlansy
+ * @sa plasma_omp_clansy
+ * @sa plasma_omp_dlansy
+ * @sa plasma_omp_slansy
+ *
+ ******************************************************************************/
+void plasma_omp_zlansy(plasma_enum_t norm, plasma_enum_t uplo, plasma_desc_t A,
+                       double *work, double *value,
+                       plasma_sequence_t *sequence, plasma_request_t *request)
+{
+    // Get PLASMA context.
+    plasma_context_t *plasma = plasma_context_self();
+    if (plasma == NULL) {
+        plasma_error("PLASMA not initialized");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+
+    // Check input arguments.
+    if ((norm != PlasmaMaxNorm) && (norm != PlasmaOneNorm) &&
+        (norm != PlasmaInfNorm) && (norm != PlasmaFrobeniusNorm)) {
+        plasma_error("illegal value of norm");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+    if ((uplo != PlasmaUpper) &&
+        (uplo != PlasmaLower)) {
+        plasma_error("illegal value of uplo");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+    if (plasma_desc_check(A) != PlasmaSuccess) {
+        plasma_error("invalid descriptor A");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+    if (sequence == NULL) {
+        plasma_error("NULL sequence");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+    if (request == NULL) {
+        plasma_error("NULL request");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+
+    // quick return
+    if (A.m == 0) {
+    	*value = 0.0;
+        return PlasmaSuccess;
+    }
+
+    // Call the parallel function.
+    plasma_pzlansy(norm, uplo, A, work, value, sequence, request);
+}

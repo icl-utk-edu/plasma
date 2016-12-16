@@ -31,11 +31,9 @@ void plasma_pzunglqrh(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
                       plasma_workspace_t work,
                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
+    // Return if failed sequence.
+    if (sequence->status != PlasmaSuccess)
         return;
-    }
 
     // Precompute order of LQ operations - compute it as for QR
     // and transpose it.

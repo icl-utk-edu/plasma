@@ -78,7 +78,7 @@ void test_zlacpy(param_value_t param[], char *info)
     //================================================================
     // Set parameters
     //================================================================
-    plasma_enum_t uplo = plasma_uplo_const_t(param[PARAM_UPLO].c);
+    plasma_enum_t uplo = plasma_uplo_const(param[PARAM_UPLO].c);
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
@@ -121,7 +121,7 @@ void test_zlacpy(param_value_t param[], char *info)
     switch (uplo) {
         case PlasmaLower:
             LAPACKE_zlaset_work(
-                mtrxLayout, 'U', m-1, n-1, 0.0, 0.0, &B[n], ldb);
+                mtrxLayout, 'U', m-1, n-1, 0.0, 0.0, &B[m], ldb);
             break;
         case PlasmaUpper:
             LAPACKE_zlaset_work(
@@ -207,6 +207,7 @@ void test_zlacpy(param_value_t param[], char *info)
     free(A);
     free(B);
 
-    if (test)
+    if (test) {
         free(Bref);
+    }
 }

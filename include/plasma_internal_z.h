@@ -22,6 +22,13 @@ extern "C" {
 #endif
 
 /******************************************************************************/
+void plasma_pdzamax(plasma_enum_t storev,
+                    plasma_desc_t A, double *work, double *values,
+                    plasma_sequence_t *sequence, plasma_request_t *request);
+
+void plasma_pzgbtrf(plasma_desc_t A, int *IPIV,
+                    plasma_sequence_t *sequence, plasma_request_t *request);
+
 void plasma_pzdesc2ge(plasma_desc_t A,
                       plasma_complex64_t *pA, int lda,
                       plasma_sequence_t *sequence,
@@ -87,9 +94,33 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
 void plasma_pzlacpy(plasma_enum_t uplo, plasma_desc_t A, plasma_desc_t B,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
+void plasma_pzlange(plasma_enum_t norm,
+                    plasma_desc_t A, double *work, double *value,
+                    plasma_sequence_t *sequence, plasma_request_t *request);
+
+void plasma_pzlanhe(plasma_enum_t norm, plasma_enum_t uplo,
+                    plasma_desc_t A, double *work, double *value,
+                    plasma_sequence_t *sequence, plasma_request_t *request);
+
+void plasma_pzlansy(plasma_enum_t norm, plasma_enum_t uplo,
+                    plasma_desc_t A, double *work, double *value,
+                    plasma_sequence_t *sequence, plasma_request_t *request);
+
+void plasma_pzlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
+                    plasma_desc_t A, double *work, double *value,
+                    plasma_sequence_t *sequence, plasma_request_t *request);
+
+void plasma_pzlascl(plasma_enum_t uplo,
+                    double cfrom, double cto,
+                    plasma_desc_t A, 
+                    plasma_sequence_t *sequence, plasma_request_t *request);
+
 void plasma_pzlaset(plasma_enum_t uplo,
                     plasma_complex64_t alpha, plasma_complex64_t beta,
                     plasma_desc_t A,
+                    plasma_sequence_t *sequence, plasma_request_t *request);
+
+void plasma_pzlaswp(plasma_desc_t A, int *IPIV, int incx,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzlauum(plasma_enum_t uplo, plasma_desc_t A,
@@ -186,7 +217,6 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
                       plasma_desc_t A, plasma_desc_t T, plasma_desc_t B,
                       plasma_workspace_t work,
                       plasma_sequence_t *sequence, plasma_request_t *request);
-
 
 #ifdef __cplusplus
 }  // extern "C"

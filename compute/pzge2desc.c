@@ -24,18 +24,16 @@ void plasma_pzge2desc(plasma_complex64_t *pA, int lda,
                       plasma_sequence_t *sequence,
                       plasma_request_t *request)
 {
+    // Return if failed sequence.
+    if (sequence->status != PlasmaSuccess)
+        return;
+
     plasma_complex64_t *f77;
     plasma_complex64_t *bdl;
 
     int x1, y1;
     int x2, y2;
     int n, m, ldt;
-
-    // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
-        return;
-    }
 
     for (m = 0; m < A.mt; m++) {
         ldt = plasma_tile_mmain(A, m);

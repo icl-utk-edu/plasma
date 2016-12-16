@@ -32,11 +32,9 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                    plasma_complex64_t beta,  plasma_desc_t C,
                    plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
+    // Return if failed sequence.
+    if (sequence->status != PlasmaSuccess)
         return;
-    }
 
     for (int m = 0; m < C.mt; m++) {
         int mvcm = plasma_tile_mview(C, m);

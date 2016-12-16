@@ -29,11 +29,9 @@ void plasma_pzgeqrfrh(plasma_desc_t A, plasma_desc_t T,
                       plasma_workspace_t work,
                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    // Check sequence status.
-    if (sequence->status != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorSequence);
+    // Return if failed sequence.
+    if (sequence->status != PlasmaSuccess)
         return;
-    }
 
     // Precompute order of QR operations.
     int *operations = NULL;

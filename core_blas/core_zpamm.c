@@ -169,7 +169,7 @@ static inline int core_zpamm_w(plasma_enum_t side, plasma_enum_t trans,
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int core_zpamm(int op, plasma_enum_t side, plasma_enum_t storev,
+int core_zpamm(plasma_enum_t op, plasma_enum_t side, plasma_enum_t storev,
                int m, int n, int k, int l,
                const plasma_complex64_t *A1, int lda1,
                      plasma_complex64_t *A2, int lda2,

@@ -54,8 +54,9 @@
  *          - < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int core_zlauum(plasma_enum_t uplo, int n,
-                 plasma_complex64_t *A, int lda)
+int core_zlauum(plasma_enum_t uplo,
+                int n,
+                plasma_complex64_t *A, int lda)
 {
     return LAPACKE_zlauum_work(LAPACK_COL_MAJOR,
                         lapack_const(uplo), n, A, lda);
@@ -63,7 +64,8 @@ int core_zlauum(plasma_enum_t uplo, int n,
 
 /******************************************************************************/
 void core_omp_zlauum(plasma_enum_t uplo,
-                     int n, plasma_complex64_t *A, int lda,
+                     int n,
+                     plasma_complex64_t *A, int lda,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
     #pragma omp task depend(inout:A[0:lda*n])

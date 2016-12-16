@@ -19,31 +19,34 @@ typedef enum {
     //------------------------------------------------------
     // input parameters
     //------------------------------------------------------
-    PARAM_ITER,   // outer product iteration?
-    PARAM_OUTER,  // outer product iteration?
-    PARAM_TEST,   // test the solution?
-    PARAM_TOL,    // tolerance
-    PARAM_TRANS,  // transposition
-    PARAM_TRANSA, // transposition of A
-    PARAM_TRANSB, // transposition of B
-    PARAM_SIDE,   // left of right side application
-    PARAM_UPLO,   // general rectangular or upper or lower triangular
-    PARAM_DIAG,   // non-unit or unit diagonal
-    PARAM_M,      // M dimension
-    PARAM_N,      // N dimension
-    PARAM_K,      // K dimension
-    PARAM_KL,     // Lower bandwidth
-    PARAM_KU,     // Upper bandwidth
-    PARAM_NRHS,   // number of RHS
-    PARAM_NB,     // tile size NBxNB
-    PARAM_IB,     // inner blocking size
-    PARAM_HMODE,  // Householder mode - tree or flat
-    PARAM_ALPHA,  // scalar alpha
-    PARAM_BETA,   // scalar beta
-    PARAM_PADA,   // padding of A
-    PARAM_PADB,   // padding of B
-    PARAM_PADC,   // padding of C
-    PARAM_NTPF,   // number of threads for panel factorization
+    PARAM_ITER,    // outer product iteration?
+    PARAM_OUTER,   // outer product iteration?
+    PARAM_TEST,    // test the solution?
+    PARAM_TOL,     // tolerance
+    PARAM_TRANS,   // transposition
+    PARAM_TRANSA,  // transposition of A
+    PARAM_TRANSB,  // transposition of B
+    PARAM_SIDE,    // left of right side application
+    PARAM_UPLO,    // general rectangular or upper or lower triangular
+    PARAM_DIAG,    // non-unit or unit diagonal
+    PARAM_STOREV,  // columnwise or rowwise operation
+    PARAM_M,       // M dimension
+    PARAM_N,       // N dimension
+    PARAM_K,       // K dimension
+    PARAM_KL,      // lower bandwidth
+    PARAM_KU,      // upper bandwidth
+    PARAM_NRHS,    // number of RHS
+    PARAM_NB,      // tile size NBxNB
+    PARAM_IB,      // inner blocking size
+    PARAM_HMODE,   // Householder mode - tree or flat
+    PARAM_ALPHA,   // scalar alpha
+    PARAM_BETA,    // scalar beta
+    PARAM_PADA,    // padding of A
+    PARAM_PADB,    // padding of B
+    PARAM_PADC,    // padding of C
+    PARAM_NTPF,    // number of threads for panel factorization
+    PARAM_NORM,    // type of matrix norm
+    PARAM_ZEROCOL, // if positive, a column of zeros inserted at that index
 
     //------------------------------------------------------
     // output parameters
@@ -78,6 +81,7 @@ static const char * const ParamUsage[][2] = {
     {"--uplo=[g|u|l]",
         "general rectangular or upper or lower triangular matrix [default: l]"},
     {"--diag=[n|u]", "not unit triangular or unit matrix [default: n]"},
+    {"--storev=[c|r]", "columnwise or rowwise [default: c]"},
     {"--m=", "M dimension (number of rows) [default: 1000]"},
     {"--n=", "N dimension (number of columns) [default: 1000]"},
     {"--k=", "K dimension (number of rows or columns) [default: 1000]"},
@@ -93,6 +97,10 @@ static const char * const ParamUsage[][2] = {
     {"--padb=", "padding added to ldb [default: 0]"},
     {"--padc=", "padding added to ldc [default: 0]"},
     {"--ntpf=", "number of threads for panel factorization [default: 1]"},
+    {"--norm=[m|o|i|f]",
+        "type of matrix norm (max, one, inf, frobenius) [default: o]"},
+    {"--zerocol=",
+        "if positive, a column of zeros inserted at that index [default: -1]"},
 
     //------------------------------------------------------
     // output parameters

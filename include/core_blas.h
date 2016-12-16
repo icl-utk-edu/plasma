@@ -46,10 +46,20 @@ static const char *lapack_constants[] = {
     "", "", "", "", "", "", "", "",
     "Left",                                 ///< 141: PlasmaLeft
     "Right",                                ///< 142: PlasmaRight
+
     "", "", "", "", "", "", "", "", "", "",
     "", "", "", "", "", "", "", "", "", "",
-    "", "", "", "", "", "", "", "", "", "",
-    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "",
+    "One",                                  ///< 171: PlasmaOneNorm
+    "",                                     ///< 172: PlasmaRealOneNorm
+    "Two",                                  ///< 173: PlasmaTwoNorm
+    "Frobenius",                            ///< 174: PlasmaFrobeniusNorm
+    "Infinity",                             ///< 175: PlasmaInfNorm
+    "",                                     ///< 176: PlasmaRealInfNorm
+    "Maximum",                              ///< 177: PlasmaMaxNorm
+    "",                                     ///< 178: PlasmaRealMaxNorm
+
+    "", "", "", "",
     "", "", "", "", "", "", "", "", "", "",
     "", "", "", "", "", "", "", "", "", "",
     "", "", "", "", "", "", "", "", "", "",

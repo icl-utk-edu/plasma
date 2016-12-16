@@ -93,8 +93,8 @@ void test_zgemm(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    plasma_enum_t transa = plasma_trans_const_t(param[PARAM_TRANSA].c);
-    plasma_enum_t transb = plasma_trans_const_t(param[PARAM_TRANSB].c);
+    plasma_enum_t transa = plasma_trans_const(param[PARAM_TRANSA].c);
+    plasma_enum_t transb = plasma_trans_const(param[PARAM_TRANSB].c);
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;

@@ -26,6 +26,29 @@ struct routines_t {
 
 struct routines_t routines[] =
 {
+    { "clag2z", test_clag2z },
+    { "", NULL },
+    { "", NULL },
+    { "", NULL },
+
+    { "dzamax", test_dzamax },
+    { "damax",  test_damax  },
+    { "scamax", test_scamax },
+    { "samax",  test_samax  },
+
+    { "zcposv", test_zcposv },
+    { "dsposv", test_dsposv },
+
+    { "zgbsv",  test_zgbsv },
+    { "dgbsv",  test_dgbsv },
+    { "cgbsv",  test_cgbsv },
+    { "sgbsv",  test_sgbsv },
+
+    { "zgbtrf", test_zgbtrf },
+    { "dgbtrf", test_dgbtrf },
+    { "cgbtrf", test_cgbtrf },
+    { "sgbtrf", test_sgbtrf },
+
     { "zgeadd", test_zgeadd },
     { "dgeadd", test_dgeadd },
     { "cgeadd", test_cgeadd },
@@ -61,14 +84,27 @@ struct routines_t routines[] =
     { "cgeqrs", test_cgeqrs },
     { "sgeqrs", test_sgeqrs },
 
+    { "zcgesv", test_zcgesv },
+    { "dsgesv", test_dsgesv },
+
+    { "zgesv", test_zgesv },
+    { "dgesv", test_dgesv },
+    { "cgesv", test_cgesv },
+    { "sgesv", test_sgesv },
+
     { "zgetrf", test_zgetrf },
     { "dgetrf", test_dgetrf },
     { "cgetrf", test_cgetrf },
     { "sgetrf", test_sgetrf },
 
-    { "zhemm", test_zherk },
-    { "", NULL },  // blank to keep test -h nicely aligned
-    { "chemm", test_cherk },
+    { "zgetrs", test_zgetrs },
+    { "dgetrs", test_dgetrs },
+    { "cgetrs", test_cgetrs },
+    { "sgetrs", test_sgetrs },
+
+    { "zhemm", test_zhemm },
+    { "", NULL },
+    { "chemm", test_chemm },
     { "", NULL },
 
     { "zher2k", test_zher2k },
@@ -81,6 +117,51 @@ struct routines_t routines[] =
     { "cherk", test_cherk },
     { "", NULL },
 
+    { "zlacpy", test_zlacpy },
+    { "dlacpy", test_dlacpy },
+    { "clacpy", test_clacpy },
+    { "slacpy", test_slacpy },
+
+    { "zlag2c", test_zlag2c },
+    { "", NULL },
+    { "", NULL },
+    { "", NULL },
+
+    { "zlange", test_zlange },
+    { "dlange", test_dlange },
+    { "clange", test_clange },
+    { "slange", test_slange },
+
+    { "zlanhe", test_zlanhe },
+    { "", NULL },
+    { "clanhe", test_clanhe },
+    { "", NULL },
+
+    { "zlansy", test_zlansy },
+    { "dlansy", test_dlansy },
+    { "clansy", test_clansy },
+    { "slansy", test_slansy },
+
+    { "zlantr", test_zlantr },
+    { "dlantr", test_dlantr },
+    { "clantr", test_clantr },
+    { "slantr", test_slantr },
+
+    { "zlascl", test_zlascl },
+    { "dlascl", test_dlascl },
+    { "clascl", test_clascl },
+    { "slascl", test_slascl },
+
+    { "zlaset", test_zlaset },
+    { "dlaset", test_dlaset },
+    { "claset", test_claset },
+    { "slaset", test_slaset },
+
+    { "zlauum", test_zlauum },
+    { "dlauum", test_dlauum },
+    { "clauum", test_clauum },
+    { "slauum", test_slauum },
+
     { "zpbsv", test_zpbsv },
     { "dpbsv", test_dpbsv },
     { "cpbsv", test_cpbsv },
@@ -91,35 +172,40 @@ struct routines_t routines[] =
     { "cpbtrf", test_cpbtrf },
     { "spbtrf", test_spbtrf },
 
-    { "zposv", test_zpotrf },
-    { "dposv", test_dpotrf },
-    { "cposv", test_cpotrf },
-    { "sposv", test_spotrf },
+    { "zposv", test_zposv },
+    { "dposv", test_dposv },
+    { "cposv", test_cposv },
+    { "sposv", test_sposv },
 
     { "zpotrf", test_zpotrf },
     { "dpotrf", test_dpotrf },
     { "cpotrf", test_cpotrf },
     { "spotrf", test_spotrf },
 
-    { "zpotrs", test_zpotrf },
-    { "dpotrs", test_dpotrf },
-    { "cpotrs", test_cpotrf },
-    { "spotrs", test_spotrf },
+    { "zpotri", test_zpotri },
+    { "dpotri", test_dpotri },
+    { "cpotri", test_cpotri },
+    { "spotri", test_spotri },
 
-    { "zsymm", test_zsyrk },
-    { "dsymm", test_dsyrk },
-    { "csymm", test_csyrk },
-    { "ssymm", test_ssyrk },
+    { "zpotrs", test_zpotrs },
+    { "dpotrs", test_dpotrs },
+    { "cpotrs", test_cpotrs },
+    { "spotrs", test_spotrs },
 
-    { "zsyrk", test_zsyrk },
-    { "dsyrk", test_dsyrk },
-    { "csyrk", test_csyrk },
-    { "ssyrk", test_ssyrk },
+    { "zsymm", test_zsymm },
+    { "dsymm", test_dsymm },
+    { "csymm", test_csymm },
+    { "ssymm", test_ssymm },
 
     { "zsyr2k", test_zsyr2k },
     { "dsyr2k", test_dsyr2k },
     { "csyr2k", test_csyr2k },
     { "ssyr2k", test_ssyr2k },
+
+    { "zsyrk", test_zsyrk },
+    { "dsyrk", test_dsyrk },
+    { "csyrk", test_csyrk },
+    { "ssyrk", test_ssyrk },
 
     { "ztradd", test_ztradd },
     { "dtradd", test_dtradd },
@@ -430,6 +516,12 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--diag="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_DIAG]);
 
+        else if (param_starts_with(argv[i], "--storev="))
+            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_STOREV]);
+
+        else if (param_starts_with(argv[i], "--norm="))
+            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_NORM]);
+
         //--------------------------------------------------
         // Scan integer parameters.
         //--------------------------------------------------
@@ -467,6 +559,9 @@ int param_read(int argc, char **argv, param_t param[])
 
         else if (param_starts_with(argv[i], "--ntpf="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NTPF]);
+
+        else if (param_starts_with(argv[i], "--zerocol="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_ZEROCOL]);
 
         //--------------------------------------------------
         // Scan double precision parameters.
@@ -527,6 +622,10 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_char('l', &param[PARAM_UPLO]);
     if (param[PARAM_DIAG].num == 0)
         param_add_char('n', &param[PARAM_DIAG]);
+    if (param[PARAM_STOREV].num == 0)
+        param_add_char('c', &param[PARAM_STOREV]);
+    if (param[PARAM_NORM].num == 0)
+        param_add_char('o', &param[PARAM_NORM]);
 
     //--------------------------------------------------
     // Set integer parameters.
@@ -561,6 +660,8 @@ int param_read(int argc, char **argv, param_t param[])
 
     if (param[PARAM_NTPF].num == 0)
         param_add_int(1, &param[PARAM_NTPF]);
+    if (param[PARAM_ZEROCOL].num == 0)
+        param_add_int(-1, &param[PARAM_ZEROCOL]);
 
     //--------------------------------------------------
     // Set double precision parameters.

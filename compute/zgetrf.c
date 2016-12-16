@@ -41,16 +41,17 @@ int plasma_zgetrf(int m, int n,
         plasma_error("illegal value of n");
         return -2;
     }
-    // if (lda < imax(1, n)) {
-    //     plasma_error("illegal value of lda");
-    //     return -4;
-    // }
+    if (lda < imax(1, m)) {
+        plasma_error("illegal value of lda");
+        return -4;
+    }
 
     // quick return
+    if (imin(m, n) == 0)
+        return PlasmaSuccess;
 
     // Set tiling parameters.
     int nb = plasma->nb;
-    int ib = plasma->ib;
 
     // Initialize barrier.
     int num_panel_threads = plasma->num_panel_threads;
@@ -84,13 +85,12 @@ int plasma_zgetrf(int m, int n,
         plasma_omp_zge2desc(pA, lda, A, sequence, &request);
     }
 
-// #pragma omp parallel
-// #pragma omp master
-// {
-    // Call the tile async function.
-    plasma_omp_zgetrf(A, IPIV, sequence, &request);
-
-// }
+    #pragma omp parallel
+    #pragma omp master
+    {
+        // Call the tile async function.
+        plasma_omp_zgetrf(A, IPIV, sequence, &request);
+    }
 
     #pragma omp parallel
     #pragma omp master
@@ -140,6 +140,8 @@ void plasma_omp_zgetrf(plasma_desc_t A, int *IPIV,
     }
 
     // quick return
+    if (A.m == 0 || A.n == 0)
+        return;
 
     // Call the parallel function.
     plasma_pzgetrf(A, IPIV, sequence, request);
