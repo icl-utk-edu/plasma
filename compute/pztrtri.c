@@ -37,14 +37,15 @@ void plasma_pztrtri(plasma_enum_t uplo, plasma_enum_t diag,
     //===========================================
     if (uplo == PlasmaLower) {
         for (int k = 0; k < A.nt; k++) {
-            int kvan = plasma_tile_mview(A, k);
+            int mvak = plasma_tile_mview(A, k);
+            int nvak = plasma_tile_nview(A, k);
             int ldak = plasma_tile_mmain(A, k);
             for (int m =  k+1; m < A.mt; m++) {
                 int mvam = plasma_tile_mview(A, m);
                 int ldam = plasma_tile_mmain(A, m);
                 core_omp_ztrsm(
                     PlasmaRight, uplo, PlasmaNoTrans, diag,
-                    mvam, kvan,
+                    mvam, nvak,
                     -1.0, A(k, k), ldak,
                           A(m, k), ldam,
                     sequence, request);
@@ -53,27 +54,28 @@ void plasma_pztrtri(plasma_enum_t uplo, plasma_enum_t diag,
                 int mvam = plasma_tile_mview(A, m);
                 int ldam = plasma_tile_mmain(A, m);
                 for (int n = 0; n < k; n++) {
+                    int nvan = plasma_tile_nview(A, k);
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaNoTrans,
-                        mvam, A.nb, kvan,
+                        mvam, nvan, imin(nvak, mvak),
                         1.0, A(m, k), ldam,
-                              A(k, n), ldak,
+                             A(k, n), ldak,
                         1.0, A(m, n), ldam,
                         sequence, request);
                 }
             }
             for (int n = 0; n < k; n++) {
-                int ldan = plasma_tile_nmain(A, n);
+                int nvan = plasma_tile_nview(A, n);
                 core_omp_ztrsm(
                     PlasmaLeft, uplo, PlasmaNoTrans, diag,
-                    kvan, ldan,
+                    mvak, nvan,
                     1.0, A(k, k), ldak,
-                    A(k, n), ldak,
+                         A(k, n), ldak,
                     sequence, request);
             }
             core_omp_ztrtri(
                 uplo, diag,
-                kvan,
+                nvak,
                 A(k, k), ldak,
                 sequence, request);
         }
@@ -83,24 +85,26 @@ void plasma_pztrtri(plasma_enum_t uplo, plasma_enum_t diag,
     //===========================================
     else {
         for (int k = 0; k < A.mt; k++) {
-            int kvam = plasma_tile_mview(A, k);
+            int mvak = plasma_tile_mview(A, k);
+            int nvak = plasma_tile_nview(A, k);
             int ldak = plasma_tile_mmain(A, k);
             for (int n = k+1; n < A.nt; n++) {
-                int tempnn = plasma_tile_nview(A, n);
+                int nvan = plasma_tile_nview(A, n);
                 core_omp_ztrsm(
                     PlasmaLeft, uplo, PlasmaNoTrans, diag,
-                    kvam, tempnn,
+                    mvak, nvan,
                     -1.0, A(k, k), ldak,
-                    A(k, n), ldak,
+                          A(k, n), ldak,
                     sequence, request);
             }
             for (int m = 0; m < k; m++) {
+                int mvam = plasma_tile_mview(A, m);
                 int ldam = plasma_tile_mmain(A, m);
                 for (int n = k+1; n < A.nt; n++) {
-                    int tempnn = plasma_tile_nview(A, n);
+                    int nvan = plasma_tile_nview(A, n);
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaNoTrans,
-                        ldam, tempnn, kvam,
+                        mvam, nvan, imin(nvak, mvak),
                         1.0, A(m, k), ldam,
                              A(k, n), ldak,
                         1.0, A(m, n), ldam,
@@ -108,14 +112,14 @@ void plasma_pztrtri(plasma_enum_t uplo, plasma_enum_t diag,
                 }
                 core_omp_ztrsm(
                     PlasmaRight, uplo, PlasmaNoTrans, diag,
-                    kvam, ldam,
+                    mvam, nvak,
                     1.0, A(k, k), ldak,
-                    A(m, k), ldam,
+                         A(m, k), ldam,
                     sequence, request);
             }
             core_omp_ztrtri(
                 uplo, diag,
-                kvam,
+                mvak,
                 A(k, k), ldak,
                 sequence, request);
         }
