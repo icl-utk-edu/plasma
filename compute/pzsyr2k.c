@@ -63,7 +63,6 @@ void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
                 for (int m = n+1; m < C.mt; m++) {
                     int mvcm = plasma_tile_mview(C, m);
                     int ldam = plasma_tile_mmain(A, m);
-                    int ldbm = plasma_tile_mmain(B, m);
                     int ldcm = plasma_tile_mmain(C, m);
                     for (int k = 0; k < A.nt; k++) {
                         int nvak = plasma_tile_nview(A, k);

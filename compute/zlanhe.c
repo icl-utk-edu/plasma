@@ -270,7 +270,7 @@ void plasma_omp_zlanhe(plasma_enum_t norm, plasma_enum_t uplo, plasma_desc_t A,
     // quick return
     if (A.m == 0) {
     	*value = 0.0;
-        return PlasmaSuccess;
+        return;
     }
 
     // Call the parallel function.

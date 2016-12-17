@@ -301,7 +301,7 @@ void plasma_omp_zlantr(plasma_enum_t norm, plasma_enum_t uplo,
     // quick return
     if (imin(A.m, A.n) == 0) {
         *value = 0.0;
-        return PlasmaSuccess;
+        return;
     }
 
     // Call the parallel function.

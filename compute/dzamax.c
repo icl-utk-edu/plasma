@@ -151,7 +151,7 @@ void plasma_omp_dzamax(plasma_enum_t storev, plasma_desc_t A,
 
     // quick return
     if (imin(A.m, A.n) == 0)
-        return PlasmaSuccess;
+        return;
 
     // Call the parallel function.
     plasma_pdzamax(storev, A, work, values, sequence, request);

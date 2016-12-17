@@ -12,6 +12,7 @@
 #ifndef ICL_CORE_BLAS_Z_H
 #define ICL_CORE_BLAS_Z_H
 
+#include "plasma_barrier.h"
 #include "plasma_async.h"
 #include "plasma_types.h"
 #include "plasma_workspace.h"
@@ -47,6 +48,9 @@ int core_zgeqrt(int m, int n, int ib,
 void core_zgessq(int m, int n,
                  const plasma_complex64_t *A, int lda,
                  double *scale, double *sumsq);
+
+int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
+                plasma_barrier_t *barrier);
 
 void core_zhemm(plasma_enum_t side, plasma_enum_t uplo,
                 int m, int n,
@@ -121,6 +125,8 @@ void core_zlaset(plasma_enum_t uplo,
                  int m, int n,
                  plasma_complex64_t alpha, plasma_complex64_t beta,
                  plasma_complex64_t *A, int lda);
+
+void core_zlaswp(plasma_desc_t A, int k1, int k2, int *ipiv, int incx);
 
 int core_zlauum(plasma_enum_t uplo,
                 int n,

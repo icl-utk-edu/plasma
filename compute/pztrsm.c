@@ -161,7 +161,6 @@ void plasma_pztrsm(plasma_enum_t side, plasma_enum_t uplo,
                             sequence, request);
                     }
                     for (int m = k+1; m < B.mt; m++) {
-                        int mvbm = plasma_tile_mview(B, m);
                         int ldbm = plasma_tile_mmain(B, B.mt-1-m);
                         for (int n = 0; n < B.nt; n++) {
                             int nvbn = plasma_tile_nview(B, n);

@@ -120,8 +120,8 @@ int plasma_zpotri(plasma_enum_t uplo,
         // Translate to tile layout.
         plasma_omp_zge2desc(pA, lda, A, sequence, &request);
 
-    	// Perform computation.
-    	plasma_omp_zpotri(uplo, A, sequence, &request);
+        // Perform computation.
+        plasma_omp_zpotri(uplo, A, sequence, &request);
 
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
@@ -175,9 +175,9 @@ int plasma_zpotri(plasma_enum_t uplo,
  *
  ******************************************************************************/
 void plasma_omp_zpotri(plasma_enum_t uplo, plasma_desc_t A,
-					   plasma_sequence_t *sequence, plasma_request_t *request)
+                       plasma_sequence_t *sequence, plasma_request_t *request)
 {
-	    // Get PLASMA context.
+    // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
@@ -209,13 +209,14 @@ void plasma_omp_zpotri(plasma_enum_t uplo, plasma_desc_t A,
     }
 
     // Quick return
-    if (A.n == 0)
+    if (A.n == 0) {
         return;
+    }
 
-	// Invert triangular part.
-	plasma_pztrtri(uplo, PlasmaNonUnit, A, sequence, request);
-
-	// Compute product of upper and lower triangle.
-	plasma_pzlauum(uplo, A, sequence, request);
+    // Invert triangular part.
+    plasma_pztrtri(uplo, PlasmaNonUnit, A, sequence, request);
+    
+    // Compute product of upper and lower triangle.
+    plasma_pzlauum(uplo, A, sequence, request);
 
 }

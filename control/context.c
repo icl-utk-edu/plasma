@@ -9,6 +9,7 @@
  **/
 
 #include <stdlib.h>
+#include <omp.h>
 
 #include "plasma_context.h"
 #include "plasma_internal.h"
