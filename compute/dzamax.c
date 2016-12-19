@@ -18,7 +18,7 @@
 #include "plasma_types.h"
 
 /******************************************************************************/
-int plasma_dzamax(plasma_enum_t storev,
+int plasma_dzamax(plasma_enum_t colrow,
                   int m, int n,
                   plasma_complex64_t *pA, int lda, double *values)
 {
@@ -30,8 +30,8 @@ int plasma_dzamax(plasma_enum_t storev,
     }
 
     // Check input arguments.
-    if ((storev != PlasmaColumnwise) && (storev != PlasmaRowwise)) {
-        plasma_error("illegal value of storev");
+    if ((colrow != PlasmaColumnwise) && (colrow != PlasmaRowwise)) {
+        plasma_error("illegal value of colrow");
         return -1;
     }
     if (m < 0) {
@@ -66,7 +66,7 @@ int plasma_dzamax(plasma_enum_t storev,
 
     // Allocate workspace.
     double *work;
-    switch (storev) {
+    switch (colrow) {
     case PlasmaColumnwise:
         work = (double*)malloc((size_t)A.mt*A.n*sizeof(double));
         break;
@@ -98,7 +98,7 @@ int plasma_dzamax(plasma_enum_t storev,
         plasma_omp_zge2desc(pA, lda, A, sequence, &request);
 
         // Call tile async function.
-        plasma_omp_dzamax(storev, A, work, values, sequence, &request);
+        plasma_omp_dzamax(colrow, A, work, values, sequence, &request);
     }
     // implicit synchronization
 
@@ -115,7 +115,7 @@ int plasma_dzamax(plasma_enum_t storev,
 }
 
 /******************************************************************************/
-void plasma_omp_dzamax(plasma_enum_t storev, plasma_desc_t A,
+void plasma_omp_dzamax(plasma_enum_t colrow, plasma_desc_t A,
                        double *work, double *values,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {
@@ -128,8 +128,8 @@ void plasma_omp_dzamax(plasma_enum_t storev, plasma_desc_t A,
     }
 
     // Check input arguments.
-    if ((storev != PlasmaColumnwise) && (storev != PlasmaRowwise)) {
-        plasma_error("illegal value of storev");
+    if ((colrow != PlasmaColumnwise) && (colrow != PlasmaRowwise)) {
+        plasma_error("illegal value of colrow");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
@@ -154,5 +154,5 @@ void plasma_omp_dzamax(plasma_enum_t storev, plasma_desc_t A,
         return;
 
     // Call the parallel function.
-    plasma_pdzamax(storev, A, work, values, sequence, request);
+    plasma_pdzamax(colrow, A, work, values, sequence, request);
 }

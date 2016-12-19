@@ -22,7 +22,7 @@ extern "C" {
 #endif
 
 /******************************************************************************/
-void plasma_pdzamax(plasma_enum_t storev,
+void plasma_pdzamax(plasma_enum_t colrow,
                     plasma_desc_t A, double *work, double *values,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
