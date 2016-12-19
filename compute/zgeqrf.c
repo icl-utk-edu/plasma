@@ -191,7 +191,7 @@ int plasma_zgeqrf(int m, int n,
  *
  * @param[in] work
  *          Workspace for the auxiliary arrays needed by some coreblas kernels.
- *          For QR factorization, contains preallocated space for TAU and WORK
+ *          For QR factorization, contains preallocated space for tau and WORK
  *          arrays. Allocated by the plasma_workspace_create function.
  *
  * @param[in] sequence

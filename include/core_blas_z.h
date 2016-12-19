@@ -31,7 +31,7 @@ int core_zgeadd(plasma_enum_t transa,
 int core_zgelqt(int m, int n, int ib,
                 plasma_complex64_t *A, int lda,
                 plasma_complex64_t *T, int ldt,
-                plasma_complex64_t *TAU,
+                plasma_complex64_t *tau,
                 plasma_complex64_t *work);
 
 void core_zgemm(plasma_enum_t transa, plasma_enum_t transb,
@@ -43,7 +43,7 @@ void core_zgemm(plasma_enum_t transa, plasma_enum_t transb,
 int core_zgeqrt(int m, int n, int ib,
                 plasma_complex64_t *A, int lda,
                 plasma_complex64_t *T, int ldt,
-                plasma_complex64_t *TAU,
+                plasma_complex64_t *tau,
                 plasma_complex64_t *work);
 
 void core_zgessq(int m, int n,
@@ -210,7 +210,7 @@ int core_ztslqt(int m, int n, int ib,
                 plasma_complex64_t *A1, int lda1,
                 plasma_complex64_t *A2, int lda2,
                 plasma_complex64_t *T,  int ldt,
-                plasma_complex64_t *TAU,
+                plasma_complex64_t *tau,
                 plasma_complex64_t *work);
 
 int core_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
@@ -233,7 +233,7 @@ int core_ztsqrt(int m, int n, int ib,
                 plasma_complex64_t *A1, int lda1,
                 plasma_complex64_t *A2, int lda2,
                 plasma_complex64_t *T,  int ldt,
-                plasma_complex64_t *TAU,
+                plasma_complex64_t *tau,
                 plasma_complex64_t *work);
 
 int core_zttlqt(int m, int n, int ib,
