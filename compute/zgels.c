@@ -266,7 +266,7 @@ int plasma_zgels(plasma_enum_t trans,
  * @param[in] work
  *          Workspace for the auxiliary arrays needed by some coreblas kernels.
  *          For QR/LQ factorizations used in GELS, it contains preallocated
- *          space for tau and WORK arrays.
+ *          space for tau and work arrays.
  *          Allocated by the plasma_workspace_create function.
  *
  * @param[in] sequence

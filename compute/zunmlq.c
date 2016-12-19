@@ -255,7 +255,7 @@ int plasma_zunmlq(plasma_enum_t side, plasma_enum_t trans,
  *
  * @param[in] work
  *          Workspace for the auxiliary arrays needed by some coreblas kernels.
- *          For multiplication by Q contains preallocated space for WORK
+ *          For multiplication by Q contains preallocated space for work
  *          arrays. Allocated by the plasma_workspace_create function.
  *
  * @param[in] sequence

@@ -114,10 +114,10 @@
  * @param[in] ldt
  *         The leading dimension of the array T. ldt >= k.
  *
- * @param[in,out] WORK
+ * @param[in,out] work
  *
  * @param[in] ldwork
- *         The leading dimension of the array WORK.
+ *         The leading dimension of the array work.
  *
  *******************************************************************************
  *
@@ -132,7 +132,7 @@ int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
                       plasma_complex64_t *A2,   int lda2,
                 const plasma_complex64_t *V,    int ldv,
                 const plasma_complex64_t *T,    int ldt,
-                      plasma_complex64_t *WORK, int ldwork)
+                      plasma_complex64_t *work, int ldwork)
 {
     // Check input arguments.
     if (side != PlasmaLeft && side != PlasmaRight) {
@@ -208,8 +208,8 @@ int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
         coreblas_error("illegal value of ldt");
         return -18;
     }
-    if (WORK == NULL) {
-        coreblas_error("NULL WORK");
+    if (work == NULL) {
+        coreblas_error("NULL work");
         return -19;
     }
     if (ldwork < 0) {
@@ -238,7 +238,7 @@ int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
                        A1,   lda1,
                        A2,   lda2,
                        V,    ldv,
-                       WORK, ldwork);
+                       work, ldwork);
 
             // W = op(T) * W
             cblas_ztrmm(CblasColMajor,
@@ -246,12 +246,12 @@ int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
                         (CBLAS_TRANSPOSE)trans, CblasNonUnit,
                         k, n2,
                         CBLAS_SADDR(zone), T,    ldt,
-                                           WORK, ldwork);
+                                           work, ldwork);
 
             // A1 = A1 - W
             for (int j = 0; j < n1; j++) {
                 cblas_zaxpy(k, CBLAS_SADDR(mzone),
-                            &WORK[ldwork*j], 1,
+                            &work[ldwork*j], 1,
                             &A1[lda1*j], 1);
             }
 
@@ -262,7 +262,7 @@ int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
                        A1,   lda1,
                        A2,   lda2,
                        V,    ldv,
-                       WORK, ldwork);
+                       work, ldwork);
         }
         //==============================
         // PlasmaForward / PlasmaRight
@@ -276,7 +276,7 @@ int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
                        A1,   lda1,
                        A2,   lda2,
                        V,    ldv,
-                       WORK, ldwork);
+                       work, ldwork);
 
             // W = W * op(T)
             cblas_ztrmm(CblasColMajor,
@@ -284,12 +284,12 @@ int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
                         (CBLAS_TRANSPOSE)trans, CblasNonUnit,
                         m2, k,
                         CBLAS_SADDR(zone), T,    ldt,
-                                           WORK, ldwork);
+                                           work, ldwork);
 
             // A1 = A1 - W
             for (int j = 0; j < k; j++) {
                 cblas_zaxpy(m1, CBLAS_SADDR(mzone),
-                            &WORK[ldwork*j], 1,
+                            &work[ldwork*j], 1,
                             &A1[lda1*j], 1);
             }
 
@@ -300,7 +300,7 @@ int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
                        A1,   lda1,
                        A2,   lda2,
                        V,    ldv,
-                       WORK, ldwork);
+                       work, ldwork);
         }
     }
     else {
