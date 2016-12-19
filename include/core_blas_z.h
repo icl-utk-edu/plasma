@@ -12,8 +12,9 @@
 #ifndef ICL_CORE_BLAS_Z_H
 #define ICL_CORE_BLAS_Z_H
 
-#include "plasma_barrier.h"
 #include "plasma_async.h"
+#include "plasma_barrier.h"
+#include "plasma_descriptor.h"
 #include "plasma_types.h"
 #include "plasma_workspace.h"
 
