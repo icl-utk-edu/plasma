@@ -70,12 +70,12 @@ void core_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                 double alpha, const plasma_complex64_t *A, int lda,
                 double beta,        plasma_complex64_t *C, int ldc);
 
-void core_zhessq(int uplo,
+void core_zhessq(plasma_enum_t uplo,
                  int n,
                  const plasma_complex64_t *A, int lda,
                  double *scale, double *sumsq);
 
-void core_zsyssq(int uplo,
+void core_zsyssq(plasma_enum_t uplo,
                  int n,
                  const plasma_complex64_t *A, int lda,
                  double *scale, double *sumsq);
@@ -345,13 +345,13 @@ void core_omp_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                     double beta,        plasma_complex64_t *C, int ldc,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
-void core_omp_zhessq(int uplo,
+void core_omp_zhessq(plasma_enum_t uplo,
                      int n,
                      const plasma_complex64_t *A, int lda,
                      double *scale, double *sumsq,
                      plasma_sequence_t *sequence, plasma_request_t *request);
 
-void core_omp_zsyssq(int uplo,
+void core_omp_zsyssq(plasma_enum_t uplo,
                      int n,
                      const plasma_complex64_t *A, int lda,
                      double *scale, double *sumsq,

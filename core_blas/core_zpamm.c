@@ -253,7 +253,7 @@ int core_zpamm(plasma_enum_t op, plasma_enum_t side, plasma_enum_t storev,
     //                rowwise       T        N
     //        -------------------------------------
 
-    int uplo;
+    plasma_enum_t uplo;
     int trans;
     int vi2, vi3;
 
