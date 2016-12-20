@@ -101,7 +101,7 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                     int k1 = k*A.mb+1;
                     int k2 = imin(k*A.mb+A.mb, A.m);
                     plasma_desc_t view = plasma_desc_view(A, 0, n*A.nb, A.m, nvan);
-                    core_zlaswp(view, k1, k2, ipiv, 1);
+                    core_zlaswp(PlasmaRowwise, view, k1, k2, ipiv, 1);
 
                     // trsm
                     core_ztrsm(PlasmaLeft, PlasmaLower,
@@ -146,7 +146,7 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                     plasma_desc_view(A, 0, (k-1)*A.nb, A.m, A.nb);
                 int k1 = k*A.mb+1;
                 int k2 = imin(A.m, A.n);
-                core_zlaswp(view, k1, k2, ipiv, 1);
+                core_zlaswp(PlasmaRowwise, view, k1, k2, ipiv, 1);
             }
         }
     }

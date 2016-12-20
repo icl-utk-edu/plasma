@@ -167,7 +167,7 @@ void plasma_omp_zgesv(plasma_desc_t A, int *ipiv,
     // Call the parallel functions.
     plasma_pzgetrf(A, ipiv, sequence, request);
 
-    plasma_pzlaswp(B, ipiv, 1, sequence, request);
+    plasma_pzlaswp(PlasmaRowwise, B, ipiv, 1, sequence, request);
 
     plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
                   1.0, A,

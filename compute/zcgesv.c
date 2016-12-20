@@ -518,7 +518,7 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
     for (int n = 0; n < X.nt; n++) {
         int nvbn = plasma_tile_nview(X, n);
         plasma_desc_t view = plasma_desc_view(X, 0, n*A.nb, X.m, nvbn);
-        core_zlaswp(view, 1, X.m, ipiv, 1);
+        core_zlaswp(PlasmaRowwise, view, 1, X.m, ipiv, 1);
     }
     plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
                   1.0, A, X, sequence, request);
