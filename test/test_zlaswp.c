@@ -3,32 +3,31 @@
  * @file
  *
  *  PLASMA is a software package provided by:
- *  University of Tennessee,  US,
+ *  University of Tennessee, US,
  *  University of Manchester, UK.
  *
  * @precisions normal z -> s d c
  *
  **/
 
-#include "test.h"
-#include "flops.h"
 #include "core_blas.h"
 #include "core_lapack.h"
+#include "flops.h"
 #include "plasma.h"
+#include "test.h"
 
 #include <assert.h>
+#include <math.h>
+#include <omp.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <omp.h>
-
-#define COMPLEX
-
 /***************************************************************************//**
  *
- * @brief Tests DZAMAX.
+ * @brief Tests ZLASWP
  *
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
@@ -38,45 +37,49 @@
  * If param is non-NULL and info is non-NULL, set info to column values
  * and run test.
  ******************************************************************************/
-void test_dzamax(param_value_t param[], char *info)
+void test_zlaswp(param_value_t param[], char *info)
 {
     //================================================================
-    // Print usage info or return column labels or values.
+    // Print usage info or return column labels or values
     //================================================================
     if (param == NULL) {
         if (info == NULL) {
-            // Print usage info.
+            // Print usage info
             print_usage(PARAM_COLROW);
             print_usage(PARAM_M);
             print_usage(PARAM_N);
             print_usage(PARAM_PADA);
             print_usage(PARAM_NB);
+            print_usage(PARAM_INCX);
         }
         else {
-            // Return column labels.
+            // Return column labels
             snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s %*s",
-                     InfoSpacing, "Storev",
-                     InfoSpacing, "M",
-                     InfoSpacing, "N",
+                     "%*s %*s %*s %*s %*s %*s",
+                     InfoSpacing, "ColRow",
+                     InfoSpacing, "m",
+                     InfoSpacing, "n",
                      InfoSpacing, "PadA",
-                     InfoSpacing, "NB");
+                     InfoSpacing, "nb",
+                     InfoSpacing, "incx");
         }
         return;
     }
-    // Return column values.
+    // Return column values
     snprintf(info, InfoLen,
-             "%*c %*d %*d %*d %*d",
+             "%*c %*d %*d %*d %*d %*d",
              InfoSpacing, param[PARAM_COLROW].c,
              InfoSpacing, param[PARAM_M].i,
              InfoSpacing, param[PARAM_N].i,
              InfoSpacing, param[PARAM_PADA].i,
-             InfoSpacing, param[PARAM_NB].i);
+             InfoSpacing, param[PARAM_NB].i,
+             InfoSpacing, param[PARAM_INCX].i);
 
     //================================================================
-    // Set parameters.
+    // Set parameters
     //================================================================
     plasma_enum_t colrow = plasma_storev_const(param[PARAM_COLROW].c);
+    int incx = param[PARAM_INCX].i;
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
@@ -84,79 +87,96 @@ void test_dzamax(param_value_t param[], char *info)
     int lda = imax(1, m + param[PARAM_PADA].i);
 
     int test = param[PARAM_TEST].c == 'y';
-    double eps = LAPACKE_dlamch('E');
+    double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
 
     //================================================================
-    // Set tuning parameters.
+    // Set tuning parameters
     //================================================================
     plasma_set(PlasmaNb, param[PARAM_NB].i);
 
     //================================================================
-    // Allocate and initialize arrays.
+    // Allocate and initialize arrays
     //================================================================
     plasma_complex64_t *A =
         (plasma_complex64_t*)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
     assert(A != NULL);
+
+    int *ipiv;
+    if (colrow == PlasmaRowwise) {
+        ipiv = (int*)malloc((size_t)m*sizeof(int));
+
+        assert(ipiv != NULL);
+        for (int i = 0; i < m; i++)
+            ipiv[i] = rand()%m + 1;
+    }
+    else {
+        ipiv = (int*)malloc((size_t)n*sizeof(int));
+        assert(ipiv != NULL);
+
+        for (int j = 0; j < n; j++)
+            ipiv[j] = rand()%n + 1;
+    }
 
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
 
-    size_t size = colrow == PlasmaColumnwise ? n : m;
-    double *values = (double*)malloc(size*sizeof(double));
-    assert(values != NULL);
-
-    double *valref = NULL;
+    plasma_complex64_t *Aref = NULL;
     if (test) {
-        valref = (double*)malloc(size*sizeof(double));
-        assert(valref != NULL);
+        Aref = (plasma_complex64_t*)malloc(
+            (size_t)lda*n*sizeof(plasma_complex64_t));
+        assert(Aref != NULL);
+
+        memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
     }
 
     //================================================================
-    // Run and time PLASMA.
+    // Run and time PLASMA
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    plasma_dzamax(colrow, m, n, A, lda, values);
+    retval = plasma_zlaswp(colrow, m, n, A, lda, ipiv, incx);
     plasma_time_t stop = omp_get_wtime();
-    plasma_time_t time = stop-start;
 
-    param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = flops_zlange(m, n, colrow) / time / 1e9;
+    param[PARAM_TIME].d = stop-start;
+    param[PARAM_GFLOPS].d = 0.0;
 
     //================================================================
-    // Test results by comparing to a reference implementation.
+    // Test results by comparing to result of core_zlacpy function
     //================================================================
     if (test) {
-        if (colrow == PlasmaColumnwise) {
-            for (int j = 0; j < n; j++) {
-                CBLAS_INDEX idx = cblas_izamax(m, &A[lda*j], 1);
-                valref[j] = cblas_dcabs1(CBLAS_SADDR(A[lda*j+idx]));
-            }
-        }
-        else {
-            for (int i = 0; i < m; i++) {
-                CBLAS_INDEX idx = cblas_izamax(n, &A[i], lda);
-                valref[i] = cblas_dcabs1(CBLAS_SADDR(A[i+lda*idx]));
-            }
-        }      
+        if (colrow == PlasmaRowwise)
+            LAPACKE_zlaswp(LAPACK_COL_MAJOR,
+                           n,
+                           Aref, lda,
+                           1, m, ipiv, incx);
+        else
+            LAPACKE_zlaswp(LAPACK_ROW_MAJOR,
+                           m,
+                           Aref, lda,
+                           1, n, ipiv, incx);
 
-        // Calculate difference.
-        double mone = -1.0;
-        cblas_daxpy(size, mone, values, 1, valref, 1);
+        plasma_complex64_t zmone = -1.0;
+        cblas_zaxpy((size_t)lda*n, CBLAS_SADDR(zmone), Aref, 1, A, 1);
 
-        // Set error to maximum difference.
-        double error = valref[cblas_idamax(size, valref, 1)];
+        double work[1];
+        double Anorm = LAPACKE_zlange_work(
+            LAPACK_COL_MAJOR, 'F', m, n, Aref, lda, work);
 
-        param[PARAM_ERROR].d   = error;
-        param[PARAM_SUCCESS].i = error == 0.0;
+        double error = LAPACKE_zlange_work(
+            LAPACK_COL_MAJOR, 'F', m, n, A, lda, work);
+
+        if (Anorm != 0)
+            error /= Anorm;
+
+        param[PARAM_ERROR].d = error;
+        param[PARAM_SUCCESS].i = error < tol;
     }
 
     //================================================================
-    // Free arrays.
+    // Free arrays
     //================================================================
     free(A);
-    free(values);
     if (test)
-        free(valref);
+        free(Aref);
 }

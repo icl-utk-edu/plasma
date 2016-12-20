@@ -221,22 +221,7 @@ void plasma_omp_zgetri(plasma_desc_t A, int *ipiv, plasma_desc_t W,
     // Compute product of inverse of the upper and lower triangles.
     plasma_pzgetri_aux(A, W, sequence, request);
 
-    // Apply pivot
-    // TODO: replace this with pz routine
-    #define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
+    // Apply pivot.
     #pragma omp taskwait
-    for (int k = A.n-1; k >= 0; k -= 1) {
-        if (ipiv[k]-1 != k) {
-            int k1 = k;
-            int k2 = ipiv[k]-1;
-
-            for (int i = 0; i < A.mt; i++) {
-                int mvai = plasma_tile_mview(A, i);
-                int ldai = plasma_tile_mmain(A, i);
-                cblas_zswap(mvai,
-                            A(i, k1/A.mb) + (k1%A.mb)*ldai, 1,
-                            A(i, k2/A.mb) + (k2%A.mb)*ldai, 1);
-            }
-        }
-    }
+    plasma_pzlaswp(PlasmaColumnwise, A, ipiv, -1, sequence, request);
 }

@@ -21,9 +21,9 @@
 void core_zlaswp(plasma_enum_t colrow,
                  plasma_desc_t A, int k1, int k2, int *ipiv, int incx)
 {
-    //=================
+    //================
     // PlasmaRowwise
-    //=================
+    //================
     if (colrow == PlasmaRowwise) {
         if (incx > 0) {
             for (int m = k1-1; m <= k2-1; m += incx) {
@@ -58,10 +58,39 @@ void core_zlaswp(plasma_enum_t colrow,
             }        
         }
     }
-    //=================
-    // PlasmaColwise
-    //=================
+    //===================
+    // PlasmaColumnwise
+    //===================
     else {
+        if (incx > 0) {
+            for (int n = k1-1; n <= k2-1; n += incx) {
+                if (ipiv[n]-1 != n) {
 
+                    int n1 = n;
+                    int n2 = ipiv[n]-1;
+
+                    int lda0 = plasma_tile_mmain(A, 0);
+
+                    cblas_zswap(A.m,
+                                A(0, n1/A.nb) + (n1%A.nb)*lda0, 1,
+                                A(0, n2/A.nb) + (n2%A.nb)*lda0, 1);
+                }
+            }
+        }
+        else {
+            for (int n = k2-1; n >= k1-1; n += incx) {
+                if (ipiv[n]-1 != n) {
+
+                    int n1 = n;
+                    int n2 = ipiv[n]-1;
+
+                    int lda0 = plasma_tile_mmain(A, 0);
+
+                    cblas_zswap(A.m,
+                                A(0, n1/A.nb) + (n1%A.nb)*lda0, 1,
+                                A(0, n2/A.nb) + (n2%A.nb)*lda0, 1);
+                }
+            }        
+        }
     }
 }
