@@ -107,11 +107,10 @@ int plasma_dzamax(plasma_enum_t colrow,
     // Free matrix in tile layout.
     plasma_desc_destroy(&A);
 
-    // Destroy sequence.
+    // Return status.
+    int status = sequence->status;
     plasma_sequence_destroy(sequence);
-
-    // Return the norm.
-    return PlasmaSuccess;
+    return status;
 }
 
 /******************************************************************************/

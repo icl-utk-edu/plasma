@@ -104,11 +104,9 @@ int plasma_zlascl(plasma_enum_t uplo,
     // Free matrices in tile layout.
     plasma_desc_destroy(&A);
 
-    // Destroy sequence.
-    plasma_sequence_destroy(sequence);
-
     // Return status.
     int status = sequence->status;
+    plasma_sequence_destroy(sequence);
     return status;
 }
 

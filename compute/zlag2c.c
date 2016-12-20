@@ -141,11 +141,9 @@ int plasma_zlag2c(int m, int n,
     plasma_desc_destroy(&A);
     plasma_desc_destroy(&As);
 
-    // Destroy sequence.
-    plasma_sequence_destroy(sequence);
-
     // Return status.
     int status = sequence->status;
+    plasma_sequence_destroy(sequence);
     return status;
 }
 
