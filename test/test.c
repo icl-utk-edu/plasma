@@ -97,6 +97,16 @@ struct routines_t routines[] =
     { "cgetrf", test_cgetrf },
     { "sgetrf", test_sgetrf },
 
+    { "zgetri", test_zgetri },
+    { "dgetri", test_dgetri },
+    { "cgetri", test_cgetri },
+    { "sgetri", test_sgetri },
+
+    { "zgetri_aux", test_zgetri_aux },
+    { "dgetri_aux", test_dgetri_aux },
+    { "cgetri_aux", test_cgetri_aux },
+    { "sgetri_aux", test_sgetri_aux },
+
     { "zgetrs", test_zgetrs },
     { "dgetrs", test_dgetrs },
     { "cgetrs", test_cgetrs },
