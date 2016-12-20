@@ -424,7 +424,7 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
     for (int n = 0; n < Xs.nt; n++) {
         int nvbn = plasma_tile_nview(Xs, n);
         plasma_desc_t view = plasma_desc_view(Xs, 0, n*A.nb, Xs.m, nvbn);
-        core_claswp(view, 1, Xs.m, ipiv, 1);
+        core_claswp(PlasmaRowwise, view, 1, Xs.m, ipiv, 1);
     }
     plasma_pctrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
                   1.0, As, Xs, sequence, request);
@@ -468,7 +468,7 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
         for (int n = 0; n < Xs.nt; n++) {
             int nvbn = plasma_tile_nview(Xs, n);
             plasma_desc_t view = plasma_desc_view(Xs, 0, n*A.nb, Xs.m, nvbn);
-            core_claswp(view, 1, Xs.m, ipiv, 1);
+            core_claswp(PlasmaRowwise, view, 1, Xs.m, ipiv, 1);
         }
         plasma_pctrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
                       1.0, As, Xs, sequence, request);
