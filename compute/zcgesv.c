@@ -465,13 +465,11 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
 
         // Solve the system As * Xs = Rs.
         #pragma omp taskwait
-        for (int n = 0; n < Xs.nt; n++) {
-            int nvbn = plasma_tile_nview(Xs, n);
-            plasma_desc_t view = plasma_desc_view(Xs, 0, n*A.nb, Xs.m, nvbn);
-            core_claswp(PlasmaRowwise, view, 1, Xs.m, ipiv, 1);
-        }
+        plasma_pclaswp(PlasmaRowwise, Xs, ipiv, 1, sequence, request);
+
         plasma_pctrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
                       1.0, As, Xs, sequence, request);
+
         plasma_pctrsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans, PlasmaNonUnit,
                       1.0, As, Xs, sequence, request);
 
@@ -515,13 +513,11 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
     // Solve the system A * X = B.
     plasma_pzlacpy(PlasmaGeneral, B, X, sequence, request);
     #pragma omp taskwait
-    for (int n = 0; n < X.nt; n++) {
-        int nvbn = plasma_tile_nview(X, n);
-        plasma_desc_t view = plasma_desc_view(X, 0, n*A.nb, X.m, nvbn);
-        core_zlaswp(PlasmaRowwise, view, 1, X.m, ipiv, 1);
-    }
+    plasma_pzlaswp(PlasmaRowwise, X, ipiv, 1, sequence, request);
+
     plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
                   1.0, A, X, sequence, request);
+
     plasma_pztrsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans, PlasmaNonUnit,
                   1.0, A, X, sequence, request);
 }
