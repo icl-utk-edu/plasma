@@ -71,6 +71,9 @@ void plasma_pzgeqrfrh(plasma_desc_t A, plasma_desc_t T,
                       plasma_workspace_t work,
                       plasma_sequence_t *sequence, plasma_request_t *request);
 
+void plasma_pzgetri_aux(plasma_desc_t A, plasma_desc_t W,
+                        plasma_sequence_t *sequence, plasma_request_t *request);
+
 void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
