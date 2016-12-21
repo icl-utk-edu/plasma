@@ -3,13 +3,12 @@
  * @file
  *
  *  PLASMA is a software package provided by:
- *  University of Tennessee,  US,
+ *  University of Tennessee, US,
  *  University of Manchester, UK.
  *
- * @precisions normal z -> s d c
+ * @precisions normal z -> c d s
  *
  **/
-
 #include "test.h"
 #include "flops.h"
 #include "core_blas.h"
@@ -21,15 +20,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
 #include <omp.h>
 
 #define COMPLEX
 
+#define A(i_, j_) A[(i_) + (size_t)lda*(j_)]
+
 /***************************************************************************//**
  *
- * @brief Tests ZLANTR.
+ * @brief Tests ztrtri.
  *
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
@@ -39,7 +39,7 @@
  * If param is non-NULL and info is non-NULL, set info to column values
  * and run test.
  ******************************************************************************/
-void test_zlantr(param_value_t param[], char *info)
+void test_zgetri(param_value_t param[], char *info)
 {
     //================================================================
     // Print usage info or return column labels or values.
@@ -47,10 +47,6 @@ void test_zlantr(param_value_t param[], char *info)
     if (param == NULL) {
         if (info == NULL) {
             // Print usage info.
-            print_usage(PARAM_NORM);
-            print_usage(PARAM_UPLO);
-            print_usage(PARAM_DIAG);
-            print_usage(PARAM_M);
             print_usage(PARAM_N);
             print_usage(PARAM_PADA);
             print_usage(PARAM_NB);
@@ -58,11 +54,7 @@ void test_zlantr(param_value_t param[], char *info)
         else {
             // Return column labels.
             snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s %*s %*s %*s",
-                     InfoSpacing, "Norm",
-                     InfoSpacing, "Uplo",
-                     InfoSpacing, "Diag",
-                     InfoSpacing, "M",
+                     "%*s %*s %*s",
                      InfoSpacing, "N",
                      InfoSpacing, "PadA",
                      InfoSpacing, "NB");
@@ -71,11 +63,7 @@ void test_zlantr(param_value_t param[], char *info)
     }
     // Return column values.
     snprintf(info, InfoLen,
-             "%*c %*c %*c %*d %*d %*d %*d",
-             InfoSpacing, param[PARAM_NORM].c,
-             InfoSpacing, param[PARAM_UPLO].c,
-             InfoSpacing, param[PARAM_DIAG].c,
-             InfoSpacing, param[PARAM_M].i,
+             "%*d %*d %*d",
              InfoSpacing, param[PARAM_N].i,
              InfoSpacing, param[PARAM_PADA].i,
              InfoSpacing, param[PARAM_NB].i);
@@ -83,17 +71,11 @@ void test_zlantr(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    plasma_enum_t norm = plasma_norm_const(param[PARAM_NORM].c);
-    plasma_enum_t uplo = plasma_uplo_const(param[PARAM_UPLO].c);
-    plasma_enum_t diag = plasma_diag_const(param[PARAM_DIAG].c);
-
-    int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
-
-    int lda = imax(1, m + param[PARAM_PADA].i);
+    int lda = imax(1, n + param[PARAM_PADA].i);
 
     int test = param[PARAM_TEST].c == 'y';
-    double eps = LAPACKE_dlamch('E');
+    double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
 
     //================================================================
     // Set tuning parameters.
@@ -107,87 +89,80 @@ void test_zlantr(param_value_t param[], char *info)
         (plasma_complex64_t*)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
+    int *ipiv;
+    ipiv = (int*)malloc((size_t)n*sizeof(int));
+    assert(ipiv != NULL);
+
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
 
-    plasma_complex64_t *Aref = NULL;
-    double *work = NULL;
+    // Take Cholesky decomposition
+    LAPACKE_zgetrf(LAPACK_COL_MAJOR, n, n, A, lda, ipiv);
+
+    plasma_complex64_t *Aref;
     if (test) {
         Aref = (plasma_complex64_t*)malloc(
             (size_t)lda*n*sizeof(plasma_complex64_t));
         assert(Aref != NULL);
 
         memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
-
-        work = (double*) malloc(imax(m, n)*sizeof(double));
-        assert(work != NULL);
     }
 
     //================================================================
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    double value = plasma_zlantr(norm, uplo, diag, m, n, A, lda);
+    plasma_zgetri(n, A, lda, ipiv);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = flops_zlange(m, n, norm) / time / 1e9;
+    param[PARAM_GFLOPS].d = flops_ztrtri(n) / time / 1e9;
 
     //================================================================
-    // Test results by comparing to a reference implementation.
+    // Test results by checking the residual
+    // ||B - A|| / (||A||)
     //================================================================
     if (test) {
-        // LAPACKE_[ds]lantr_work has a bug (returns 0)
-        // in MKL <= 11.3.3 (at least). Fixed in LAPACK 3.6.1.
-        // For now, call LAPACK directly.
-        double zlantr(char *norm, char *uplo, char *diag,
-                      int *m, int *n,
-                      plasma_complex64_t *A, int *lda, double *work);
-        char normc = lapack_const(norm);
-        char uploc = lapack_const(uplo);
-        char diagc = lapack_const(diag);
-        double valueRef = zlantr(&normc, &uploc, &diagc,
-                                 &m, &n, Aref, &lda, work);
-        // double valueRef =
-        //     LAPACKE_zlantr(LAPACK_COL_MAJOR,
-        //                    lapack_const(norm), lapack_const(uplo),
-        //                    lapack_const(diag),
-        //                    m, n, Aref, lda);
-        //printf("value: %lf, valueRef: %lf, err: %g\n", value, valueRef,
-        //       fabs(value-valueRef));
+        plasma_complex64_t zmone = -1.0;
 
-        // Calculate relative error
-        double error = fabs(value-valueRef) / valueRef;
-        double tol = eps;
-        switch (norm) {
-            case PlasmaInfNorm:
-                // Sum order on the line can differ
-                tol *= (double)n;
-                break;
+        // norm(A)
+        double temp;
+        double Anorm = LAPACKE_zlange_work(
+               LAPACK_COL_MAJOR, 'F', n, n, Aref, lda, &temp);
 
-            case PlasmaOneNorm:
-                // Sum order on the column can differ
-                tol *= (double)m;
-                break;
+        int lwork = n;
+        plasma_complex64_t *work =
+            (plasma_complex64_t*)malloc(lwork * sizeof(plasma_complex64_t));
 
-            case PlasmaFrobeniusNorm:
-                // Sum order on every element can differ
-                tol *= (double)m*n;
-                break;
-        }
-        param[PARAM_ERROR].d   = error;
+        // B = inv(A)
+        LAPACKE_zgetri_work(CblasColMajor, n, Aref, lda, ipiv, work, lwork);
+
+        // norm(A^{-1})
+        double Inorm = LAPACKE_zlange_work(
+               LAPACK_COL_MAJOR, 'F', n, n, Aref, lda, &temp);
+
+        // A -= Aref
+        cblas_zaxpy((size_t)lda*n, CBLAS_SADDR(zmone), Aref, 1, A, 1);
+
+        double error = LAPACKE_zlange_work(
+                           LAPACK_COL_MAJOR, 'F', lda, n, A, lda, &temp);
+        if (Anorm*Inorm != 0)
+            error /= (Anorm * Inorm);
+
+        param[PARAM_ERROR].d = error;
         param[PARAM_SUCCESS].i = error < tol;
+
+        free(work);
     }
 
     //================================================================
     // Free arrays.
     //================================================================
     free(A);
-    if (test) {
+    free(ipiv);
+    if (test)
         free(Aref);
-        free(work);
-    }
 }

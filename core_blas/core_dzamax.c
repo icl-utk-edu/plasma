@@ -15,12 +15,12 @@
 #include "core_lapack.h"
 
 /******************************************************************************/
-void core_omp_dzamax(int storev, int m, int n,
+void core_omp_dzamax(int colrow, int m, int n,
                      const plasma_complex64_t *A, int lda,
                      double *values,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    switch (storev) {
+    switch (colrow) {
     case PlasmaColumnwise:
         #pragma omp task depend(in:A[0:lda*n]) \
                          depend(out:values[0:n])

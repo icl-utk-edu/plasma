@@ -12,8 +12,9 @@
 #ifndef ICL_CORE_BLAS_Z_H
 #define ICL_CORE_BLAS_Z_H
 
-#include "plasma_barrier.h"
 #include "plasma_async.h"
+#include "plasma_barrier.h"
+#include "plasma_descriptor.h"
 #include "plasma_types.h"
 #include "plasma_workspace.h"
 #include "plasma_descriptor.h"
@@ -31,7 +32,7 @@ int core_zgeadd(plasma_enum_t transa,
 int core_zgelqt(int m, int n, int ib,
                 plasma_complex64_t *A, int lda,
                 plasma_complex64_t *T, int ldt,
-                plasma_complex64_t *TAU,
+                plasma_complex64_t *tau,
                 plasma_complex64_t *work);
 
 void core_zgemm(plasma_enum_t transa, plasma_enum_t transb,
@@ -43,7 +44,7 @@ void core_zgemm(plasma_enum_t transa, plasma_enum_t transb,
 int core_zgeqrt(int m, int n, int ib,
                 plasma_complex64_t *A, int lda,
                 plasma_complex64_t *T, int ldt,
-                plasma_complex64_t *TAU,
+                plasma_complex64_t *tau,
                 plasma_complex64_t *work);
 
 void core_zgessq(int m, int n,
@@ -70,12 +71,12 @@ void core_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                 double alpha, const plasma_complex64_t *A, int lda,
                 double beta,        plasma_complex64_t *C, int ldc);
 
-void core_zhessq(int uplo,
+void core_zhessq(plasma_enum_t uplo,
                  int n,
                  const plasma_complex64_t *A, int lda,
                  double *scale, double *sumsq);
 
-void core_zsyssq(int uplo,
+void core_zsyssq(plasma_enum_t uplo,
                  int n,
                  const plasma_complex64_t *A, int lda,
                  double *scale, double *sumsq);
@@ -127,7 +128,8 @@ void core_zlaset(plasma_enum_t uplo,
                  plasma_complex64_t alpha, plasma_complex64_t beta,
                  plasma_complex64_t *A, int lda);
 
-void core_zlaswp(plasma_desc_t A, int k1, int k2, int *ipiv, int incx);
+void core_zlaswp(plasma_enum_t colrow,
+                 plasma_desc_t A, int k1, int k2, int *ipiv, int incx);
 
 int core_zlauum(plasma_enum_t uplo,
                 int n,
@@ -210,7 +212,7 @@ int core_ztslqt(int m, int n, int ib,
                 plasma_complex64_t *A1, int lda1,
                 plasma_complex64_t *A2, int lda2,
                 plasma_complex64_t *T,  int ldt,
-                plasma_complex64_t *TAU,
+                plasma_complex64_t *tau,
                 plasma_complex64_t *work);
 
 int core_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
@@ -233,7 +235,7 @@ int core_ztsqrt(int m, int n, int ib,
                 plasma_complex64_t *A1, int lda1,
                 plasma_complex64_t *A2, int lda2,
                 plasma_complex64_t *T,  int ldt,
-                plasma_complex64_t *TAU,
+                plasma_complex64_t *tau,
                 plasma_complex64_t *work);
 
 int core_zttlqt(int m, int n, int ib,
@@ -281,7 +283,7 @@ int core_zunmqr(plasma_enum_t side, plasma_enum_t trans,
                       plasma_complex64_t *work, int ldwork);
 
 /******************************************************************************/
-void core_omp_dzamax(int storev, int m, int n,
+void core_omp_dzamax(int colrow, int m, int n,
                      const plasma_complex64_t *A, int lda,
                      double *values,
                      plasma_sequence_t *sequence, plasma_request_t *request);
@@ -345,13 +347,13 @@ void core_omp_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                     double beta,        plasma_complex64_t *C, int ldc,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
-void core_omp_zhessq(int uplo,
+void core_omp_zhessq(plasma_enum_t uplo,
                      int n,
                      const plasma_complex64_t *A, int lda,
                      double *scale, double *sumsq,
                      plasma_sequence_t *sequence, plasma_request_t *request);
 
-void core_omp_zsyssq(int uplo,
+void core_omp_zsyssq(plasma_enum_t uplo,
                      int n,
                      const plasma_complex64_t *A, int lda,
                      double *scale, double *sumsq,

@@ -97,6 +97,16 @@ struct routines_t routines[] =
     { "cgetrf", test_cgetrf },
     { "sgetrf", test_sgetrf },
 
+    { "zgetri", test_zgetri },
+    { "dgetri", test_dgetri },
+    { "cgetri", test_cgetri },
+    { "sgetri", test_sgetri },
+
+    { "zgetri_aux", test_zgetri_aux },
+    { "dgetri_aux", test_dgetri_aux },
+    { "cgetri_aux", test_cgetri_aux },
+    { "sgetri_aux", test_sgetri_aux },
+
     { "zgetrs", test_zgetrs },
     { "dgetrs", test_dgetrs },
     { "cgetrs", test_cgetrs },
@@ -156,6 +166,11 @@ struct routines_t routines[] =
     { "dlaset", test_dlaset },
     { "claset", test_claset },
     { "slaset", test_slaset },
+
+    { "zlaswp", test_zlaswp },
+    { "dlaswp", test_dlaswp },
+    { "claswp", test_claswp },
+    { "slaswp", test_slaswp },
 
     { "zlauum", test_zlauum },
     { "dlauum", test_dlauum },
@@ -516,8 +531,8 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--diag="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_DIAG]);
 
-        else if (param_starts_with(argv[i], "--storev="))
-            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_STOREV]);
+        else if (param_starts_with(argv[i], "--colrow="))
+            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_COLROW]);
 
         else if (param_starts_with(argv[i], "--norm="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_NORM]);
@@ -559,9 +574,10 @@ int param_read(int argc, char **argv, param_t param[])
 
         else if (param_starts_with(argv[i], "--ntpf="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NTPF]);
-
         else if (param_starts_with(argv[i], "--zerocol="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_ZEROCOL]);
+        else if (param_starts_with(argv[i], "--incx="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_INCX]);
 
         //--------------------------------------------------
         // Scan double precision parameters.
@@ -622,8 +638,8 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_char('l', &param[PARAM_UPLO]);
     if (param[PARAM_DIAG].num == 0)
         param_add_char('n', &param[PARAM_DIAG]);
-    if (param[PARAM_STOREV].num == 0)
-        param_add_char('c', &param[PARAM_STOREV]);
+    if (param[PARAM_COLROW].num == 0)
+        param_add_char('c', &param[PARAM_COLROW]);
     if (param[PARAM_NORM].num == 0)
         param_add_char('o', &param[PARAM_NORM]);
 
@@ -662,6 +678,8 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_int(1, &param[PARAM_NTPF]);
     if (param[PARAM_ZEROCOL].num == 0)
         param_add_int(-1, &param[PARAM_ZEROCOL]);
+    if (param[PARAM_INCX].num == 0)
+        param_add_int(1, &param[PARAM_INCX]);
 
     //--------------------------------------------------
     // Set double precision parameters.

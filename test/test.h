@@ -29,7 +29,7 @@ typedef enum {
     PARAM_SIDE,    // left of right side application
     PARAM_UPLO,    // general rectangular or upper or lower triangular
     PARAM_DIAG,    // non-unit or unit diagonal
-    PARAM_STOREV,  // columnwise or rowwise operation
+    PARAM_COLROW,  // columnwise or rowwise operation
     PARAM_M,       // M dimension
     PARAM_N,       // N dimension
     PARAM_K,       // K dimension
@@ -47,6 +47,7 @@ typedef enum {
     PARAM_NTPF,    // number of threads for panel factorization
     PARAM_NORM,    // type of matrix norm
     PARAM_ZEROCOL, // if positive, a column of zeros inserted at that index
+    PARAM_INCX,    // 1 to pivot forward, -1 to pivot backward
 
     //------------------------------------------------------
     // output parameters
@@ -81,7 +82,7 @@ static const char * const ParamUsage[][2] = {
     {"--uplo=[g|u|l]",
         "general rectangular or upper or lower triangular matrix [default: l]"},
     {"--diag=[n|u]", "not unit triangular or unit matrix [default: n]"},
-    {"--storev=[c|r]", "columnwise or rowwise [default: c]"},
+    {"--colrow=[c|r]", "columnwise or rowwise [default: c]"},
     {"--m=", "M dimension (number of rows) [default: 1000]"},
     {"--n=", "N dimension (number of columns) [default: 1000]"},
     {"--k=", "K dimension (number of rows or columns) [default: 1000]"},
@@ -101,6 +102,8 @@ static const char * const ParamUsage[][2] = {
         "type of matrix norm (max, one, inf, frobenius) [default: o]"},
     {"--zerocol=",
         "if positive, a column of zeros inserted at that index [default: -1]"},
+    {"--incx=",
+        "1 to pivot forward, -1 to pivot backward [default: 1]"},
 
     //------------------------------------------------------
     // output parameters

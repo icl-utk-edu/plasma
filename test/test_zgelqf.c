@@ -165,13 +165,13 @@ void test_zgelqf(param_value_t param[], char *info)
         cblas_zherk(CblasColMajor, CblasUpper, CblasNoTrans, minmn, n,
                     -1.0, Q, ldq, 1.0, Id, minmn);
 
-        // WORK array of size m is needed for computing L_oo norm
-        double *WORK = (double *) malloc((size_t)m*sizeof(double));
-        assert(WORK != NULL);
+        // work array of size m is needed for computing L_oo norm
+        double *work = (double *) malloc((size_t)m*sizeof(double));
+        assert(work != NULL);
 
         // |Id - Q * Q^H|_oo
         double ortho = LAPACKE_zlanhe_work(LAPACK_COL_MAJOR, 'I', 'u',
-                                           minmn, Id, minmn, WORK);
+                                           minmn, Id, minmn, work);
 
         // normalize the result
         // |Id - Q * Q^H|_oo / n
@@ -204,11 +204,11 @@ void test_zgelqf(param_value_t param[], char *info)
 
         // |A|_oo
         double normA = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', m, n,
-                                           Aref, lda, WORK);
+                                           Aref, lda, work);
 
         // |A - L*Q|_oo
         double error = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', m, n,
-                                           L, m, WORK);
+                                           L, m, work);
 
         // normalize the result
         // |A-LQ|_oo / (|A|_oo * n)
@@ -218,7 +218,7 @@ void test_zgelqf(param_value_t param[], char *info)
         param[PARAM_ORTHO].d = ortho;
         param[PARAM_SUCCESS].i = (error < tol && ortho < tol);
 
-        free(WORK);
+        free(work);
         free(L);
 
         // Return ortho. column value.

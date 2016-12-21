@@ -200,7 +200,7 @@ int plasma_zungqr(int m, int n, int k,
  *
  * @param[in] work
  *          Workspace for the auxiliary arrays needed by some coreblas kernels.
- *          For multiplication by Q contains preallocated space for WORK
+ *          For multiplication by Q contains preallocated space for work
  *          arrays. Allocated by the plasma_workspace_create function.
  *
  * @param[in] sequence

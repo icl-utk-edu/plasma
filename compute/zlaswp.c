@@ -18,10 +18,9 @@
 #include "plasma_types.h"
 
 /******************************************************************************/
-int plasma_zlaset(plasma_enum_t uplo,
+int plasma_zlaswp(plasma_enum_t colrow,
                   int m, int n,
-                  plasma_complex64_t alpha, plasma_complex64_t beta,
-                  plasma_complex64_t *pA, int lda)
+                  plasma_complex64_t *pA, int lda, int *ipiv, int incx)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -31,10 +30,9 @@ int plasma_zlaset(plasma_enum_t uplo,
     }
 
     // Check input arguments.
-    if ((uplo != PlasmaGeneral) &&
-        (uplo != PlasmaUpper)   &&
-        (uplo != PlasmaLower)) {
-        plasma_error("illegal value of uplo");
+    if ((colrow != PlasmaColumnwise) &&
+        (colrow != PlasmaRowwise)) {
+        plasma_error("illegal value of colrow");
         return -1;
     }
     if (m < 0) {
@@ -86,7 +84,8 @@ int plasma_zlaset(plasma_enum_t uplo,
         plasma_omp_zge2desc(pA, lda, A, sequence, &request);
 
         // Call tile async function.
-        plasma_omp_zlaset(uplo, alpha, beta, A, sequence, &request);
+        #pragma omp taskwait
+        plasma_omp_zlaswp(colrow, A, ipiv, incx, sequence, &request);
 
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
@@ -103,9 +102,8 @@ int plasma_zlaset(plasma_enum_t uplo,
 }
 
 /******************************************************************************/
-void plasma_omp_zlaset(plasma_enum_t uplo,
-                       plasma_complex64_t alpha, plasma_complex64_t beta,
-                       plasma_desc_t A,
+void plasma_omp_zlaswp(plasma_enum_t colrow,
+                       plasma_desc_t A, int *ipiv, int incx,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
@@ -117,10 +115,9 @@ void plasma_omp_zlaset(plasma_enum_t uplo,
     }
 
     // Check input arguments.
-    if ((uplo != PlasmaGeneral) &&
-        (uplo != PlasmaUpper)   &&
-        (uplo != PlasmaLower)) {
-        plasma_error("illegal value of uplo");
+    if ((colrow != PlasmaColumnwise) &&
+        (colrow != PlasmaRowwise)) {
+        plasma_error("illegal value of colrow");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
@@ -145,5 +142,5 @@ void plasma_omp_zlaset(plasma_enum_t uplo,
         return;
 
     // Call the parallel function.
-    plasma_pzlaset(uplo, alpha, beta, A, sequence, request);
+    plasma_pzlaswp(colrow, A, ipiv, incx, sequence, request);
 }
