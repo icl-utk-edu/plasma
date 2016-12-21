@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include <omp.h>
 
@@ -112,7 +113,7 @@ void test_zlantr(param_value_t param[], char *info)
     assert(retval == 0);
 
     plasma_complex64_t *Aref = NULL;
-    plasma_complex64_t *work = NULL;
+    double *work = NULL;
     if (test) {
         Aref = (plasma_complex64_t*)malloc(
             (size_t)lda*n*sizeof(plasma_complex64_t));
@@ -120,8 +121,7 @@ void test_zlantr(param_value_t param[], char *info)
 
         memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
 
-        work = (plasma_complex64_t*)
-            malloc(imax(m, n)*sizeof(plasma_complex64_t));
+        work = (double*) malloc(imax(m, n)*sizeof(double));
         assert(work != NULL);
     }
 
@@ -140,17 +140,22 @@ void test_zlantr(param_value_t param[], char *info)
     // Test results by comparing to a reference implementation.
     //================================================================
     if (test) {
+        // LAPACKE_[ds]lantr_work has a bug (returns 0)
+        // in MKL <= 11.3.3 (at least). Fixed in LAPACK 3.6.1.
+        // For now, call LAPACK directly.
+        double zlantr(char *norm, char *uplo, char *diag,
+                      int *m, int *n,
+                      plasma_complex64_t *A, int *lda, double *work);
+        char normc = lapack_const(norm);
+        char uploc = lapack_const(uplo);
+        char diagc = lapack_const(diag);
+        double valueRef = zlantr(&normc, &uploc, &diagc,
+                                 &m, &n, Aref, &lda, work);
         // double valueRef =
         //     LAPACKE_zlantr(LAPACK_COL_MAJOR,
         //                    lapack_const(norm), lapack_const(uplo),
         //                    lapack_const(diag),
         //                    m, n, Aref, lda);
-        char nrm = lapack_const(norm);
-        char upl = lapack_const(uplo);
-        char dia = lapack_const(diag);
-        double zlantr(char*, char*, char*, int*, int*, void*, int*, void*);
-        double valueRef =
-            zlantr(&nrm, &upl, &dia, &m, &n, Aref, &lda, work);
 
         // Calculate relative error
         double error = fabs(value-valueRef) / valueRef;

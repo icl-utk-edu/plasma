@@ -11,6 +11,7 @@
  **/
 #include "test.h"
 #include "flops.h"
+#include "core_blas.h"
 #include "core_lapack.h"
 #include "plasma.h"
 
@@ -178,23 +179,15 @@ void test_ztrmm(param_value_t param[], char *info)
 
         // LAPACKE_[ds]lantr_work has a bug (returns 0)
         // in MKL <= 11.3.3 (at least). Fixed in LAPACK 3.6.1.
-        // For now, zero out the opposite triangle, set diag, and use lange.
-        // See also test_ztrsm.c
-        if (uplo == PlasmaLower) {
-            LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'U', k-1, k-1,
-                                0.0, 0.0, &A(0,1), lda);
-        }
-        else {
-            LAPACKE_zlaset_work(LAPACK_COL_MAJOR, 'L', k-1, k-1,
-                                0.0, 0.0, &A(1,0), lda);
-        }
-        if (diag == PlasmaUnit) {
-            for (int i = 0; i < k; ++i) {
-                A(i,i) = 1.0;
-            }
-        }
-        double Anorm = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', k, k, A, lda, work);
+        // For now, call LAPACK directly.
+        double zlantr(char *norm, char *uplo, char *diag,
+                      int *m, int *n,
+                      plasma_complex64_t *A, int *lda, double *work);
+        char normc = 'F';
+        char uploc = lapack_const(uplo);
+        char diagc = lapack_const(diag);
+        double Anorm = zlantr(&normc, &uploc, &diagc,
+                              &k, &k, A, &lda, work);
         //double Anorm = LAPACKE_zlantr_work(
         //                   LAPACK_COL_MAJOR, 'F', lapack_const(uplo),
         //                   lapack_const(diag), k, k, A, lda, work);
