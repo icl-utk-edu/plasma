@@ -18,7 +18,8 @@
 #include "plasma_workspace.h"
 #include "core_blas.h"
 
-#define offset (A.uplo == PlasmaUpper ? A.ku : (A.uplo == PlasmaLower ? 0 : A.ku+A.kl))
+#define offset \
+    (A.uplo == PlasmaUpper ? A.ku : (A.uplo == PlasmaLower ? 0 : A.ku+A.kl))
 #define bandA(m, n) (&(pA[lda*(A.nb*(n)) + offset + A.mb*((m)-(n))]))
 #define tileA(m, n) ((plasma_complex64_t*)plasma_tile_addr(A, (m), (n)))
 
