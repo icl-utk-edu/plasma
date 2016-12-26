@@ -85,7 +85,10 @@ void plasma_pzgbtrf(plasma_desc_t A, int *ipiv,
                 // laswp
                 int k1 = k*A.mb+1;
                 int k2 = imin(k*A.mb+A.mb, A.m);
-                plasma_desc_t view = plasma_desc_view(A, (A.kut-1 + k-n)*A.mb, n*A.nb, mak, nvan);
+                plasma_desc_t view =
+                    plasma_desc_view(A,
+                                    (A.kut-1 + k-n)*A.mb, n*A.nb,
+                                    mak, nvan);
                 view.type = PlasmaGeneral;
                 core_zlaswp(PlasmaRowwise, view, 1, k2-k1+1, &ipiv[k*A.mb], 1);
 

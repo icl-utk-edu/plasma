@@ -120,7 +120,9 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                     for (int n = 0; n < B.nt; n++) {
                         int nvbn = plasma_tile_nview(B, n);
                         if (ipiv != NULL) {
-                            plasma_desc_t view = plasma_desc_view(B, 0, n*A.nb, A.m, nvbn);
+                            plasma_desc_t view = plasma_desc_view(B,
+                                                                  0, n*A.nb,
+                                                                  A.m, nvbn);
                             view.type = PlasmaGeneral;
                             // TODO: nested parallelization like getrf
                             #pragma omp taskwait
@@ -185,7 +187,9 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                         if (ipiv != NULL) {
                             int k1 = 1+(B.mt-k-1)*A.nb;
                             int k2 = k1+mvbk-1;
-                            plasma_desc_t view = plasma_desc_view(B, 0, n*A.nb, A.m, nvbn);
+                            plasma_desc_t view = plasma_desc_view(B,
+                                                                  0, n*A.nb,
+                                                                  A.m, nvbn);
                             view.type = PlasmaGeneral;
                             #pragma omp taskwait
                             core_zlaswp(PlasmaRowwise, view, k1, k2, ipiv, -1);
