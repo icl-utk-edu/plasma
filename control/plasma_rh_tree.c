@@ -384,7 +384,6 @@ void plasma_rh_tree_auto_forest(int mt, int nt,
         // Determine the size of the flat tree for this column.
         // intentional integer division
         int bs = imax(1,(mt-j-1)*(minnt-j-1) / (gamma*concurrency)); 
-        //if (debug) printf("bs in column %d is %d \n", j, bs);
 
         // Triangularize all supertiles in this column.
 

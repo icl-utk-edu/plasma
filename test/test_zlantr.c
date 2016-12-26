@@ -156,8 +156,6 @@ void test_zlantr(param_value_t param[], char *info)
         //                    lapack_const(norm), lapack_const(uplo),
         //                    lapack_const(diag),
         //                    m, n, Aref, lda);
-        //printf("value: %lf, valueRef: %lf, err: %g\n", value, valueRef,
-        //       fabs(value-valueRef));
 
         // Calculate relative error
         double error = fabs(value-valueRef) / valueRef;

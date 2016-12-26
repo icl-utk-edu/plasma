@@ -27,23 +27,6 @@ static inline int plasma_rh_tree_insert_operation(int *operations,
                                                   plasma_enum_t kernel,
                                                   int col, int row, int rowpiv)
 {
-    static const int debug = 1;
-    if (debug) {
-        switch (kernel) {
-            case PlasmaGeKernel:
-                printf("GEQRT(%d,  %d)\n",row,col);
-                break;
-            case PlasmaTsKernel:
-                printf("TSQRT(%d:%d,%d)\n",rowpiv,row,col);
-                break;
-            case PlasmaTtKernel:
-                printf("TTQRT(%d:%d,%d)\n",rowpiv,row,col);
-                break;
-            default:
-                assert(-1);
-        }
-    }
-
     assert(ind_op < loperations);
 
     operations[ind_op*4]   = kernel;
