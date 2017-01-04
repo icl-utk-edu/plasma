@@ -129,7 +129,7 @@ void core_zlaset(plasma_enum_t uplo,
                  plasma_complex64_t *A, int lda);
 
 void core_zlaswp(plasma_enum_t colrow,
-                 plasma_desc_t A, int k1, int k2, int *ipiv, int incx);
+                 plasma_desc_t A, int k1, int k2, const int *ipiv, int incx);
 
 int core_zlauum(plasma_enum_t uplo,
                 int n,
