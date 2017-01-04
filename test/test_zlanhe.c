@@ -104,7 +104,7 @@ void test_zlanhe(param_value_t param[], char *info)
     assert(retval == 0);
 
     plasma_complex64_t *Aref = NULL;
-    plasma_complex64_t *work = NULL;
+    double *work = NULL;
     if (test) {
         Aref = (plasma_complex64_t*)malloc(
             (size_t)lda*n*sizeof(plasma_complex64_t));
@@ -112,7 +112,7 @@ void test_zlanhe(param_value_t param[], char *info)
 
         memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
 
-        work = (plasma_complex64_t*)malloc(n*sizeof(plasma_complex64_t));
+        work = (double*)malloc(n*sizeof(double));
         assert(work != NULL);
     }
 
