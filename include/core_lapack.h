@@ -13,6 +13,12 @@
 #ifdef PLASMA_WITH_MKL
     #include <mkl_cblas.h>
     #include <mkl_lapacke.h>
+
+    // MKL LAPACKE doesn't provide LAPACK_GLOBAL macro, so define it here.
+    // MKL provides all 3 name manglings (foo, foo_, FOO); pick foo_.
+    #ifndef LAPACK_GLOBAL
+    #define LAPACK_GLOBAL(lcname,UCNAME)  lcname##_
+    #endif
 #else
     #include <cblas.h>
     #include <lapacke.h>
