@@ -156,6 +156,9 @@ $(test_exe): $(test_obj) $(libs) Makefile.test.gen
 %.o: %.c | $(headers)
 	$(CC) $(CFLAGS) $(PLASMA_INC) $(INC) -c -o $@ $<
 
+%.i: %.c | $(headers)
+	$(CC) $(CFLAGS) $(PLASMA_INC) $(INC) -E -o $@ $<
+
 
 # ----------------------------------------
 # Build documentation
