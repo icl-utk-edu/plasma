@@ -143,14 +143,11 @@ void test_zlantr(param_value_t param[], char *info)
         // LAPACKE_[ds]lantr_work has a bug (returns 0)
         // in MKL <= 11.3.3 (at least). Fixed in LAPACK 3.6.1.
         // For now, call LAPACK directly.
-        double zlantr(char *norm, char *uplo, char *diag,
-                      int *m, int *n,
-                      plasma_complex64_t *A, int *lda, double *work);
         char normc = lapack_const(norm);
         char uploc = lapack_const(uplo);
         char diagc = lapack_const(diag);
-        double valueRef = zlantr(&normc, &uploc, &diagc,
-                                 &m, &n, Aref, &lda, work);
+        double valueRef = LAPACK_zlantr(&normc, &uploc, &diagc,
+                                        &m, &n, Aref, &lda, work);
         // double valueRef =
         //     LAPACKE_zlantr(LAPACK_COL_MAJOR,
         //                    lapack_const(norm), lapack_const(uplo),

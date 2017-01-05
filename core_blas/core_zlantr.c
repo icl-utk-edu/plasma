@@ -29,18 +29,17 @@ void core_zlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
                  const plasma_complex64_t *A, int lda,
                  double *work, double *value)
 {
-    // Due to a bug in LAPACKE, this function always returns zero.
+    // Due to a bug in LAPACKE < 3.6.1, this function always returns zero.
     // *value = LAPACKE_zlantr_work(LAPACK_COL_MAJOR,
     //                              lapack_const(norm), lapack_const(uplo),
     //                              lapack_const(diag),
     //                              m, n, A, lda, work);
 
     // Calling LAPACK directly instead.
-    double zlantr(char*, char*, char*, int*, int*, void*, int*, void*);
     char nrm = lapack_const(norm);
     char upl = lapack_const(uplo);
     char dia = lapack_const(diag);
-    *value = zlantr(&nrm, &upl, &dia, &m, &n, A, &lda, work);
+    *value = LAPACK_zlantr(&nrm, &upl, &dia, &m, &n, A, &lda, work);
 }
 
 /******************************************************************************/

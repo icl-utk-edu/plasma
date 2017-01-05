@@ -129,10 +129,11 @@ void test_zlascl(param_value_t param[], char *info)
         char type = lapack_const(uplo);
         double cfrom = 1.234;
         double cto = 5.678;
-        int info;
-        int kl;
-        int ku;
-        zlascl(&type, &kl, &ku, &cfrom, &cto, &m, &n, Aref, &lda, &info);
+        int iinfo;
+        int kl = 0;  // unused
+        int ku = 0;  // unused
+        LAPACK_zlascl(&type, &kl, &ku, &cfrom, &cto, &m, &n,
+                      Aref, &lda, &iinfo);
 
         plasma_complex64_t zmone = -1.0;
         cblas_zaxpy((size_t)lda*n, CBLAS_SADDR(zmone), Aref, 1, A, 1);

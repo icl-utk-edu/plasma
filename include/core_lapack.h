@@ -30,4 +30,9 @@
     #endif
 #endif
 
+#include "core_lapack_s.h"
+#include "core_lapack_d.h"
+#include "core_lapack_c.h"
+#include "core_lapack_z.h"
+
 #endif // ICL_CORE_LAPACK_H

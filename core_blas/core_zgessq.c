@@ -10,6 +10,8 @@
  *
  **/
 
+#include <math.h>
+
 #include "core_blas.h"
 #include "plasma_types.h"
 #include "core_lapack.h"
@@ -22,7 +24,7 @@ void core_zgessq(int m, int n,
     int ione = 1;
     for (int j = 0; j < n; j++)
         // TODO: Inline this operation.
-        zlassq(&m, &A[j*lda], &ione, scale, sumsq);
+        LAPACK_zlassq(&m, &A[j*lda], &ione, scale, sumsq);
 }
 
 /******************************************************************************/

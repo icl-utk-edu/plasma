@@ -14,6 +14,8 @@
 #include "plasma_types.h"
 #include "core_lapack.h"
 
+#include <math.h>
+
 /******************************************************************************/
 void core_zsyssq(plasma_enum_t uplo,
                  int n,
@@ -24,13 +26,13 @@ void core_zsyssq(plasma_enum_t uplo,
     if (uplo == PlasmaUpper) {
         for (int j = 1; j < n; j++)
             // TODO: Inline this operation.
-            zlassq(&j, &A[lda*j], &ione, scale, sumsq);
+            LAPACK_zlassq(&j, &A[lda*j], &ione, scale, sumsq);
     }
     else { // PlasmaLower
         for (int j = 0; j < n-1; j++) {
             int len = n-j-1;
             // TODO: Inline this operation.
-            zlassq(&len, &A[lda*j+j+1], &ione, scale, sumsq);
+            LAPACK_zlassq(&len, &A[lda*j+j+1], &ione, scale, sumsq);
         }
     }
     *sumsq *= 2.0;

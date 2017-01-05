@@ -20,15 +20,16 @@ void core_zlascl(plasma_enum_t uplo,
                  int m, int n,
                  plasma_complex64_t *A, int lda)
 {
+    // LAPACKE_zlascl is not available in LAPACKE < 3.6.0
     int kl;
     int ku;
     int info;
     char type = lapack_const(uplo);
-    zlascl(&type,
-           &kl, &ku,
-           &cfrom, &cto,
-           &m, &n,
-           A, &lda, &info);
+    LAPACK_zlascl(&type,
+                  &kl, &ku,
+                  &cfrom, &cto,
+                  &m, &n,
+                  A, &lda, &info);
 }
 
 /******************************************************************************/
