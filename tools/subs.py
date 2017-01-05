@@ -445,7 +445,7 @@ subs = {
     (r'',                   r'',                    r'\bconjf\b',           r'\bconj\b'            ),
     (r'\bfabsf\b',          r'\bfabs\b',            r'\bfabsf\b',           r'\bfabs\b'            ),
     (r'\bfabsf\b',          r'\bfabs\b',            r'\bcabsf\b',           r'\bcabs\b'            ),
-    (r'\bfabsf\b',          r'\bfabs\b',            r'\bcblas_scabs1\b',    r'\bcblas_dcabs1\b'    ),
+    (r'\bfabsf\b',          r'\bfabs\b',            r'\bcore_scabs1\b',     r'\bcore_dcabs1\b'     ),
     (r'\bsqrtf\b',          r'\bsqrt\b',            r'\bsqrtf\b',           r'\bsqrt\b'            ),
 
     # ----- Constants

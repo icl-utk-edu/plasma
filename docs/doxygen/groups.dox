@@ -340,6 +340,13 @@
           Standard BLAS and LAPACK auxiliary routines are grouped by
           amount of work into Level 1, 2, 3.
 @{
+    @defgroup core_blas0            Level 0: element operations, O(1) work
+    @brief    Operations on single elements.
+    @{
+        @defgroup core_cabs1        cabs1: Complex 1-norm absolute value
+        @brief    \f$ |real(alpha)| + |imag(alpha)| \f$
+    @}
+
     @defgroup core_blas1            Level 1: vectors operations, O(n) work
     @brief    Vector operations that perform \f$ O(n) \f$ work on \f$ O(n) \f$ data.
               These are memory bound, since every operation requires a memory read or write.

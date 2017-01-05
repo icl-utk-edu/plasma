@@ -19,6 +19,7 @@
 
 #include <omp.h>
 #include <assert.h>
+#include <math.h>
 
 static int *max_idx;
 static plasma_complex64_t *max_val;
@@ -68,8 +69,8 @@ int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
 
                 if (l == 0) {
                     for (int i = 1; i < mva0-j; i++)
-                        if (cblas_dcabs1(CBLAS_SADDR(a0[j+i+j*lda0])) >
-                            cblas_dcabs1(CBLAS_SADDR(max_val[rank]))) {
+                        if (core_dcabs1(a0[j+i+j*lda0]) >
+                            core_dcabs1(max_val[rank])) {
 
                             max_val[rank] = a0[j+i+j*lda0];
                             max_idx[rank] = i;
@@ -77,8 +78,8 @@ int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
                 }
                 else {
                     for (int i = 0; i < mval; i++)
-                        if (cblas_dcabs1(CBLAS_SADDR(al[i+j*ldal])) >
-                            cblas_dcabs1(CBLAS_SADDR(max_val[rank]))) {
+                        if (core_dcabs1(al[i+j*ldal]) >
+                            core_dcabs1(max_val[rank])) {
 
                             max_val[rank] = al[i+j*ldal];
                             max_idx[rank] = A.mb*l+i-j;
@@ -91,8 +92,8 @@ int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
             {
                 // max reduction
                 for (int i = 1; i < size; i++) {
-                    if (cblas_dcabs1(CBLAS_SADDR(max_val[i])) >
-                        cblas_dcabs1(CBLAS_SADDR(max_val[0]))) {
+                    if (core_dcabs1(max_val[i]) >
+                        core_dcabs1(max_val[0])) {
                         max_val[0] = max_val[i];
                         max_idx[0] = max_idx[i];
                     }

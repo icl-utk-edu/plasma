@@ -23,7 +23,13 @@
 extern "C" {
 #endif
 
+#define COMPLEX
+
 /******************************************************************************/
+#ifdef COMPLEX
+double core_dcabs1(plasma_complex64_t alpha);
+#endif
+
 int core_zgeadd(plasma_enum_t transa,
                 int m, int n,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
@@ -596,6 +602,8 @@ void core_omp_zunmqr(plasma_enum_t side, plasma_enum_t trans,
                            plasma_complex64_t *C, int ldc,
                      plasma_workspace_t work,
                      plasma_sequence_t *sequence, plasma_request_t *request);
+
+#undef COMPLEX
 
 #ifdef __cplusplus
 }  // extern "C"

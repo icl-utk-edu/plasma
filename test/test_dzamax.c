@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include <omp.h>
 
@@ -131,13 +132,13 @@ void test_dzamax(param_value_t param[], char *info)
         if (colrow == PlasmaColumnwise) {
             for (int j = 0; j < n; j++) {
                 CBLAS_INDEX idx = cblas_izamax(m, &A[lda*j], 1);
-                valref[j] = cblas_dcabs1(CBLAS_SADDR(A[lda*j+idx]));
+                valref[j] = core_dcabs1(A[lda*j+idx]);
             }
         }
         else {
             for (int i = 0; i < m; i++) {
                 CBLAS_INDEX idx = cblas_izamax(n, &A[i], lda);
-                valref[i] = cblas_dcabs1(CBLAS_SADDR(A[i+lda*idx]));
+                valref[i] = core_dcabs1(A[i+lda*idx]);
             }
         }      
 
