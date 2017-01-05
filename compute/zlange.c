@@ -120,7 +120,7 @@ double plasma_zlange(plasma_enum_t norm,
     }
 
     // Allocate workspace.
-    double *work;
+    double *work = NULL;
     switch (norm) {
     case PlasmaMaxNorm:
         work = (double*)malloc((size_t)A.mt*A.nt*sizeof(double));
