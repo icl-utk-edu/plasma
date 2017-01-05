@@ -12,16 +12,10 @@
 
 #include "core_blas.h"
 #include "plasma_types.h"
+#include "plasma_internal.h"
 #include "core_lapack.h"
 
-// This is already defined in plasma_internal.h
-static inline int imin(int a, int b)
-{
-    if (a < b)
-        return a;
-    else
-        return b;
-}
+#include <math.h>
 
 /******************************************************************************/
 void core_zlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
@@ -150,12 +144,12 @@ void core_omp_zlantr_aux(plasma_enum_t norm, plasma_enum_t uplo,
 
                         int j;
                         for (j = 0; j < imin(n, m); j++) {
-                            for (int i = 0; i < j; i++) {
+                            for (i = 0; i < j; i++) {
                                 value[i] += cabs(A[lda*j+i]);
                             }
                         }
                         for (; j < n; j++) {
-                            for (int i = 0; i < m; i++) {
+                            for (i = 0; i < m; i++) {
                                 value[i] += cabs(A[lda*j+i]);
                             }
                         }
@@ -181,7 +175,7 @@ void core_omp_zlantr_aux(plasma_enum_t norm, plasma_enum_t uplo,
                             value[i] = 0.0;
 
                         for (int j = 0; j < imin(n, m); j++) {
-                            for (int i = j+1; i < m; i++) {
+                            for (i = j+1; i < m; i++) {
                                 value[i] += cabs(A[lda*j+i]);
                             }
                         }

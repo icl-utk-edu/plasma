@@ -14,6 +14,8 @@
 #include "plasma_types.h"
 #include "core_lapack.h"
 
+#include <math.h>
+
 /***************************************************************************//**
  *
  * @ingroup core_lange

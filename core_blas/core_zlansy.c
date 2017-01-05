@@ -14,6 +14,8 @@
 #include "plasma_types.h"
 #include "core_lapack.h"
 
+#include <math.h>
+
 /******************************************************************************/
 void core_zlansy(plasma_enum_t norm, plasma_enum_t uplo,
                  int n,

@@ -17,6 +17,8 @@
 #include "plasma_internal.h"
 #include "plasma_types.h"
 
+#include <math.h>
+
 /******************************************************************************/
 int plasma_zlascl(plasma_enum_t uplo,
                   double cfrom, double cto,

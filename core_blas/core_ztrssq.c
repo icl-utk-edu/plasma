@@ -12,16 +12,10 @@
 
 #include "core_blas.h"
 #include "plasma_types.h"
+#include "plasma_internal.h"
 #include "core_lapack.h"
 
-// This is already defined in plasma_internal.h
-static inline int imin(int a, int b)
-{
-    if (a < b)
-        return a;
-    else
-        return b;
-}
+#include <math.h>
 
 /******************************************************************************/
 // This computation also shows up in core_zsyssq() and can be factored out.
