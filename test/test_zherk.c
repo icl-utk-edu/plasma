@@ -164,7 +164,7 @@ void test_zherk(param_value_t param[], char *info)
     plasma_time_t time = stop-start;
 
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = flops_zherk(k, n) / time / 1e9;
+    param[PARAM_GFLOPS].d = flops_zherk(n, k) / time / 1e9;
 
     //================================================================
     // Test results by comparing to a reference implementation.

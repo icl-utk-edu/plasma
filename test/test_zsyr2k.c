@@ -186,7 +186,7 @@ void test_zsyr2k(param_value_t param[], char *info)
     plasma_time_t time = stop-start;
 
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = flops_zsyr2k(k, n) / time / 1e9;
+    param[PARAM_GFLOPS].d = flops_zsyr2k(n, k) / time / 1e9;
 
     //================================================================
     // Test results by comparing to a reference implementation.

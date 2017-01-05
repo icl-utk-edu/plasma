@@ -17,13 +17,21 @@ extern "C" {
 #endif
 
 //==============================================================================
-// Level 2 BLAS
 // Generic formulas come from LAWN 41
+// BLAS formulas generally assume alpha == 1 or -1, and beta == 1, -1, or 0;
+// otherwise add some smaller order term.
+// Some formulas are wrong when m, n, or k == 0; flops should be 0
+// (e.g., syr2k, unmqr).
+// Formulas may give negative results for invalid combinations of m, n, k
+// (e.g., ungqr, unmqr).
+
+//==============================================================================
+// Level 2 BLAS
 //==============================================================================
 
 //------------------------------------------------------------ gemv
 static double fmuls_gemv(double m, double n)
-    { return m*n + 2.*m; }
+    { return m*n; }
 
 static double fadds_gemv(double m, double n)
     { return m*n; }
@@ -134,66 +142,66 @@ static double  flops_ssymm(plasma_enum_t side, double m, double n)
     { return    fmuls_symm(side, m, n) +    fadds_symm(side, m, n); }
 
 //------------------------------------------------------------ syrk/herk
-static double fmuls_syrk(double k, double n)
+static double fmuls_syrk(double n, double k)
     { return 0.5*k*n*(n + 1); }
 
-static double fadds_syrk(double k, double n)
+static double fadds_syrk(double n, double k)
     { return 0.5*k*n*(n + 1); }
 
-static double fmuls_herk(double k, double n)
-    { return fmuls_syrk(k, n); }
+static double fmuls_herk(double n, double k)
+    { return fmuls_syrk(n, k); }
 
-static double fadds_herk(double k, double n)
-    { return fadds_syrk(k, n); }
+static double fadds_herk(double n, double k)
+    { return fadds_syrk(n, k); }
 
-static double  flops_zherk(double k, double n)
-    { return 6.*fmuls_herk(k, n) + 2.*fadds_herk(k, n); }
+static double  flops_zherk(double n, double k)
+    { return 6.*fmuls_herk(n, k) + 2.*fadds_herk(n, k); }
 
-static double  flops_cherk(double k, double n)
-    { return 6.*fmuls_herk(k, n) + 2.*fadds_herk(k, n); }
+static double  flops_cherk(double n, double k)
+    { return 6.*fmuls_herk(n, k) + 2.*fadds_herk(n, k); }
 
-static double  flops_zsyrk(double k, double n)
-    { return 6.*fmuls_syrk(k, n) + 2.*fadds_syrk(k, n); }
+static double  flops_zsyrk(double n, double k)
+    { return 6.*fmuls_syrk(n, k) + 2.*fadds_syrk(n, k); }
 
-static double  flops_csyrk(double k, double n)
-    { return 6.*fmuls_syrk(k, n) + 2.*fadds_syrk(k, n); }
+static double  flops_csyrk(double n, double k)
+    { return 6.*fmuls_syrk(n, k) + 2.*fadds_syrk(n, k); }
 
-static double  flops_dsyrk(double k, double n)
-    { return    fmuls_syrk(k, n) +    fadds_syrk(k, n); }
+static double  flops_dsyrk(double n, double k)
+    { return    fmuls_syrk(n, k) +    fadds_syrk(n, k); }
 
-static double  flops_ssyrk(double k, double n)
-    { return    fmuls_syrk(k, n) +    fadds_syrk(k, n); }
+static double  flops_ssyrk(double n, double k)
+    { return    fmuls_syrk(n, k) +    fadds_syrk(n, k); }
 
 //------------------------------------------------------------ syr2k/her2k
-static double fmuls_syr2k(double k, double n)
+static double fmuls_syr2k(double n, double k)
     { return k*n*n; }
 
-static double fadds_syr2k(double k, double n)
+static double fadds_syr2k(double n, double k)
     { return k*n*n + n; }
 
-static double fmuls_her2k(double k, double n)
-    { return fmuls_syr2k(k, n); }
+static double fmuls_her2k(double n, double k)
+    { return fmuls_syr2k(n, k); }
 
-static double fadds_her2k(double k, double n)
-    { return fadds_syr2k(k, n); }
+static double fadds_her2k(double n, double k)
+    { return fadds_syr2k(n, k); }
 
-static double  flops_zher2k(double k, double n)
-    { return 6.*fmuls_her2k(k, n) + 2.*fadds_her2k(k, n); }
+static double  flops_zher2k(double n, double k)
+    { return 6.*fmuls_her2k(n, k) + 2.*fadds_her2k(n, k); }
 
-static double  flops_cher2k(double k, double n)
-    { return 6.*fmuls_her2k(k, n) + 2.*fadds_her2k(k, n); }
+static double  flops_cher2k(double n, double k)
+    { return 6.*fmuls_her2k(n, k) + 2.*fadds_her2k(n, k); }
 
-static double  flops_zsyr2k(double k, double n)
-    { return 6.*fmuls_syr2k(k, n) + 2.*fadds_syr2k(k, n); }
+static double  flops_zsyr2k(double n, double k)
+    { return 6.*fmuls_syr2k(n, k) + 2.*fadds_syr2k(n, k); }
 
-static double  flops_csyr2k(double k, double n)
-    { return 6.*fmuls_syr2k(k, n) + 2.*fadds_syr2k(k, n); }
+static double  flops_csyr2k(double n, double k)
+    { return 6.*fmuls_syr2k(n, k) + 2.*fadds_syr2k(n, k); }
 
-static double  flops_dsyr2k(double k, double n)
-    { return    fmuls_syr2k(k, n) +    fadds_syr2k(k, n); }
+static double  flops_dsyr2k(double n, double k)
+    { return    fmuls_syr2k(n, k) +    fadds_syr2k(n, k); }
 
-static double  flops_ssyr2k(double k, double n)
-    { return    fmuls_syr2k(k, n) +    fadds_syr2k(k, n); }
+static double  flops_ssyr2k(double n, double k)
+    { return    fmuls_syr2k(n, k) +    fadds_syr2k(n, k); }
 
 //------------------------------------------------------------ trmm
 static double fmuls_trmm_2(double m, double n)
@@ -252,18 +260,19 @@ static double  flops_strsm(plasma_enum_t side, double m, double n)
 //==============================================================================
 
 //------------------------------------------------------------ getrf
+// LAWN 41 omits (m < n) case
 static double fmuls_getrf(double m, double n)
 {
-    return (m < n)
-        ? (0.5*m*(m*(n - 1./3.*m - 1.) + n) + 2./3.*m)
-        : (0.5*n*(n*(m - 1./3.*n - 1.) + m) + 2./3.*n);
+    return (m >= n)
+        ? (0.5*m*n*n - 1./6.*n*n*n + 0.5*m*n - 0.5*n*n + 2./3.*n)
+        : (0.5*n*m*m - 1./6.*m*m*m + 0.5*n*m - 0.5*m*m + 2./3.*m);
 }
 
 static double fadds_getrf(double m, double n)
 {
-    return (m < n)
-        ? (0.5*m*(m*(n - 1./3.*m) - n) + 1./6.*m)
-        : (0.5*n*(n*(m - 1./3.*n) - m) + 1./6.*n);
+    return (m >= n)
+        ? (0.5*m*n*n - 1./6.*n*n*n - 0.5*m*n + 1./6.*n)
+        : (0.5*n*m*m - 1./6.*m*m*m - 0.5*n*m + 1./6.*m);
 }
 
 static double  flops_zgetrf(double m, double n)
@@ -280,10 +289,10 @@ static double  flops_sgetrf(double m, double n)
 
 //------------------------------------------------------------ getri
 static double fmuls_getri(double n)
-    { return n*(5./6. + n*(2./3.*n + 0.5)); }
+    { return 2./3.*n*n*n + 0.5*n*n + 5./6.*n; }
 
 static double fadds_getri(double n)
-    { return n*(5./6. + n*(2./3.*n - 1.5)); }
+    { return 2./3.*n*n*n - 1.5*n*n + 5./6.*n; }
 
 static double  flops_zgetri(double n)
     { return 6.*fmuls_getri(n) + 2.*fadds_getri(n); }
@@ -318,10 +327,10 @@ static double  flops_sgetrs(double n, double nrhs)
 
 //------------------------------------------------------------ potrf
 static double fmuls_potrf(double n)
-    { return n*((1./6.*n + 0.5)*n + 1./3.); }
+    { return 1./6.*n*n*n + 0.5*n*n + 1./3.*n; }
 
 static double fadds_potrf(double n)
-    { return n*((1./6.*n)*n - 1./6.); }
+    { return 1./6.*n*n*n - 1./6.*n; }
 
 static double  flops_zpotrf(double n)
     { return 6.*fmuls_potrf(n) + 2.*fadds_potrf(n); }
@@ -337,10 +346,10 @@ static double  flops_spotrf(double n)
 
 //------------------------------------------------------------ potri
 static double fmuls_potri(double n)
-    { return n*(2./3. + n*(1./3.*n + 1.0)); }
+    { return 1./3.*n*n*n + n*n + 2./3.*n; }
 
 static double fadds_potri(double n)
-    { return n*(1./6. + n*(1./3.*n - 0.5)); }
+    { return 1./3.*n*n*n - 0.5*n*n + 1./6.*n; }
 
 static double  flops_zpotri(double n)
     { return 6.*fmuls_potri(n) + 2.*fadds_potri(n); }
@@ -377,15 +386,15 @@ static double  flops_spotrs(double n, double nrhs)
 static double fmuls_geqrf(double m, double n)
 {
     return (m > n)
-        ? (n*(n*( 0.5 - 1./3.*n + m) +    m + 23./6.))
-        : (m*(m*(-0.5 - 1./3.*m + n) + 2.*n + 23./6.));
+        ? (m*n*n - 1./3.*n*n*n +   m*n + 0.5*n*n + 23./6.*n)
+        : (n*m*m - 1./3.*m*m*m + 2*n*m - 0.5*m*m + 23./6.*m);
 }
 
 static double fadds_geqrf(double m, double n)
 {
     return (m > n)
-        ? (n*(n*( 0.5 - 1./3.*n + m)        +  5./6.))
-        : (m*(m*(-0.5 - 1./3.*m + n) +    n +  5./6.));
+        ? (m*n*n - 1./3.*n*n*n + 0.5*n*n       + 5./6.*n)
+        : (n*m*m - 1./3.*m*m*m + n*m - 0.5*m*m + 5./6.*m);
 }
 
 static double  flops_zgeqrf(double m, double n)
@@ -442,15 +451,15 @@ static double  flops_sgeqlf(double m, double n)
 static double fmuls_gerqf(double m, double n)
 {
     return (m > n)
-        ? (n*(n*( 0.5 - 1./3.*n + m) +    m + 29./6.))
-        : (m*(m*(-0.5 - 1./3.*m + n) + 2.*n + 29./6.));
+        ? (m*n*n - 1./3.*n*n*n +   m*n + 0.5*n*n + 29./6.*n)
+        : (n*m*m - 1./3.*m*m*m + 2*n*m - 0.5*m*m + 29./6.*m);
 }
 
 static double fadds_gerqf(double m, double n)
 {
     return (m > n)
-        ? (n*(n*(-0.5 - 1./3.*n + m) +    m +  5./6.))
-        : (m*(m*( 0.5 - 1./3.*m + n) +      +  5./6.));
+        ? (m*n*n - 1./3.*n*n*n + m*n - 0.5*n*n + 5./6.*n)
+        : (n*m*m - 1./3.*m*m*m + 0.5*m*m       + 5./6.*m);
 }
 
 static double  flops_zgerqf(double m, double n)
@@ -486,10 +495,10 @@ static double  flops_sgelqf(double m, double n)
 
 //------------------------------------------------------------ ungqr
 static double fmuls_ungqr(double m, double n, double k)
-    { return k*(2.*m*n +  2.*n - 5./3. + k*(2./3.*k - (m + n) - 1.)); }
+    { return 2.*m*n*k - (m + n)*k*k + 2./3.*k*k*k + 2.*n*k - k*k - 5./3.*k; }
 
 static double fadds_ungqr(double m, double n, double k)
-    { return k*(2.*m*n + n - m + 1./3. + k*(2./3.*k - (m + n))); }
+    { return 2.*m*n*k - (m + n)*k*k + 2./3.*k*k*k + n*k - m*k + 1./3.*k; }
 
 static double  flops_zungqr(double m, double n, double k)
     { return 6.*fmuls_ungqr(m, n, k) + 2.*fadds_ungqr(m, n, k); }
@@ -524,10 +533,10 @@ static double  flops_sorgql(double m, double n, double k)
 
 //------------------------------------------------------------ ungrq
 static double fmuls_ungrq(double m, double n, double k)
-    { return k*(2.*m*n + m + n - 2./3. + k*(2./3.*k - (m + n) - 1.)); }
+    { return 2.*m*n*k - (m + n)*k*k + 2./3.*k*k*k + m*k + n*k - k*k - 2./3.*k; }
 
 static double fadds_ungrq(double m, double n, double k)
-    { return k*(2.*m*n + m - n + 1./3. + k*(2./3.*k - (m + n))); }
+    { return 2.*m*n*k - (m + n)*k*k + 2./3.*k*k*k + m*k - n*k + 1./3.*k; }
 
 static double  flops_zungrq(double m, double n, double k)
     { return 6.*fmuls_ungrq(m, n, k) + 2.*fadds_ungrq(m, n, k); }
@@ -562,10 +571,10 @@ static double  flops_sorglq(double m, double n, double k)
 
 //------------------------------------------------------------ geqrs
 static double fmuls_geqrs(double m, double n, double nrhs)
-    { return nrhs*(n*(2.*m - 0.5*n + 2.5)); }
+    { return nrhs*(2.*m*n - 0.5*n*n + 2.5*n); }
 
 static double fadds_geqrs(double m, double n, double nrhs)
-    { return nrhs*(n*(2.*m - 0.5*n + 0.5)); }
+    { return nrhs*(2.*m*n - 0.5*n*n + 0.5*n); }
 
 static double  flops_zgeqrs(double m, double n, double nrhs)
     { return 6.*fmuls_geqrs(m, n, nrhs) + 2.*fadds_geqrs(m, n, nrhs); }
@@ -665,10 +674,10 @@ static double  flops_sormlq(plasma_enum_t side, double m, double n, double k)
 
 //------------------------------------------------------------ trtri
 static double fmuls_trtri(double n)
-    { return n*(n*(1./6.*n + 0.5) + 1./3.); }
+    { return 1./6.*n*n*n + 0.5*n*n + 1./3.*n; }
 
 static double fadds_trtri(double n)
-    { return n*(n*(1./6.*n - 0.5) + 1./3.); }
+    { return 1./6.*n*n*n - 0.5*n*n + 1./3.*n; }
 
 static double  flops_ztrtri(double n)
     { return 6.*fmuls_trtri(n) + 2.*fadds_trtri(n); }
@@ -684,10 +693,10 @@ static double  flops_strtri(double n)
 
 //------------------------------------------------------------ gehrd
 static double fmuls_gehrd(double n)
-    { return n*(n*(5./3. *n + 0.5) - 7./6.) - 13.; }
+    { return 5./3.*n*n*n + 0.5*n*n - 7./6.*n; }
 
 static double fadds_gehrd(double n)
-    { return n*(n*(5./3. *n - 1.0) - 2./3.) -  8.; }
+    { return 5./3.*n*n*n - n*n - 2./3.*n; }
 
 static double  flops_zgehrd(double n)
     { return 6.*fmuls_gehrd(n) + 2.*fadds_gehrd(n); }
@@ -703,10 +712,10 @@ static double  flops_sgehrd(double n)
 
 //------------------------------------------------------------ sytrd
 static double fmuls_sytrd(double n)
-    { return n*(n*(2./3.*n + 2.5) - 1./6.) - 15.; }
+    { return 2./3.*n*n*n + 2.5*n*n - 1./6.*n; }
 
 static double fadds_sytrd(double n)
-    { return n*(n*(2./3.*n + 1.0) - 8./3.) -  4.; }
+    { return 2./3.*n*n*n + n*n - 8./3.*n; }
 
 static double fmuls_hetrd(double n)
     { return fmuls_sytrd(n); }
@@ -730,15 +739,15 @@ static double  flops_ssytrd(double n)
 static double fmuls_gebrd(double m, double n)
 {
     return (m >= n)
-        ? (n*(n*(2.*m - 2./3.*n + 2.) + 20./3.))
-        : (m*(m*(2.*n - 2./3.*m + 2.) + 20./3.));
+        ? (2.*m*n*n - 2./3.*n*n*n + 2.*n*n + 20./3.*n)
+        : (2.*n*m*m - 2./3.*m*m*m + 2.*m*m + 20./3.*m);
 }
 
 static double fadds_gebrd(double m, double n)
 {
     return (m >= n)
-        ? (n*(n*(2.*m - 2./3.*n + 1.) - m +  5./3.))
-        : (m*(m*(2.*n - 2./3.*m + 1.) - n +  5./3.));
+        ? (2.*m*n*n - 2./3.*n*n*n + n*n - m*n +  5./3.*n)
+        : (2.*n*m*m - 2./3.*m*m*m + m*m - n*m +  5./3.*m);
 }
 
 static double  flops_zgebrd(double m, double n)
@@ -792,17 +801,23 @@ static double flops_sgeadd(double m, double n)
     { return    fmuls_geadd(m, n) +    fadds_geadd(m, n); }
 
 //------------------------------------------------------------ lauum
-static double  flops_zlauum(double n)
-    { return 2.5 * (0.25 * n * n * n);} // Complex flop is approx 2.5 real flops
+static double fmuls_lauum(double n)
+    { return fmuls_potri(n) - fmuls_trtri(n); }
 
-static double  flops_dlauum(double n)
-    { return 0.25 * n * n * n;}
+static double fadds_lauum(double n)
+    { return fadds_potri(n) - fadds_trtri(n); }
 
-static double  flops_clauum(double n)
-    { return 2.5 * (0.25 * n * n * n);} // Complex flop is approx 2.5 real flops
+static double flops_zlauum(double n)
+    { return 6.*fmuls_lauum(n) + 2.*fadds_lauum(n); }
 
-static double  flops_slauum(double n)
-    { return 0.25 * n * n * n;}
+static double flops_clauum(double n)
+    { return 6.*fmuls_lauum(n) + 2.*fadds_lauum(n); }
+
+static double flops_dlauum(double n)
+    { return    fmuls_lauum(n) +    fadds_lauum(n); }
+
+static double flops_slauum(double n)
+    { return    fmuls_lauum(n) +    fadds_lauum(n); }
 
 //------------------------------------------------------------ lange
 static double fmuls_lange(double m, double n, plasma_enum_t norm)
