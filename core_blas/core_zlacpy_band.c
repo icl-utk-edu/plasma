@@ -57,8 +57,6 @@ void core_zlacpy_lapack2tile_band(plasma_enum_t uplo,
                                         plasma_complex64_t *B, int ldb)
 {
     int i, j;
-    plasma_complex64_t zzero = 0.0;
-
     int j_start, j_end;
     if (uplo == PlasmaGeneral) {
         j_start = 0; // pivot back and could fill in
@@ -75,7 +73,7 @@ void core_zlacpy_lapack2tile_band(plasma_enum_t uplo,
 
     for (j = 0; j < j_start; j++) {
         for (i = 0; i < m; i++) {
-            B[i + j*ldb] = zzero;
+            B[i + j*ldb] = 0.0;
         }
     }
     for (j = j_start; j < j_end; j++) {
@@ -96,18 +94,18 @@ void core_zlacpy_lapack2tile_band(plasma_enum_t uplo,
         }
 
         for (i = 0; i < i_start; i++) {
-            B[i + j*ldb] = zzero;
+            B[i + j*ldb] = 0.0;
         }
         for (i = i_start; i < i_end; i++) {
             B[i + j*ldb] = A[i + j*lda];
         }
         for (i = i_end; i < m; i++) {
-            B[i + j*ldb] = zzero;
+            B[i + j*ldb] = 0.0;
         }
     }
     for (j = j_end; j < n; j++) {
         for (i = 0; i < m; i++) {
-            B[i + j*ldb] = zzero;
+            B[i + j*ldb] = 0.0;
         }
     }
 }

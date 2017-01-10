@@ -167,7 +167,6 @@ void test_ztrtri(param_value_t param[], char *info)
     // ||B - A|| / (||A||)
     //================================================================
     if (test) {
-        plasma_complex64_t zone  =  1.0;
         plasma_complex64_t zmone = -1.0;
         double work[1];
 

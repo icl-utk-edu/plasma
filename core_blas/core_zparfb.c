@@ -222,7 +222,7 @@ int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
         return PlasmaSuccess;
 
     plasma_complex64_t zone  =  1.0;
-    plasma_complex64_t mzone = -1.0;
+    plasma_complex64_t zmone = -1.0;
 
     if (direct == PlasmaForward) {
         //=============================
@@ -250,7 +250,7 @@ int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
 
             // A1 = A1 - W
             for (int j = 0; j < n1; j++) {
-                cblas_zaxpy(k, CBLAS_SADDR(mzone),
+                cblas_zaxpy(k, CBLAS_SADDR(zmone),
                             &work[ldwork*j], 1,
                             &A1[lda1*j], 1);
             }
@@ -288,7 +288,7 @@ int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
 
             // A1 = A1 - W
             for (int j = 0; j < k; j++) {
-                cblas_zaxpy(m1, CBLAS_SADDR(mzone),
+                cblas_zaxpy(m1, CBLAS_SADDR(zmone),
                             &work[ldwork*j], 1,
                             &A1[lda1*j], 1);
             }

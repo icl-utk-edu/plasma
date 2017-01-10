@@ -86,10 +86,6 @@ void test_zgbsv(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    plasma_complex64_t zzero =  0.0;
-    plasma_complex64_t zone  =  1.0;
-    plasma_complex64_t zmone = -1.0;
-
     int n    = param[PARAM_N].i;
     int kl   = param[PARAM_KL].i;
     int ku   = param[PARAM_KU].i;
@@ -138,10 +134,10 @@ void test_zgbsv(param_value_t param[], char *info)
     assert(retval == 0);
     // zero out elements outside the band
     for (int i = 0; i < n; i++) {
-        for (int j = i+ku+1; j < n; j++) A[i + j*lda] = zzero;
+        for (int j = i+ku+1; j < n; j++) A[i + j*lda] = 0.0;
     }
     for (int j = 0; j < n; j++) {
-        for (int i = j+kl+1; i < n; i++) A[i + j*lda] = zzero;
+        for (int i = j+kl+1; i < n; i++) A[i + j*lda] = 0.0;
     }
 
     // save A for test
@@ -167,7 +163,7 @@ void test_zgbsv(param_value_t param[], char *info)
     for (int j = 0; j < n; j++) {
         int i_kl = imax(0,   j-ku);
         int i_ku = imin(n-1, j+kl);
-        for (int i = 0; i < ldab; i++) AB[i + j*ldab] = zzero;
+        for (int i = 0; i < ldab; i++) AB[i + j*ldab] = 0.0;
         for (int i = i_kl; i <= i_ku; i++) AB[kl + i-(j-ku) + j*ldab] = A[i + j*lda];
     }
 
@@ -188,6 +184,8 @@ void test_zgbsv(param_value_t param[], char *info)
     //================================================================
     if (test) {
         // compute residual vector
+        plasma_complex64_t zone  =  1.0;
+        plasma_complex64_t zmone = -1.0;
         cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, nrhs, n,
                     CBLAS_SADDR(zmone), Aref, lda,
                                         X, ldx,

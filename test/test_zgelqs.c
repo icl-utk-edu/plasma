@@ -188,11 +188,11 @@ void test_zgelqs(param_value_t param[], char *info)
 
         // compute residual and store it in B = A*X - B
         plasma_complex64_t zone  =  1.0;
-        plasma_complex64_t mzone = -1.0;
+        plasma_complex64_t zmone = -1.0;
         plasma_complex64_t zzero =  0.0;
         cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, nrhs, n,
                     CBLAS_SADDR(zone), Aref, lda, B, ldb,
-                    CBLAS_SADDR(mzone), Bref, ldb);
+                    CBLAS_SADDR(zmone), Bref, ldb);
 
         // Compute B = A^H * (A*X - B)
         cblas_zgemm(CblasColMajor, CblasConjTrans, CblasNoTrans, n, nrhs, m,

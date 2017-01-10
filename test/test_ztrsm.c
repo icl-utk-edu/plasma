@@ -216,6 +216,10 @@ void test_ztrsm(param_value_t param[], char *info)
         // LAPACKE_[ds]lantr_work has a bug (returns 0)
         // in MKL <= 11.3.3 (at least). Fixed in LAPACK 3.6.1.
         // For now, call LAPACK directly.
+        // LAPACK_zlantr is a macro for correct name mangling (e.g.
+        // adding _ at the end) of the Fortran symbol.
+        // The macro is either defined in lapacke.h, or in the file
+        // core_lapack_z.h for the use with MKL.
         char normc = 'F';
         char uploc = lapack_const(uplo);
         char diagc = lapack_const(diag);

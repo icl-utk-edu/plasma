@@ -119,12 +119,10 @@ void test_zgetri_aux(param_value_t param[], char *info)
         LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'F', n, n, A, lda, L, n);
         LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'F', n, n, A, lda, U, n);
 
-        plasma_complex64_t zone  = 1.0;
-        plasma_complex64_t zzero = 0.0;
         for (int j = 0; j < n; j++) {
-            L[j + j*n] = zone;
-            for (int i = 0; i < j; i++) L[i + j*n] = zzero;
-            for (int i = j+1; i < n; i++) U[i + j*n] = zzero;
+            L[j + j*n] = 1.0;
+            for (int i = 0; i < j; i++) L[i + j*n] = 0.0;
+            for (int i = j+1; i < n; i++) U[i + j*n] = 0.0;
         }
     }
 

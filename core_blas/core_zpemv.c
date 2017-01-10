@@ -117,8 +117,6 @@ int core_zpemv(plasma_enum_t trans, int storev,
                plasma_complex64_t *Y, int incy,
                plasma_complex64_t *work)
 {
-    static plasma_complex64_t zzero = 0.0;
-
     // Check input arguments.
     if ((trans != PlasmaNoTrans) &&
         (trans != PlasmaTrans)   &&
@@ -163,7 +161,7 @@ int core_zpemv(plasma_enum_t trans, int storev,
     // quick return
     if ((m == 0) || (n == 0))
         return PlasmaSuccess;
-    if ((alpha == zzero) && (beta == zzero))
+    if ((alpha == 0.0) && (beta == 0.0))
         return PlasmaSuccess;
 
     // If l < 2, there is no triangular part.
@@ -212,7 +210,7 @@ int core_zpemv(plasma_enum_t trans, int storev,
                 else {
 
                     // y_1 = y_1 + alpha * w
-                    if (beta == zzero) {
+                    if (beta == 0.0) {
                         cblas_zscal(l, CBLAS_SADDR(alpha), work, 1);
                         cblas_zcopy(l, work, 1, Y, incy);
                     }
@@ -264,7 +262,7 @@ int core_zpemv(plasma_enum_t trans, int storev,
                 }
                 else {
                     // y_1 = y_1 + alpha * w
-                    if (beta == zzero) {
+                    if (beta == 0.0) {
                         cblas_zscal(l, CBLAS_SADDR(alpha), work, 1);
                         cblas_zcopy(l, work, 1, Y, incy);
                     }

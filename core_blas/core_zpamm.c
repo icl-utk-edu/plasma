@@ -453,7 +453,7 @@ static inline int core_zpamm_a2(
     // A2 = A2 + op(V) * W  or  A2 = A2 + W * op(V)
 
     plasma_complex64_t zone  =  1.0;
-    plasma_complex64_t mzone = -1.0;
+    plasma_complex64_t zmone = -1.0;
 
     //=============
     // PlasmaLeft
@@ -473,7 +473,7 @@ static inline int core_zpamm_a2(
                 cblas_zgemm(CblasColMajor,
                             (CBLAS_TRANSPOSE)trans, CblasNoTrans,
                             m-l, n, l,
-                            CBLAS_SADDR(mzone), V,  ldv,
+                            CBLAS_SADDR(zmone), V,  ldv,
                                                 W,  ldw,
                             CBLAS_SADDR(zone),  A2, lda2);
             }
@@ -488,7 +488,7 @@ static inline int core_zpamm_a2(
 
             // A2_2 = A2_2 - W_1
             for (int j = 0; j < n; j++) {
-                cblas_zaxpy(l, CBLAS_SADDR(mzone),
+                cblas_zaxpy(l, CBLAS_SADDR(zmone),
                             &W[ldw*j], 1,
                             &A2[lda2*j+(m-l)], 1);
             }
@@ -498,7 +498,7 @@ static inline int core_zpamm_a2(
                 cblas_zgemm(CblasColMajor,
                             (CBLAS_TRANSPOSE)trans, CblasNoTrans,
                             m, n, (k-l),
-                            CBLAS_SADDR(mzone), &V[vi3], ldv,
+                            CBLAS_SADDR(zmone), &V[vi3], ldv,
                                                 &W[l],   ldw,
                             CBLAS_SADDR(zone),   A2,     lda2);
             }
@@ -517,7 +517,7 @@ static inline int core_zpamm_a2(
                 cblas_zgemm(CblasColMajor,
                             CblasNoTrans, (CBLAS_TRANSPOSE)trans,
                             m, n, k-l,
-                            CBLAS_SADDR(mzone), &W[ldw*l], ldw,
+                            CBLAS_SADDR(zmone), &W[ldw*l], ldw,
                                                 &V[vi3],   ldv,
                             CBLAS_SADDR(zone),   A2,       lda2);
             }
@@ -527,7 +527,7 @@ static inline int core_zpamm_a2(
                 cblas_zgemm(CblasColMajor,
                             CblasNoTrans, (CBLAS_TRANSPOSE)trans,
                             m, n-l, l,
-                            CBLAS_SADDR(mzone), W,  ldw,
+                            CBLAS_SADDR(zmone), W,  ldw,
                                                 V,  ldv,
                             CBLAS_SADDR(zone),  A2, lda2);
             }
@@ -538,7 +538,7 @@ static inline int core_zpamm_a2(
                             CblasRight, (CBLAS_UPLO)uplo,
                             (CBLAS_TRANSPOSE)trans, CblasNonUnit,
                             m, l,
-                            CBLAS_SADDR(mzone), &V[vi2], ldv,
+                            CBLAS_SADDR(zmone), &V[vi2], ldv,
                                                  W,      ldw);
 
                 for (int j = 0; j < l; j++) {

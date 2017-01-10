@@ -3,7 +3,7 @@
  * @file
  *
  *  PLASMA is a software package provided by:
- *  University of Tennessee,  US,
+ *  University of Tennessee, US,
  *  University of Manchester, UK.
  *
  * @precisions normal z -> s d c
@@ -85,7 +85,6 @@ void test_dzamax(param_value_t param[], char *info)
     int lda = imax(1, m + param[PARAM_PADA].i);
 
     int test = param[PARAM_TEST].c == 'y';
-    double eps = LAPACKE_dlamch('E');
 
     //================================================================
     // Set tuning parameters.
@@ -143,8 +142,7 @@ void test_dzamax(param_value_t param[], char *info)
         }      
 
         // Calculate difference.
-        double mone = -1.0;
-        cblas_daxpy(size, mone, values, 1, valref, 1);
+        cblas_daxpy(size, -1.0, values, 1, valref, 1);
 
         // Set error to maximum difference.
         double error = valref[cblas_idamax(size, valref, 1)];

@@ -2,14 +2,14 @@
  *
  * @file
  *
- *  PLASMA header.
- *  PLASMA is a software package provided by Univ. of Tennessee,
- *  Univ. of Manchester, Univ. of California Berkeley and
- *  Univ. of Colorado Denver.
+ *  PLASMA is a software package provided by:
+ *  University of Tennessee, US,
+ *  University of Manchester, UK.
  *
  * @precisions normal z -> s d c
  *
  **/
+
 #ifndef ICL_CORE_LAPACK_Z_H
 #define ICL_CORE_LAPACK_Z_H
 

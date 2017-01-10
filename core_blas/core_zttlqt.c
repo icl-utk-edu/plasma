@@ -139,12 +139,9 @@ int core_zttlqt(int m, int n, int ib,
     if ((m == 0) || (n == 0) || (ib == 0))
         return PlasmaSuccess;
 
-    static plasma_complex64_t zone  = 1.0;
-    static plasma_complex64_t zzero = 0.0;
-
     // TODO: Need to check why some cases require this to avoid
     // uninitialized values
-    //core_zlaset(PlasmaGeneral, ib, m, zzero, zzero, T, ldt);
+    //core_zlaset(PlasmaGeneral, ib, m, 0.0, 0.0, T, ldt);
 
     for (int ii = 0; ii < m; ii += ib) {
         int sb = imin(m-ii, ib);
@@ -169,6 +166,7 @@ int core_zttlqt(int m, int n, int ib,
                     &A1[lda1*j+(j+1)], 1,
                     work, 1);
 
+                plasma_complex64_t zone  = 1.0;
                 cblas_zgemv(
                     CblasColMajor, (CBLAS_TRANSPOSE)PlasmaNoTrans,
                     mi, ni,
@@ -198,7 +196,7 @@ int core_zttlqt(int m, int n, int ib,
                         i, imin(j, n), l,
                         alpha, &A2[ii], lda2,
                         &A2[j], lda2,
-                        zzero, &T[ldt*j], 1,
+                        0.0, &T[ldt*j], 1,
                         work);
 
                 // T(0:i-1, j) = T(0:i-1, ii:j-1) * T(0:i-1, j)
