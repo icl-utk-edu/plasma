@@ -3,7 +3,7 @@
  * @file
  *
  *  PLASMA is a software package provided by:
- *  University of Tennessee,  US,
+ *  University of Tennessee, US,
  *  University of Manchester, UK.
  *
  * @precisions normal z -> s d c
