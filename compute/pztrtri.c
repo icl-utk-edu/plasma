@@ -54,7 +54,7 @@ void plasma_pztrtri(plasma_enum_t uplo, plasma_enum_t diag,
                 int mvam = plasma_tile_mview(A, m);
                 int ldam = plasma_tile_mmain(A, m);
                 for (int n = 0; n < k; n++) {
-                    int nvan = plasma_tile_nview(A, k);
+                    int nvan = plasma_tile_nview(A, n);
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaNoTrans,
                         mvam, nvan, imin(nvak, mvak),

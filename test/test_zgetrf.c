@@ -157,7 +157,7 @@ void test_zgetrf(param_value_t param[], char *info)
             double error = LAPACKE_zlange_work(
                 LAPACK_COL_MAJOR, 'F', m, n, A, lda, work);
 
-            if (Anorm != 0)
+            if (Anorm != 0.0)
                 error /= Anorm;
 
             param[PARAM_ERROR].d = error;

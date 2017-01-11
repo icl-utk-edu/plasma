@@ -16,6 +16,7 @@
 #include "plasma.h"
 
 #include <assert.h>
+#include <math.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -68,7 +69,7 @@ void test_ztrtri(param_value_t param[], char *info)
     // Return column values.
     snprintf(info, InfoLen,
              "%*c %*c %*d %*d %*d",
-             InfoSpacing, param[PARAM_SIDE].c,
+             InfoSpacing, param[PARAM_UPLO].c,
              InfoSpacing, param[PARAM_DIAG].c,
              InfoSpacing, param[PARAM_N].i,
              InfoSpacing, param[PARAM_PADA].i,
@@ -86,6 +87,7 @@ void test_ztrtri(param_value_t param[], char *info)
 
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
+    tol = tol * sqrt(n);
 
     //================================================================
     // Set tuning parameters.
@@ -96,7 +98,7 @@ void test_ztrtri(param_value_t param[], char *info)
     // Allocate and initialize arrays.
     //================================================================
     plasma_complex64_t *A =
-        (plasma_complex64_t*)malloc((size_t)lda*lda*sizeof(plasma_complex64_t));
+        (plasma_complex64_t*)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
     plasma_complex64_t *Aref;
@@ -117,24 +119,24 @@ void test_ztrtri(param_value_t param[], char *info)
     // than L or U, but in practice it seems okay.
     // See Higham, Accuracy and Stability of Numerical Algorithms, ch 8.)
     //=================================================================
-    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*lda, A);
+    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
 
-    LAPACKE_zgetrf(CblasColMajor, lda, lda, A, lda, ipiv);
+    LAPACKE_zgetrf(CblasColMajor, n, n, A, lda, ipiv);
 
     if (diag == PlasmaUnit && uplo == PlasmaUpper) {
         // U = L^T
-        for (int j = 0; j < lda; j++) {
+        for (int j = 0; j < n; j++) {
             for (int i = 0; i < j; i++) {
-                A(i,j) = A(j,i);
+                A(i, j) = A(j, i);
             }
         }
     }
     else if (diag == PlasmaNonUnit && uplo == PlasmaLower) {
         // L = U^T
-        for (int j = 0; j < lda; j++) {
+        for (int j = 0; j < n; j++) {
             for (int i = 0; i < j; i++) {
-                A(j,i) = A(i,j);
+                A(j, i) = A(i, j);
             }
         }
     }
@@ -176,15 +178,26 @@ void test_ztrtri(param_value_t param[], char *info)
             lapack_const(uplo), lapack_const(diag),
             n, Aref, lda);
 
-        double Anorm = LAPACKE_zlange_work(
-               LAPACK_COL_MAJOR, 'F', lda, lda, Aref, lda, work);
+        // LAPACKE_[ds]lantr_work has a bug (returns 0)
+        // in MKL <= 11.3.3 (at least). Fixed in LAPACK 3.6.1.
+        // For now, call LAPACK directly.
+        // LAPACK_zlantr is a macro for correct name mangling (e.g.
+        // adding _ at the end) of the Fortran symbol.
+        // The macro is either defined in lapacke.h, or in the file
+        // core_lapack_z.h for the use with MKL.
+        char normc = 'F';
+        char uploc = lapack_const(uplo);
+        char diagc = lapack_const(diag);
+        double Anorm = LAPACK_zlantr(&normc, &uploc, &diagc,
+                                     &n, &n, Aref, &lda, work);
 
-        // A -= Aref
+        // A <- A - Aref
         cblas_zaxpy((size_t)lda*n, CBLAS_SADDR(zmone), Aref, 1, A, 1);
 
-        double error = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', lda, n, A, lda, work);
-        if (Anorm != 0) {
+        char ndiagc = 'N'; // A-Aref cannot have a unit diagonal
+        double error = LAPACK_zlantr(&normc, &uploc, &ndiagc,
+                                     &n, &n, A, &lda, work);
+        if (Anorm != 0.0) {
             error /= Anorm;
         }
 
