@@ -92,19 +92,19 @@ void test_zpotri(param_value_t param[], char *info)
     // Allocate and initialize arrays.
     //================================================================
     plasma_complex64_t *A =
-        (plasma_complex64_t*)malloc((size_t)lda*lda*sizeof(plasma_complex64_t));
+        (plasma_complex64_t*)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
     plasma_complex64_t *Aref;
 
     int *ipiv;
-    ipiv = (int*)malloc((size_t)lda*sizeof(int));
+    ipiv = (int*)malloc((size_t)n*sizeof(int));
     assert(ipiv != NULL);
 
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
 
-    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*lda, A);
+    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
 
     //================================================================
@@ -148,21 +148,21 @@ void test_zpotri(param_value_t param[], char *info)
     //================================================================
     if (test) {
         plasma_complex64_t zmone = -1.0;
-        double work[1];
 
         // B = inv(A)
         LAPACKE_zpotri_work(CblasColMajor, lapack_const(uplo), n, Aref, lda);
 
-        double Anorm = LAPACKE_zlange_work(
-               LAPACK_COL_MAJOR, 'F', lda, lda, Aref, lda, work);
+        double work[1];
+        double Inorm = LAPACKE_zlanhe_work(
+               LAPACK_COL_MAJOR, 'F', lapack_const(uplo), n, Aref, lda, work);
 
         // A -= Aref
         cblas_zaxpy((size_t)lda*n, CBLAS_SADDR(zmone), Aref, 1, A, 1);
 
-        double error = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', lda, n, A, lda, work);
-        if (Anorm != 0)
-            error /= Anorm;
+        double error = LAPACKE_zlanhe_work(LAPACK_COL_MAJOR, 'F',
+                                           lapack_const(uplo), n, A, lda, work);
+        if (Inorm != 0.0)
+            error /= Inorm;
 
         param[PARAM_ERROR].d = error;
         param[PARAM_SUCCESS].i = error < tol;

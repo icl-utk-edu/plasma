@@ -92,13 +92,13 @@ void test_zlauum(param_value_t param[], char *info)
     // Allocate and initialize arrays.
     //================================================================
     plasma_complex64_t *A =
-        (plasma_complex64_t*)malloc((size_t)lda*lda*sizeof(plasma_complex64_t));
+        (plasma_complex64_t*)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
     plasma_complex64_t *Aref;
 
     int *ipiv;
-    ipiv = (int*)malloc((size_t)lda*sizeof(int));
+    ipiv = (int*)malloc((size_t)n*sizeof(int));
     assert(ipiv != NULL);
 
     int seed[] = {0, 0, 0, 1};
@@ -113,14 +113,14 @@ void test_zlauum(param_value_t param[], char *info)
     // than L or U, but in practice it seems okay.
     // See Higham, Accuracy and Stability of Numerical Algorithms, ch 8.)
     //=================================================================
-    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*lda, A);
+    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
 
-    LAPACKE_zgetrf(CblasColMajor, lda, lda, A, lda, ipiv);
+    LAPACKE_zgetrf(CblasColMajor, n, n, A, lda, ipiv);
 
     if (uplo == PlasmaLower) {
         // L = U^T
-        for (int j = 0; j < lda; j++) {
+        for (int j = 0; j < n; j++) {
             for (int i = 0; i < j; i++) {
                 A(j,i) = A(i,j);
             }
@@ -168,13 +168,13 @@ void test_zlauum(param_value_t param[], char *info)
             n, Aref, lda);
 
         double Anorm = LAPACKE_zlange_work(
-               LAPACK_COL_MAJOR, 'F', lda, lda, Aref, lda, work);
+               LAPACK_COL_MAJOR, 'F', n, n, Aref, lda, work);
 
         // A -= Aref
         cblas_zaxpy((size_t)lda*n, CBLAS_SADDR(zmone), Aref, 1, A, 1);
 
         double error = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', lda, n, A, lda, work);
+                           LAPACK_COL_MAJOR, 'F', n, n, A, lda, work);
         if (Anorm != 0)
             error /= Anorm;
 
