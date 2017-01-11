@@ -87,7 +87,6 @@ void test_ztrtri(param_value_t param[], char *info)
 
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
-    tol = tol * sqrt(n);
 
     //================================================================
     // Set tuning parameters.
@@ -172,12 +171,6 @@ void test_ztrtri(param_value_t param[], char *info)
         plasma_complex64_t zmone = -1.0;
         double work[1];
 
-        // B = inv(A)
-        LAPACKE_ztrtri_work(
-            CblasColMajor,
-            lapack_const(uplo), lapack_const(diag),
-            n, Aref, lda);
-
         // LAPACKE_[ds]lantr_work has a bug (returns 0)
         // in MKL <= 11.3.3 (at least). Fixed in LAPACK 3.6.1.
         // For now, call LAPACK directly.
@@ -191,15 +184,23 @@ void test_ztrtri(param_value_t param[], char *info)
         double Anorm = LAPACK_zlantr(&normc, &uploc, &diagc,
                                      &n, &n, Aref, &lda, work);
 
+        // B = inv(A)
+        LAPACKE_ztrtri_work(
+            CblasColMajor,
+            lapack_const(uplo), lapack_const(diag),
+            n, Aref, lda);
+
+        double Inorm = LAPACK_zlantr(&normc, &uploc, &diagc,
+                                     &n, &n, Aref, &lda, work);
+
         // A <- A - Aref
         cblas_zaxpy((size_t)lda*n, CBLAS_SADDR(zmone), Aref, 1, A, 1);
 
         char ndiagc = 'N'; // A-Aref cannot have a unit diagonal
         double error = LAPACK_zlantr(&normc, &uploc, &ndiagc,
                                      &n, &n, A, &lda, work);
-        if (Anorm != 0.0) {
-            error /= Anorm;
-        }
+        if (Anorm*Inorm != 0.0)
+            error /= (Anorm * Inorm);
 
         param[PARAM_ERROR].d = error;
         param[PARAM_SUCCESS].i = error < tol;
