@@ -1,6 +1,6 @@
 /**
  *
- * @File pzsymm.c
+ * @file
  *
  *  PLASMA is a software package provided by:
  *  University of Tennessee, US,

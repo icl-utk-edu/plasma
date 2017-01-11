@@ -145,7 +145,7 @@ License
 
     -- Innovative Computing Laboratory
     -- University of Tennessee
-    -- (C) Copyright 2008-2016
+    -- (C) Copyright 2008-2017
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
