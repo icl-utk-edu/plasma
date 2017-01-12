@@ -162,7 +162,8 @@ void test_zpbtrf(param_value_t param[], char *info)
     }
     plasma_complex64_t *ABref = NULL;
     if (test) {
-        ABref = (plasma_complex64_t*)malloc((size_t)ldab*n*sizeof(plasma_complex64_t));
+        ABref = (plasma_complex64_t*)malloc(
+            (size_t)ldab*n*sizeof(plasma_complex64_t));
         assert(ABref != NULL);
 
         memcpy(ABref, AB, (size_t)ldab*n*sizeof(plasma_complex64_t));
@@ -191,8 +192,8 @@ void test_zpbtrf(param_value_t param[], char *info)
             int ldb = imax(1, n + param[PARAM_PADB].i);
 
             // set up right-hand-side B
-            plasma_complex64_t *B = NULL;
-            B = (plasma_complex64_t*)malloc((size_t)ldb*nrhs*sizeof(plasma_complex64_t));
+            plasma_complex64_t *B = (plasma_complex64_t*)malloc(
+                (size_t)ldb*nrhs*sizeof(plasma_complex64_t));
             assert(B != NULL);
 
             retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*nrhs, B);
@@ -200,8 +201,8 @@ void test_zpbtrf(param_value_t param[], char *info)
 
             // copy B to X
             int ldx = ldb;
-            plasma_complex64_t *X = NULL;
-            X = (plasma_complex64_t*)malloc((size_t)ldx*nrhs*sizeof(plasma_complex64_t));
+            plasma_complex64_t *X = (plasma_complex64_t*)malloc(
+                (size_t)ldx*nrhs*sizeof(plasma_complex64_t));
             assert(X != NULL);
             LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'F', n, nrhs, B, ldb, X, ldx);
 
@@ -220,9 +221,12 @@ void test_zpbtrf(param_value_t param[], char *info)
             work = (double*)malloc((size_t)n*sizeof(double));
             assert(work != NULL);
 
-            double Anorm = LAPACKE_zlanhe_work(LAPACK_COL_MAJOR, 'F', uplo_, n, A, lda, work);
-            double Xnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', n, nrhs, X, ldb, work);
-            double Rnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', n, nrhs, B, ldb, work);
+            double Anorm = LAPACKE_zlanhe_work(
+                               LAPACK_COL_MAJOR, 'F', uplo_, n, A, lda, work);
+            double Xnorm = LAPACKE_zlange_work(
+                               LAPACK_COL_MAJOR, 'I', n, nrhs, X, ldb, work);
+            double Rnorm = LAPACKE_zlange_work(
+                               LAPACK_COL_MAJOR, 'I', n, nrhs, B, ldb, work);
             double residual = Rnorm/(n*Anorm*Xnorm);
 
             param[PARAM_ERROR].d = residual;
@@ -235,7 +239,7 @@ void test_zpbtrf(param_value_t param[], char *info)
         }
         else {
             int lapinfo = LAPACKE_zpbtrf(
-                              LAPACK_COL_MAJOR, lapack_const(uplo), 
+                              LAPACK_COL_MAJOR, lapack_const(uplo),
                               n, kd, ABref, ldab);
             if (plainfo == lapinfo) {
                 param[PARAM_ERROR].d = 0.0;
