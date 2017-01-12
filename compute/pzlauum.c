@@ -39,7 +39,7 @@ void plasma_pzlauum(plasma_enum_t uplo, plasma_desc_t A,
             int mvak = plasma_tile_mview(A, k);
             int nvak = plasma_tile_nview(A, k);
             int ldak = plasma_tile_mmain(A, k);
-            for(int n = 0; n < k; n++) {
+            for (int n = 0; n < k; n++) {
                 int mvan = plasma_tile_mview(A, n);
                 int nvan = plasma_tile_nview(A, n);
                 int ldan = plasma_tile_mmain(A, n);
@@ -97,7 +97,7 @@ void plasma_pzlauum(plasma_enum_t uplo, plasma_desc_t A,
                     1.0, A(m, m), ldam,
                     sequence, request);
 
-                for (int n = m+1; n < k; n++){
+                for (int n = m+1; n < k; n++) {
                     int nvan = plasma_tile_nview(A, n);
                     int ldan = plasma_tile_mmain(A, n);
                     core_omp_zgemm(

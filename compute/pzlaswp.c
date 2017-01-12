@@ -29,8 +29,10 @@ void plasma_pzlaswp(plasma_enum_t colrow,
 
     if (colrow == PlasmaRowwise) {
         for (int n = 0; n < A.nt; n++) {
-            plasma_complex64_t *a00 = A(0, n);
-            plasma_complex64_t *a10 = A(A.mt-1, n);
+            plasma_complex64_t *a00, *a10;
+
+            a00 = A(0, n);
+            a10 = A(A.mt-1, n);
 
             int ma00 = (A.mt-1)*A.mb;
             int na00 = plasma_tile_nmain(A, n);

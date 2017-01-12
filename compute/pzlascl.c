@@ -21,7 +21,7 @@
 /******************************************************************************/
 void plasma_pzlascl(plasma_enum_t uplo,
                     double cfrom, double cto,
-                    plasma_desc_t A, 
+                    plasma_desc_t A,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Return if failed sequence.

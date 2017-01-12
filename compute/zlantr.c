@@ -21,7 +21,7 @@
  *
  * @ingroup plasma_lantr
  *
- *  Returns the norm of a general matrix as
+ *  Returns the norm of a trapezoidal or triangular matrix as
  *
  *     zlange = ( max(abs(A(i,j))), NORM = PlasmaMaxNorm
  *              (
@@ -69,7 +69,8 @@
  *
  *******************************************************************************
  *
- * @return the specified norm of the general matrix A
+ * @retval double
+ *         The specified norm of the trapezoidal or triangular matrix A.
  *
  *******************************************************************************
  *

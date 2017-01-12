@@ -110,4 +110,4 @@ void core_omp_zsyssq_aux(int m, int n,
             *value = scl*sqrt(sum);
         }
     }
-} 
+}

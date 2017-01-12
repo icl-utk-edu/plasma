@@ -104,7 +104,8 @@ void test_zpotrs(param_value_t param[], char *info)
     assert(A != NULL);
 
     plasma_complex64_t *B =
-        (plasma_complex64_t*)malloc((size_t)ldb*nrhs*sizeof(plasma_complex64_t));
+        (plasma_complex64_t*)malloc((size_t)ldb*nrhs
+                                    *sizeof(plasma_complex64_t));
     assert(B != NULL);
 
     int seed[] = {0, 0, 0, 1};

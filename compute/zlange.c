@@ -61,7 +61,8 @@
  *
  *******************************************************************************
  *
- * @return the specified norm of the general matrix A
+ * @retval double
+ *         The specified norm of the general matrix A.
  *
  *******************************************************************************
  *
@@ -72,7 +73,7 @@
  *
  ******************************************************************************/
 double plasma_zlange(plasma_enum_t norm,
-					 int m, int n,
+                     int m, int n,
                      plasma_complex64_t *pA, int lda)
 {
     // Get PLASMA context.
@@ -260,7 +261,7 @@ void plasma_omp_zlange(plasma_enum_t norm, plasma_desc_t A,
 
     // quick return
     if (imin(A.m, A.n) == 0) {
-    	*value = 0.0;
+        *value = 0.0;
         return;
     }
 

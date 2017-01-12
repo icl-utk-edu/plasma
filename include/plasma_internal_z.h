@@ -115,7 +115,7 @@ void plasma_pzlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
 
 void plasma_pzlascl(plasma_enum_t uplo,
                     double cfrom, double cto,
-                    plasma_desc_t A, 
+                    plasma_desc_t A,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzlaset(plasma_enum_t uplo,

@@ -138,7 +138,7 @@ void test_zlauum(param_value_t param[], char *info)
             (size_t)lda*n*sizeof(plasma_complex64_t));
         assert(Aref != NULL);
 
-        memcpy(Aref,  A, (size_t)lda*n*sizeof(plasma_complex64_t));
+        memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
     }
 
     //================================================================

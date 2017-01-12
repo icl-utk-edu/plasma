@@ -66,7 +66,8 @@
  *
  *******************************************************************************
  *
- * @return the specified norm of the Hermitian matrix A
+ * @retval double
+ *         The specified norm of the Hermitian matrix A.
  *
  *******************************************************************************
  *
@@ -75,7 +76,7 @@
  *
  ******************************************************************************/
 double plasma_zlanhe(plasma_enum_t norm, plasma_enum_t uplo,
-					 int n,
+                     int n,
                      plasma_complex64_t *pA, int lda)
 {
     // Get PLASMA context.
@@ -269,7 +270,7 @@ void plasma_omp_zlanhe(plasma_enum_t norm, plasma_enum_t uplo, plasma_desc_t A,
 
     // quick return
     if (A.m == 0) {
-    	*value = 0.0;
+        *value = 0.0;
         return;
     }
 

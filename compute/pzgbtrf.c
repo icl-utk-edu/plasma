@@ -43,8 +43,10 @@ void plasma_pzgbtrf(plasma_desc_t A, int *ipiv,
         int ldak = plasma_tile_mmain_band(A, k, k);
 
         // panel
-        int *ipivk = &ipiv[k*A.mb];
-        plasma_complex64_t *a00 = A(k, k);
+        int *ipivk;
+        ipivk = &ipiv[k*A.mb];
+        plasma_complex64_t *a00;
+        a00 = A(k, k);
         int mak      = imin(A.m-k*A.mb, mvak+A.kl);
         int size_a00 = (A.gm-k*A.mb) * plasma_tile_nmain(A, k);
         int size_i   = imin(mvak, nvak);
@@ -69,8 +71,10 @@ void plasma_pzgbtrf(plasma_desc_t A, int *ipiv,
         // update
         // TODO: fills are not tracked, see the one in fork
         for (int n = k+1; n < imin(A.nt, k+A.kut); n++) {
-            plasma_complex64_t *a01 = A(k, n);
-            plasma_complex64_t *a11 = A(k+1, n);
+            plasma_complex64_t *a01, *a11;
+
+            a01 = A(k, n);
+            a11 = A(k+1, n);
 
             int nvan = plasma_tile_nview(A, n);
             int size_a01 = ldak*nvan;

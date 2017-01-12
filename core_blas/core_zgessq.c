@@ -70,4 +70,4 @@ void core_omp_zgessq_aux(int n,
             *value = scl*sqrt(sum);
         }
     }
-} 
+}

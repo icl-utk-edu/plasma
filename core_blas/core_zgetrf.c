@@ -232,7 +232,7 @@ int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
                             kb,
                             CBLAS_SADDR(zmone), &ai[k*ldai], ldai,
                                                 &a0[k+(k+kb)*lda0], lda0,
-                            CBLAS_SADDR(zone),  &ai[(k+kb)*ldai], ldai);           
+                            CBLAS_SADDR(zone),  &ai[(k+kb)*ldai], ldai);
             }
         }
         plasma_barrier_wait(barrier);
