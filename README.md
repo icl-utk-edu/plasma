@@ -88,6 +88,8 @@ Feel free to use the following publications to reference PLASMA:
 Funding
 =======
 
+Currently, PLASMA is being developed in collaboration with the [www.nlafet.eu](NLAFET) European Commission funded [https://ec.europa.eu/programmes/horizon2020/](Horizon 2020) project.
+
 Primary funding for PLASMA was provided by NSF grants:
 
 * [CPA-ACR-T: PLASMA: Parallel Linear Algebra Software for Multiprocessor Architectures](http://www.nsf.gov/awardsearch/showAward?AWD_ID=0811642),
