@@ -144,6 +144,7 @@ void test_zgbsv(param_value_t param[], char *info)
     for (int j = 0; j < n; j++) {
         for (int i = j+kl+1; i < n; i++) A[i + j*lda] = 0.0;
     }
+
     int zerocol = param[PARAM_ZEROCOL].i;
     if (zerocol >= 0 && zerocol < n)
         memset(&A[zerocol*lda], 0, n*sizeof(plasma_complex64_t));
