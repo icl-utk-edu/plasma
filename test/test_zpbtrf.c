@@ -222,11 +222,11 @@ void test_zpbtrf(param_value_t param[], char *info)
             assert(work != NULL);
 
             double Anorm = LAPACKE_zlanhe_work(
-                               LAPACK_COL_MAJOR, 'F', uplo_, n, A, lda, work);
+                LAPACK_COL_MAJOR, 'F', uplo_, n, A, lda, work);
             double Xnorm = LAPACKE_zlange_work(
-                               LAPACK_COL_MAJOR, 'I', n, nrhs, X, ldb, work);
+                LAPACK_COL_MAJOR, 'I', n, nrhs, X, ldb, work);
             double Rnorm = LAPACKE_zlange_work(
-                               LAPACK_COL_MAJOR, 'I', n, nrhs, B, ldb, work);
+                LAPACK_COL_MAJOR, 'I', n, nrhs, B, ldb, work);
             double residual = Rnorm/(n*Anorm*Xnorm);
 
             param[PARAM_ERROR].d = residual;
