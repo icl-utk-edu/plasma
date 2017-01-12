@@ -90,7 +90,7 @@ Funding
 
 Currently, PLASMA is being developed in collaboration with:
 
-* the [NLAFET](http://www.nlafet.eu) European Commission funded [Horizon 2020](https://ec.europa.eu/programmes/horizon2020/) project.
+* the [NLAFET](http://www.nlafet.eu) project, which is a European Commission funded [Horizon 2020](https://ec.europa.eu/programmes/horizon2020/) effort.
 
 Primary funding for PLASMA was provided by NSF grants:
 
@@ -104,7 +104,6 @@ Work on PLASMA was also partially funded by NSF grants:
 
 Additional funding was provided by the following companies:
 
-* Microsoft Corporation,
 * Intel Corporation,
 * Advanced Micro Devices,
 * The MathWorks,
