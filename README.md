@@ -88,7 +88,7 @@ Feel free to use the following publications to reference PLASMA:
 Funding
 =======
 
-Currently, PLASMA is being developed in collaboration with the [NLAFET](www.nlafet.eu) European Commission funded [Horizon 2020](https://ec.europa.eu/programmes/horizon2020/) project.
+Currently, PLASMA is being developed in collaboration with the [NLAFET](http://www.nlafet.eu) European Commission funded [Horizon 2020](https://ec.europa.eu/programmes/horizon2020/) project.
 
 Primary funding for PLASMA was provided by NSF grants:
 
