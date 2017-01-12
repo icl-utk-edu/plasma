@@ -91,6 +91,7 @@ blas_mixed = [
     ('dlansy',               'zlanhe'              ),
     ('dlansy',               'zlansy'              ),
     ('dlarnv',               'zlarnv'              ),
+    ('dlaset',               'zlaset'              ),
     ('dlaswp',               'zlaswp'              ),
     ('dlat2s',               'zlat2c'              ),
     ('dnrm2',                'dznrm2'              ),

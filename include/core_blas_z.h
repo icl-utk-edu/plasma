@@ -521,6 +521,7 @@ void core_omp_ztrssq(plasma_enum_t uplo, plasma_enum_t diag,
 void core_omp_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
                      int n,
                      plasma_complex64_t *A, int lda,
+                     int iinfo,
                      plasma_sequence_t *sequence, plasma_request_t *request);
 
 void core_omp_ztslqt(int m, int n, int ib,

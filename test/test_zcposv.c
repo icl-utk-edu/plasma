@@ -55,29 +55,32 @@ void test_zcposv(param_value_t param[], char *info)
             print_usage(PARAM_PADA);
             print_usage(PARAM_PADB);
             print_usage(PARAM_NB);
+            print_usage(PARAM_ZEROCOL);
         }
         else {
             // Return column labels
             snprintf(info, InfoLen,
-                "%*s %*s %*s %*s %*s %*s",
+                "%*s %*s %*s %*s %*s %*s %*s",
                 InfoSpacing, "UpLo",
                 InfoSpacing, "n",
                 InfoSpacing, "nrhs",
                 InfoSpacing, "PadA",
                 InfoSpacing, "PadB",
-                InfoSpacing, "nb");
+                InfoSpacing, "nb",
+                InfoSpacing, "ZeroCol");
         }
         return;
     }
     // Return column values
     snprintf(info, InfoLen,
-        "%*c %*d %*d %*d %*d %*d",
+        "%*c %*d %*d %*d %*d %*d %*d",
         InfoSpacing, param[PARAM_UPLO].c,
         InfoSpacing, param[PARAM_N].i,
         InfoSpacing, param[PARAM_NRHS].i,
         InfoSpacing, param[PARAM_PADA].i,
         InfoSpacing, param[PARAM_PADB].i,
-        InfoSpacing, param[PARAM_NB].i);
+        InfoSpacing, param[PARAM_NB].i,
+        InfoSpacing, param[PARAM_ZEROCOL].i);
 
     //================================================================
     // Set parameters
@@ -102,16 +105,16 @@ void test_zcposv(param_value_t param[], char *info)
     //================================================================
     // Allocate and initialize arrays
     //================================================================
-    plasma_complex64_t *A =
-        (plasma_complex64_t *)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
+    plasma_complex64_t *A = (plasma_complex64_t *)malloc(
+    (size_t)lda*n*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
-    plasma_complex64_t *B =
-        (plasma_complex64_t *)malloc((size_t)ldb*nrhs*sizeof(plasma_complex64_t));
+    plasma_complex64_t *B = (plasma_complex64_t *)malloc(
+        (size_t)ldb*nrhs*sizeof(plasma_complex64_t));
     assert(B != NULL);
 
-    plasma_complex64_t *X =
-        (plasma_complex64_t *)malloc((size_t)ldx*nrhs*sizeof(plasma_complex64_t));
+    plasma_complex64_t *X = (plasma_complex64_t *)malloc(
+    (size_t)ldx*nrhs*sizeof(plasma_complex64_t));
     assert(X != NULL);
 
     // Initialize A for random Hermitian (Symmetric) matrix
@@ -127,13 +130,22 @@ void test_zcposv(param_value_t param[], char *info)
         }
     }
 
+    int zerocol = param[PARAM_ZEROCOL].i;
+    if (zerocol >= 0 && zerocol < n) {
+        LAPACKE_zlaset_work(
+            LAPACK_COL_MAJOR, 'F', n, 1, 0.0, 0.0, &A(0, zerocol), lda);
+        LAPACKE_zlaset_work(
+            LAPACK_COL_MAJOR, 'F', 1, n, 0.0, 0.0, &A(zerocol, 0), lda);
+    }
+
     // Initialize B
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*nrhs, B);
     assert(retval == 0);
 
     plasma_complex64_t *Aref = NULL;
     if (test) {
-        Aref = (plasma_complex64_t *)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
+        Aref = (plasma_complex64_t *)malloc(
+            (size_t)lda*n*sizeof(plasma_complex64_t));
         assert(Aref != NULL);
         memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
     }
@@ -142,16 +154,12 @@ void test_zcposv(param_value_t param[], char *info)
     // Run and time PLASMA
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    retval = plasma_zcposv(uplo, n, nrhs, A, lda, B, ldb, X, ldx, &ITER);
+    int plainfo = plasma_zcposv(uplo, n, nrhs, A, lda, B, ldb, X, ldx, &ITER);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
     double flops = flops_zpotrf(n) + flops_zpotrs(n, nrhs);
     param[PARAM_TIME].d = time;
     param[PARAM_GFLOPS].d = flops / time / 1e9;
-    if (retval != PlasmaSuccess) {
-        plasma_error("plasma_zcposv() failed");
-        return;
-    }
 
     //================================================================
     // Test results by checking the residual
@@ -162,37 +170,53 @@ void test_zcposv(param_value_t param[], char *info)
     //
     //================================================================
     if (test) {
-        plasma_complex64_t alpha =  1.0;
-        plasma_complex64_t beta  = -1.0;
+        if (plainfo == 0) {
+            plasma_complex64_t alpha =  1.0;
+            plasma_complex64_t beta  = -1.0;
 
-        lapack_int mtrxLayout = LAPACK_COL_MAJOR;
-        lapack_int mtrxNorm   = 'I';
+            lapack_int mtrxLayout = LAPACK_COL_MAJOR;
+            lapack_int mtrxNorm   = 'I';
 
-        double *work = (double *)malloc(n*sizeof(double));
-        assert(work != NULL);
+            double *work = (double *)malloc(n*sizeof(double));
+            assert(work != NULL);
 
-        // Calculate infinite norms of matrices A_ref and X
-        double Anorm = LAPACKE_zlange_work(mtrxLayout, mtrxNorm, n, n,    Aref,
-                                           lda, work);
-        double Xnorm = LAPACKE_zlange_work(mtrxLayout, mtrxNorm, n, nrhs, X,
-                                           ldx, work);
+            // Calculate infinite norms of matrices A_ref and X
+            double Anorm = LAPACKE_zlange_work(mtrxLayout, mtrxNorm, n, n, Aref,
+                                               lda, work);
+            double Xnorm = LAPACKE_zlange_work(mtrxLayout, mtrxNorm, n, nrhs, X,
+                                               ldx, work);
 
-        // Calculate residual R = A*X-B, store result in B
-        cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, nrhs, n,
-                    CBLAS_SADDR(alpha), Aref, lda,
-                                        X,    ldx,
-                    CBLAS_SADDR(beta),  B,    ldb);
+            // Calculate residual R = A*X-B, store result in B
+            cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, nrhs, n,
+                        CBLAS_SADDR(alpha), Aref, lda,
+                                            X,    ldx,
+                        CBLAS_SADDR(beta),  B,    ldb);
 
-        // Calculate infinite norm of residual matrix R
-        double Rnorm = LAPACKE_zlange_work(mtrxLayout, mtrxNorm, n, nrhs, B,
-                                           ldb, work);
-        // Calculate relative error
-        double residual = Rnorm / ( n*Anorm*Xnorm );
+            // Calculate infinite norm of residual matrix R
+            double Rnorm = LAPACKE_zlange_work(mtrxLayout, mtrxNorm, n, nrhs, B,
+                                               ldb, work);
+            // Calculate relative error
+            double residual = Rnorm / ( n*Anorm*Xnorm );
 
-        param[PARAM_ERROR].d   = residual;
-        param[PARAM_SUCCESS].i = residual < tol;
+            param[PARAM_ERROR].d   = residual;
+            param[PARAM_SUCCESS].i = residual < tol;
 
-        free(Aref); free(work);
+            free(work);
+        }
+        else {
+            int lapinfo = LAPACKE_zcposv(
+                              LAPACK_COL_MAJOR, lapack_const(uplo),
+                              n, nrhs, A, lda, B, ldb, X, ldx, &ITER);
+            if (plainfo == lapinfo) {
+                param[PARAM_ERROR].d = 0.0;
+                param[PARAM_SUCCESS].i = 1;
+            }
+            else {
+                param[PARAM_ERROR].d = INFINITY;
+                param[PARAM_SUCCESS].i = 0;
+            }
+        }
+        free(Aref);
     }
 
     //================================================================
