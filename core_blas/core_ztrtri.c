@@ -69,16 +69,16 @@ int core_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
 void core_omp_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
                      int n,
                      plasma_complex64_t *A, int lda,
+                     int iinfo,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
     #pragma omp task depend(inout:A[0:lda*n])
     {
         if (sequence->status == PlasmaSuccess) {
-            int info = core_ztrtri(uplo, diag, n, A, lda);
-            if (info != PlasmaSuccess) {
-                coreblas_error("core_ztrtri() failed");
-                plasma_request_fail(sequence, request, PlasmaErrorInternal);
-            }
+            int info = core_ztrtri(uplo, diag,
+                                   n, A, lda);
+            if (info != 0)
+                plasma_request_fail(sequence, request, iinfo+info);
         }
     }
 }
