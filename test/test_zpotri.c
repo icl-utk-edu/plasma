@@ -16,6 +16,7 @@
 #include "plasma.h"
 
 #include <assert.h>
+#include <math.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,25 +52,28 @@ void test_zpotri(param_value_t param[], char *info)
             print_usage(PARAM_N);
             print_usage(PARAM_PADA);
             print_usage(PARAM_NB);
+            print_usage(PARAM_ZEROCOL);
         }
         else {
             // Return column labels.
             snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s",
+                     "%*s %*s %*s %*s %*s",
                      InfoSpacing, "uplo",
                      InfoSpacing, "N",
                      InfoSpacing, "PadA",
-                     InfoSpacing, "NB");
+                     InfoSpacing, "NB",
+                     InfoSpacing, "ZeroCol");
         }
         return;
     }
     // Return column values.
     snprintf(info, InfoLen,
-             "%*c %*d %*d %*d",
+             "%*c %*d %*d %*d %*d",
              InfoSpacing, param[PARAM_UPLO].c,
              InfoSpacing, param[PARAM_N].i,
              InfoSpacing, param[PARAM_PADA].i,
-             InfoSpacing, param[PARAM_NB].i);
+             InfoSpacing, param[PARAM_NB].i,
+             InfoSpacing, param[PARAM_ZEROCOL].i);
 
     //================================================================
     // Set parameters.
@@ -123,6 +127,10 @@ void test_zpotri(param_value_t param[], char *info)
     // Take Cholesky decomposition
     LAPACKE_zpotrf(LAPACK_COL_MAJOR, lapack_const(uplo), n, A, lda);
 
+    int zerocol = param[PARAM_ZEROCOL].i;
+    if (zerocol >= 0 && zerocol < n)
+        memset(&A[zerocol*lda], 0, n*sizeof(plasma_complex64_t));
+
     if (test) {
         Aref = (plasma_complex64_t*)malloc(
             (size_t)lda*n*sizeof(plasma_complex64_t));
@@ -135,7 +143,7 @@ void test_zpotri(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    plasma_zpotri(uplo, n, A, lda);
+    int plainfo = plasma_zpotri(uplo, n, A, lda);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
@@ -150,22 +158,37 @@ void test_zpotri(param_value_t param[], char *info)
         plasma_complex64_t zmone = -1.0;
 
         // B = inv(A)
-        LAPACKE_zpotri_work(CblasColMajor, lapack_const(uplo), n, Aref, lda);
+        int lapinfo = LAPACKE_zpotri_work(
+            CblasColMajor,
+            lapack_const(uplo), n,
+            Aref, lda);
 
-        double work[1];
-        double Inorm = LAPACKE_zlanhe_work(
-               LAPACK_COL_MAJOR, 'F', lapack_const(uplo), n, Aref, lda, work);
+        if (lapinfo == 0) {
+            double work[1];
+            double Inorm = LAPACKE_zlanhe_work(
+                   LAPACK_COL_MAJOR, 'F', lapack_const(uplo), n, Aref, lda, work);
 
-        // A -= Aref
-        cblas_zaxpy((size_t)lda*n, CBLAS_SADDR(zmone), Aref, 1, A, 1);
+            // A -= Aref
+            cblas_zaxpy((size_t)lda*n, CBLAS_SADDR(zmone), Aref, 1, A, 1);
 
-        double error = LAPACKE_zlanhe_work(LAPACK_COL_MAJOR, 'F',
-                                           lapack_const(uplo), n, A, lda, work);
-        if (Inorm != 0.0)
-            error /= Inorm;
+            double error = LAPACKE_zlanhe_work(LAPACK_COL_MAJOR, 'F',
+                                               lapack_const(uplo), n, A, lda, work);
+            if (Inorm != 0.0)
+                error /= Inorm;
 
-        param[PARAM_ERROR].d = error;
-        param[PARAM_SUCCESS].i = error < tol;
+            param[PARAM_ERROR].d = error;
+            param[PARAM_SUCCESS].i = error < tol;
+        }
+        else {
+            if (plainfo == lapinfo) {
+                param[PARAM_ERROR].d = 0.0;
+                param[PARAM_SUCCESS].i = 1;            
+            }
+            else {
+                param[PARAM_ERROR].d = INFINITY;
+                param[PARAM_SUCCESS].i = 0;
+            }
+        }
     }
 
     //================================================================

@@ -77,6 +77,7 @@ void plasma_pztrtri(plasma_enum_t uplo, plasma_enum_t diag,
                 uplo, diag,
                 nvak,
                 A(k, k), ldak,
+                A.nb*k,
                 sequence, request);
         }
     }
@@ -121,6 +122,7 @@ void plasma_pztrtri(plasma_enum_t uplo, plasma_enum_t diag,
                 uplo, diag,
                 mvak,
                 A(k, k), ldak,
+                A.nb*k,
                 sequence, request);
         }
     }
