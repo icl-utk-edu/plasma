@@ -16,6 +16,7 @@
 #include "plasma.h"
 
 #include <assert.h>
+#include <math.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,23 +51,26 @@ void test_zgetri(param_value_t param[], char *info)
             print_usage(PARAM_N);
             print_usage(PARAM_PADA);
             print_usage(PARAM_NB);
+            print_usage(PARAM_ZEROCOL);
         }
         else {
             // Return column labels.
             snprintf(info, InfoLen,
-                     "%*s %*s %*s",
+                     "%*s %*s %*s %*s",
                      InfoSpacing, "N",
                      InfoSpacing, "PadA",
-                     InfoSpacing, "NB");
+                     InfoSpacing, "NB",
+                     InfoSpacing, "ZeroCol");
         }
         return;
     }
     // Return column values.
     snprintf(info, InfoLen,
-             "%*d %*d %*d",
+             "%*d %*d %*d %*d",
              InfoSpacing, param[PARAM_N].i,
              InfoSpacing, param[PARAM_PADA].i,
-             InfoSpacing, param[PARAM_NB].i);
+             InfoSpacing, param[PARAM_NB].i,
+             InfoSpacing, param[PARAM_ZEROCOL].i);
 
     //================================================================
     // Set parameters.
@@ -101,6 +105,10 @@ void test_zgetri(param_value_t param[], char *info)
     // Take Cholesky decomposition
     LAPACKE_zgetrf(LAPACK_COL_MAJOR, n, n, A, lda, ipiv);
 
+    int zerocol = param[PARAM_ZEROCOL].i;
+    if (zerocol >= 0 && zerocol < n)
+        memset(&A[zerocol*lda], 0, n*sizeof(plasma_complex64_t));
+
     plasma_complex64_t *Aref;
     if (test) {
         Aref = (plasma_complex64_t*)malloc(
@@ -114,7 +122,7 @@ void test_zgetri(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    plasma_zgetri(n, A, lda, ipiv);
+    int plainfo = plasma_zgetri(n, A, lda, ipiv);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
@@ -138,23 +146,35 @@ void test_zgetri(param_value_t param[], char *info)
             (plasma_complex64_t*)malloc(lwork * sizeof(plasma_complex64_t));
 
         // B = inv(A)
-        LAPACKE_zgetri_work(CblasColMajor, n, Aref, lda, ipiv, work, lwork);
+        int lapinfo = LAPACKE_zgetri_work(CblasColMajor,
+                                          n, Aref, lda,
+                                          ipiv, work, lwork);
+        if (plainfo == lapinfo) {
+            // norm(A^{-1})
+            double Inorm = LAPACKE_zlange_work(
+                   LAPACK_COL_MAJOR, 'F', n, n, Aref, lda, &temp);
 
-        // norm(A^{-1})
-        double Inorm = LAPACKE_zlange_work(
-               LAPACK_COL_MAJOR, 'F', n, n, Aref, lda, &temp);
+            // A -= Aref
+            cblas_zaxpy((size_t)lda*n, CBLAS_SADDR(zmone), Aref, 1, A, 1);
 
-        // A -= Aref
-        cblas_zaxpy((size_t)lda*n, CBLAS_SADDR(zmone), Aref, 1, A, 1);
+            double error = LAPACKE_zlange_work(
+                               LAPACK_COL_MAJOR, 'F', lda, n, A, lda, &temp);
+            if (Anorm*Inorm != 0)
+                error /= (Anorm * Inorm);
 
-        double error = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', lda, n, A, lda, &temp);
-        if (Anorm*Inorm != 0)
-            error /= (Anorm * Inorm);
-
-        param[PARAM_ERROR].d = error;
-        param[PARAM_SUCCESS].i = error < tol;
-
+            param[PARAM_ERROR].d = error;
+            param[PARAM_SUCCESS].i = error < tol;
+        }
+        else {
+            if (plainfo == lapinfo) {
+                param[PARAM_ERROR].d = 0.0;
+                param[PARAM_SUCCESS].i = 1;            
+            }
+            else {
+                param[PARAM_ERROR].d = INFINITY;
+                param[PARAM_SUCCESS].i = 0;
+            }
+        }
         free(work);
     }
 
