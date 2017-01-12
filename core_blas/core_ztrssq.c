@@ -22,7 +22,7 @@
 //
 static inline void ssq(plasma_complex64_t value, double *scale, double *sumsq)
 {
-    if ((double)value != 0.0) {
+    if (creal(value) != 0.0) {
         double absa = cabs(value);
         if (*scale < absa) {
             *sumsq = 1.0 + *sumsq*((*scale/absa)*(*scale/absa));

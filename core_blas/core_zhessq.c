@@ -37,8 +37,8 @@ void core_zhessq(plasma_enum_t uplo,
     }
     *sumsq *= 2.0;
     for (int i = 0; i < n; i++) {
-        if ((double)A[lda*i+i] != 0.0) {
-            double absa = fabs((double)A[lda*i+i]);
+        if (creal(A[lda*i+i]) != 0.0) {
+            double absa = fabs(creal(A[lda*i+i]));
             if (*scale < absa) {
                 *sumsq = 1.0 + *sumsq*((*scale/absa)*(*scale/absa));
                 *scale = absa;
