@@ -133,6 +133,7 @@ void test_zpbsv(param_value_t param[], char *info)
     for (j = 0; j < n; j++) {
         for (i = j+kd+1; i < n; i++) A(i, j) = 0.0;
     }
+
     int zerocol = param[PARAM_ZEROCOL].i;
     if (zerocol >= 0 && zerocol < n) {
         LAPACKE_zlaset_work(

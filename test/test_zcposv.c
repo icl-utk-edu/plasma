@@ -105,16 +105,16 @@ void test_zcposv(param_value_t param[], char *info)
     //================================================================
     // Allocate and initialize arrays
     //================================================================
-    plasma_complex64_t *A =
-        (plasma_complex64_t *)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
+    plasma_complex64_t *A = (plasma_complex64_t *)malloc(
+    (size_t)lda*n*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
-    plasma_complex64_t *B =
-        (plasma_complex64_t *)malloc((size_t)ldb*nrhs*sizeof(plasma_complex64_t));
+    plasma_complex64_t *B = (plasma_complex64_t *)malloc(
+        (size_t)ldb*nrhs*sizeof(plasma_complex64_t));
     assert(B != NULL);
 
-    plasma_complex64_t *X =
-        (plasma_complex64_t *)malloc((size_t)ldx*nrhs*sizeof(plasma_complex64_t));
+    plasma_complex64_t *X = (plasma_complex64_t *)malloc(
+    (size_t)ldx*nrhs*sizeof(plasma_complex64_t));
     assert(X != NULL);
 
     // Initialize A for random Hermitian (Symmetric) matrix
@@ -129,6 +129,7 @@ void test_zcposv(param_value_t param[], char *info)
             A(j,i) = conj(A(i,j));
         }
     }
+
     int zerocol = param[PARAM_ZEROCOL].i;
     if (zerocol >= 0 && zerocol < n) {
         LAPACKE_zlaset_work(
@@ -143,7 +144,8 @@ void test_zcposv(param_value_t param[], char *info)
 
     plasma_complex64_t *Aref = NULL;
     if (test) {
-        Aref = (plasma_complex64_t *)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
+        Aref = (plasma_complex64_t *)malloc(
+            (size_t)lda*n*sizeof(plasma_complex64_t));
         assert(Aref != NULL);
         memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
     }
@@ -179,7 +181,7 @@ void test_zcposv(param_value_t param[], char *info)
             assert(work != NULL);
 
             // Calculate infinite norms of matrices A_ref and X
-            double Anorm = LAPACKE_zlange_work(mtrxLayout, mtrxNorm, n, n,    Aref,
+            double Anorm = LAPACKE_zlange_work(mtrxLayout, mtrxNorm, n, n, Aref,
                                                lda, work);
             double Xnorm = LAPACKE_zlange_work(mtrxLayout, mtrxNorm, n, nrhs, X,
                                                ldx, work);
