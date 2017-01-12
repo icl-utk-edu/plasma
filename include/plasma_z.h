@@ -251,7 +251,8 @@ void plasma_omp_zgbsv(plasma_desc_t AB, int *ipiv, plasma_desc_t B,
 void plasma_omp_zgbtrf(plasma_desc_t A, int *ipiv,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_omp_zgbtrs(plasma_enum_t transa, plasma_desc_t AB, int *ipiv, plasma_desc_t B,
+void plasma_omp_zgbtrs(plasma_enum_t transa, plasma_desc_t AB, int *ipiv,
+                       plasma_desc_t B,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_omp_zdesc2ge(plasma_desc_t A,

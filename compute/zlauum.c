@@ -136,6 +136,7 @@ int plasma_zlauum(plasma_enum_t uplo, int n,
     plasma_sequence_destroy(sequence);
     return status;
 }
+
 /***************************************************************************//**
  *
  * @ingroup plasma_lauum

@@ -135,12 +135,13 @@ def process( fname ):
         # and boolean (&&, ||) operators should have spaces on both sides."
         # Other operators may have spaces, which should be consistent, e.g., not (x +y)."
         grep( lines,
-              r'([\w\[\]\(\)])(==|!=|<=|>=|<|>|\+=|-=|\*=|/=|&&|\|\|)([\w\[\]\(\)-])',
+              r'([\w\[\]\(\)])(==|!=|<=|>=|<|>|\+=|-=|\*=|/=|&&)([\w\[\]\(\)-])',
               help="Missing space around relational, assignment, and boolean operators, e.g., (x==y) should be (x == y).\n    " )
 
         # In (x #y) check, can't check (x -y) because of unary - minus,
         # nor (x *y) because of pointer declarations, float *x.
-        grep( lines, r'([\w\[\]\(\)]) +(==|!=|<=|>=|<|>|\+=|-=|\*=|/=|&&|\|\||\+|\/)([a-zA-Z0-9\[\]\(\)-])',
+        # todo: omitting || for now because of norms, e.g., ||PA - LU||
+        grep( lines, r'([\w\[\]\(\)]) +(==|!=|<=|>=|<|>|\+=|-=|\*=|/=|&&|\+|\/)([a-zA-Z0-9\[\]\(\)-])',
               exclude='#include <',
               help="Missing space after  operators, e.g., (x ==y) should be (x == y).\n    " )
 
@@ -157,7 +158,9 @@ def process( fname ):
         grep( lines, r'\} *else',
               help="Missing newline between { and else (don't cuddle)" )
 
-        m = re.search( r'^(.*?\n)[^\n]*\{ *\n *\n', txt, flags=re.S )
+        # first search finds any; second only 
+        #m = re.search( r'^(.*?\n)[^\n]*\{ *\n *\n', txt, flags=re.S )
+        m = re.search( r'^(.*?\n)( *(if|else|for|while|do|switch)[^\n]*|)\{ *\n *\n', txt, flags=re.S )
         if (m):
             lineno = m.group(1).count('\n') + 1
             line = lines[lineno - 1]
@@ -214,11 +217,11 @@ def process( fname ):
               help="Using Fortran-style A**H or A**T. Please use A^H or A^T." )
 
         grep( lines, r" [A-Z]'",
-              help="Using Matlab-style A'. Please use A^H or A^T. (This is really hard to search for.)" )
+              help="Might be using Matlab-style A'. Please use A^H or A^T. (This is really hard to search for.)" )
 
         grep( lines, r"'",
               exclude=r"'[a-zA-Z=:+]'|'\\0'|LAPACK's|PLASMA's|can't",
-              help="Using Matlab-style A'. Please use A^H or A^T. (Second search.)" )
+              help="Might be using Matlab-style A'. Please use A^H or A^T. (Second search.)" )
 
         grep( lines, r"@ingroup",
               exclude=r'@ingroup (plasma|core)_[^z]\w+',

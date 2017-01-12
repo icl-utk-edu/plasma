@@ -132,7 +132,7 @@ void test_zlanhe(param_value_t param[], char *info)
     // Test results by comparing to a reference implementation.
     //================================================================
     if (test) {
-        double valueRef = 
+        double valueRef =
             LAPACKE_zlanhe_work(LAPACK_COL_MAJOR,
                                 lapack_const(norm), lapack_const(uplo),
                                 n, Aref, lda, work);

@@ -117,7 +117,6 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
 
                     // gemm
                     for (int m = k+1; m < A.mt; m++) {
-
                         int mvam = plasma_tile_mview(A, m);
                         int ldam = plasma_tile_mmain(A, m);
 

@@ -28,7 +28,6 @@ void core_zlaswp(plasma_enum_t colrow,
         if (incx > 0) {
             for (int m = k1-1; m <= k2-1; m += incx) {
                 if (ipiv[m]-1 != m) {
-
                     int m1 = m;
                     int m2 = ipiv[m]-1;
 
@@ -44,7 +43,6 @@ void core_zlaswp(plasma_enum_t colrow,
         else {
             for (int m = k2-1; m >= k1-1; m += incx) {
                 if (ipiv[m]-1 != m) {
-
                     int m1 = m;
                     int m2 = ipiv[m]-1;
 
@@ -65,7 +63,6 @@ void core_zlaswp(plasma_enum_t colrow,
         if (incx > 0) {
             for (int n = k1-1; n <= k2-1; n += incx) {
                 if (ipiv[n]-1 != n) {
-
                     int n1 = n;
                     int n2 = ipiv[n]-1;
 
@@ -80,7 +77,6 @@ void core_zlaswp(plasma_enum_t colrow,
         else {
             for (int n = k2-1; n >= k1-1; n += incx) {
                 if (ipiv[n]-1 != n) {
-
                     int n1 = n;
                     int n2 = ipiv[n]-1;
 

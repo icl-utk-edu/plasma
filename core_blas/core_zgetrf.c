@@ -44,7 +44,6 @@ int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
     double sfmin = LAPACKE_dlamch_work('S');
 
     for (int k = 0; k < imin(A.m, A.n); k += ib) {
-
         int kb = imin(imin(A.m, A.n)-k, ib);
 
         plasma_complex64_t *a0 = A(0, 0);
@@ -56,13 +55,11 @@ int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
         // panel factorization
         //======================
         for (int j = k; j < k+kb; j++) {
-
             // pivot search
             max_idx[rank] = 0;
             max_val[rank] = a0[j+j*lda0];
 
             for (int l = rank; l < A.mt; l += size) {
-
                 plasma_complex64_t *al = A(l, 0);
                 int ldal = plasma_tile_mmain(A, l);
                 int mval = plasma_tile_mview(A, l);
@@ -123,7 +120,6 @@ int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
 
             // column scaling and trailing update (all ranks)
             for (int l = rank; l < A.mt; l += size) {
-
                 plasma_complex64_t *al = A(l, 0);
                 int ldal = plasma_tile_mmain(A, l);
                 int mval = plasma_tile_mview(A, l);
@@ -176,14 +172,12 @@ int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
         //===================================
         plasma_barrier_wait(barrier);
         if (rank == 0) {
-
             // pivot adjustment
             for (int i = k+1; i <= imin(A.m, k+kb); i++)
                 ipiv[i-1] += k;
 
             // right pivoting
             for (int i = k; i < k+kb; i++) {
-
                 plasma_complex64_t *ap = A((ipiv[i]-1)/A.mb, 0);
                 int ldap = plasma_tile_mmain(A, (ipiv[i]-1)/A.mb);
 
@@ -209,7 +203,6 @@ int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
         plasma_complex64_t zone = 1.0;
         plasma_complex64_t zmone = -1.0;
         for (int i = rank; i < A.mt; i += size) {
-
             plasma_complex64_t *ai = A(i, 0);
             int mvai = plasma_tile_mview(A, i);
             int ldai = plasma_tile_mmain(A, i);
@@ -244,7 +237,6 @@ int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
     for (int k = ib; k < imin(A.m, A.n); k += ib) {
         if (k%ib == rank) {
             for (int i = k; i < imin(A.m, A.n); i++) {
-
                 plasma_complex64_t *ai = A(i/A.mb, 0);
                 plasma_complex64_t *ap = A((ipiv[i]-1)/A.mb, 0);
                 int ldai = plasma_tile_mmain(A, (i/A.mb));
