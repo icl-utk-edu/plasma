@@ -145,11 +145,9 @@ void test_zpotrf(param_value_t param[], char *info)
     // Test results by comparing to a reference implementation.
     //================================================================
     if (test) {
-        int lapinfo = LAPACKE_zpotrf(
-            LAPACK_COL_MAJOR,
-            lapack_const(uplo), n,
-            Aref, lda);
-
+        int lapinfo = LAPACKE_zpotrf(LAPACK_COL_MAJOR,
+                                     lapack_const(uplo), n,
+                                     Aref, lda);
         if (lapinfo == 0) {
             plasma_complex64_t zmone = -1.0;
             cblas_zaxpy((size_t)lda*n, CBLAS_SADDR(zmone), Aref, 1, A, 1);

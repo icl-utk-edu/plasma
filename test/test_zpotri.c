@@ -158,11 +158,9 @@ void test_zpotri(param_value_t param[], char *info)
         plasma_complex64_t zmone = -1.0;
 
         // B = inv(A)
-        int lapinfo = LAPACKE_zpotri_work(
-            CblasColMajor,
-            lapack_const(uplo), n,
-            Aref, lda);
-
+        int lapinfo = LAPACKE_zpotri_work(CblasColMajor,
+                                          lapack_const(uplo), n,
+                                          Aref, lda);
         if (lapinfo == 0) {
             double work[1];
             double Inorm = LAPACKE_zlanhe_work(
