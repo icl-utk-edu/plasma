@@ -149,7 +149,7 @@ void test_zgetri(param_value_t param[], char *info)
         int lapinfo = LAPACKE_zgetri_work(CblasColMajor,
                                           n, Aref, lda,
                                           ipiv, work, lwork);
-        if (plainfo == lapinfo) {
+        if (lapinfo == 0) {
             // norm(A^{-1})
             double Inorm = LAPACKE_zlange_work(
                    LAPACK_COL_MAJOR, 'F', n, n, Aref, lda, &temp);
