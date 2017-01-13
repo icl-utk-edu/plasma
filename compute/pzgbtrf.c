@@ -54,7 +54,7 @@ void plasma_pzgbtrf(plasma_desc_t A, int *ipiv,
         {
             if (sequence->status == PlasmaSuccess) {
                 for (int rank = 0; rank < num_panel_threads; rank++) {
-                    #pragma omp task priority(1)
+                    #pragma omp task // priority(1)
                     {
                         // create a view for panel as a "general" submatrix
                         plasma_desc_t view = plasma_desc_view(
