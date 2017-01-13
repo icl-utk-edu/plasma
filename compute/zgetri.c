@@ -30,7 +30,7 @@
  * @param[in] n
  *          The order of the matrix A. n >= 0.
  *
- * @param[in,out] A
+ * @param[in,out] pA
  *          On entry, the LU factors computed by plasma_zgetrf.
  *          On exit, the inverse of A, overwriting the factors.
  *

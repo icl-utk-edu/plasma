@@ -63,7 +63,7 @@
  *          The number of right hand sides, i.e., the number of columns of the
  *          matrix B. nrhs >= 0.
  *
- * @param[in,out] A
+ * @param[in,out] pA
  *          The n-by-n matrix A.
  *          On exit, contains the LU factors of A.
  *
@@ -74,14 +74,14 @@
  *          The pivot indices; for 1 <= i <= min(m,n), row i of the
  *          matrix was interchanged with row ipiv(i).
  *
- * @param[in] B
+ * @param[in] pB
  *          The n-by-nrhs matrix of right hand side matrix B.
  *          This matrix remains unchanged.
  *
  * @param[in] ldb
  *          The leading dimension of the array B. ldb >= max(1,n).
  *
- * @param[out] X
+ * @param[out] pX
  *          If return value = 0, the n-by-nrhs solution matrix X.
  *
  * @param[in] ldx

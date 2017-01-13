@@ -206,6 +206,13 @@ double plasma_zlansy(plasma_enum_t norm, plasma_enum_t uplo,
  * @param[in] A
  *          The descriptor of matrix A.
  *
+ * @param[out] work
+ *          Workspace of size:
+ *          - PlasmaMaxNorm: A.mt*A.nt
+ *          - PlasmaOneNorm: A.mt*A.n + A.n
+ *          - PlasmaInfNorm: A.mt*A.n + A.n
+ *          - PlasmaFrobeniusNorm: 2*A.mt*A.nt
+ *
  * @param[out] value
  *          The calculated value of the norm requested.
  *

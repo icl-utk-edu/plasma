@@ -158,7 +158,7 @@ def process( fname ):
         grep( lines, r'\} *else',
               help="Missing newline between { and else (don't cuddle)" )
 
-        # first search finds any; second only 
+        # first search finds any; second only
         #m = re.search( r'^(.*?\n)[^\n]*\{ *\n *\n', txt, flags=re.S )
         m = re.search( r'^(.*?\n)( *(if|else|for|while|do|switch)[^\n]*|)\{ *\n *\n', txt, flags=re.S )
         if (m):

@@ -49,7 +49,7 @@
  *          The number of right hand sides, i.e., the number of columns
  *          of the matrix B.  nrhs >= 0.
  *
- * @param[in,out] A
+ * @param[in,out] pA
  *          On entry, the Hermitian positive definite matrix A.
  *          If uplo = PlasmaUpper, the leading n-by-n upper triangular part of A
  *          contains the upper triangular part of the matrix A, and the strictly
@@ -63,7 +63,7 @@
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,n).
  *
- * @param[in,out] B
+ * @param[in,out] pB
  *          On entry, the n-by-nrhs right hand side matrix B.
  *          On exit, if return value = 0, the n-by-nrhs solution matrix X.
  *

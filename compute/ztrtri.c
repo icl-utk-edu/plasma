@@ -36,7 +36,7 @@
  * @param[in] n
  *          The order of the matrix A. n >= 0.
  *
- * @param[in,out] A
+ * @param[in,out] pA
  *          On entry, the triangular matrix A.  If uplo = 'U', the
  *          leading n-by-n upper triangular part of the array A
  *          contains the upper triangular matrix, and the strictly
@@ -170,6 +170,14 @@ int plasma_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
  *          'U', the diagonal elements of A are also not referenced and
  *          are assumed to be 1.  On exit, the (triangular) inverse of
  *          the original matrix, in the same storage format.
+ *
+ * @param[in] sequence
+ *          Identifies the sequence of function calls that this call belongs to
+ *          (for completion checks and exception handling purposes).  Check
+ *          the sequence->status for errors.
+ *
+ * @param[out] request
+ *          Identifies this function call (for exception handling purposes).
  *
  * @retval void
  *          Errors are returned by setting sequence->status and

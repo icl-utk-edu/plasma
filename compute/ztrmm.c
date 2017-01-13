@@ -72,7 +72,7 @@
  * @param[in] alpha
  *          The scalar alpha.
  *
- * @param[in] A
+ * @param[in] pA
  *          The triangular matrix A of dimension lda-by-k, where k is m when
  *          side='L' or 'l' and k is n when when side='R' or 'r'. If uplo =
  *          PlasmaUpper, the leading k-by-k upper triangular part of the array
@@ -87,7 +87,7 @@
  *          The leading dimension of the array A. When side='L' or 'l',
  *          lda >= max(1,m), when side='R' or 'r' then lda >= max(1,n).
  *
- * @param[in,out] B
+ * @param[in,out] pB
  *          On entry, the matrix B of dimension ldb-by-n.
  *          On exit, the result of a triangular matrix-matrix multiply
  *          ( alpha*op(A)*B ) or ( alpha*B*op(A) ).
@@ -240,6 +240,32 @@ int plasma_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
  *  operations at runtime.
  *
  *******************************************************************************
+ *
+ * @param[in] side
+ *          Specifies whether op( A ) appears on the left or on the right of B:
+ *          - PlasmaLeft:  alpha*op( A )*B
+ *          - PlasmaRight: alpha*B*op( A )
+ *
+ * @param[in] uplo
+ *          Specifies whether the matrix A is upper triangular or lower
+ *          triangular:
+ *          - PlasmaUpper: Upper triangle of A is stored;
+ *          - PlasmaLower: Lower triangle of A is stored.
+ *
+ * @param[in] transa
+ *          Specifies whether the matrix A is transposed, not transposed or
+ *          conjugate transposed:
+ *          - PlasmaNoTrans:   A is transposed;
+ *          - PlasmaTrans:     A is not transposed;
+ *          - PlasmaConjTrans: A is conjugate transposed.
+ *
+ * @param[in] diag
+ *          Specifies whether or not A is unit triangular:
+ *          - PlasmaNonUnit: A is non-unit triangular;
+ *          - PlasmaUnit:    A is unit triangular.
+ *
+ * @param[in] alpha
+ *          The scalar alpha.
  *
  * @param[in] A
  *          Descriptor of the triangular matrix A.

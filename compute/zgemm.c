@@ -61,7 +61,7 @@
  * @param[in] alpha
  *          The scalar alpha.
  *
- * @param[in] A
+ * @param[in] pA
  *          An lda-by-ka matrix, where ka is k when transa = PlasmaNoTrans,
  *          and is m otherwise.
  *
@@ -70,7 +70,7 @@
  *          When transa = PlasmaNoTrans, lda >= max(1,m),
  *          otherwise, lda >= max(1,k).
  *
- * @param[in] B
+ * @param[in] pB
  *          An ldb-by-kb matrix, where kb is n when transb = PlasmaNoTrans,
  *          and is k otherwise.
  *
@@ -82,7 +82,7 @@
  * @param[in] beta
  *          The scalar beta.
  *
- * @param[in,out] C
+ * @param[in,out] pC
  *          An ldc-by-n matrix. On exit, the array is overwritten by the m-by-n
  *          matrix ( alpha*op( A )*op( B ) + beta*C ).
  *
