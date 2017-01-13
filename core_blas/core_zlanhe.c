@@ -66,7 +66,7 @@ void core_omp_zlanhe_aux(plasma_enum_t norm, plasma_enum_t uplo,
                             value[i] += cabs(A[lda*j+i]);
                             value[j] += cabs(A[lda*j+i]);
                         }
-                        value[j] += cabs((double)A[lda*j+j]);
+                        value[j] += fabs(creal(A[lda*j+j]));
                     }
                 }
                 else { // PlasmaLower
@@ -74,7 +74,7 @@ void core_omp_zlanhe_aux(plasma_enum_t norm, plasma_enum_t uplo,
                         value[i] = 0.0;
 
                     for (int j = 0; j < n; j++) {
-                        value[j] += cabs((double)A[lda*j+j]);
+                        value[j] += fabs(creal(A[lda*j+j]));
                         for (int i = j+1; i < n; i++) {
                             value[i] += cabs(A[lda*j+i]);
                             value[j] += cabs(A[lda*j+i]);

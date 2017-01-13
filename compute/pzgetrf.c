@@ -35,9 +35,7 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
     plasma_barrier_t *barrier = &plasma->barrier;
 
     for (int k = 0; k < imin(A.mt, A.nt); k++) {
-
         plasma_complex64_t *a00, *a20;
-
         a00 = A(k, k);
         a20 = A(A.mt-1, k);
 
@@ -79,9 +77,7 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
         }
         // update
         for (int n = k+1; n < A.nt; n++) {
-
             plasma_complex64_t *a01, *a11, *a21;
-
             a01 = A(k, n);
             a11 = A(k+1, n);
             a21 = A(A.mt-1, n);
@@ -117,7 +113,6 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
 
                     // gemm
                     for (int m = k+1; m < A.mt; m++) {
-
                         int mvam = plasma_tile_mview(A, m);
                         int ldam = plasma_tile_mmain(A, m);
 
@@ -138,7 +133,6 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
     }
     // pivoting to the left
     for (int k = 1; k < imin(A.mt, A.nt); k++) {
-
         plasma_complex64_t *akk;
         akk = A(k, k);
         int makk = (A.mt-k-1)*A.mb;

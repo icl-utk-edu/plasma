@@ -53,7 +53,7 @@
  *          The order of the matrix A. n >= 0.
  *
  * @param[in,out] A
- *          On entry, the Hermitian positive definite matrix A.
+ *          On entry, the symmetric matrix A.
  *          If uplo = PlasmaUpper, the leading N-by-N upper triangular part of A
  *          contains the upper triangular part of the matrix A, and the strictly
  *          lower triangular part of A is not referenced.
@@ -185,7 +185,7 @@ double plasma_zlansy(plasma_enum_t norm, plasma_enum_t uplo,
  *
  * @ingroup plasma_lansy
  *
- *  Calculates the max, one, infinity or Frobenius norm of a Hermitian matrix.
+ *  Calculates the max, one, infinity or Frobenius norm of a symmetric matrix.
  *  Non-blocking equivalent of plasma_zlansy(). May return before the
  *  computation is finished. Operates on matrices stored by tiles. All matrices
  *  are passed through descriptors. All dimensions are taken from the
@@ -205,6 +205,13 @@ double plasma_zlansy(plasma_enum_t norm, plasma_enum_t uplo,
  *
  * @param[in] A
  *          The descriptor of matrix A.
+ *
+ * @param[out] work
+ *          Workspace of size:
+ *          - PlasmaMaxNorm: A.mt*A.nt
+ *          - PlasmaOneNorm: A.mt*A.n + A.n
+ *          - PlasmaInfNorm: A.mt*A.n + A.n
+ *          - PlasmaFrobeniusNorm: 2*A.mt*A.nt
  *
  * @param[out] value
  *          The calculated value of the norm requested.

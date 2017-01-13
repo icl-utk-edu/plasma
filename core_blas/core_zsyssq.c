@@ -37,8 +37,9 @@ void core_zsyssq(plasma_enum_t uplo,
     }
     *sumsq *= 2.0;
     for (int i = 0; i < n; i++) {
-        if ((double)A[lda*i+i] != 0.0) {
-            double absa = cabs(A[lda*i+i]);
+        // diagonal is complex, don't ignore complex part
+        double absa = cabs(A[lda*i+i]);
+        if (absa != 0.0) { // != propagates nan
             if (*scale < absa) {
                 *sumsq = 1.0 + *sumsq*((*scale/absa)*(*scale/absa));
                 *scale = absa;

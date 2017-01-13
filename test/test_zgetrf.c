@@ -89,7 +89,6 @@ void test_zgetrf(param_value_t param[], char *info)
 
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
-    tol *= sqrt(m*n);
 
     //================================================================
     // Set tuning parameters.
@@ -139,6 +138,8 @@ void test_zgetrf(param_value_t param[], char *info)
 
     //================================================================
     // Test results by comparing to a reference implementation.
+    // This will give spurious failures if LAPACK picks different pivots
+    // than PLASMA. Should test solve or ||PA - LU||.
     //================================================================
     if (test) {
         int lapinfo = LAPACKE_zgetrf(
@@ -159,6 +160,7 @@ void test_zgetrf(param_value_t param[], char *info)
 
             if (Anorm != 0.0)
                 error /= Anorm;
+            error /= sqrt((double)m*n);
 
             param[PARAM_ERROR].d = error;
             param[PARAM_SUCCESS].i = error < tol;

@@ -49,10 +49,9 @@
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,n).
  *
- * @param[out] info
- *          - 0 on successful exit
- *          - < 0 if -i, the i-th argument had an illegal value
- *          - > 0 if i, A(i,i) is exactly zero.  The triangular
+ * @retval PlasmaSuccess on successful exit
+ * @retval < 0 if -i, the i-th argument had an illegal value
+ * @retval > 0 if i, A(i,i) is exactly zero.  The triangular
  *          matrix is singular and its inverse can not be computed.
  *
  ******************************************************************************/

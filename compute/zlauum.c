@@ -40,7 +40,7 @@
  * @param[in] n
  *          The order of the matrix A. n >= 0.
  *
- * @param[in,out] A
+ * @param[in,out] pA
  *          On entry, the triangular factor U or L.
  *          On exit, if UPLO = 'U', the upper triangle of A is
  *          overwritten with the upper triangle of the product U * U^H;
@@ -136,6 +136,7 @@ int plasma_zlauum(plasma_enum_t uplo, int n,
     plasma_sequence_destroy(sequence);
     return status;
 }
+
 /***************************************************************************//**
  *
  * @ingroup plasma_lauum

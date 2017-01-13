@@ -23,7 +23,7 @@
  *
  *  Returns the norm of a trapezoidal or triangular matrix as
  *
- *     zlange = ( max(abs(A(i,j))), NORM = PlasmaMaxNorm
+ *     zlantr = ( max(abs(A(i,j))), NORM = PlasmaMaxNorm
  *              (
  *              ( norm1(A),         NORM = PlasmaOneNorm
  *              (
@@ -61,7 +61,7 @@
  *          The number of columns of the matrix A. n >= 0. When n = 0,
  *          the returned value is set to zero.
  *
- * @param[in] A
+ * @param[in] pA
  *          The m-by-n trapezoidal matrix A.
  *
  * @param[in] lda
@@ -215,7 +215,7 @@ double plasma_zlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
  *          - PlasmaInfNorm: Infinity norm
  *          - PlasmaFrobeniusNorm: Frobenius norm
  *
-  * @param[in] uplo
+ * @param[in] uplo
  *          - PlasmaUpper: Upper triangle of A is stored;
  *          - PlasmaLower: Lower triangle of A is stored.
  *
@@ -225,6 +225,13 @@ double plasma_zlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
  *
  * @param[in] A
  *          The descriptor of matrix A.
+ *
+ * @param[out] work
+ *          Workspace of size:
+ *          - PlasmaMaxNorm: A.mt*A.nt
+ *          - PlasmaOneNorm: A.mt*A.n + A.n
+ *          - PlasmaInfNorm: A.mt*A.n + A.n
+ *          - PlasmaFrobeniusNorm: 2*A.mt*A.nt
  *
  * @param[out] value
  *          The calculated value of the norm requested.
@@ -245,10 +252,10 @@ double plasma_zlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
  *
  *******************************************************************************
  *
- * @sa plasma_zlange
- * @sa plasma_omp_clange
- * @sa plasma_omp_dlange
- * @sa plasma_omp_slange
+ * @sa plasma_zlantr
+ * @sa plasma_omp_clantr
+ * @sa plasma_omp_dlantr
+ * @sa plasma_omp_slantr
  *
  ******************************************************************************/
 void plasma_omp_zlantr(plasma_enum_t norm, plasma_enum_t uplo,

@@ -174,7 +174,7 @@ void test_zgbsv(param_value_t param[], char *info)
         int i_ku = imin(n-1, j+kl);
         for (int i = 0; i < ldab; i++)
             AB[i + j*ldab] = 0.0;
-        for (int i = i_kl; i <= i_ku; i++) 
+        for (int i = i_kl; i <= i_ku; i++)
             AB[kl + i-(j-ku) + j*ldab] = A[i + j*lda];
     }
     plasma_complex64_t *ABref = NULL;

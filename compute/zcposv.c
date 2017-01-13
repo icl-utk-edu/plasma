@@ -56,7 +56,7 @@
  *******************************************************************************
  *
  * @param[in] uplo
- *          Specifies, whether the matrix A is upper or lower triangular:
+ *          Specifies whether the matrix A is upper or lower triangular:
  *          - PlasmaUpper: Upper triangle of A is stored;
  *          - PlasmaLower: Lower triangle of A is stored.
  *
@@ -68,7 +68,7 @@
  *          The number of right hand sides, i.e., the number of columns of the
  *          matrix B. nrhs >= 0.
  *
- * @param[in,out] A
+ * @param[in,out] pA
  *          The n-by-n Hermitian positive definite coefficient matrix A.
  *          If uplo = PlasmaUpper, the leading n-by-n upper triangular part of
  *          A contains the upper triangular part of the matrix A, and the
@@ -83,14 +83,14 @@
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,n).
  *
- * @param[in] B
+ * @param[in] pB
  *          The n-by-nrhs matrix of right hand side matrix B.
  *          This matrix remains unchanged.
  *
  * @param[in] ldb
  *          The leading dimension of the array B. ldb >= max(1,n).
  *
- * @param[out] X
+ * @param[out] pX
  *          If return value = 0, the n-by-nrhs solution matrix X.
  *
  * @param[in] ldx
@@ -281,6 +281,11 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
  *  Allows for pipelining of operations at runtime.
  *
  *******************************************************************************
+ *
+ * @param[in] uplo
+ *          Specifies whether the matrix A is upper or lower triangular:
+ *          - PlasmaUpper: Upper triangle of A is stored;
+ *          - PlasmaLower: Lower triangle of A is stored.
  *
  * @param[in] A
  *          Descriptor of matrix A.

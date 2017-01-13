@@ -55,7 +55,7 @@
  * @param[in] alpha
  *          Scalar factor of A.
  *
- * @param[in] A
+ * @param[in] pA
  *          Matrix of size lda-by-k, where k is n when transa == PlasmaNoTrans
  *          and m otherwise.
  *
@@ -66,7 +66,7 @@
  * @param[in] beta
  *          Scalar factor of B.
  *
- * @param[in,out] B
+ * @param[in,out] pB
  *          Matrix of size ldb-by-n.
  *          On exit, B = alpha * op( A ) + beta * B
  *

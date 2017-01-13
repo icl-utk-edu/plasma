@@ -19,11 +19,11 @@
 
 /******************************************************************************/
 // This computation also shows up in core_zsyssq() and can be factored out.
-//
+// LAPACK does real and imag components separately in zlassq.
 static inline void ssq(plasma_complex64_t value, double *scale, double *sumsq)
 {
-    if ((double)value != 0.0) {
-        double absa = cabs(value);
+    double absa = cabs(value);
+    if (absa != 0.0) { // != propagates nan
         if (*scale < absa) {
             *sumsq = 1.0 + *sumsq*((*scale/absa)*(*scale/absa));
             *scale = absa;

@@ -60,7 +60,7 @@ plasma_enum_t plasma_direct_const(char lapack_char)
  ******************************************************************************/
 plasma_enum_t plasma_norm_const(char lapack_char)
 {
-    switch(lapack_char) {
+    switch (lapack_char) {
     case 'O': case 'o': case '1':           return PlasmaOneNorm;
     case '2':                               return PlasmaTwoNorm;
     case 'F': case 'f': case 'E': case 'e': return PlasmaFrobeniusNorm;
@@ -87,7 +87,6 @@ plasma_enum_t plasma_side_const(char lapack_char)
     default:            return PlasmaInvalid;
     }
 }
-
 
 /***************************************************************************//**
  * @retval PlasmaColumnwise if lapack_char = 'C'

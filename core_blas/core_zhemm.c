@@ -53,7 +53,7 @@
  *          The scalar alpha.
  *
  * @param[in] A
- *          A is a lda-by-ka matrix, where ka is m when side = PlasmaLeft,
+ *          A is an lda-by-ka matrix, where ka is m when side = PlasmaLeft,
  *          and is n otherwise. Only the uplo triangular part is referenced.
  *
  * @param[in] lda
@@ -70,7 +70,7 @@
  *          The scalar beta.
  *
  * @param[in,out] C
- *          C is a ldc-by-n matrix.
+ *          C is an ldc-by-n matrix.
  *          On exit, the array is overwritten by the m-by-n updated matrix.
  *
  * @param[in] ldc

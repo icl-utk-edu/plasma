@@ -132,30 +132,34 @@ void test_zlansy(param_value_t param[], char *info)
     // Test results by comparing to a reference implementation.
     //================================================================
     if (test) {
-        double valueRef = 
+        double valueRef =
             LAPACKE_zlansy_work(LAPACK_COL_MAJOR,
                                 lapack_const(norm), lapack_const(uplo),
                                 n, Aref, lda, work);
 
         // Calculate relative error
-        double error = fabs(value-valueRef) / valueRef;
+        double error = fabs(value-valueRef);
+        if (valueRef != 0)
+            error /= valueRef;
         double tol = eps;
+        double normalize = 1;
         switch (norm) {
             case PlasmaInfNorm:
                 // Sum order on the line can differ
-                tol *= (double)n;
+                normalize = n;
                 break;
 
             case PlasmaOneNorm:
                 // Sum order on the column can differ
-                tol *= (double)n;
+                normalize = n;
                 break;
 
             case PlasmaFrobeniusNorm:
                 // Sum order on every element can differ
-                tol *= (double)n*n;
+                normalize = n*n;
                 break;
         }
+        error /= normalize;
         param[PARAM_ERROR].d   = error;
         param[PARAM_SUCCESS].i = error < tol;
     }

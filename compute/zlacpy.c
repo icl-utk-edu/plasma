@@ -38,7 +38,7 @@
  * @param[in] n
  *          The number of columns of the matrix A. n >= 0.
  *
- * @param[in] A
+ * @param[in] pA
  *          The m-by-n matrix A. If uplo = PlasmaUpper, only the upper trapezium
  *          is accessed; if uplo = PlasmaLower, only the lower trapezium is
  *          accessed.
@@ -46,7 +46,7 @@
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,m).
  *
- * @param[out] B
+ * @param[out] pB
  *          The m-by-n matrix B.
  *          On exit, B = A in the locations specified by uplo.
  *

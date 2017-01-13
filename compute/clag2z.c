@@ -31,13 +31,13 @@
  * @param[in] n
  *          The number of columns of the matrix As. n >= 0.
  *
- * @param[in] As
+ * @param[in] pAs
  *          The ldas-by-n matrix As in single complex precision.
  *
  * @param[in] ldas
  *          The leading dimension of the array As. ldas >= max(1,m).
  *
- * @param[out] A
+ * @param[out] pA
  *          On exit, the lda-by-n matrix A in double complex precision.
  *
  * @param[in] lda

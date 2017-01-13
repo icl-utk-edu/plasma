@@ -166,9 +166,9 @@ void test_zgbtrf(param_value_t param[], char *info)
         ABref = (plasma_complex64_t*)malloc(
             (size_t)ldab*n*sizeof(plasma_complex64_t));
         assert(ABref != NULL);
-    
+
         memcpy(ABref, AB, (size_t)ldab*n*sizeof(plasma_complex64_t));
-    } 
+    }
 
     //================================================================
     // Run and time PLASMA.
@@ -285,8 +285,8 @@ void test_zgbtrf(param_value_t param[], char *info)
                             if (il > 0) {
                                 iw = i - j + ju + 1;
                                 alpha = work[iw-1];
-                                cblas_zaxpy(il, 
-                                    CBLAS_SADDR(alpha), &AB[kd + (i-1)*ldab], 1, 
+                                cblas_zaxpy(il,
+                                    CBLAS_SADDR(alpha), &AB[kd + (i-1)*ldab], 1,
                                                         &work[iw], 1);
                                 // revert the i-th pivot
                                 int ip = ipiv[i-1];
@@ -312,7 +312,7 @@ void test_zgbtrf(param_value_t param[], char *info)
         }
         else {
             int lapinfo = LAPACKE_zgbtrf(
-                              LAPACK_COL_MAJOR, 
+                              LAPACK_COL_MAJOR,
                               m, n, kl, ku, ABref, ldab, ipiv);
             if (plainfo == lapinfo) {
                 param[PARAM_ERROR].d = 0.0;
