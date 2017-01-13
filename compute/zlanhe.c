@@ -53,7 +53,7 @@
  *          The order of the matrix A. n >= 0.
  *
  * @param[in,out] A
- *          On entry, the Hermitian positive definite matrix A.
+ *          On entry, the Hermitian matrix A.
  *          If uplo = PlasmaUpper, the leading N-by-N upper triangular part of A
  *          contains the upper triangular part of the matrix A, and the strictly
  *          lower triangular part of A is not referenced.

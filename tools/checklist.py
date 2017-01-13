@@ -243,12 +243,12 @@ def process( fname ):
               help="Use hyphens in \"m-by-n\", instead of \"m by n\"" )
 
         if (re.search( r'\b(z|pz|core_z)\S+\.(c|cc|cpp)', filename )
-            and not re.search( r'zsy', filename )):
+            and not re.search( r'zsy|zlansy', filename )):
             grep( lines, r'symmetric', flags=re.I,
                   help="Term \"symmetric\" should not occur in complex (z) routines (except zsy routines); use \"Hermitian\"." )
         # end
 
-        if (re.search( r'\b(zsy|pzsy|core_zsy)\S+\.(c|cc|cpp)', filename )):
+        if (re.search( r'\b(zsy|pzsy|core_zsy|zlansy)\S+\.(c|cc|cpp)', filename )):
             grep( lines, r'Hermitian', flags=re.I,
                   help="Term \"Hermitian\" should not occur in complex-symmetric (zsy) routines; use \"symmetric\"." )
         # end

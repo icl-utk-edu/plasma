@@ -23,7 +23,7 @@
  *
  *  Returns the norm of a trapezoidal or triangular matrix as
  *
- *     zlange = ( max(abs(A(i,j))), NORM = PlasmaMaxNorm
+ *     zlantr = ( max(abs(A(i,j))), NORM = PlasmaMaxNorm
  *              (
  *              ( norm1(A),         NORM = PlasmaOneNorm
  *              (
@@ -245,10 +245,10 @@ double plasma_zlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
  *
  *******************************************************************************
  *
- * @sa plasma_zlange
- * @sa plasma_omp_clange
- * @sa plasma_omp_dlange
- * @sa plasma_omp_slange
+ * @sa plasma_zlantr
+ * @sa plasma_omp_clantr
+ * @sa plasma_omp_dlantr
+ * @sa plasma_omp_slantr
  *
  ******************************************************************************/
 void plasma_omp_zlantr(plasma_enum_t norm, plasma_enum_t uplo,

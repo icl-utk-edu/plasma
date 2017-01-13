@@ -180,7 +180,7 @@ void test_zpotri(param_value_t param[], char *info)
         else {
             if (plainfo == lapinfo) {
                 param[PARAM_ERROR].d = 0.0;
-                param[PARAM_SUCCESS].i = 1;            
+                param[PARAM_SUCCESS].i = 1;
             }
             else {
                 param[PARAM_ERROR].d = INFINITY;
