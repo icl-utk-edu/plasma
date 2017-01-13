@@ -88,9 +88,10 @@ Feel free to use the following publications to reference PLASMA:
 Funding
 =======
 
-Currently, PLASMA is being developed in collaboration with:
+Currently, PLASMA is being developed in collaboration with European Commission funded [Horizon 2020](https://ec.europa.eu/programmes/horizon2020/) projects:
 
-* the [NLAFET](http://www.nlafet.eu) project, which is a European Commission funded [Horizon 2020](https://ec.europa.eu/programmes/horizon2020/) effort.
+* [NLAFET: Parallel Numerical Linear Algebra for Future Extreme Scale Systems](http://www.nlafet.eu), Grant Agreement no. 671633,
+* [INTERTWinE: Programming Model INTERoperability ToWards Exascale](http://www.intertwine-project.eu), Grant Agreement no. 671602.
 
 Primary funding for PLASMA was provided by NSF grants:
 
