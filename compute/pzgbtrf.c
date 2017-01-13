@@ -109,17 +109,18 @@ void plasma_pzgbtrf(plasma_desc_t A, int *ipiv,
                     for (int m = imax(k+1,n-A.kut); m < imin(k+A.klt, A.mt); m++) {
                         int mvam = plasma_tile_mview(A, m);
 
-                    #pragma omp task // priority(n == k+1)
-                    {
-                        core_zgemm(
-                            PlasmaNoTrans, PlasmaNoTrans,
-                            mvam, nvan, A.nb,
-                            -1.0, A(m, k), plasma_tile_mmain_band(A, m, k),
-                                  A(k, n), plasma_tile_mmain_band(A, k, n),
-                            1.0,  A(m, n), plasma_tile_mmain_band(A, m, n));
+                        #pragma omp task // priority(n == k+1)
+                        {
+                            core_zgemm(
+                                PlasmaNoTrans, PlasmaNoTrans,
+                                mvam, nvan, A.nb,
+                                -1.0, A(m, k), plasma_tile_mmain_band(A, m, k),
+                                      A(k, n), plasma_tile_mmain_band(A, k, n),
+                                1.0,  A(m, n), plasma_tile_mmain_band(A, m, n));
+                        }
                     }
+                    #pragma omp taskwait
                 }
-                #pragma omp taskwait
             }
         }
         #pragma omp task depend(in:ipivk[0:size_i])
