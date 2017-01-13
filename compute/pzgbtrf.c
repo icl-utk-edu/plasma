@@ -49,11 +49,11 @@ void plasma_pzgbtrf(plasma_desc_t A, int *ipiv,
         int size_a00 = (A.gm-k*A.mb) * plasma_tile_nmain(A, k);
         int size_i   = imin(mvak, nvak);
         #pragma omp task depend(inout:a00[0:size_a00]) \
-                         depend(out:ipivk[0:size_i]) \
-                         priority(1)
+                         depend(out:ipivk[0:size_i]) /*\
+                         priority(1) */
         {
             for (int i = 0; i < num_panel_threads; i++) {
-                #pragma omp task priority(1)
+                #pragma omp task // priority(1)
                 {
                     // create a view for panel as a "general" submatrix
                     plasma_desc_t view =
@@ -79,8 +79,8 @@ void plasma_pzgbtrf(plasma_desc_t A, int *ipiv,
             #pragma omp task depend(in:a00[0:size_a00]) \
                              depend(inout:ipivk[0:size_i]) \
                              depend(inout:a01[0:size_a01]) \
-                             depend(inout:a11[0:size_a11]) \
-                             priority(n == k+1)
+                             depend(inout:a11[0:size_a11]) /*\
+                             priority(n == k+1) */
             {
                 // laswp
                 int k1 = k*A.mb+1;
@@ -103,7 +103,7 @@ void plasma_pzgbtrf(plasma_desc_t A, int *ipiv,
                 for (int m = imax(k+1,n-A.kut); m < imin(k+A.klt, A.mt); m++) {
                     int mvam = plasma_tile_mview(A, m);
 
-                    #pragma omp task priority(n == k+1)
+                    #pragma omp task // priority(n == k+1)
                     {
                         core_zgemm(
                             PlasmaNoTrans, PlasmaNoTrans,

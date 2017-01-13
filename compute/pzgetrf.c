@@ -50,12 +50,12 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
         // panel
         #pragma omp task depend(inout:a00[0:ma00k*na00k]) \
                          depend(inout:a20[0:lda20*nvak]) \
-                         depend(out:ipiv[k*A.mb:mvak]) \
-                         priority(1)
+                         depend(out:ipiv[k*A.mb:mvak]) /*\
+                         priority(1) */
         {
             if (sequence->status == PlasmaSuccess) {
                 for (int rank = 0; rank < num_panel_threads; rank++) {
-                    #pragma omp task priority(1)
+                    #pragma omp task // priority(1)
                     {
                         plasma_desc_t view =
                             plasma_desc_view(A,
@@ -93,8 +93,8 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                              depend(in:ipiv[k*A.mb:mvak]) \
                              depend(inout:a01[0:ldak*nvan]) \
                              depend(inout:a11[0:ma11k*na11n]) \
-                             depend(inout:a21[0:lda21*nvan]) \
-                             priority(n == k+1)
+                             depend(inout:a21[0:lda21*nvan]) /*\
+                             priority(n == k+1) */
             {
                 if (sequence->status == PlasmaSuccess) {
                     // laswp
@@ -116,7 +116,7 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                         int mvam = plasma_tile_mview(A, m);
                         int ldam = plasma_tile_mmain(A, m);
 
-                        #pragma omp task priority(n == k+1)
+                        #pragma omp task // priority(n == k+1)
                         {
                             core_zgemm(
                                 PlasmaNoTrans, PlasmaNoTrans,
