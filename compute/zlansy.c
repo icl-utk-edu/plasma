@@ -21,7 +21,7 @@
  *
  * @ingroup plasma_lansy
  *
- *  Returns the norm of a Hermitian matrix as
+ *  Returns the norm of a symmetric matrix as
  *
  *     zlansy = ( max(abs(A(i,j))), NORM = PlasmaMaxNorm
  *              (
@@ -66,7 +66,8 @@
  *
  *******************************************************************************
  *
- * @return the specified norm of the Hermitian matrix A
+ * @retval double
+ *         The specified norm of the symmetric matrix A.
  *
  *******************************************************************************
  *

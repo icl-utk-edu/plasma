@@ -11,10 +11,12 @@
  **/
 #include "test.h"
 #include "flops.h"
+#include "core_blas.h"
 #include "core_lapack.h"
 #include "plasma.h"
 
 #include <assert.h>
+#include <math.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,18 +58,20 @@ void test_zpbtrf(param_value_t param[], char *info)
             //  gbtrs params for check
             print_usage(PARAM_NRHS);
             print_usage(PARAM_PADB);
+            print_usage(PARAM_ZEROCOL);
         }
         else {
             // Return column labels.
             snprintf(info, InfoLen,
-                "%*s %*s %*s %*s %*s %*s %*s ",
+                "%*s %*s %*s %*s %*s %*s %*s %*s ",
                 InfoSpacing, "UpLo",
                 InfoSpacing, "N",
                 InfoSpacing, "KD",
                 InfoSpacing, "PadA",
                 InfoSpacing, "NB",
                 InfoSpacing, "NRHS",
-                InfoSpacing, "PadB");
+                InfoSpacing, "PadB",
+                InfoSpacing, "ZeroCol");
         }
         return;
     }
@@ -90,14 +94,15 @@ void test_zpbtrf(param_value_t param[], char *info)
     // Return column values.
     //================================================================
     snprintf(info, InfoLen,
-        "%*c %*d %*d %*d %*d %*d %*d",
+        "%*c %*d %*d %*d %*d %*d %*d %*d",
         InfoSpacing, param[PARAM_UPLO].c,
         InfoSpacing, param[PARAM_N].i,
         InfoSpacing, kd,
         InfoSpacing, param[PARAM_PADA].i,
         InfoSpacing, param[PARAM_NB].i,
         InfoSpacing, param[PARAM_NRHS].i,
-        InfoSpacing, param[PARAM_PADB].i);
+        InfoSpacing, param[PARAM_PADB].i,
+        InfoSpacing, param[PARAM_ZEROCOL].i);
 
     //================================================================
     // Set tuning parameters.
@@ -132,6 +137,14 @@ void test_zpbtrf(param_value_t param[], char *info)
         for (i = j+kd+1; i < n; i++) A(i, j) = 0.0;
     }
 
+    int zerocol = param[PARAM_ZEROCOL].i;
+    if (zerocol >= 0 && zerocol < n) {
+        LAPACKE_zlaset_work(
+            LAPACK_COL_MAJOR, 'F', n, 1, 0.0, 0.0, &A(0, zerocol), lda);
+        LAPACKE_zlaset_work(
+            LAPACK_COL_MAJOR, 'F', 1, n, 0.0, 0.0, &A(zerocol, 0), lda);
+    }
+
     // band matrix A in LAPACK storage
     int ldab = imax(1, kd+1+pada);
     plasma_complex64_t *AB = NULL;
@@ -148,15 +161,20 @@ void test_zpbtrf(param_value_t param[], char *info)
             for (i = j; i <= imin(n-1, j+kd); i++) AB[i-j + j*ldab] = A(i, j);
         }
     }
+    plasma_complex64_t *ABref = NULL;
+    if (test) {
+        ABref = (plasma_complex64_t*)malloc(
+            (size_t)ldab*n*sizeof(plasma_complex64_t));
+        assert(ABref != NULL);
+
+        memcpy(ABref, AB, (size_t)ldab*n*sizeof(plasma_complex64_t));
+    }
 
     //================================================================
     // Run and time PLASMA.
     //================================================================
-    int iinfo;
-
     plasma_time_t start = omp_get_wtime();
-    iinfo = plasma_zpbtrf(uplo, n, kd, AB, ldab);
-    if (iinfo != 0) printf( " zpbtrf failed with info=%d\n", iinfo );
+    int plainfo = plasma_zpbtrf(uplo, n, kd, AB, ldab);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
@@ -167,54 +185,72 @@ void test_zpbtrf(param_value_t param[], char *info)
     // Test results by computing residual norm.
     //================================================================
     if (test) {
-        plasma_complex64_t zone =   1.0;
-        plasma_complex64_t zmone = -1.0;
+        if (plainfo == 0) {
+            plasma_complex64_t zone =   1.0;
+            plasma_complex64_t zmone = -1.0;
 
-        int nrhs = param[PARAM_NRHS].i;
-        int ldb = imax(1, n + param[PARAM_PADB].i);
+            int nrhs = param[PARAM_NRHS].i;
+            int ldb = imax(1, n + param[PARAM_PADB].i);
 
-        // set up right-hand-side B
-        plasma_complex64_t *B = NULL;
-        B = (plasma_complex64_t*)malloc((size_t)ldb*nrhs*sizeof(plasma_complex64_t));
-        assert(B != NULL);
+            // set up right-hand-side B
+            plasma_complex64_t *B = (plasma_complex64_t*)malloc(
+                (size_t)ldb*nrhs*sizeof(plasma_complex64_t));
+            assert(B != NULL);
 
-        retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*nrhs, B);
-        assert(retval == 0);
+            retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*nrhs, B);
+            assert(retval == 0);
 
-        // copy B to X
-        int ldx = ldb;
-        plasma_complex64_t *X = NULL;
-        X = (plasma_complex64_t*)malloc((size_t)ldx*nrhs*sizeof(plasma_complex64_t));
-        assert(X != NULL);
-        LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'F', n, nrhs, B, ldb, X, ldx);
+            // copy B to X
+            int ldx = ldb;
+            plasma_complex64_t *X = (plasma_complex64_t*)malloc(
+                (size_t)ldx*nrhs*sizeof(plasma_complex64_t));
+            assert(X != NULL);
+            LAPACKE_zlacpy_work(LAPACK_COL_MAJOR, 'F', n, nrhs, B, ldb, X, ldx);
 
-        // solve for X
-        iinfo = plasma_zpbtrs(uplo, n, kd, nrhs, AB, ldab, X, ldb);
-        if (iinfo != 0) printf( " zpbtrs failed with info = %d\n", iinfo );
+            // solve for X
+            int iinfo = plasma_zpbtrs(uplo, n, kd, nrhs, AB, ldab, X, ldb);
+            if (iinfo != 0) printf( " zpbtrs failed with info = %d\n", iinfo );
 
-        // compute residual vector
-        cblas_zhemm(CblasColMajor, CblasLeft, (CBLAS_UPLO) uplo, n, nrhs,
-                    CBLAS_SADDR(zmone), A, lda,
-                                        X, ldx,
-                    CBLAS_SADDR(zone),  B, ldb);
+            // compute residual vector
+            cblas_zhemm(CblasColMajor, CblasLeft, (CBLAS_UPLO) uplo, n, nrhs,
+                        CBLAS_SADDR(zmone), A, lda,
+                                            X, ldx,
+                        CBLAS_SADDR(zone),  B, ldb);
 
-        // compute various norms
-        double *work = NULL;
-        work = (double*)malloc((size_t)n*sizeof(double));
-        assert(work != NULL);
+            // compute various norms
+            double *work = NULL;
+            work = (double*)malloc((size_t)n*sizeof(double));
+            assert(work != NULL);
 
-        double Anorm = LAPACKE_zlanhe_work(LAPACK_COL_MAJOR, 'F', uplo_, n, A, lda, work);
-        double Xnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', n, nrhs, X, ldb, work);
-        double Rnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'I', n, nrhs, B, ldb, work);
-        double residual = Rnorm/(n*Anorm*Xnorm);
+            double Anorm = LAPACKE_zlanhe_work(
+                LAPACK_COL_MAJOR, 'F', uplo_, n, A, lda, work);
+            double Xnorm = LAPACKE_zlange_work(
+                LAPACK_COL_MAJOR, 'I', n, nrhs, X, ldb, work);
+            double Rnorm = LAPACKE_zlange_work(
+                LAPACK_COL_MAJOR, 'I', n, nrhs, B, ldb, work);
+            double residual = Rnorm/(n*Anorm*Xnorm);
 
-        param[PARAM_ERROR].d = residual;
-        param[PARAM_SUCCESS].i = residual < tol;
+            param[PARAM_ERROR].d = residual;
+            param[PARAM_SUCCESS].i = residual < tol;
 
-        // free arrays
-        free(work);
-        free(X);
-        free(B);
+            // free arrays
+            free(work);
+            free(X);
+            free(B);
+        }
+        else {
+            int lapinfo = LAPACKE_zpbtrf(
+                              LAPACK_COL_MAJOR, lapack_const(uplo),
+                              n, kd, ABref, ldab);
+            if (plainfo == lapinfo) {
+                param[PARAM_ERROR].d = 0.0;
+                param[PARAM_SUCCESS].i = 1;
+            }
+            else {
+                param[PARAM_ERROR].d = INFINITY;
+                param[PARAM_SUCCESS].i = 0;
+            }
+        }
     }
 
     //================================================================
@@ -222,4 +258,6 @@ void test_zpbtrf(param_value_t param[], char *info)
     //================================================================
     free(AB);
     free(A);
+    if (test)
+        free(ABref);
 }

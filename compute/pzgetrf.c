@@ -36,8 +36,10 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
 
     for (int k = 0; k < imin(A.mt, A.nt); k++) {
 
-        plasma_complex64_t *a00 = A(k, k);
-        plasma_complex64_t *a20 = A(A.mt-1, k);
+        plasma_complex64_t *a00, *a20;
+
+        a00 = A(k, k);
+        a20 = A(A.mt-1, k);
 
         int ma00k = (A.mt-k-1)*A.mb;
         int na00k = plasma_tile_nmain(A, k);
@@ -78,9 +80,11 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
         // update
         for (int n = k+1; n < A.nt; n++) {
 
-            plasma_complex64_t *a01 = A(k, n);
-            plasma_complex64_t *a11 = A(k+1, n);
-            plasma_complex64_t *a21 = A(A.mt-1, n);
+            plasma_complex64_t *a01, *a11, *a21;
+
+            a01 = A(k, n);
+            a11 = A(k+1, n);
+            a21 = A(A.mt-1, n);
 
             int ma11k = (A.mt-k-2)*A.mb;
             int na11n = plasma_tile_nmain(A, n);
@@ -100,7 +104,8 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                     // laswp
                     int k1 = k*A.mb+1;
                     int k2 = imin(k*A.mb+A.mb, A.m);
-                    plasma_desc_t view = plasma_desc_view(A, 0, n*A.nb, A.m, nvan);
+                    plasma_desc_t view =
+                        plasma_desc_view(A, 0, n*A.nb, A.m, nvan);
                     core_zlaswp(PlasmaRowwise, view, k1, k2, ipiv, 1);
 
                     // trsm
@@ -134,7 +139,8 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
     // pivoting to the left
     for (int k = 1; k < imin(A.mt, A.nt); k++) {
 
-        plasma_complex64_t *akk = A(k, k);
+        plasma_complex64_t *akk;
+        akk = A(k, k);
         int makk = (A.mt-k-1)*A.mb;
         int nakk = plasma_tile_nmain(A, k);
 

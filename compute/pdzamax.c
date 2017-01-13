@@ -64,7 +64,7 @@ void plasma_pdzamax(plasma_enum_t colrow,
                 int nvan = plasma_tile_nview(A, n);
                 core_omp_dzamax(PlasmaRowwise,
                                 mvam, nvan,
-                                A(m, n), ldam, 
+                                A(m, n), ldam,
                                 &work[A.m*n+m*A.mb],
                                 sequence, request);
             }

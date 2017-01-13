@@ -20,7 +20,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup PLASMA_Complex64_t
+ * @ingroup plasma_potri
  *
  *  Computes the inverse of a Hermitian positive definite
  *  matrix A using the Cholesky factorization
@@ -139,7 +139,7 @@ int plasma_zpotri(plasma_enum_t uplo,
 
 /***************************************************************************//**
  *
- * @ingroup plasma_zpotri
+ * @ingroup plasma_potri
  *
  *  Computes the inverse of a complex Hermitian
  *  positive definite matrix A using the Cholesky factorization
@@ -215,8 +215,7 @@ void plasma_omp_zpotri(plasma_enum_t uplo, plasma_desc_t A,
 
     // Invert triangular part.
     plasma_pztrtri(uplo, PlasmaNonUnit, A, sequence, request);
-    
+
     // Compute product of upper and lower triangle.
     plasma_pzlauum(uplo, A, sequence, request);
-
 }

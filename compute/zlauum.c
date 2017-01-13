@@ -86,7 +86,7 @@ int plasma_zlauum(plasma_enum_t uplo, int n,
         plasma_error("illegal value of lda");
         return -4;
     }
-    /* Quick return */
+    // quick return
     if (imax(n, 0) == 0)
         return PlasmaSuccess;
 
@@ -136,7 +136,7 @@ int plasma_zlauum(plasma_enum_t uplo, int n,
     plasma_sequence_destroy(sequence);
     return status;
 }
- /***************************************************************************//**
+/***************************************************************************//**
  *
  * @ingroup plasma_lauum
  *  Computes the product U * U^H or L^H * L, where the

@@ -102,7 +102,7 @@ void test_zgetri(param_value_t param[], char *info)
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
 
-    // Take Cholesky decomposition
+    // Take LU decomposition
     LAPACKE_zgetrf(LAPACK_COL_MAJOR, n, n, A, lda, ipiv);
 
     int zerocol = param[PARAM_ZEROCOL].i;

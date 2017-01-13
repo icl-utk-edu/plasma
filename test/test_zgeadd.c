@@ -191,7 +191,7 @@ void test_zgeadd(param_value_t param[], char *info)
         case PlasmaConjTrans:
             for (int j = 0; j < n; j++) {
                 for (int i = 0; i < m; i++) {
-                    Bref[ldb*j+i] = 
+                    Bref[ldb*j+i] =
                         beta * Bref[ldb*j+i] + alpha * conj(A[lda*i+j]);
                 }
             }

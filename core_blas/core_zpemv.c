@@ -189,7 +189,6 @@ int core_zpemv(plasma_enum_t trans, int storev,
         else {
             // l top rows of y
             if (l > 0) {
-
                 // w = A_2^H * x_2
                 cblas_zcopy(l, &X[incx*(m-l)], incx, work, 1);
                 cblas_ztrmv(CblasColMajor, (CBLAS_UPLO)PlasmaUpper,
@@ -198,7 +197,6 @@ int core_zpemv(plasma_enum_t trans, int storev,
                             l, &A[m-l], lda, work, 1);
 
                 if (m > l) {
-
                     // y_1 = beta * y_1 [ + alpha * A_1 * x_1 ]
                     cblas_zgemv(CblasColMajor, (CBLAS_TRANSPOSE)trans,
                                 m-l, l, CBLAS_SADDR(alpha), A, lda,
@@ -208,7 +206,6 @@ int core_zpemv(plasma_enum_t trans, int storev,
                     cblas_zaxpy(l, CBLAS_SADDR(alpha), work, 1, Y, incy);
                 }
                 else {
-
                     // y_1 = y_1 + alpha * w
                     if (beta == 0.0) {
                         cblas_zscal(l, CBLAS_SADDR(alpha), work, 1);

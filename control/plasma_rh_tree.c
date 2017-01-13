@@ -383,7 +383,7 @@ void plasma_rh_tree_auto_forest(int mt, int nt,
         //int bs = 4;
         // Determine the size of the flat tree for this column.
         // intentional integer division
-        int bs = imax(1,(mt-j-1)*(minnt-j-1) / (gamma*concurrency)); 
+        int bs = imax(1,(mt-j-1)*(minnt-j-1) / (gamma*concurrency));
 
         // Triangularize all supertiles in this column.
 
@@ -407,7 +407,6 @@ void plasma_rh_tree_auto_forest(int mt, int nt,
             int nZnew = nZ + batch;
 
             for (int ks = nZ; ks < nZnew; ks++) {
-
                 // row index of a tile to be zeroed
                 int pmkk    = j + (nZ_target-ks)*bs;
                 // row index of the anihilator tile

@@ -92,7 +92,7 @@ int plasma_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
         plasma_error("illegal value of lda");
         return -5;
     }
-    /* Quick return */
+    // quick return
     if (imax(n, 0) == 0)
         return PlasmaSuccess;
 
@@ -143,9 +143,9 @@ int plasma_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
     return status;
 }
 
-/****************************************************************************//**
+/***************************************************************************//**
  *
-  * @ingroup plasma_ztrtri
+ * @ingroup plasma_trtri
  *
  *  Computes the inverse of a complex upper or lower triangular matrix A.
  *

@@ -123,7 +123,7 @@ void core_omp_zlantr_aux(plasma_enum_t norm, plasma_enum_t uplo,
         {
             if (sequence->status == PlasmaSuccess) {
 
-                if (uplo == PlasmaUpper) {            
+                if (uplo == PlasmaUpper) {
                     if (diag == PlasmaNonUnit) {
                         for (int i = 0; i < m; i++)
                             value[i] = 0.0;

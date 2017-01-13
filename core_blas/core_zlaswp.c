@@ -55,7 +55,7 @@ void core_zlaswp(plasma_enum_t colrow,
                                 A(m1/A.mb, 0) + m1%A.mb, lda1,
                                 A(m2/A.mb, 0) + m2%A.mb, lda2);
                 }
-            }        
+            }
         }
     }
     //===================
@@ -90,7 +90,7 @@ void core_zlaswp(plasma_enum_t colrow,
                                 A(0, n1/A.nb) + (n1%A.nb)*lda0, 1,
                                 A(0, n2/A.nb) + (n2%A.nb)*lda0, 1);
                 }
-            }        
+            }
         }
     }
 }

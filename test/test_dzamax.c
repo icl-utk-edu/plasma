@@ -139,7 +139,7 @@ void test_dzamax(param_value_t param[], char *info)
                 CBLAS_INDEX idx = cblas_izamax(n, &A[i], lda);
                 valref[i] = core_dcabs1(A[i+lda*idx]);
             }
-        }      
+        }
 
         // Calculate difference.
         cblas_daxpy(size, -1.0, values, 1, valref, 1);

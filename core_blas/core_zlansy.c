@@ -79,7 +79,7 @@ void core_omp_zlansy_aux(plasma_enum_t norm, plasma_enum_t uplo,
                             value[i] += cabs(A[lda*j+i]);
                             value[j] += cabs(A[lda*j+i]);
                         }
-                    }                    
+                    }
                 }
             }
         }
