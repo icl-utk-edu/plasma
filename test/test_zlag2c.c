@@ -45,8 +45,7 @@ void test_zlag2c(param_value_t param[], char *info)
     if (param == NULL) {
         if (info == NULL) {
             // Print usage info
-            print_usage(PARAM_M);
-            print_usage(PARAM_N);
+            print_usage(PARAM_DIM);
             print_usage(PARAM_PADA);
             print_usage(PARAM_PADB);
             print_usage(PARAM_NB);
@@ -66,8 +65,8 @@ void test_zlag2c(param_value_t param[], char *info)
     // Return column values
     snprintf(info, InfoLen,
              "%*d %*d %*d %*d %*d",
-             InfoSpacing, param[PARAM_M].i,
-             InfoSpacing, param[PARAM_N].i,
+             InfoSpacing, param[PARAM_DIM].dim.m,
+             InfoSpacing, param[PARAM_DIM].dim.n,
              InfoSpacing, param[PARAM_PADA].i,
              InfoSpacing, param[PARAM_PADB].i,
              InfoSpacing, param[PARAM_NB].i);
@@ -75,8 +74,8 @@ void test_zlag2c(param_value_t param[], char *info)
     //================================================================
     // Set parameters
     //================================================================
-    int m = param[PARAM_M].i;
-    int n = param[PARAM_N].i;
+    int m = param[PARAM_DIM].dim.m;
+    int n = param[PARAM_DIM].dim.n;
 
     int lda  = imax(1, m + param[PARAM_PADA].i);
     int ldas = imax(1, m + param[PARAM_PADB].i);

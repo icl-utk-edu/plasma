@@ -48,7 +48,7 @@ void test_zgetri(param_value_t param[], char *info)
     if (param == NULL) {
         if (info == NULL) {
             // Print usage info.
-            print_usage(PARAM_N);
+            print_usage(PARAM_DIM);
             print_usage(PARAM_PADA);
             print_usage(PARAM_NB);
             print_usage(PARAM_ZEROCOL);
@@ -67,7 +67,7 @@ void test_zgetri(param_value_t param[], char *info)
     // Return column values.
     snprintf(info, InfoLen,
              "%*d %*d %*d %*d",
-             InfoSpacing, param[PARAM_N].i,
+             InfoSpacing, param[PARAM_DIM].dim.n,
              InfoSpacing, param[PARAM_PADA].i,
              InfoSpacing, param[PARAM_NB].i,
              InfoSpacing, param[PARAM_ZEROCOL].i);
@@ -75,7 +75,7 @@ void test_zgetri(param_value_t param[], char *info)
     //================================================================
     // Set parameters.
     //================================================================
-    int n = param[PARAM_N].i;
+    int n = param[PARAM_DIM].dim.n;
     int lda = imax(1, n + param[PARAM_PADA].i);
 
     int test = param[PARAM_TEST].c == 'y';

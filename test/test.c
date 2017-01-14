@@ -543,12 +543,8 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--iter="))
             iter = strtol(strchr(argv[i], '=')+1, NULL, 10);
 
-        else if (param_starts_with(argv[i], "--m="))
-            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_M]);
-        else if (param_starts_with(argv[i], "--n="))
-            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_N]);
-        else if (param_starts_with(argv[i], "--k="))
-            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_K]);
+        else if (param_starts_with(argv[i], "--dim"))
+            err = param_scan_int3(strchr(argv[i], '=')+1, &param[PARAM_DIM]);
         else if (param_starts_with(argv[i], "--kl="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_KL]);
         else if (param_starts_with(argv[i], "--ku="))
@@ -622,7 +618,7 @@ int param_read(int argc, char **argv, param_t param[])
     // Set character parameters.
     //--------------------------------------------------
     if (param[PARAM_OUTER].num == 0)
-        param_add_char('n', &param[PARAM_OUTER]);
+        param_add_char('y', &param[PARAM_OUTER]);
     if (param[PARAM_TEST].num == 0)
         param_add_char('y', &param[PARAM_TEST]);
 
@@ -646,12 +642,10 @@ int param_read(int argc, char **argv, param_t param[])
     //--------------------------------------------------
     // Set integer parameters.
     //--------------------------------------------------
-    if (param[PARAM_M].num == 0)
-        param_add_int(1000, &param[PARAM_M]);
-    if (param[PARAM_N].num == 0)
-        param_add_int(1000, &param[PARAM_N]);
-    if (param[PARAM_K].num == 0)
-        param_add_int(1000, &param[PARAM_K]);
+    if (param[PARAM_DIM].num == 0) {
+        int3_t dim = { 1000, 1000, 1000 };
+        param_add_int3(dim, &param[PARAM_DIM]);
+    }
     if (param[PARAM_KL].num == 0)
         param_add_int(200, &param[PARAM_KL]);
     if (param[PARAM_KU].num == 0)
@@ -850,6 +844,69 @@ int param_scan_int(const char *str, param_t *param)
 
 /***************************************************************************//**
  *
+ * @brief Scans a list of integers or ranges (start:end:step).
+ *        Adds the value(s) to a parameter iterator.
+ *
+ * @param[in]    str   - string containin an integer
+ * @param[inout] param - parameter iterator
+ *
+ * @retval 1 - failure
+ * @retval 0 - success
+ *
+ ******************************************************************************/
+int param_scan_int3(const char *str, param_t *param)
+{
+    int m_start, m_end, m_step;
+    int n_start, n_end, n_step;
+    int k_start, k_end, k_step;
+    while (true) {
+        if (scan_irange(&str, &m_start, &m_end, &m_step) != 0)
+            return 1;
+        if (*str == 'x') {
+            str += 1;
+            if (scan_irange(&str, &n_start, &n_end, &n_step) != 0)
+                return 1;
+            if (*str == 'x') {
+                str += 1;
+                if (scan_irange(&str, &k_start, &k_end, &k_step) != 0)
+                    return 1;
+            }
+            else {
+                k_start = n_start;
+                k_end   = n_end;
+                k_step  = n_step;
+            }
+        }
+        else {
+            k_start = n_start = m_start;
+            k_end   = n_end   = m_end;
+            k_step  = n_step  = m_step;
+        }
+        if (m_step == 0 && n_step == 0 && k_step == 0) {
+            // if all steps are 0, single point
+            int3_t dim = { m_start, n_start, k_start };
+            param_add_int3(dim, param);
+        }
+        else {
+            for (int m = m_start, n = n_start, k = k_start;
+                 (m_step > 0 ? m <= m_end : m >= m_end) &&
+                 (n_step > 0 ? n <= n_end : n >= n_end) &&
+                 (k_step > 0 ? k <= k_end : k >= k_end);
+                 m += m_step, n += n_step, k += k_step)
+            {
+                int3_t dim = { m, n, k };
+                param_add_int3(dim, param);
+            }
+        }
+        if (*str == '\0')
+            break;
+        str += 1;
+    }
+    return 0;
+}
+
+/***************************************************************************//**
+ *
  * @brief Scans a list of characters.
  *        Adds the value(s) to a parameter iterator.
  *
@@ -975,6 +1032,20 @@ void param_add(param_t *param)
 void param_add_int(int ival, param_t *param)
 {
     param->val[param->num].i = ival;
+    param_add(param);
+}
+
+/***************************************************************************//**
+ *
+ * @brief Adds an integer to a parameter iterator.
+ *
+ * @param[in]    ival  - integer
+ * @param[inout] param - parameter iterator
+ *
+ ******************************************************************************/
+void param_add_int3(int3_t ival, param_t *param)
+{
+    param->val[param->num].dim = ival;
     param_add(param);
 }
 
