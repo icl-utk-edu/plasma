@@ -52,8 +52,8 @@
  * @param[in] n
  *          The order of the matrix A. n >= 0.
  *
- * @param[in,out] A
- *          On entry, the Hermitian positive definite matrix A.
+ * @param[in,out] pA
+ *          On entry, the Hermitian matrix A.
  *          If uplo = PlasmaUpper, the leading N-by-N upper triangular part of A
  *          contains the upper triangular part of the matrix A, and the strictly
  *          lower triangular part of A is not referenced.
@@ -66,7 +66,8 @@
  *
  *******************************************************************************
  *
- * @return the specified norm of the Hermitian matrix A
+ * @retval double
+ *         The specified norm of the Hermitian matrix A.
  *
  *******************************************************************************
  *
@@ -75,7 +76,7 @@
  *
  ******************************************************************************/
 double plasma_zlanhe(plasma_enum_t norm, plasma_enum_t uplo,
-					 int n,
+                     int n,
                      plasma_complex64_t *pA, int lda)
 {
     // Get PLASMA context.
@@ -203,6 +204,13 @@ double plasma_zlanhe(plasma_enum_t norm, plasma_enum_t uplo,
  * @param[in] A
  *          The descriptor of matrix A.
  *
+ * @param[out] work
+ *          Workspace of size:
+ *          - PlasmaMaxNorm: A.mt*A.nt
+ *          - PlasmaOneNorm: A.mt*A.n + A.n
+ *          - PlasmaInfNorm: A.mt*A.n + A.n
+ *          - PlasmaFrobeniusNorm: 2*A.mt*A.nt
+ *
  * @param[out] value
  *          The calculated value of the norm requested.
  *
@@ -269,7 +277,7 @@ void plasma_omp_zlanhe(plasma_enum_t norm, plasma_enum_t uplo, plasma_desc_t A,
 
     // quick return
     if (A.m == 0) {
-    	*value = 0.0;
+        *value = 0.0;
         return;
     }
 

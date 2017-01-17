@@ -48,7 +48,7 @@ void plasma_pzlange(plasma_enum_t norm,
                 int nvan = plasma_tile_nview(A, n);
                 core_omp_zlange(PlasmaMaxNorm,
                                 mvam, nvan,
-                                A(m, n), ldam, 
+                                A(m, n), ldam,
                                 &stub, &work[A.mt*n+m],
                                 sequence, request);
             }
@@ -71,7 +71,7 @@ void plasma_pzlange(plasma_enum_t norm,
                 int nvan = plasma_tile_nview(A, n);
                 core_omp_zlange_aux(PlasmaOneNorm,
                                     mvam, nvan,
-                                    A(m, n), ldam, 
+                                    A(m, n), ldam,
                                     &work[A.n*m+n*A.nb],
                                     sequence, request);
             }
@@ -95,7 +95,7 @@ void plasma_pzlange(plasma_enum_t norm,
                 int nvan = plasma_tile_nview(A, n);
                 core_omp_zlange_aux(PlasmaInfNorm,
                                     mvam, nvan,
-                                    A(m, n), ldam, 
+                                    A(m, n), ldam,
                                     &work[A.m*n+m*A.mb],
                                     sequence, request);
             }

@@ -51,7 +51,7 @@
  *          The scalar alpha.
  *
  * @param[in] A
- *          A lda-by-ka matrix.
+ *          An lda-by-ka matrix.
  *          If trans = PlasmaNoTrans, ka = k;
  *          if trans = PlasmaTrans,   ka = n.
  *
@@ -61,7 +61,7 @@
  *          if trans = PlasmaTrans,   lda >= max(1, k).
  *
  * @param[in] B
- *          A ldb-by-kb matrix.
+ *          An ldb-by-kb matrix.
  *          If trans = PlasmaNoTrans, kb = k;
  *          if trans = PlasmaTrans,   kb = n.
  *
@@ -74,7 +74,7 @@
  *          The scalar beta.
  *
  * @param[in,out] C
- *          A ldc-by-n matrix.
+ *          An ldc-by-n matrix.
  *          On exit, the uplo part of the matrix is overwritten
  *          by the uplo part of the updated matrix.
  *

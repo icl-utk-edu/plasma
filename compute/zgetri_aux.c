@@ -29,7 +29,7 @@
  * @param[in] n
  *          The number of columns of the matrix B. n >= 0.
  *
- * @param[in,out] A
+ * @param[in,out] pA
  *          On entry, the upper-triangular part contains the inverse of the
  *          U-factor, and the lower-triangular part contains the L-factor,
  *          both factors are computed by plasma_zgetrf.

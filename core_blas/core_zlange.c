@@ -91,7 +91,6 @@ void core_omp_zlange_aux(int norm, int m, int n,
                     for (int i = 1; i < m; i++) {
                         value[j] += cabs(A[lda*j+i]);
                     }
-
                 }
             }
         }

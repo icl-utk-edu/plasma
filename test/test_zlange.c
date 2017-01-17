@@ -133,24 +133,28 @@ void test_zlange(param_value_t param[], char *info)
                            m, n, Aref, lda);
 
         // Calculate relative error
-        double error = fabs(value-valueRef) / valueRef;
+        double error = fabs(value-valueRef);
+        if (valueRef != 0)
+            error /= valueRef;
         double tol = eps;
+        double normalize = 1;
         switch (norm) {
             case PlasmaInfNorm:
                 // Sum order on the line can differ
-                tol *= (double)n;
+                normalize = n;
                 break;
 
             case PlasmaOneNorm:
                 // Sum order on the column can differ
-                tol *= (double)m;
+                normalize = m;
                 break;
 
             case PlasmaFrobeniusNorm:
                 // Sum order on every element can differ
-                tol *= (double)m*n;
+                normalize = m*n;
                 break;
         }
+        error /= normalize;
         param[PARAM_ERROR].d   = error;
         param[PARAM_SUCCESS].i = error < tol;
     }

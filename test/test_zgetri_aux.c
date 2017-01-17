@@ -86,7 +86,7 @@ void test_zgetri_aux(param_value_t param[], char *info)
     // Allocate and initialize arrays.
     //================================================================
     plasma_complex64_t *A =
-        (plasma_complex64_t*)malloc((size_t)lda*lda*sizeof(plasma_complex64_t));
+        (plasma_complex64_t*)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
     int *ipiv;
@@ -105,7 +105,7 @@ void test_zgetri_aux(param_value_t param[], char *info)
     // than L or U, but in practice it seems okay.
     // See Higham, Accuracy and Stability of Numerical Algorithms, ch 8.)
     //=================================================================
-    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*lda, A);
+    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
     LAPACKE_zgetrf(CblasColMajor, n, n, A, lda, ipiv);
     plasma_complex64_t *L = NULL;

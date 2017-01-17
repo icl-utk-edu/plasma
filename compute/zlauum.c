@@ -40,12 +40,13 @@
  * @param[in] n
  *          The order of the matrix A. n >= 0.
  *
- * @param[in,out] A
+ * @param[in,out] pA
  *          On entry, the triangular factor U or L.
  *          On exit, if UPLO = 'U', the upper triangle of A is
  *          overwritten with the upper triangle of the product U * U^H;
  *          if UPLO = 'L', the lower triangle of A is overwritten with
  *          the lower triangle of the product L^H * L.
+ *          The diagonal is assumed to be real with no imaginary part.
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,n).
@@ -85,7 +86,7 @@ int plasma_zlauum(plasma_enum_t uplo, int n,
         plasma_error("illegal value of lda");
         return -4;
     }
-    /* Quick return */
+    // quick return
     if (imax(n, 0) == 0)
         return PlasmaSuccess;
 
@@ -135,7 +136,8 @@ int plasma_zlauum(plasma_enum_t uplo, int n,
     plasma_sequence_destroy(sequence);
     return status;
 }
- /***************************************************************************//**
+
+/***************************************************************************//**
  *
  * @ingroup plasma_lauum
  *  Computes the product U * U^H or L^H * L, where the

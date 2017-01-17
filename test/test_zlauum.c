@@ -66,7 +66,7 @@ void test_zlauum(param_value_t param[], char *info)
     // Return column values.
     snprintf(info, InfoLen,
              "%*c %*d %*d %*d",
-             InfoSpacing, param[PARAM_SIDE].c,
+             InfoSpacing, param[PARAM_UPLO].c,
              InfoSpacing, param[PARAM_N].i,
              InfoSpacing, param[PARAM_PADA].i,
              InfoSpacing, param[PARAM_NB].i);
@@ -92,13 +92,13 @@ void test_zlauum(param_value_t param[], char *info)
     // Allocate and initialize arrays.
     //================================================================
     plasma_complex64_t *A =
-        (plasma_complex64_t*)malloc((size_t)lda*lda*sizeof(plasma_complex64_t));
+        (plasma_complex64_t*)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
     plasma_complex64_t *Aref;
 
     int *ipiv;
-    ipiv = (int*)malloc((size_t)lda*sizeof(int));
+    ipiv = (int*)malloc((size_t)n*sizeof(int));
     assert(ipiv != NULL);
 
     int seed[] = {0, 0, 0, 1};
@@ -113,22 +113,25 @@ void test_zlauum(param_value_t param[], char *info)
     // than L or U, but in practice it seems okay.
     // See Higham, Accuracy and Stability of Numerical Algorithms, ch 8.)
     //=================================================================
-    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*lda, A);
+    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     assert(retval == 0);
 
-    LAPACKE_zgetrf(CblasColMajor, lda, lda, A, lda, ipiv);
+    LAPACKE_zgetrf(CblasColMajor, n, n, A, lda, ipiv);
 
+    // make the diagonal real, otherwise both PLASMA and LAPACK are equally
+    // wrong
+    for (int j = 0; j < n; j++) {
+        A(j, j) = A(j, j) + conj(A(j, j));
+    }
+    // use upper triangle of the factorization
     if (uplo == PlasmaLower) {
         // L = U^T
-        for (int j = 0; j < lda; j++) {
+        for (int j = 0; j < n; j++) {
             for (int i = 0; i < j; i++) {
-                A(j,i) = A(i,j);
+                A(j, i) = A(i, j);
             }
         }
     }
-
-    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
-    assert(retval == 0);
 
     if (test) {
         Aref = (plasma_complex64_t*)malloc(
@@ -161,21 +164,22 @@ void test_zlauum(param_value_t param[], char *info)
         plasma_complex64_t zmone = -1.0;
         double work[1];
 
-        // B = A^H A or A A^H
+        // B = L^H*L or U*U^H
         LAPACKE_zlauum_work(
             CblasColMajor,
             lapack_const(uplo),
             n, Aref, lda);
 
-        double Anorm = LAPACKE_zlange_work(
-               LAPACK_COL_MAJOR, 'F', lda, lda, Aref, lda, work);
+        double Anorm = LAPACKE_zlanhe_work(
+               LAPACK_COL_MAJOR, 'F', lapack_const(uplo), n, Aref, lda, work);
 
         // A -= Aref
         cblas_zaxpy((size_t)lda*n, CBLAS_SADDR(zmone), Aref, 1, A, 1);
 
-        double error = LAPACKE_zlange_work(
-                           LAPACK_COL_MAJOR, 'F', lda, n, A, lda, work);
-        if (Anorm != 0)
+        double error = LAPACKE_zlanhe_work(
+               LAPACK_COL_MAJOR, 'F', lapack_const(uplo), n, A, lda, work);
+
+        if (Anorm != 0.0)
             error /= Anorm;
 
         param[PARAM_ERROR].d = error;

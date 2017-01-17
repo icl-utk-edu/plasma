@@ -229,7 +229,6 @@ int core_zttlqt(int m, int n, int ib,
                 &A2[ii], lda2,
                 &T[ldt*ii], ldt,
                 work, m);
-
         }
     }
     return PlasmaSuccess;

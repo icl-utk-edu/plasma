@@ -64,7 +64,7 @@
  * @param[in] alpha
  *          The scalar alpha.
  *
- * @param[in] A
+ * @param[in] pA
  *          The k-by-k triangular matrix,
  *          where k = m if side = PlasmaLeft,
  *            and k = n if side = PlasmaRight.
@@ -80,7 +80,7 @@
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,k).
  *
- * @param[in,out] B
+ * @param[in,out] pB
  *          On entry, the m-by-n right hand side matrix B.
  *          On exit, if return value = 0, the m-by-n solution matrix X.
  *

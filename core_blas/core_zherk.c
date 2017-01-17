@@ -49,7 +49,7 @@
  *          The scalar alpha.
  *
  * @param[in] A
- *          A is a lda-by-ka matrix.
+ *          A is an lda-by-ka matrix.
  *          If trans = PlasmaNoTrans,   ka = k;
  *          if trans = PlasmaConjTrans, ka = n.
  *
@@ -62,7 +62,7 @@
  *          The scalar beta.
  *
  * @param[in,out] C
- *          C is a ldc-by-n matrix.
+ *          C is an ldc-by-n matrix.
  *          On exit, the uplo part of the matrix is overwritten
  *          by the uplo part of the updated matrix.
  *

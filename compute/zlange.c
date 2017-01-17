@@ -53,7 +53,7 @@
  *          The number of columns of the matrix A. n >= 0. When n = 0,
  *          the returned value is set to zero.
  *
- * @param[in] A
+ * @param[in] pA
  *          The m-by-n matrix A.
  *
  * @param[in] lda
@@ -61,7 +61,8 @@
  *
  *******************************************************************************
  *
- * @return the specified norm of the general matrix A
+ * @retval double
+ *         The specified norm of the general matrix A.
  *
  *******************************************************************************
  *
@@ -72,7 +73,7 @@
  *
  ******************************************************************************/
 double plasma_zlange(plasma_enum_t norm,
-					 int m, int n,
+                     int m, int n,
                      plasma_complex64_t *pA, int lda)
 {
     // Get PLASMA context.
@@ -198,6 +199,13 @@ double plasma_zlange(plasma_enum_t norm,
  * @param[in] A
  *          The descriptor of matrix A.
  *
+ * @param[out] work
+ *          Workspace of size:
+ *          - PlasmaMaxNorm: A.mt*A.nt
+ *          - PlasmaOneNorm: A.mt*A.n + A.n
+ *          - PlasmaInfNorm: A.nt*A.m + A.m
+ *          - PlasmaFrobeniusNorm: 2*A.mt*A.nt
+ *
  * @param[out] value
  *          The calculated value of the norm requested.
  *
@@ -260,7 +268,7 @@ void plasma_omp_zlange(plasma_enum_t norm, plasma_desc_t A,
 
     // quick return
     if (imin(A.m, A.n) == 0) {
-    	*value = 0.0;
+        *value = 0.0;
         return;
     }
 

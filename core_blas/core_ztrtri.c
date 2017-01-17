@@ -49,10 +49,9 @@
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,n).
  *
- * @param[out] info
- *          - 0 on successful exit
- *          - < 0 if -i, the i-th argument had an illegal value
- *          - > 0 if i, A(i,i) is exactly zero.  The triangular
+ * @retval PlasmaSuccess on successful exit
+ * @retval < 0 if -i, the i-th argument had an illegal value
+ * @retval > 0 if i, A(i,i) is exactly zero.  The triangular
  *          matrix is singular and its inverse can not be computed.
  *
  ******************************************************************************/
@@ -69,16 +68,16 @@ int core_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
 void core_omp_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
                      int n,
                      plasma_complex64_t *A, int lda,
+                     int iinfo,
                      plasma_sequence_t *sequence, plasma_request_t *request)
 {
     #pragma omp task depend(inout:A[0:lda*n])
     {
         if (sequence->status == PlasmaSuccess) {
-            int info = core_ztrtri(uplo, diag, n, A, lda);
-            if (info != PlasmaSuccess) {
-                coreblas_error("core_ztrtri() failed");
-                plasma_request_fail(sequence, request, PlasmaErrorInternal);
-            }
+            int info = core_ztrtri(uplo, diag,
+                                   n, A, lda);
+            if (info != 0)
+                plasma_request_fail(sequence, request, iinfo+info);
         }
     }
 }

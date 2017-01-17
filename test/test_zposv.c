@@ -100,11 +100,13 @@ void test_zposv(param_value_t param[], char *info)
     // Allocate and initialize arrays.
     //================================================================
     plasma_complex64_t *A =
-        (plasma_complex64_t*)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
+        (plasma_complex64_t*)malloc((size_t)lda*n
+                                    *sizeof(plasma_complex64_t));
     assert(A != NULL);
 
     plasma_complex64_t *B =
-        (plasma_complex64_t*)malloc((size_t)ldb*nrhs*sizeof(plasma_complex64_t));
+        (plasma_complex64_t*)malloc((size_t)ldb*nrhs
+                                    *sizeof(plasma_complex64_t));
     assert(B != NULL);
 
     int seed[] = {0, 0, 0, 1};
