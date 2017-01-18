@@ -127,6 +127,14 @@ void test_zhetrf_aa(param_value_t param[], char *info)
         }
     }
 
+printf( " A:\n" );
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            printf( "%.2e ",A(i,j) );
+        }
+        printf( "\n" );
+    }
+
     plasma_complex64_t *Aref = NULL;
     if (test) {
         Aref = (plasma_complex64_t*)malloc(
@@ -143,6 +151,15 @@ void test_zhetrf_aa(param_value_t param[], char *info)
     plasma_zhetrf_aa(uplo, n, A, lda, T, ldt, ipiv, W, lwork, iwork);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
+printf( " L:\n" );
+    for (int i = 0; i < n; ++i) printf( "%d ",ipiv[i] );
+    printf( "\n" );
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            printf( "%.2e ",A(i,j) );
+        }
+        printf( "\n" );
+    }
 
     param[PARAM_TIME].d = time;
     param[PARAM_GFLOPS].d = flops_zpotrf(n) / time / 1e9;

@@ -60,6 +60,11 @@ void core_zgessq(int m, int n,
 int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
                 plasma_barrier_t *barrier);
 
+int core_zhegst(int itype, plasma_enum_t uplo,
+                int n,
+                plasma_complex64_t *A, int lda,
+                plasma_complex64_t *B, int ldb);
+
 void core_zhemm(plasma_enum_t side, plasma_enum_t uplo,
                 int m, int n,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
@@ -330,6 +335,12 @@ void core_omp_zgessq_aux(int n,
                          double *value,
                          plasma_sequence_t *sequence,
                          plasma_request_t *request);
+
+void core_omp_zhegst(int itype, plasma_enum_t uplo,
+                     int n,
+                     plasma_complex64_t *A, int lda,
+                     plasma_complex64_t *B, int ldb,
+                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void core_omp_zhemm(
     plasma_enum_t side, plasma_enum_t uplo,

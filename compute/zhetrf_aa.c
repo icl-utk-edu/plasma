@@ -108,6 +108,10 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
     // Set tiling parameters.
     int nb = plasma->nb;
 
+    // Initialize barrier
+    int num_panel_threads = plasma->num_panel_threads;
+    plasma_barrier_init(&plasma->barrier, num_panel_threads);
+
     // Create tile matrix.
     plasma_desc_t A;
     plasma_desc_t T;
@@ -121,7 +125,7 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
     }
     // band matrix
     retval = plasma_desc_general_band_create(PlasmaComplexDouble, uplo, nb, nb,
-                                             2*nb, n, 0, 0, n, n, 2*nb, 2*nb, &T);
+                                             2*nb, n, 0, 0, n, n, 2*nb-1, 2*nb-1, &T);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_band_create() failed");
         return retval;
