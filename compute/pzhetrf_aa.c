@@ -69,12 +69,12 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
     //==============
     if (uplo == PlasmaLower) {
         for (int k = 0; k < A.mt; k++) {
-            int tempkn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
+            int mvak = plasma_tile_mview(A, k);
             int ldak = plasma_tile_mmain(A, k);
 
             /* -- computing offdiagonals H(1:k-1, k) -- */
             for(int m=1; m<k; m++) {
-                int tempmm = m == A.mt-1 ? A.m-m*A.mb : A.mb;
+                int mvam = plasma_tile_mview(A, m);
                 int ldam = plasma_tile_mmain(A, m);
 
                 #ifdef WITH_PRIORITY
@@ -82,7 +82,7 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                 #endif
                 core_omp_zgemm(
                     PlasmaNoTrans, PlasmaConjTrans,
-                    tempmm, tempkn, tempmm,
+                    mvam, mvak, mvam,
                     zone,  T(m, m), A.mb,
                            L(k, m), ldak,
                     zzero, H(m, k), ldam,
@@ -90,16 +90,16 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                 if( m > 1 ) {
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaConjTrans,
-                        tempmm, tempkn, A.mb,
+                        mvam, mvak, A.mb,
                         zone,  T(m, m-1), A.mb,
                                L(k, m-1), ldak,
                         zone,  H(m, k),   ldam,
                         sequence, request);
                 }
-                int tempmp1 = m+1 == A.mt-1 ? A.m-(m+1)*A.mb : A.mb;
+                int mvamp1 = plasma_tile_mview(A, m+1);
                 core_omp_zgemm(
                     PlasmaConjTrans, PlasmaConjTrans,
-                    tempmm, tempkn, tempmp1,
+                    mvam, mvak, mvamp1,
                     zone,  T(m+1, m), A.mb,
                            L(k, m+1), ldak,
                     zone,  H(m, k),   ldam,
@@ -110,22 +110,16 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                 #endif
             }
             /* ---- end of computing H(1:(k-1),k) -- */
-#pragma omp taskwait
-printf( " -- T(%d,%d) --\n",2,1 );
-for (int i=0; i<tempkn; i++) {
-  for (int j=0; j<tempkn; j++) printf( "%.2e ",T(2,1)[i+j*A.mb] );
-  printf( "\n" );
-}
 
             /* -- computing diagonal T(k, k) -- */
+            plasma_complex64_t beta;
             if (k > 1) {
                 int num = imin(tot, k-1);
                 for (int m=1; m<k; m++) {
-                    int tempmm = m == A.mt-1 ? A.m-m*A.mb : A.mb;
+                    int mvam = plasma_tile_mview(A, m);
                     int ldam = plasma_tile_mmain(A, m);
                     int id = (m-1) % num;
 
-                    plasma_complex64_t beta;
                     if( m < num+1 ) {
                         beta = zzero;
                     } else{
@@ -134,22 +128,9 @@ for (int i=0; i<tempkn; i++) {
                     #ifdef WITH_PRIORITY
                     QUARK_Task_Flag_Set(&task_flags, TASK_PRIORITY, QUARK_TASK_MAX_PRIORITY-2);
                     #endif
-#pragma omp taskwait
-printf( " W3(%d)\n",id );
-printf( " L(%d,%d)\n",k,m );
-for (int i=0; i<tempkn; i++) {
-  for (int j=0; j<tempkn; j++) printf( "%.2e ",L(k,m)[i+j*A.mb] );
-  printf( "\n" );
-}
-printf( " H(%d,%d)\n",m,k );
-for (int i=0; i<tempkn; i++) {
-  for (int j=0; j<tempkn; j++) printf( "%.2e ",H(m,k)[i+j*A.mb] );
-  printf( "\n" );
-}
-printf( "\n" );
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaNoTrans,
-                        tempkn, tempkn, tempmm,
+                        mvak, mvak, mvam,
                         zmone, L(k, m), ldak,
                                H(m, k), ldam,
                         beta,  W3(id),  A.nb,
@@ -158,12 +139,6 @@ printf( "\n" );
                     QUARK_Task_Flag_Set(&task_flags, TASK_PRIORITY, QUARK_TASK_MIN_PRIORITY);
                     #endif
                 }
-#pragma omp taskwait
-printf( " --- T(%d,%d) ---\n",2,1 );
-for (int i=0; i<tempkn; i++) {
-  for (int j=0; j<tempkn; j++) printf( "%.2e ",T(2,1)[i+j*A.mb] );
-  printf( "\n" );
-}
 
                 //#define GROUPED_REDUCTION
                 #if defined(GROUPED_REDUCTION)
@@ -180,7 +155,7 @@ for (int i=0; i<tempkn; i++) {
                         #endif
                         QUARK_CORE_zhetrf_group_add(plasma->quark, &task_flags,
                                                     bracket, imin(bracket+group_size,num_brackets), skip,
-                                                    tempkn, W, A.mt,
+                                                    mvak, W, A.mt,
                                                     sequence, request);
                         #ifdef WITH_PRIORITY
                         QUARK_Task_Flag_Set(&task_flags, TASK_PRIORITY, QUARK_TASK_MIN_PRIORITY);
@@ -203,20 +178,8 @@ for (int i=0; i<tempkn; i++) {
                         #ifdef WITH_PRIORITY
                         QUARK_Task_Flag_Set(&task_flags, TASK_PRIORITY, QUARK_TASK_MAX_PRIORITY-2);
                         #endif
-#pragma omp taskwait
-printf( " W3(%d)\n",m2 );
-for (int i=0; i<tempkn; i++) {
-  for (int j=0; j<tempkn; j++) printf( "%.2e ",W3(m2)[i+j*A.mb] );
-  printf( "\n" );
-}
-printf( " W3(%d)\n",m1 );
-for (int i=0; i<tempkn; i++) {
-  for (int j=0; j<tempkn; j++) printf( "%.2e ",W3(m1)[i+j*A.mb] );
-  printf( "\n" );
-}
-printf( "\n" );
                         core_omp_zgeadd(
-                            PlasmaNoTrans, tempkn, tempkn,
+                            PlasmaNoTrans, mvak, mvak,
                             zone, W3(m2), A.nb,
                             zone, W3(m1), A.nb,
                             sequence, request);
@@ -229,98 +192,53 @@ printf( "\n" );
                 }
                 #endif
 
-#pragma omp taskwait
-printf( " -*- T(%d,%d) -*-\n",2,1 );
-for (int i=0; i<tempkn; i++) {
-  for (int j=0; j<tempkn; j++) printf( "%.2e ",T(2,1)[i+j*A.mb] );
-  printf( "\n" );
-}
                 #ifdef WITH_PRIORITY
                 QUARK_Task_Flag_Set(&task_flags, TASK_PRIORITY, QUARK_TASK_MAX_PRIORITY-2);
                 #endif
                 core_omp_zlacpy(
                     PlasmaLower,
-                    tempkn, tempkn,
+                    mvak, mvak,
                     A(k, k), ldak,
                     T(k, k), A.mb,
                     sequence, request);
-#pragma omp taskwait
-printf( " -** T(%d,%d) **-\n",2,1 );
-for (int i=0; i<tempkn; i++) {
-  for (int j=0; j<tempkn; j++) printf( "%.2e ",T(2,1)[i+j*A.mb] );
-  printf( "\n" );
-}
-printf( " * T(%d,%d)\n",k,k );
-for (int i=0; i<tempkn; i++) {
-  for (int j=0; j<tempkn; j++) printf( "%.2e ",T(k,k)[i+j*A.mb] );
-  printf( "\n" );
-}
-printf( " * W:\n" );
-for (int i=0; i<tempkn; i++) {
-  for (int j=0; j<tempkn; j++) printf( "%.2e ",W3(0)[i+j*A.nb] );
-  printf( "\n" );
-}
                 core_omp_zgeadd(
-                    PlasmaNoTrans, tempkn, tempkn,
+                    PlasmaNoTrans, mvak, mvak,
                     zone, W3(0), A.nb,
                     zone, T(k, k), A.mb,
                     sequence, request);
-#pragma omp taskwait
-printf( " ---- T(%d,%d) ----\n",2,1 );
-for (int i=0; i<tempkn; i++) {
-  for (int j=0; j<tempkn; j++) printf( "%.2e ",T(2,1)[i+j*A.mb] );
-  printf( "\n" );
-}
                 #ifdef WITH_PRIORITY
                 QUARK_Task_Flag_Set(&task_flags, TASK_PRIORITY, QUARK_TASK_MIN_PRIORITY);
                 #endif
             } else { /* k == 0 or 1 */
                 core_omp_zlacpy(
                     PlasmaLower,
-                    tempkn, tempkn,
+                    mvak, mvak,
                     A(k, k), ldak,
                     T(k, k), A.mb,
                     sequence, request);
                 #pragma omp taskwait
-                for (int j=0; j<tempkn; j++) {
+                for (int j=0; j<mvak; j++) {
                     for (int i=0; i<j; i++) {
                         T(k, k)[i+j*A.mb] = conj(T(k, k)[j+i*A.mb]);
                     }
                 }
             }
-#pragma omp taskwait
-printf( " init: T(%d,%d)\n",k,k );
-for (int i=0; i<tempkn; i++) {
-  for (int j=0; j<tempkn; j++) printf( "%.2e ",T(k,k)[i+j*A.mb] );
-  printf( "\n" );
-}
 
             if (k > 0) {
                 #ifdef WITH_PRIORITY
                 QUARK_Task_Flag_Set(&task_flags, TASK_PRIORITY, QUARK_TASK_MAX_PRIORITY-2);
                 #endif
                 if (k > 1) {
-#pragma omp taskwait
-printf( " * L(%d,%d)\n",k,k );
-for (int i=0; i<tempkn; i++) {
-  for (int j=0; j<tempkn; j++) printf( "%.2e ",L(k,k)[i+j*A.mb] );
-  printf( "\n" );
-}
-printf( " * T(%d,%d):\n",k,k-1 );
-for (int i=0; i<tempkn; i++) {
-  for (int j=0; j<tempkn; j++) printf( "%.2e ",T(k,k-1)[i+j*A.nb] );
-  printf( "\n" );
-}
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaNoTrans,
-                        tempkn, A.mb, tempkn,
+                        mvak, A.mb, mvak,
                         zone,  L(k, k),   ldak,
                                T(k, k-1), A.mb,
                         zzero, W(0), A.mb,
                         sequence, request);
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaConjTrans,
-                        tempkn, tempkn, A.mb,
+                        mvak, mvak, A.mb,
                         zmone, W(0), A.mb,
                                L(k, k-1), ldak,
                         zone,  T(k, k), A.mb,
@@ -334,14 +252,8 @@ for (int i=0; i<tempkn; i++) {
                 #ifdef WITH_PRIORITY
                 QUARK_Task_Flag_Set(&task_flags, TASK_PRIORITY, QUARK_TASK_MAX_PRIORITY-1);
                 #endif
-#pragma omp taskwait
-printf( " T(%d,%d)\n",k,k );
-for (int i=0; i<tempkn; i++) {
-  for (int j=0; j<tempkn; j++) printf( "%.2e ",T(k,k)[i+j*A.mb] );
-  printf( "\n" );
-}
                 core_omp_zhegst(
-                    1, PlasmaLower, tempkn,
+                    1, PlasmaLower, mvak,
                     T(k, k), A.mb,
                     L(k, k), ldak,
                     sequence, request);
@@ -350,7 +262,7 @@ for (int i=0; i<tempkn; i++) {
                 #endif
                 /* expanding to full matrix */
                 #pragma omp taskwait
-                for (int j=0; j<tempkn; j++) {
+                for (int j=0; j<mvak; j++) {
                     for (int i=0; i<j; i++) {
                         T(k, k)[i+j*A.mb] = conj(T(k, k)[j+i*A.mb]);
                     }
@@ -358,23 +270,11 @@ for (int i=0; i<tempkn; i++) {
             }
 
             /* computing H(k, k) */
-            plasma_complex64_t beta = zzero;
-#pragma omp taskwait
-printf( " H(%d,%d)\n",k,k );
+            beta = zzero;
             if (k > 1) {
-printf( " > T(%d,%d)\n",k,k-1 );
-for (int i=0; i<A.mb; i++) {
-  for (int j=0; j<A.mb; j++) printf( "%.2e ",T(k,k-1)[i+j*A.mb] );
-  printf( "\n" );
-}
-printf( " > L(%d,%d)\n",k,k-1 );
-for (int i=0; i<A.mb; i++) {
-  for (int j=0; j<A.mb; j++) printf( "%.2e ",L(k,k-1)[i+j*A.mb] );
-  printf( "\n" );
-}
                 core_omp_zgemm(
                     PlasmaNoTrans, PlasmaConjTrans,
-                    tempkn, tempkn, A.nb,
+                    mvak, mvak, A.nb,
                     zone,  T(k, k-1), A.mb,
                            L(k, k-1), ldak,
                     zzero, H(k, k), ldak,
@@ -384,32 +284,14 @@ for (int i=0; i<A.mb; i++) {
 
             if (k+1 < A.nt) {
                 if (k > 0) {
-#pragma omp taskwait
-printf( " beta = %.2e\n",beta );
-printf( " > T(%d,%d)\n",k,k );
-for (int i=0; i<A.mb; i++) {
-  for (int j=0; j<A.mb; j++) printf( "%.2e ",T(k,k)[i+j*A.mb] );
-  printf( "\n" );
-}
-printf( " > L(%d,%d)\n",k,k );
-for (int i=0; i<A.mb; i++) {
-  for (int j=0; j<A.mb; j++) printf( "%.2e ",L(k,k)[i+j*A.mb] );
-  printf( "\n" );
-}
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaConjTrans,
-                        tempkn, tempkn, tempkn,
+                        mvak, mvak, mvak,
                         zone,  T(k, k), A.mb,
                                L(k, k), ldak,
                         beta , H(k, k), ldak,
                         sequence, request);
                 }
-#pragma omp taskwait
-printf( " >> H(%d,%d)\n",k,k );
-for (int i=0; i<A.mb; i++) {
-  for (int j=0; j<A.mb; j++) printf( "%.2e ",H(k,k)[i+j*ldak] );
-  printf( "\n" );
-}
 
                 /* computing L(k+1:nt, k+1) from A(k+1:nt, k) *
                  * so the number of the column stays the same */
@@ -417,37 +299,35 @@ for (int i=0; i<A.mb; i++) {
 
                 /* computing the (k+1)-th column of L */
                 /* - update with the previous column */
-printf( " mt-k=%d, max_threads=%d\n",A.mt-k,plasma->max_threads );
                 if (A.mt-k < plasma->max_threads) {
                     int num = imin(k, tot/(A.mt-k-1)); /* workspace per row */
-                    for (int j=1; j<=k; j++) {
-                        int ldaj = plasma_tile_mmain(A, j);
-                        int tempjn = j == A.nt-1 ? A.n-j*A.nb : A.nb;
+                    for (int n=1; n<=k; n++) {
+                        int ldan = plasma_tile_mmain(A, n);
+                        int mvan = plasma_tile_mview(A, n);
                         for (int m = k+1; m < A.mt; m++) {
-                            int tempmm = m == A.mt-1 ? A.m-m*A.mb : A.mb;
+                            int mvam = plasma_tile_mview(A, m);
                             int ldam = plasma_tile_mmain(A, m);
 
-                            int id = (m-k-1)*num+(j-1)%num;
-                            plasma_complex64_t beta;
-                            if (j < num+1) {
+                            int id = (m-k-1)*num+(n-1)%num;
+                            if (n < num+1) {
                                 beta = zzero;
                             } else{
                                 beta = zone;
                             }
-                            if (j < num+1 || j > k-num) {
+                            if (n < num+1 || n > k-num) {
                                 core_omp_zgemm(
                                     PlasmaNoTrans, PlasmaNoTrans,
-                                    tempmm, tempkn, tempjn,
-                                    zmone, L(m, j), ldam,
-                                           H(j, k), ldaj,
+                                    mvam, mvak, mvan,
+                                    zmone, L(m, n), ldam,
+                                           H(n, k), ldan,
                                     beta,  W4(id),  A.nb,
                                     sequence, request);
                             } else {
                                 core_omp_zgemm(
                                     PlasmaNoTrans, PlasmaNoTrans,
-                                    tempmm, tempkn, tempjn,
-                                    zmone, L(m, j), ldam,
-                                           H(j, k), ldaj,
+                                    mvam, mvak, mvan,
+                                    zmone, L(m, n), ldam,
+                                           H(n, k), ldan,
                                     beta,  W4(id),  A.nb,
                                     sequence, request);
                             }
@@ -466,9 +346,9 @@ printf( " mt-k=%d, max_threads=%d\n",A.mt-k,plasma->max_threads );
                             int m2 = skip*bracket+skip/2;
 
                             for (int m = k+1; m < A.mt; m++) {
-                                int tempmm = m == A.mt-1 ? A.m-m*A.mb : A.mb;
+                                int mvam = plasma_tile_mview(A, m);
                                 core_omp_zgeadd(
-                                    PlasmaNoTrans, tempmm, tempkn,
+                                    PlasmaNoTrans, mvam, mvak,
                                     zone, W4((m-k-1)*num+m2), A.nb,
                                     zone, W4((m-k-1)*num+m1), A.nb,
                                     sequence, request);
@@ -480,37 +360,26 @@ printf( " mt-k=%d, max_threads=%d\n",A.mt-k,plasma->max_threads );
 
                     /* accumelate into L(:,k+1) */
                     for (int m = k+1; m < A.mt; m++) {
-                        int tempmm = m == A.mt-1 ? A.m-m*A.mb : A.mb;
+                        int mvam = plasma_tile_mview(A, m);
                         int ldam = plasma_tile_mmain(A, m);
                         core_omp_zgeadd(
-                            PlasmaNoTrans, tempmm, tempkn,
+                            PlasmaNoTrans, mvam, mvak,
                             zone, W4((m-k-1)*num), A.nb,
                             zone, L(m, k+1), ldam,
                             sequence, request);
                     }
                 } else {
-                    for (int j=1; j<=k; j++) {
-                        int ldaj = plasma_tile_mmain(A, j);
-                        int tempjn = j == A.nt-1 ? A.n-j*A.nb : A.nb;
+                    for (int n=1; n<=k; n++) {
+                        int mvan = plasma_tile_mview(A, n);
+                        int ldan = plasma_tile_mmain(A, n);
                         for (int m = k+1; m < A.mt; m++) {
-                            int tempmm = m == A.mt-1 ? A.m-m*A.mb : A.mb;
+                            int mvam = plasma_tile_mview(A, m);
                             int ldam = plasma_tile_mmain(A, m);
-printf( " > L(%d,%d)\n",m,k+1 );
-printf( " L(%d,%d)\n",m,j );
-for (int ii=0; ii<A.mb; ii++) {
-  for (int jj=0; jj<A.mb; jj++) printf( "%.2e ",L(m,j)[ii+jj*A.mb] );
-  printf( "\n" );
-}
-printf( " H(%d,%d)\n",j,k );
-for (int ii=0; ii<A.mb; ii++) {
-  for (int jj=0; jj<A.mb; jj++) printf( "%.2e ",H(j,k)[ii+jj*A.mb] );
-  printf( "\n" );
-}
                             core_omp_zgemm(
                                PlasmaNoTrans, PlasmaNoTrans,
-                               tempmm, tempkn, tempjn,
-                               zmone, L(m, j),   ldam,
-                                      H(j, k),   ldaj,
+                               mvam, mvak, mvan,
+                               zmone, L(m, n),   ldam,
+                                      H(n, k),   ldan,
                                zone,  L(m, k+1), ldam,
                                sequence, request);
                         }
@@ -521,7 +390,7 @@ for (int ii=0; ii<A.mb; ii++) {
                 /* =========================== */
                 /* -- compute LU of the panel -- */
                 int tempi = (k+1)*A.mb, tempj = k*A.nb;   // offset
-                int tempn = tempkn, tempm = A.m - (k+1)*A.mb; // dimension
+                int tempm = A.m - (k+1)*A.mb; // dimension
 
                 #ifdef WITH_PRIORITY
                 QUARK_Task_Flag_Set(&task_flagsP, TASK_PRIORITY, QUARK_TASK_MAX_PRIORITY);
@@ -535,19 +404,9 @@ for (int ii=0; ii<A.mb; ii++) {
                 int na00k = plasma_tile_nmain(A, k);
                 int lda20 = plasma_tile_mmain(A, A.mt-1);
 
-                int nvak = plasma_tile_nview(A, k);
-                int mvak = plasma_tile_mview(A, k);
-                int ldak = plasma_tile_mmain(A, k);
-
                 #pragma omp taskwait
-printf( " %d: zgetrf(%d:%d, %dx%d), threads=%d\n",k,tempi,tempj,tempm,tempn,num_panel_threads );
-for (int i=0; i<nvak; i++) {
-  for (int j=0; j<nvak; j++) printf( "%.2e ",A(k+1,k)[i+j*ldak] );
-  printf( "\n" );
-}
-
                 #pragma omp task depend(inout:a00[0:ma00k*na00k]) \
-                                 depend(inout:a20[0:lda20*nvak]) \
+                                 depend(inout:a20[0:lda20*mvak]) \
                                  depend(out:ipiv[k*A.mb:mvak]) /*\
                                  priority(1) */
                 {
@@ -558,7 +417,7 @@ for (int i=0; i<nvak; i++) {
                                 plasma_desc_t view =
                                     plasma_desc_view(A,
                                                      tempi, tempj,
-                                                     tempm, tempn);
+                                                     tempm, mvak);
 
                                 int info = core_zgetrf(view, IPIV(k+1), ib,
                                                        rank, num_panel_threads,
@@ -571,11 +430,9 @@ for (int i=0; i<nvak; i++) {
                     #pragma omp taskwait
                 }
                 #pragma omp taskwait
-                for (int i = 0; i < imin(tempm, tempn); i++) {
-                    printf( " IPIV(%d)[%d] = %d\n",k+1,i,IPIV(k+1)[i] );
+                for (int i = 0; i < imin(tempm, mvak); i++) {
                     IPIV(k+1)[i] += tempi;
                 }
-                for (int i = 0; i < A.m; i++) printf( "ipiv[%d]=%d\n",i,ipiv[i] );
 
                 if (sequence->status == PlasmaSuccess) {
                     int ii;
@@ -584,7 +441,7 @@ for (int i=0; i<nvak; i++) {
                     }*/
 
                     for( ii=0; ii<tempm; ii++ ) perm[tempi+ii] = tempi+ii;
-                    for( ii=0; ii<imin(tempm, tempn); ii++ ) {
+                    for( ii=0; ii<imin(tempm, mvak); ii++ ) {
                         int piv = perm[IPIV(k+1)[ii]-1];
                         perm[IPIV(k+1)[ii]-1] = perm[tempi+ii];
                         perm[tempi+ii] = piv;
@@ -610,66 +467,38 @@ for (int i=0; i<nvak; i++) {
                    int *ipivk = IPIV(k+1);
                    plasma_complex64_t *akk = L(k+1, n);
                    int k1 = 1+(k+1)*A.nb;
-                   int k2 = imin(tempm,tempn)+(k+1)*A.nb;
-                   int tempi  = 0;
-                   int tempj  = (n-1)*A.nb;
-                   int tempkn = n == A.nt-1 ? A.n-n*A.nb : A.nb;
-                   tempm = A.m;
+                   int k2 = imin(tempm,mvak)+(k+1)*A.nb;
+                   int mvan = plasma_tile_mview(A, n);
 
                     #pragma omp task depend(in:ipivk[0:k2]) \
-                                     depend(inout:akk[0:tempm*tempkn])
+                                     depend(inout:akk[0:A.m*mvan])
                     {
                         if (sequence->status == PlasmaSuccess) {
-#pragma omp taskwait
-printf( " swap(A(%d,%d), %dx%d, %d..%d\n",tempi,tempj,tempm,tempkn,k1,k2 );
-printf( " before swap(%d,%d):\n",A.mt-1,n-1 );
-for (int i=0; i<A.mb; i++) {
-  for (int j=0; j<A.mb; j++) printf( "%.2e ",A(A.mt-1,n-1)[i+j*A.mb] );
-  printf( "\n" );
-}
                             plasma_desc_t view =
-                                plasma_desc_view(A, tempi, tempj, tempm, tempkn);
+                                plasma_desc_view(A, 0, (n-1)*A.nb, A.m, mvan);
                             core_zlaswp(PlasmaRowwise, view, k1, k2, ipiv, 1);
-#pragma omp taskwait
-printf( " after swap:\n" );
-for (int i=0; i<A.mb; i++) {
-  for (int j=0; j<A.mb; j++) printf( "%.2e ",A(A.mt-1,n-1)[i+j*A.mb] );
-  printf( "\n" );
-}
                         }
                     }
                 }
                 #pragma omp taskwait
 
                 /* -- symmetrically apply pivoting to trailing A -- */
-printf( " before sym-pivot:\n" );
-for (int i=0; i<nvak; i++) {
-  for (int j=0; j<nvak; j++) printf( "%.2e ",A(k+1,k+1)[i+j*ldak] );
-  printf( "\n" );
-}
                 core_omp_zlaswp_sym(PlasmaLower, k, ib,
                                     A, W,
                                     iperm, iperm2work, perm2work,
                                     sequence, request);
-#pragma omp taskwait
-printf( " after sym-pivot:\n" );
-for (int i=0; i<nvak; i++) {
-  for (int j=0; j<nvak; j++) printf( "%.2e ",A(k+1,k+1)[i+j*ldak] );
-  printf( "\n" );
-}
 
                 /* ================================== */
                 /* ==  end of PLASMA recursive LU  == */
                 /* ================================== */
 
                 /* computing T(k+1, k) */
-                tempn = k == A.nt-1 ? A.n-k*A.nb : A.nb;
-                tempm = (k+1) == A.nt-1 ? A.n-(k+1)*A.nb : A.nb; // dimension
+                int mvakp1 = plasma_tile_mview(A, k+1);
                 /* copy upper-triangular part of L(k+1,k+1) to T(k+1,k) */
                 /* and then zero it out                                 */
                 core_omp_zlacpy(
                         PlasmaUpper,
-                        tempm, tempn,
+                        mvakp1, mvak,
                         L(k+1, k+1),  ldakp1,
                         T(k+1, k  ),  A.mb,
                         sequence, request);
@@ -677,30 +506,18 @@ for (int i=0; i<nvak; i++) {
                 core_omp_zlaset(
                         PlasmaUpper,
                         ldakp1, ldakp1_n, 0, 0,
-                        tempm, tempn,
+                        mvakp1, mvak,
                         zzero, zone,
                         L(k+1, k+1));
-#pragma omp taskwait
-printf( " T(%d,%d)\n",k+1,k );
-for (int i=0; i<A.mb; i++) {
-  for (int j=0; j<A.mb; j++) printf( "%.2e ",T(k+1,k)[i+j*A.mb] );
-  printf( "\n" );
-}
-printf( "\n" );
                 if (k > 0) {
                     core_omp_ztrsm(
                         PlasmaRight, PlasmaLower,
                         PlasmaConjTrans, PlasmaUnit,
-                        tempm, tempn,
+                        mvakp1, mvak,
                         zone, L(k,   k), ldak,
                               T(k+1, k), A.mb,
                         sequence, request);
                 }
-#pragma omp taskwait
-for (int i=0; i<A.mb; i++) {
-  for (int j=0; j<A.mb; j++) printf( "%.2e ",T(k+1,k)[i+j*A.mb] );
-  printf( "\n" );
-}
             }
         }
     }

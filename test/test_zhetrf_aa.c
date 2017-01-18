@@ -121,7 +121,7 @@ void test_zhetrf_aa(param_value_t param[], char *info)
     // triangle to upper triangle.
     //================================================================
     for (int i = 0; i < n; ++i) {
-        A(i,i) = creal(A(i,i)) + n;
+        A(i,i) = creal(A(i,i));
         for (int j = 0; j < i; ++j) {
             A(j,i) = conj(A(i,j));
         }
