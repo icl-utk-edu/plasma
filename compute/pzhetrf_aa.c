@@ -72,35 +72,36 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
         for (int k = 0; k < A.mt; k++) {
             int mvak = plasma_tile_mview(A, k);
             int ldak = plasma_tile_mmain(A, k);
+            int ldtk = T.mb; //plasma_tile_mmain_band(T, k);
 
             /* -- computing offdiagonals H(1:k-1, k) -- */
-            for(int m=1; m<k; m++) {
+            for (int m=1; m < k; m++) {
                 int mvam = plasma_tile_mview(A, m);
-                int ldam = plasma_tile_mmain(A, m);
-
+                int ldtm = T.mb; //plasma_tile_mmain_band(T, m);
                 core_omp_zgemm(
                     PlasmaNoTrans, PlasmaConjTrans,
                     mvam, mvak, mvam,
-                    zone,  T(m, m), A.mb,
+                    zone,  T(m, m), ldtm,
                            L(k, m), ldak,
-                    zzero, H(m, k), ldam,
+                    zzero, H(m, k), A.mb,
                     sequence, request);
-                if( m > 1 ) {
+                if (m > 1) {
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaConjTrans,
                         mvam, mvak, A.mb,
-                        zone,  T(m, m-1), A.mb,
+                        zone,  T(m, m-1), ldtm,
                                L(k, m-1), ldak,
-                        zone,  H(m, k),   ldam,
+                        zone,  H(m, k),   A.mb,
                         sequence, request);
                 }
                 int mvamp1 = plasma_tile_mview(A, m+1);
+                int ldtmp1 = A.mb; //plasma_tile_mmain_band(T, m+1);
                 core_omp_zgemm(
                     PlasmaConjTrans, PlasmaConjTrans,
                     mvam, mvak, mvamp1,
-                    zone,  T(m+1, m), A.mb,
+                    zone,  T(m+1, m), ldtmp1,
                            L(k, m+1), ldak,
-                    zone,  H(m, k),   ldam,
+                    zone,  H(m, k),   A.mb,
                     sequence, request);
             }
             /* ---- end of computing H(1:(k-1),k) -- */
@@ -111,9 +112,7 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                 int num = imin(tot, k-1);
                 for (int m=1; m<k; m++) {
                     int mvam = plasma_tile_mview(A, m);
-                    int ldam = plasma_tile_mmain(A, m);
                     int id = (m-1) % num;
-
                     if( m < num+1 ) {
                         beta = zzero;
                     } else{
@@ -123,8 +122,8 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                         PlasmaNoTrans, PlasmaNoTrans,
                         mvak, mvak, mvam,
                         zmone, L(k, m), ldak,
-                               H(m, k), ldam,
-                        beta,  W3(id),  A.nb,
+                               H(m, k), A.mb,
+                        beta,  W3(id),  A.mb,
                         sequence, request);
                 }
                 /* NOTE: In old PLASMA, had an option to reduce in a set of tiles */
@@ -140,8 +139,8 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                         int m2 = skip*bracket+skip/2;
                         core_omp_zgeadd(
                             PlasmaNoTrans, mvak, mvak,
-                            zone, W3(m2), A.nb,
-                            zone, W3(m1), A.nb,
+                            zone, W3(m2), A.mb,
+                            zone, W3(m1), A.mb,
                             sequence, request);
                     }
                     num_players = ceil( ((double)num_players)/2.0 );
@@ -151,24 +150,24 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                     PlasmaLower,
                     mvak, mvak,
                     A(k, k), ldak,
-                    T(k, k), A.mb,
+                    T(k, k), ldtk,
                     sequence, request);
                 core_omp_zgeadd(
                     PlasmaNoTrans, mvak, mvak,
-                    zone, W3(0), A.nb,
-                    zone, T(k, k), A.mb,
+                    zone, W3(0), A.mb,
+                    zone, T(k, k), ldtk,
                     sequence, request);
             } else { /* k == 0 or 1 */
                 core_omp_zlacpy(
                     PlasmaLower,
                     mvak, mvak,
                     A(k, k), ldak,
-                    T(k, k), A.mb,
+                    T(k, k), ldtk,
                     sequence, request);
                 #pragma omp taskwait
                 for (int j=0; j<mvak; j++) {
                     for (int i=0; i<j; i++) {
-                        T(k, k)[i+j*A.mb] = conj(T(k, k)[j+i*A.mb]);
+                        T(k, k)[i+j*ldtk] = conj(T(k, k)[j+i*ldtk]);
                     }
                 }
             }
@@ -179,7 +178,7 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                         PlasmaNoTrans, PlasmaNoTrans,
                         mvak, A.mb, mvak,
                         zone,  L(k, k),   ldak,
-                               T(k, k-1), A.mb,
+                               T(k, k-1), ldtk,
                         zzero, W(0), A.mb,
                         sequence, request);
                     core_omp_zgemm(
@@ -187,21 +186,21 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                         mvak, mvak, A.mb,
                         zmone, W(0), A.mb,
                                L(k, k-1), ldak,
-                        zone,  T(k, k), A.mb,
+                        zone,  T(k, k), ldtk,
                         sequence, request);
                 }
 
                 /* - symmetrically solve with L(k,k) */
                 core_omp_zhegst(
                     1, PlasmaLower, mvak,
-                    T(k, k), A.mb,
+                    T(k, k), ldtk,
                     L(k, k), ldak,
                     sequence, request);
                 /* expanding to full matrix */
                 #pragma omp taskwait
                 for (int j=0; j<mvak; j++) {
                     for (int i=0; i<j; i++) {
-                        T(k, k)[i+j*A.mb] = conj(T(k, k)[j+i*A.mb]);
+                        T(k, k)[i+j*ldtk] = conj(T(k, k)[j+i*ldtk]);
                     }
                 }
             }
@@ -212,9 +211,9 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                 core_omp_zgemm(
                     PlasmaNoTrans, PlasmaConjTrans,
                     mvak, mvak, A.nb,
-                    zone,  T(k, k-1), A.mb,
+                    zone,  T(k, k-1), ldtk,
                            L(k, k-1), ldak,
-                    zzero, H(k, k), ldak,
+                    zzero, H(k, k), A.mb,
                     sequence, request);
                 beta = zone;
             }
@@ -224,9 +223,9 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaConjTrans,
                         mvak, mvak, mvak,
-                        zone,  T(k, k), A.mb,
+                        zone,  T(k, k), ldtk,
                                L(k, k), ldak,
-                        beta , H(k, k), ldak,
+                        beta , H(k, k), A.mb,
                         sequence, request);
                 }
 
@@ -239,7 +238,6 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                 if (A.mt-k < plasma->max_threads) {
                     int num = imin(k, tot/(A.mt-k-1)); /* workspace per row */
                     for (int n=1; n<=k; n++) {
-                        int ldan = plasma_tile_mmain(A, n);
                         int mvan = plasma_tile_mview(A, n);
                         for (int m = k+1; m < A.mt; m++) {
                             int mvam = plasma_tile_mview(A, m);
@@ -256,16 +254,16 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                                     PlasmaNoTrans, PlasmaNoTrans,
                                     mvam, mvak, mvan,
                                     zmone, L(m, n), ldam,
-                                           H(n, k), ldan,
-                                    beta,  W4(id),  A.nb,
+                                           H(n, k), A.mb,
+                                    beta,  W4(id),  A.mb,
                                     sequence, request);
                             } else {
                                 core_omp_zgemm(
                                     PlasmaNoTrans, PlasmaNoTrans,
                                     mvam, mvak, mvan,
                                     zmone, L(m, n), ldam,
-                                           H(n, k), ldan,
-                                    beta,  W4(id),  A.nb,
+                                           H(n, k), A.mb,
+                                    beta,  W4(id),  A.mb,
                                     sequence, request);
                             }
                         }
@@ -286,8 +284,8 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                                 int mvam = plasma_tile_mview(A, m);
                                 core_omp_zgeadd(
                                     PlasmaNoTrans, mvam, mvak,
-                                    zone, W4((m-k-1)*num+m2), A.nb,
-                                    zone, W4((m-k-1)*num+m1), A.nb,
+                                    zone, W4((m-k-1)*num+m2), A.mb,
+                                    zone, W4((m-k-1)*num+m1), A.mb,
                                     sequence, request);
                             }
                          }
@@ -301,22 +299,21 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                         int ldam = plasma_tile_mmain(A, m);
                         core_omp_zgeadd(
                             PlasmaNoTrans, mvam, mvak,
-                            zone, W4((m-k-1)*num), A.nb,
+                            zone, W4((m-k-1)*num), A.mb,
                             zone, L(m, k+1), ldam,
                             sequence, request);
                     }
                 } else {
                     for (int n=1; n<=k; n++) {
                         int mvan = plasma_tile_mview(A, n);
-                        int ldan = plasma_tile_mmain(A, n);
                         for (int m = k+1; m < A.mt; m++) {
                             int mvam = plasma_tile_mview(A, m);
                             int ldam = plasma_tile_mmain(A, m);
                             core_omp_zgemm(
                                PlasmaNoTrans, PlasmaNoTrans,
                                mvam, mvak, mvan,
-                               zmone, L(m, n),   ldam,
-                                      H(n, k),   ldan,
+                               zmone, L(m, n), ldam,
+                                      H(n, k), A.mb,
                                zone,  L(m, k+1), ldam,
                                sequence, request);
                         }
@@ -326,12 +323,13 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                 /* ==  PLASMA recursive LU  == */
                 /* =========================== */
                 /* -- compute LU of the panel -- */
-                int tempi = (k+1)*A.mb, tempj = k*A.nb;   // offset
-                int tempm = A.m - (k+1)*A.mb; // dimension
+                int tempi = (k+1)*A.mb;  // offset
+                int tempj = k*A.nb;      // offset
+                int tempm = A.m - tempi; // dimension
 
                 plasma_complex64_t *a00, *a20;
-                a00 = A(k, k);
-                a20 = A(A.mt-1, k);
+                a00 = L(k, k);
+                a20 = L(A.mt-1, k);
 
                 int ma00k = (A.mt-k-1)*A.mb;
                 int na00k = plasma_tile_nmain(A, k);
@@ -372,7 +370,6 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                     /*for (ii=0; ii<min(A.m,A.n); ii++) {
                         IPIV(k+1)[ii] += (iinfo-A.i);
                     }*/
-
                     for( ii=0; ii<tempm; ii++ ) perm[tempi+ii] = tempi+ii;
                     for( ii=0; ii<imin(tempm, mvak); ii++ ) {
                         int piv = perm[IPIV(k+1)[ii]-1];
@@ -394,13 +391,11 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                 /* -- apply pivoting to previous columns of L -- */
                 for (int n = 1; n < k+1; n++)
                 {
-                   int *ipivk = IPIV(k+1);
                    plasma_complex64_t *akk = L(k+1, n);
                    int k1 = 1+(k+1)*A.nb;
                    int k2 = imin(tempm,mvak)+(k+1)*A.nb;
                    int mvan = plasma_tile_mview(A, n);
-
-                    #pragma omp task depend(in:ipivk[0:k2]) \
+                    #pragma omp task depend(in:ipiv[(k1-1):k2]) \
                                      depend(inout:akk[0:A.m*mvan])
                     {
                         if (sequence->status == PlasmaSuccess) {
@@ -424,13 +419,14 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
 
                 /* computing T(k+1, k) */
                 int mvakp1 = plasma_tile_mview(A, k+1);
+                int ldtkp1 = A.mb; //plasma_tile_mmain_band(T, k+1);
                 /* copy upper-triangular part of L(k+1,k+1) to T(k+1,k) */
                 /* and then zero it out                                 */
                 core_omp_zlacpy(
                         PlasmaUpper,
                         mvakp1, mvak,
-                        L(k+1, k+1),  ldakp1,
-                        T(k+1, k  ),  A.mb,
+                        L(k+1, k+1), ldakp1,
+                        T(k+1, k  ), ldtkp1,
                         sequence, request);
                 int ldakp1_n = plasma_tile_nmain(A, k+2);
                 core_omp_zlaset(
@@ -445,13 +441,13 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                         PlasmaConjTrans, PlasmaUnit,
                         mvakp1, mvak,
                         zone, L(k,   k), ldak,
-                              T(k+1, k), A.mb,
+                              T(k+1, k), ldtkp1,
                         sequence, request);
                 }
                 #pragma omp taskwait
                 for (int j=0; j<mvakp1; j++) {
                     for (int i=0; i<mvak; i++) {
-                        T(k, k+1)[i+j*A.mb] = conj(T(k+1, k)[j+i*ldakp1]);
+                        T(k, k+1)[i+j*ldtk] = conj(T(k+1, k)[j+i*ldtkp1]);
                     }
                 }
             }

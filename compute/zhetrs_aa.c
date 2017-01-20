@@ -300,14 +300,18 @@ void plasma_omp_zhetrs_aa(plasma_enum_t trans,
                                   B.nb, 0,
                                   B.m-B.nb, B.n);
 
+            #pragma omp taskwait
             plasma_pzlaswp(PlasmaRowwise, B, ipiv, 1, sequence, request);
+            #pragma omp taskwait
             plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
                           1.0, vA,
                                vB,
                           sequence, request);
         }
         // Note: gbtrf should be moved out.
+        #pragma omp taskwait
         plasma_pzgbtrf(T, iwork, sequence, request);
+        #pragma omp taskwait
         plasma_pztbsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans,
                       PlasmaUnit,
                       1.0, T,
@@ -321,7 +325,7 @@ void plasma_omp_zhetrs_aa(plasma_enum_t trans,
                       iwork,
                       sequence, request);
         if (A.m > A.nb) {
-            plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaTrans, PlasmaUnit,
+            plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaConjTrans, PlasmaUnit,
                           1.0, vA,
                                vB,
                           sequence, request);

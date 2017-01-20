@@ -51,25 +51,28 @@ void test_zhetrf_aa(param_value_t param[], char *info)
             print_usage(PARAM_UPLO);
             print_usage(PARAM_N);
             print_usage(PARAM_PADA);
+            print_usage(PARAM_NRHS);
             print_usage(PARAM_NB);
         }
         else {
             // Return column labels.
             snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s",
+                     "%*s %*s %*s %*s %*s",
                      InfoSpacing, "Uplo",
                      InfoSpacing, "N",
                      InfoSpacing, "PadA",
+                     InfoSpacing, "NRHS",
                      InfoSpacing, "NB");
         }
         return;
     }
     // Return column values.
     snprintf(info, InfoLen,
-             "%*c %*d %*d %*d",
+             "%*c %*d %*d %*d %*d",
              InfoSpacing, param[PARAM_UPLO].c,
              InfoSpacing, param[PARAM_N].i,
              InfoSpacing, param[PARAM_PADA].i,
+             InfoSpacing, param[PARAM_NRHS].i,
              InfoSpacing, param[PARAM_NB].i);
 
     //================================================================
@@ -164,8 +167,8 @@ void test_zhetrf_aa(param_value_t param[], char *info)
             printf( "%.2e ",A(i,j) );
         }
         printf( "\n" );
-    }
-printf( " T:\n" );
+    }*/
+/*printf( " T:\n" );
     for (int i = 0; i < ldt; ++i) {
         for (int j = 0; j < n; ++j) {
             printf( "%.2e ",T(i,j) );
@@ -180,32 +183,38 @@ printf( " T:\n" );
     // Test results by comparing to a reference implementation.
     //================================================================
     if (test) {
+        plasma_complex64_t zzero =  0.0;
         plasma_complex64_t zone  =  1.0;
         plasma_complex64_t zmone = -1.0;
 
         // compute the residual norm ||A-bx||
         int nrhs = param[PARAM_NRHS].i;
         int ldb = imax(1, n + param[PARAM_PADB].i);
+        int ldx = ldb;
 
-        // set up right-hand-side B
         plasma_complex64_t *B = (plasma_complex64_t*)malloc(
             (size_t)ldb*nrhs*sizeof(plasma_complex64_t));
         assert(B != NULL);
-
-        retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*nrhs, B);
-        assert(retval == 0);
-
-        // copy B to X
-        int ldx = ldb;
         plasma_complex64_t *X = (plasma_complex64_t*)malloc(
             (size_t)ldx*nrhs*sizeof(plasma_complex64_t));
         assert(X != NULL);
+
+        // set up right-hand-side B = A*rand
+        retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*nrhs, X);
+        assert(retval == 0);
+        cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans,
+                    n, nrhs, n,
+                    CBLAS_SADDR(zone),  Aref, lda,
+                                        X, ldx,
+                    CBLAS_SADDR(zzero), B, ldb);
+
+        // copy B to X
         LAPACKE_zlacpy_work(
             LAPACK_COL_MAJOR, 'F', n, nrhs, B, ldb, X, ldx);
 
         // solve for X
         int iinfo = plasma_zhetrs_aa(
-            PlasmaNoTrans, n, nrhs, A, lda, ipiv, T, ldt, iwork, X, ldb);
+            PlasmaNoTrans, n, nrhs, A, lda, ipiv, T, ldt, iwork, X, ldx);
         if (iinfo != 0) printf( " zhetrs_aa failed, info = %d\n", iinfo );
 
         // compute residual vector
@@ -221,7 +230,7 @@ printf( " T:\n" );
         assert(work != NULL);
 
         double Anorm = LAPACKE_zlange_work(
-            LAPACK_COL_MAJOR, 'F', n, n,    A, lda, work);
+            LAPACK_COL_MAJOR, 'F', n, n,    Aref, lda, work);
         double Xnorm = LAPACKE_zlange_work(
             LAPACK_COL_MAJOR, 'I', n, nrhs, X, ldb, work);
         double Rnorm = LAPACKE_zlange_work(
