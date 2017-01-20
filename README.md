@@ -41,7 +41,7 @@ Documentation
 =============
 
 Doxygen-generated PLASMA documentation is available at:
-http://icl.bitbucket.org/plasma/doxygen/
+http://icl.bitbucket.io/plasma/doxygen/
 
 Getting Assistance
 ==================
