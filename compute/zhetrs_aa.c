@@ -331,6 +331,7 @@ void plasma_omp_zhetrs_aa(plasma_enum_t trans,
                           sequence, request);
             #pragma omp taskwait
             plasma_pzlaswp(PlasmaRowwise, B, ipiv, -1, sequence, request);
+            #pragma omp taskwait
         }
     }
     else {
