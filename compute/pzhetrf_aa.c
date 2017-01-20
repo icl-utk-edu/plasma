@@ -67,6 +67,7 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
     //==============
     // PlasmaLower
     //==============
+    // NOTE: In old PLASMA, we used priority.
     if (uplo == PlasmaLower) {
         for (int k = 0; k < A.mt; k++) {
             int mvak = plasma_tile_mview(A, k);
@@ -77,9 +78,6 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                 int mvam = plasma_tile_mview(A, m);
                 int ldam = plasma_tile_mmain(A, m);
 
-                #ifdef WITH_PRIORITY
-                QUARK_Task_Flag_Set(&task_flags, TASK_PRIORITY, QUARK_TASK_MAX_PRIORITY-2);
-                #endif
                 core_omp_zgemm(
                     PlasmaNoTrans, PlasmaConjTrans,
                     mvam, mvak, mvam,
@@ -104,10 +102,6 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                            L(k, m+1), ldak,
                     zone,  H(m, k),   ldam,
                     sequence, request);
-
-                #ifdef WITH_PRIORITY
-                QUARK_Task_Flag_Set(&task_flags, TASK_PRIORITY, QUARK_TASK_MIN_PRIORITY);
-                #endif
             }
             /* ---- end of computing H(1:(k-1),k) -- */
 
@@ -125,9 +119,6 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                     } else{
                         beta = zone;
                     }
-                    #ifdef WITH_PRIORITY
-                    QUARK_Task_Flag_Set(&task_flags, TASK_PRIORITY, QUARK_TASK_MAX_PRIORITY-2);
-                    #endif
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaNoTrans,
                         mvak, mvak, mvam,
@@ -135,36 +126,8 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                                H(m, k), ldam,
                         beta,  W3(id),  A.nb,
                         sequence, request);
-                    #ifdef WITH_PRIORITY
-                    QUARK_Task_Flag_Set(&task_flags, TASK_PRIORITY, QUARK_TASK_MIN_PRIORITY);
-                    #endif
                 }
-
-                //#define GROUPED_REDUCTION
-                #if defined(GROUPED_REDUCTION)
-                int group_size = 8; // each task performs group_size geadd
-                if( sqrt((double)num) >= (A.nt-k-1)*(k+1)/num_panel_threads ) group_size = 1;
-                int skip  = 2;                                                   /* intervals between brackets */
-                int num_players = num;                                           /* number of players          */
-                int num_rounds = ceil( log10((double)num_players)/log10(2.0) );  /* height of tournament       */
-                for (int round=1; round<=num_rounds; round++) {
-                    int num_brackets = num_players/2;
-                    for (int bracket=0; bracket<num_brackets; bracket+=group_size) {
-                        #ifdef WITH_PRIORITY
-                        QUARK_Task_Flag_Set(&task_flags, TASK_PRIORITY, QUARK_TASK_MAX_PRIORITY-2);
-                        #endif
-                        QUARK_CORE_zhetrf_group_add(plasma->quark, &task_flags,
-                                                    bracket, imin(bracket+group_size,num_brackets), skip,
-                                                    mvak, W, A.mt,
-                                                    sequence, request);
-                        #ifdef WITH_PRIORITY
-                        QUARK_Task_Flag_Set(&task_flags, TASK_PRIORITY, QUARK_TASK_MIN_PRIORITY);
-                        #endif
-                    }
-                    num_players = ceil( ((double)num_players)/2.0 );
-                    skip = 2*skip;
-                }
-                #else
+                /* NOTE: In old PLASMA, had an option to reduce in a set of tiles */
                 int num_players = num;                                           /* number of players          */
                 int skip  = 2;                                                   /* intervals between brackets */
                 int num_rounds = ceil( log10((double)num_players)/log10(2.0) );  /* height of tournament       */
@@ -175,26 +138,15 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                         int m1 = skip*bracket;
                         /* second contendar */
                         int m2 = skip*bracket+skip/2;
-                        #ifdef WITH_PRIORITY
-                        QUARK_Task_Flag_Set(&task_flags, TASK_PRIORITY, QUARK_TASK_MAX_PRIORITY-2);
-                        #endif
                         core_omp_zgeadd(
                             PlasmaNoTrans, mvak, mvak,
                             zone, W3(m2), A.nb,
                             zone, W3(m1), A.nb,
                             sequence, request);
-                        #ifdef WITH_PRIORITY
-                        QUARK_Task_Flag_Set(&task_flags, TASK_PRIORITY, QUARK_TASK_MIN_PRIORITY);
-                        #endif
                     }
                     num_players = ceil( ((double)num_players)/2.0 );
                     skip = 2*skip;
                 }
-                #endif
-
-                #ifdef WITH_PRIORITY
-                QUARK_Task_Flag_Set(&task_flags, TASK_PRIORITY, QUARK_TASK_MAX_PRIORITY-2);
-                #endif
                 core_omp_zlacpy(
                     PlasmaLower,
                     mvak, mvak,
@@ -206,9 +158,6 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                     zone, W3(0), A.nb,
                     zone, T(k, k), A.mb,
                     sequence, request);
-                #ifdef WITH_PRIORITY
-                QUARK_Task_Flag_Set(&task_flags, TASK_PRIORITY, QUARK_TASK_MIN_PRIORITY);
-                #endif
             } else { /* k == 0 or 1 */
                 core_omp_zlacpy(
                     PlasmaLower,
@@ -225,9 +174,6 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
             }
 
             if (k > 0) {
-                #ifdef WITH_PRIORITY
-                QUARK_Task_Flag_Set(&task_flags, TASK_PRIORITY, QUARK_TASK_MAX_PRIORITY-2);
-                #endif
                 if (k > 1) {
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaNoTrans,
@@ -244,22 +190,13 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                         zone,  T(k, k), A.mb,
                         sequence, request);
                 }
-                #ifdef WITH_PRIORITY
-                QUARK_Task_Flag_Set(&task_flags, TASK_PRIORITY, QUARK_TASK_MIN_PRIORITY);
-                #endif
 
                 /* - symmetrically solve with L(k,k) */
-                #ifdef WITH_PRIORITY
-                QUARK_Task_Flag_Set(&task_flags, TASK_PRIORITY, QUARK_TASK_MAX_PRIORITY-1);
-                #endif
                 core_omp_zhegst(
                     1, PlasmaLower, mvak,
                     T(k, k), A.mb,
                     L(k, k), ldak,
                     sequence, request);
-                #ifdef WITH_PRIORITY
-                QUARK_Task_Flag_Set(&task_flags, TASK_PRIORITY, QUARK_TASK_MIN_PRIORITY);
-                #endif
                 /* expanding to full matrix */
                 #pragma omp taskwait
                 for (int j=0; j<mvak; j++) {
@@ -392,10 +329,6 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                 int tempi = (k+1)*A.mb, tempj = k*A.nb;   // offset
                 int tempm = A.m - (k+1)*A.mb; // dimension
 
-                #ifdef WITH_PRIORITY
-                QUARK_Task_Flag_Set(&task_flagsP, TASK_PRIORITY, QUARK_TASK_MAX_PRIORITY);
-                #endif
-
                 plasma_complex64_t *a00, *a20;
                 a00 = A(k, k);
                 a20 = A(A.mt-1, k);
@@ -458,9 +391,6 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                     }
                     for( ii=0; ii<tempm; ii++ ) iperm2work[tempi+ii] = perm2work[iperm[tempi+ii]];
                 }
-                #ifdef WITH_PRIORITY
-                QUARK_Task_Flag_Set(&task_flagsP, TASK_PRIORITY, QUARK_TASK_MIN_PRIORITY);
-                #endif
                 /* -- apply pivoting to previous columns of L -- */
                 for (int n = 1; n < k+1; n++)
                 {
@@ -517,6 +447,12 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                         zone, L(k,   k), ldak,
                               T(k+1, k), A.mb,
                         sequence, request);
+                }
+                #pragma omp taskwait
+                for (int j=0; j<mvakp1; j++) {
+                    for (int i=0; i<mvak; i++) {
+                        T(k, k+1)[i+j*A.mb] = conj(T(k+1, k)[j+i*ldakp1]);
+                    }
                 }
             }
         }

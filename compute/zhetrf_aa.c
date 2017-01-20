@@ -123,9 +123,9 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
         plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
-    // band matrix
-    retval = plasma_desc_general_band_create(PlasmaComplexDouble, uplo, nb, nb,
-                                             2*nb, n, 0, 0, n, n, 2*nb-1, 2*nb-1, &T);
+    // band matrix (general band to prepare for band solve)
+    retval = plasma_desc_general_band_create(PlasmaComplexDouble, PlasmaGeneral, nb, nb,
+                                             ldt, n, 0, 0, n, n, nb, nb, &T);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_band_create() failed");
         return retval;
@@ -149,6 +149,7 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
 
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
+    for (int i=0; i<nb; i++) ipiv[i] = 1+i;
 
     // asynchronous block
     #pragma omp parallel
@@ -162,6 +163,7 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
 
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
+        plasma_omp_zdesc2pb(T, pT, ldt, sequence, &request);
     }
     // implicit synchronization
 

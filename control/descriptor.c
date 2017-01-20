@@ -57,7 +57,6 @@ int plasma_desc_general_band_create(plasma_enum_t precision, plasma_enum_t uplo,
         plasma_error("PLASMA not initialized");
         return PlasmaErrorNotInitialized;
     }
-printf( " %dx%d, kl=%d,ku=%d\n",m,n,kl,ku );
     // Initialize the descriptor.
     int retval = plasma_desc_general_band_init(precision, uplo, NULL, mb, nb,
                                                lm, ln, i, j, m, n, kl, ku, A);
