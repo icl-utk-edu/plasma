@@ -39,12 +39,13 @@ is available here: https://bitbucket.org/icl/plasma/downloads/plasma_2.8.0.tar.g
 
 Get PLASMA
 ==========
-One way to get PLASMA source code is to clone the repository:
+One way to get PLASMA is to clone the repository.
+Click the `Clone` tab in the navigation bar on the left.
+Typically, the command is:
 ```
 hg clone ssh://hg@bitbucket.org/icl/plasma
 ```
-
-
+Alternatively, click the `Downloads` tab in the navigation bar, and then the `Tags` tab, to download the current state of the repository (tip) or any of the numbered releases.
 
 Documentation
 =============
