@@ -26,12 +26,12 @@
  *  Factorize a Hermitian matrix A using a 'communication avoiding' Aasen's 
  *  algorithm. The factorization has the form
  *
- *    \f[ A = L \times T \times L^H, \f]
+ *    \f[ A = P \times L \times T \times L^H \times P^H, \f]
  *    or
- *    \f[ A = U^H \times T \times U, \f]
+ *    \f[ A = P \times U^H \times T \times U \times P^H, \f]
  *
- *  where U is an upper triangular matrix and L is a lower triangular matrix,
- *  and T is a band matrix.
+ *  where U is a unit-diagonal upper triangular matrix and L is a unit-diagonal
+ *  lower triangular matrix, T is a band matrix, and P is a permutation matrix.
  *
  *******************************************************************************
  *
@@ -42,7 +42,7 @@
  * @param[in] n
  *          The order of the matrix A. n >= 0.
  *
- * @param[in,out] A
+ * @param[in,out] pA
  *          On entry, the Hermitian matrix A.
  *          If uplo = PlasmaUpper, the leading N-by-N upper triangular part of A
  *          contains the upper triangular part of the matrix A, and the strictly
@@ -51,10 +51,21 @@
  *          contains the lower triangular part of the matrix A, and the strictly
  *          upper triangular part of A is not referenced.
  *          On exit, if return value = 0, the factor U or L from the Cholesky
- *          factorization A = U^H*U or A = L*L^H.
+ *          factorization A = (P*U^H)*T*(P*U^H)^H or A = (P*L)*T*(P*L)^H.
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,n).
+ *
+ * @param[out] pT
+ *          On exit, if return value = 0, the band matrix T of the factorization 
+ *          factorization A = (P*U^H)*T*(P*U^H)^H or A = (P*L)*T*(P*L)^H.
+ *
+ * @param[in] ldt
+ *          The leading dimension of the array T.
+ *
+ * @param[out] ipiv
+ *          The pivot indices; for 1 <= i <= min(m,n), row and column i of the
+ *          matrix was interchanged with row and column ipiv(i).
  *
  *******************************************************************************
  *
@@ -76,8 +87,7 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
                      int n,
                      plasma_complex64_t *pA, int lda,
                      plasma_complex64_t *pT, int ldt,
-                     int *ipiv,
-                     int *iwork)
+                     int *ipiv)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -130,7 +140,6 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
         plasma_error("plasma_desc_general_band_create() failed");
         return retval;
     }
-    memset(T.matrix, 0, ldt*n*sizeof(plasma_complex64_t));
     // workspace
     int ldw = 7*A.mt*nb; /* block column */
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
@@ -138,6 +147,11 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
+    }
+    int *iwork = (int*)malloc((4*n+1)*sizeof(int));
+    if (iwork == NULL) {
+        plasma_error("malloc(iwork) failed");
+        return PlasmaErrorOutOfMemory;
     }
 
     // Create sequence.
@@ -150,6 +164,9 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
 
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
+
+    // Initialize data.
+    memset(T.matrix, 0, ldt*n*sizeof(plasma_complex64_t));
     for (int i=0; i<nb; i++) ipiv[i] = 1+i;
 
     // asynchronous block
@@ -172,6 +189,9 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
     plasma_desc_destroy(&A);
     plasma_desc_destroy(&T);
     plasma_desc_destroy(&W);
+
+    // Free workspace
+    free(iwork);
 
     // Return status.
     int status = sequence->status;
@@ -206,7 +226,15 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
  *          contains the lower triangular part of the matrix A, and the strictly
  *          upper triangular part of A is not referenced.
  *          On exit, if return value = 0, the factor U or L from the Cholesky
- *          factorization A = U^H*U or A = L*L^H.
+ *          factorization A = (P*U^H)*T(P*U^H)^H or A = (P*L)*T(P*L)^H.
+ *
+ * @param[out] T
+ *          On exit, if return value = 0, the band matrix T of the factorization 
+ *          factorization A = (P*U^H)*T*(P*U^H)^H or A = (P*L)*T*(P*L)^H.
+ *
+ * @param[out] ipiv
+ *          The pivot indices; for 1 <= i <= min(m,n), row and column i of the
+ *          matrix was interchanged with row and column ipiv(i).
  *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to

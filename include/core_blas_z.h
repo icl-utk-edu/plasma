@@ -439,8 +439,9 @@ void core_omp_zlansy_aux(plasma_enum_t norm, plasma_enum_t uplo,
                          plasma_sequence_t *sequence,
                          plasma_request_t *request);
 
-void core_omp_zlaswp_sym(plasma_enum_t uplo, int k, int ib,
+void core_omp_zlaswp_sym(plasma_enum_t uplo, int k, int tmpm, int mvak, int ib,
                          plasma_desc_t A, plasma_desc_t W,
+                         int *ipiv, int *perm,
                          int *iperm, int *iperm2work, int *perm2work,
                          plasma_sequence_t *sequence, plasma_request_t *request);
 

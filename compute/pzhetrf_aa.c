@@ -365,29 +365,6 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                     IPIV(k+1)[i] += tempi;
                 }
 
-                if (sequence->status == PlasmaSuccess) {
-                    int ii;
-                    /*for (ii=0; ii<min(A.m,A.n); ii++) {
-                        IPIV(k+1)[ii] += (iinfo-A.i);
-                    }*/
-                    for( ii=0; ii<tempm; ii++ ) perm[tempi+ii] = tempi+ii;
-                    for( ii=0; ii<imin(tempm, mvak); ii++ ) {
-                        int piv = perm[IPIV(k+1)[ii]-1];
-                        perm[IPIV(k+1)[ii]-1] = perm[tempi+ii];
-                        perm[tempi+ii] = piv;
-                    }
-                    int npiv = 0;
-                    for( ii=0; ii<tempm; ii++ ) {
-                        if( perm[tempi+ii] != tempi+ii ) {
-                            perm2work[tempi+ii] = npiv;
-                            npiv ++;
-                        } else {
-                            perm2work[tempi+ii] = -1;
-                        }
-                        iperm[perm[tempi+ii]] = tempi+ii;
-                    }
-                    for( ii=0; ii<tempm; ii++ ) iperm2work[tempi+ii] = perm2work[iperm[tempi+ii]];
-                }
                 /* -- apply pivoting to previous columns of L -- */
                 for (int n = 1; n < k+1; n++)
                 {
@@ -408,8 +385,9 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                 #pragma omp taskwait
 
                 /* -- symmetrically apply pivoting to trailing A -- */
-                core_omp_zlaswp_sym(PlasmaLower, k, ib,
+                core_omp_zlaswp_sym(PlasmaLower, k, tempm, mvak, ib,
                                     A, W,
+                                    IPIV(k+1), perm, 
                                     iperm, iperm2work, perm2work,
                                     sequence, request);
 
@@ -429,12 +407,13 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                         L(k+1, k+1), ldakp1,
                         T(k+1, k  ), ldtkp1,
                         sequence, request);
+                /* T is zeroed out
                 core_omp_zlaset(
                         PlasmaLower,
                         ldtkp1, ldak_n, 1, 0,
                         mvakp1-1, mvak-1,
                         zzero, zzero,
-                        T(k+1, k));
+                        T(k+1, k));*/
                 core_omp_zlaset(
                         PlasmaUpper,
                         ldakp1, ldak_n, 0, 0,

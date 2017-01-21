@@ -66,6 +66,7 @@ void core_zhetrf_pivot_out(int k, int i1, int nn, int uplo,
     int *iperm_i = &iperm2work[i1*A.mb];
 
     if (uplo == PlasmaLower) {
+
         /* copy the offdiagonal in i1-th row */
         for( j=k; j<i1; j++ ) {
             iperm_i = &iperm2work[j*A.mb];
@@ -180,31 +181,52 @@ void core_zhetrf_pivot_in(int k, int i1, int nn, int uplo, int ib,
     }
 }
 /******************************************************************************/
-void core_omp_zlaswp_sym(plasma_enum_t uplo, int k, int ib, 
+void core_omp_zlaswp_sym(plasma_enum_t uplo, int k, int tempm, int mvak, int ib, 
                          plasma_desc_t A, plasma_desc_t W,
+                         int *ipiv, int *perm,
                          int *iperm, int *iperm2work, int *perm2work,
                          plasma_sequence_t *sequence, plasma_request_t *request)
 {
     {
         if (sequence->status == PlasmaSuccess) {
-                /* copy pivots columns into workspace */
-                for (int n=k+1; n<A.nt; n ++) {
-                    int tempn = n == A.nt-1 ? A.n-n*A.nb : A.nb;
-                    core_zhetrf_pivot_out( k+1, n, tempn, PlasmaLower,
-                                           ib,
-                                           A,
-                                           W2(0), A.n,
-                                           iperm, iperm2work);
+            /* initialize permutation matrices */
+            int tempi = (k+1)*A.mb;
+            for (int i=0; i<tempm; i++) perm[tempi+i] = tempi+i;
+            for (int i=0; i<imin(tempm, mvak); i++) {
+                int piv = perm[ipiv[i]-1];
+                perm[ipiv[i]-1] = perm[tempi+i];
+                perm[tempi+i] = piv;
+            }
+            int npiv = 0;
+            for (int i=0; i<tempm; i++) {
+                if( perm[tempi+i] != tempi+i ) {
+                    perm2work[tempi+i] = npiv;
+                    npiv ++;
+                } else {
+                    perm2work[tempi+i] = -1;
                 }
-                /* copy back pivots columns into A */
-                for (int n=k+1; n<A.nt; n ++) {
-                    int tempn = n == A.nt-1 ? A.n-n*A.nb : A.nb;
-                    core_zhetrf_pivot_in(k+1, n, tempn, PlasmaLower,
-                                         ib,
-                                         A,
-                                         W2(0), A.n,
-                                         perm2work);
-                }
+                iperm[perm[tempi+i]] = tempi+i;
+            }
+            for (int i=0; i<tempm; i++) iperm2work[tempi+i] = perm2work[iperm[tempi+i]];
+
+            /* copy pivots columns into workspace */
+            for (int n=k+1; n<A.nt; n ++) {
+                int tempn = n == A.nt-1 ? A.n-n*A.nb : A.nb;
+                core_zhetrf_pivot_out( k+1, n, tempn, PlasmaLower,
+                                       ib,
+                                       A,
+                                       W2(0), A.n,
+                                       iperm, iperm2work);
+            }
+            /* copy back pivots columns into A */
+            for (int n=k+1; n<A.nt; n ++) {
+                int tempn = n == A.nt-1 ? A.n-n*A.nb : A.nb;
+                core_zhetrf_pivot_in(k+1, n, tempn, PlasmaLower,
+                                     ib,
+                                     A,
+                                     W2(0), A.n,
+                                     perm2work);
+            }
         }
     }
 }
