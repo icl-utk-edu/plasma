@@ -37,6 +37,14 @@ The content of this repository reflects the progress of the transition.
 Before the transition is complete, the last release of the old PLASMA
 is available here: https://bitbucket.org/icl/plasma/downloads/plasma_2.8.0.tar.gz
 
+Get PLASMA
+==========
+One way to get PLASMA is to clone the repository.
+Click the `Clone` tab in the navigation bar on the left.
+Typically, the command is `hg clone ssh://hg@bitbucket.org/icl/plasma`
+
+Alternatively, click the `Downloads` tab in the navigation bar, and then the `Tags` tab, to download the current state of the repository (the `tip`), or any of the numbered releases, as a `zip`, `gz`, or `bz2` archive.
+
 Documentation
 =============
 
