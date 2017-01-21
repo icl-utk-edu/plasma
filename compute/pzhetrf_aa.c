@@ -30,7 +30,7 @@
 #define W3(j) ((plasma_complex64_t*)plasma_tile_addr(W, (j)+3*A.mt, 0)) // tot
 #define W4(j) ((plasma_complex64_t*)plasma_tile_addr(W, (j)+3*A.mt, 0)) // tot
 
-#define H(m,n) (uplo == PlasmaLower ? W2(m) : W2(n))
+#define H(m,n) (uplo == PlasmaLower ? W2((m)) : W2((n)))
 
 /***************************************************************************//**
  *  Parallel tile LDLt factorization.
@@ -328,10 +328,10 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                 int tempm = A.m - tempi; // dimension
 
                 plasma_complex64_t *a00, *a20;
-                a00 = L(k, k);
-                a20 = L(A.mt-1, k);
+                a00 = L(k+1, k+1);
+                a20 = L(A.mt-1, k+1);
 
-                int ma00k = (A.mt-k-1)*A.mb;
+                int ma00k = (A.mt-(k+1)-1)*A.mb;
                 int na00k = plasma_tile_nmain(A, k);
                 int lda20 = plasma_tile_mmain(A, A.mt-1);
 
@@ -419,6 +419,7 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
 
                 /* computing T(k+1, k) */
                 int mvakp1 = plasma_tile_mview(A, k+1);
+                int ldak_n = plasma_tile_nmain(A, k);
                 int ldtkp1 = A.mb; //plasma_tile_mmain_band(T, k+1);
                 /* copy upper-triangular part of L(k+1,k+1) to T(k+1,k) */
                 /* and then zero it out                                 */
@@ -428,10 +429,15 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                         L(k+1, k+1), ldakp1,
                         T(k+1, k  ), ldtkp1,
                         sequence, request);
-                int ldakp1_n = plasma_tile_nmain(A, k+2);
+                core_omp_zlaset(
+                        PlasmaLower,
+                        ldtkp1, ldak_n, 1, 0,
+                        mvakp1-1, mvak-1,
+                        zzero, zzero,
+                        T(k+1, k));
                 core_omp_zlaset(
                         PlasmaUpper,
-                        ldakp1, ldakp1_n, 0, 0,
+                        ldakp1, ldak_n, 0, 0,
                         mvakp1, mvak,
                         zzero, zone,
                         L(k+1, k+1));

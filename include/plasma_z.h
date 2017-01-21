@@ -113,7 +113,6 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
                      plasma_complex64_t *pA, int lda,
                      plasma_complex64_t *pT, int ldt,
                      int *ipiv,
-                     plasma_complex64_t *pW, int lwork,
                      int *iwork);
 
 int plasma_zhetrs_aa(plasma_enum_t trans, int n, int nrhs,

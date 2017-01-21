@@ -82,15 +82,12 @@ void test_zhetrf_aa(param_value_t param[], char *info)
 
     int n = param[PARAM_N].i;
     int nb = param[PARAM_NB].i;
-    int nt = (n+nb-1)/nb;
 
     int lda = imax(1, n + param[PARAM_PADA].i);
     // band matrix A in skewed LAPACK storage
-    int kd   = 2*nb-1;
-    int kut  = (kd+kd+nb-1)/nb; // # of tiles in upper band (not including diagonal)
-    int klt  = (kd+nb-1)/nb;    // # of tiles in lower band (not including diagonal)
+    int kut  = (nb+nb+nb-1)/nb; // # of tiles in upper band (not including diagonal)
+    int klt  = (nb+nb-1)/nb;    // # of tiles in lower band (not including diagonal)
     int ldt  = (kut+klt+1)*nb;  // since we use zgetrf on panel, we pivot back within panel.
-    int lwork = nb*nb*(3*nt+2*(2*nt));
 
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
@@ -109,9 +106,6 @@ void test_zhetrf_aa(param_value_t param[], char *info)
     plasma_complex64_t *T =
         (plasma_complex64_t*)calloc((size_t)ldt*n, sizeof(plasma_complex64_t));
     assert(T != NULL);
-    plasma_complex64_t *W =
-        (plasma_complex64_t*)calloc((size_t)lwork, sizeof(plasma_complex64_t));
-    assert(W != NULL);
 
     int *ipiv = (int*)calloc((size_t)n, sizeof(int));
     assert(ipiv != NULL);
@@ -156,7 +150,7 @@ void test_zhetrf_aa(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    plasma_zhetrf_aa(uplo, n, A, lda, T, ldt, ipiv, W, lwork, iwork);
+    plasma_zhetrf_aa(uplo, n, A, lda, T, ldt, ipiv, iwork);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 /*printf( " L:\n" );
@@ -250,8 +244,7 @@ void test_zhetrf_aa(param_value_t param[], char *info)
     // Free arrays.
     //================================================================
     free(A); free(ipiv);
-    free(T);
-    free(W); free(iwork);
+    free(T); free(iwork);
     if (test)
         free(Aref);
 }

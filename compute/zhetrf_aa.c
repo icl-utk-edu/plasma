@@ -17,6 +17,7 @@
 #include "plasma_internal.h"
 #include "plasma_types.h"
 #include "plasma_workspace.h"
+#include <string.h>
 
 /***************************************************************************//**
  *
@@ -76,7 +77,6 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
                      plasma_complex64_t *pA, int lda,
                      plasma_complex64_t *pT, int ldt,
                      int *ipiv,
-                     plasma_complex64_t *pW, int lwork,
                      int *iwork)
 {
     // Get PLASMA context.
@@ -130,8 +130,9 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
         plasma_error("plasma_desc_general_band_create() failed");
         return retval;
     }
+    memset(T.matrix, 0, ldt*n*sizeof(plasma_complex64_t));
     // workspace
-    int ldw = nb*(lwork/(nb*nb)); /* block column */
+    int ldw = 7*A.mt*nb; /* block column */
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
                                         ldw, nb, 0, 0, ldw, nb, &W);
     if (retval != PlasmaSuccess) {

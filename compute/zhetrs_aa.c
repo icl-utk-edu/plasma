@@ -120,9 +120,8 @@ int plasma_zhetrs_aa(plasma_enum_t trans, int n, int nrhs,
     plasma_desc_t A;
     plasma_desc_t T;
     plasma_desc_t B;
-    int kd  = nb;
-    int tku = (kd+kd+nb-1)/nb; // number of tiles in upper band (not including diagonal)
-    int tkl = (kd+nb-1)/nb;    // number of tiles in lower band (not including diagonal)
+    int tku = (nb+nb+nb-1)/nb; // number of tiles in upper band (not including diagonal)
+    int tkl = (nb+nb-1)/nb;    // number of tiles in lower band (not including diagonal)
     int lm  = (tku+tkl+1)*nb;  // since we use zgetrf on panel, we pivot back within panel.
                                // this could fill the last tile of the panel,
                                // and we need extra NB space on the bottom
@@ -134,7 +133,7 @@ int plasma_zhetrs_aa(plasma_enum_t trans, int n, int nrhs,
         return retval;
     }
     retval = plasma_desc_general_band_create(PlasmaComplexDouble, PlasmaGeneral,
-                                             nb, nb, lm, n, 0, 0, n, n, kd, kd,
+                                             nb, nb, lm, n, 0, 0, n, n, nb, nb,
                                              &T);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_band_create() failed");

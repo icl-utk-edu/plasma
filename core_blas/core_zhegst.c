@@ -104,8 +104,8 @@ void core_omp_zhegst(int itype, plasma_enum_t uplo,
                      plasma_sequence_t *sequence,
                      plasma_request_t *request)
 {
-    #pragma omp task depend(in:A[0:lda*n]) \
-                     depend(inout:B[0:ldb*n])
+    #pragma omp task depend(inout:A[0:lda*n]) \
+                     depend(in:B[0:ldb*n])
     {
         if (sequence->status == PlasmaSuccess)
             core_zhegst(itype, uplo,
