@@ -43,7 +43,7 @@ One way to get PLASMA is to clone the repository.
 Click the `Clone` tab in the navigation bar on the left.
 Typically, the command is `hg clone ssh://hg@bitbucket.org/icl/plasma`
 
-Alternatively, click the `Downloads` tab in the navigation bar, and then the `Tags` tab, to download the current state of the repository (tip) or any of the numbered releases.
+Alternatively, click the `Downloads` tab in the navigation bar, and then the `Tags` tab, to download the current state of the repository (the `tip`) or any of the numbered releases, as a `zip`, `gz`, or `bz2` archive.
 
 Documentation
 =============
