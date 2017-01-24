@@ -10,6 +10,8 @@
 #ifndef TEST_H
 #define TEST_H
 
+#include <stdbool.h>
+
 #include "plasma_types.h"
 
 //==============================================================================
@@ -21,6 +23,7 @@ typedef enum {
     //------------------------------------------------------
     PARAM_ITER,    // outer product iteration?
     PARAM_OUTER,   // outer product iteration?
+    PARAM_DIM_OUTER, // outer product iteration for dimensions M, N, K?
     PARAM_TEST,    // test the solution?
     PARAM_TOL,     // tolerance
     PARAM_TRANS,   // transposition
@@ -71,6 +74,8 @@ static const char * const ParamUsage[][2] = {
     //------------------------------------------------------
     {"--iter=", "number of iterations per set of parameters [default: 1]"},
     {"--outer=[y|n]", "outer product iteration [default: y]"},
+    {"--dim-outer=[y|n]", "outer product iteration of M x N x K"
+                          " in subsequent --dim [default: n]"},
     {"--test=[y|n]", "test the solution [default: y]"},
     {"--tol=", "tolerance [default: 50]"},
     {"--trans=[n|t|c]", "transposition [default: n]"},
@@ -165,7 +170,7 @@ int  param_starts_with(const char *str, const char *prefix);
 int  scan_irange(const char **strp, int *start, int *end, int *step);
 int  scan_drange(const char **strp, double *start, double *end, double *step);
 int  param_scan_int(const char *str, param_t *param);
-int  param_scan_int3(const char *str, param_t *param);
+int  param_scan_int3(const char *str, param_t *param, bool outer);
 int  param_scan_char(const char *str, param_t *param);
 int  param_scan_double(const char *str, param_t *param);
 int  param_scan_complex(const char *str, param_t *param);

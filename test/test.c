@@ -367,6 +367,7 @@ void print_routine_usage(const char *name)
            DescriptionIndent, "-h --help");
     print_usage(PARAM_ITER);
     print_usage(PARAM_OUTER);
+    print_usage(PARAM_DIM_OUTER);
     print_usage(PARAM_TEST);
     print_usage(PARAM_TOL);
 
@@ -504,6 +505,11 @@ int param_read(int argc, char **argv, param_t param[])
     const char *routine = argv[1];
 
     //================================================================
+    // Set default values for singleton parameters before scanning.
+    //================================================================
+    param_add_char('n', &param[PARAM_DIM_OUTER]);
+
+    //================================================================
     // Initialize parameters from the command line.
     //================================================================
     for (int i = 2; i < argc && argv[i]; i++) {
@@ -512,6 +518,15 @@ int param_read(int argc, char **argv, param_t param[])
         //--------------------------------------------------
         if (param_starts_with(argv[i], "--outer="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_OUTER]);
+        else if (param_starts_with(argv[i], "--dim-outer=")) {
+            // dim-outer should be a singleton, not a list,
+            // otherwise specifying --dim-outer repeats all the tests.
+            // Setting num=0 here is a quick hack to make a singleton;
+            // a more comprehensive solution will be applied.
+            param[PARAM_DIM_OUTER].num = 0;
+            err = param_scan_char(strchr(argv[i], '=')+1,
+                                  &param[PARAM_DIM_OUTER]);
+        }
         else if (param_starts_with(argv[i], "--test="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TEST]);
 
@@ -543,8 +558,12 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--iter="))
             iter = strtol(strchr(argv[i], '=')+1, NULL, 10);
 
-        else if (param_starts_with(argv[i], "--dim"))
-            err = param_scan_int3(strchr(argv[i], '=')+1, &param[PARAM_DIM]);
+        else if (param_starts_with(argv[i], "--dim")) {
+            bool outer = param[PARAM_DIM_OUTER].val[0].c == 'y';
+            err = param_scan_int3(strchr(argv[i], '=')+1, &param[PARAM_DIM],
+                                  outer);
+        }
+
         else if (param_starts_with(argv[i], "--kl="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_KL]);
         else if (param_starts_with(argv[i], "--ku="))
@@ -847,27 +866,39 @@ int param_scan_int(const char *str, param_t *param)
  * @brief Scans a list of integers or ranges (start:end:step).
  *        Adds the value(s) to a parameter iterator.
  *
- * @param[in]    str   - string containin an integer
- * @param[inout] param - parameter iterator
+ * @param[in]     str   - string containin an integer
+ * @param[in,out] param - parameter iterator
+ * @param[in]     outer - if true, uses outer product iteration of M x N x K;
+ *                        else uses inner product iteration
  *
  * @retval 1 - failure
  * @retval 0 - success
  *
  ******************************************************************************/
-int param_scan_int3(const char *str, param_t *param)
+int param_scan_int3(const char *str, param_t *param, bool outer)
 {
     int m_start, m_end, m_step;
     int n_start, n_end, n_step;
     int k_start, k_end, k_step;
+    int len;
     while (true) {
+        // scan M
         if (scan_irange(&str, &m_start, &m_end, &m_step) != 0)
             return 1;
-        if (*str == 'x') {
-            str += 1;
+
+        // if "x", scan N; else K = N = M
+        len = 0;
+        sscanf(str, " x %n", &len);
+        if (len > 0) {
+            str += len;
             if (scan_irange(&str, &n_start, &n_end, &n_step) != 0)
                 return 1;
-            if (*str == 'x') {
-                str += 1;
+
+            // if "x", scan K; else K = N
+            len = 0;
+            sscanf(str, " x %n", &len);
+            if (len > 0) {
+                str += len;
                 if (scan_irange(&str, &k_start, &k_end, &k_step) != 0)
                     return 1;
             }
@@ -882,17 +913,51 @@ int param_scan_int3(const char *str, param_t *param)
             k_end   = n_end   = m_end;
             k_step  = n_step  = m_step;
         }
-        if (m_step == 0 && n_step == 0 && k_step == 0) {
-            // if all steps are 0, single point
+
+        if (m_start == m_end && n_start == n_end && k_start == k_end) {
+            // single size
             int3_t dim = { m_start, n_start, k_start };
             param_add_int3(dim, param);
         }
+        else if (outer) {
+            // outer product of M x N x K
+            // require non-zero step
+            if (m_step == 0) m_step = 1;
+            if (n_step == 0) n_step = 1;
+            if (k_step == 0) k_step = 1;
+            for (int m = m_start;
+                 (m_step >= 0 ? m <= m_end : m >= m_end);
+                 m += m_step) {
+
+                for (int n = n_start;
+                     (n_step >= 0 ? n <= n_end : n >= n_end);
+                     n += n_step) {
+
+                    for (int k = k_start;
+                         (k_step >= 0 ? k <= k_end : k >= k_end);
+                         k += k_step)
+                    {
+                        int3_t dim = { m, n, k };
+                        param_add_int3(dim, param);
+                    }
+                }
+            }
+        }
         else {
-            for (int m = m_start, n = n_start, k = k_start;
-                 (m_step > 0 ? m <= m_end : m >= m_end) &&
-                 (n_step > 0 ? n <= n_end : n >= n_end) &&
-                 (k_step > 0 ? k <= k_end : k >= k_end);
-                 m += m_step, n += n_step, k += k_step)
+            // inner product of M x N x K
+            // at least one of the variables must advance
+            assert(m_step != 0 || n_step != 0 || k_step != 0);
+            for (int m = m_start,
+                     n = n_start,
+                     k = k_start;
+
+                 (m_step >= 0 ? m <= m_end : m >= m_end) &&
+                 (n_step >= 0 ? n <= n_end : n >= n_end) &&
+                 (k_step >= 0 ? k <= k_end : k >= k_end);
+
+                 m += m_step,
+                 n += n_step,
+                 k += k_step)
             {
                 int3_t dim = { m, n, k };
                 param_add_int3(dim, param);
