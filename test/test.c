@@ -723,6 +723,100 @@ int param_starts_with(const char *str, const char *prefix)
 
 /***************************************************************************//**
  *
+ * @brief Scans string for single integer or range of integers (start:end:step).
+ *        Advances the string to after the range or number.
+ *
+ * @param[in,out] strp - pointer to string containing an integer or range.
+ *                       On output, advanced to after the number or range.
+ * @param[out] start - start of range
+ * @param[out] end   - end of range
+ * @param[out] step  - step size; 0 if start = end
+ *
+ * @retval 1 - failure
+ * @retval 0 - success
+ *
+ ******************************************************************************/
+int scan_irange(const char **strp, int *start, int *end, int *step)
+{
+    int bytes1, bytes2, bytes3, cnt;
+    cnt = sscanf(*strp, "%d %n: %d %n: %d %n",
+                 start, &bytes1, end, &bytes2, step, &bytes3);
+    if (cnt == 3) {
+        if (*start == *end)
+            *step = 0;
+        *strp += bytes3;
+        return ! ((*step == 0 && *start == *end) ||
+                  (*step >  0 && *start <  *end) ||
+                  (*step <  0 && *start >  *end));
+    }
+    else if (cnt == 2) {
+        *strp += bytes2;
+        if (*start == *end)
+            *step = 0;
+        else
+            *step = 1;
+        return ! (*start <= *end);
+    }
+    else if (cnt == 1) {
+        *strp += bytes1;
+        *end  = *start;
+        *step = 0;
+        return 0;
+    }
+    else {
+        return 1;
+    }
+}
+
+/***************************************************************************//**
+ *
+ * @brief Scans string for single double or range of doubles (start:end:step).
+ *        Advances the string to after the range or number.
+ *
+ * @param[in,out] strp - pointer to string containing a double or range.
+ *                       On output, advanced to after the number or range.
+ * @param[out] start - start of range
+ * @param[out] end   - end of range
+ * @param[out] step  - step size; 0 if start = end
+ *
+ * @retval 1 - failure
+ * @retval 0 - success
+ *
+ ******************************************************************************/
+int scan_drange(const char **strp, double *start, double *end, double *step)
+{
+    int bytes1, bytes2, bytes3, cnt;
+    cnt = sscanf(*strp, "%lf %n: %lf %n: %lf %n",
+                 start, &bytes1, end, &bytes2, step, &bytes3);
+    if (cnt == 3) {
+        if (*start == *end)
+            *step = 0;
+        *strp += bytes3;
+        return ! ((*step == 0 && *start == *end) ||
+                  (*step >  0 && *start <  *end) ||
+                  (*step <  0 && *start >  *end));
+    }
+    else if (cnt == 2) {
+        *strp += bytes2;
+        if (*start == *end)
+            *step = 0;
+        else
+            *step = 1;
+        return ! (*start <= *end);
+    }
+    else if (cnt == 1) {
+        *strp += bytes1;
+        *end  = *start;
+        *step = 0;
+        return 0;
+    }
+    else {
+        return 1;
+    }
+}
+
+/***************************************************************************//**
+ *
  * @brief Scans a list of integers or ranges (start:end:step).
  *        Adds the value(s) to a parameter iterator.
  *
@@ -735,35 +829,22 @@ int param_starts_with(const char *str, const char *prefix)
  ******************************************************************************/
 int param_scan_int(const char *str, param_t *param)
 {
-    char *endptr;
-    do {
-        long start = strtol(str, &endptr, 10);
-        if (endptr == str) {
+    int start, end, step;
+    while (true) {
+        if (scan_irange(&str, &start, &end, &step) != 0)
             return 1;
+        if (start == end) {
+            param_add_int(start, param);
         }
-        if (*endptr == ':') {
-            str = endptr+1;
-            long stop = strtol(str, &endptr, 10);
-            if (endptr == str || *endptr != ':') {
-                return 1;
-            }
-
-            str = endptr+1;
-            long step = strtol(str, &endptr, 10);
-            if (endptr == str || step <= 0) {
-                return 1;
-            }
-
-            for (int i = start; i <= stop; i += step) {
+        else {
+            for (int i = start; i <= end; i += step) {
                 param_add_int(i, param);
             }
         }
-        else {
-            param_add_int(start, param);
-        }
-        str = endptr+1;
+        if (*str == '\0')
+            break;
+        str += 1;
     }
-    while (*endptr != '\0');
     return 0;
 }
 
@@ -808,36 +889,22 @@ int param_scan_char(const char *str, param_t *param)
  ******************************************************************************/
 int param_scan_double(const char *str, param_t *param)
 {
-    char *endptr;
-    do {
-        double start = strtod(str, &endptr);
-        if (endptr == str) {
+    double start, end, step;
+    while (true) {
+        if (scan_drange(&str, &start, &end, &step) != 0)
             return 1;
+        if (start == end) {
+            param_add_double(start, param);
         }
-        if (*endptr == ':') {
-            str = endptr+1;
-            double stop = strtod(str, &endptr);
-            if (endptr == str || *endptr != ':') {
-                return 1;
-            }
-
-            str = endptr+1;
-            double step = strtod(str, &endptr);
-            if (endptr == str || step <= 0) {
-                return 1;
-            }
-
-            // add fraction of step to allow for rounding error
-            for (double d = start; d <= stop + step/10.; d += step) {
+        else {
+            for (double d = start; d <= end + step/10.; d += step) {
                 param_add_double(d, param);
             }
         }
-        else {
-            param_add_double(start, param);
-        }
-        str = endptr+1;
+        if (*str == '\0')
+            break;
+        str += 1;
     }
-    while (*endptr != '\0');
     return 0;
 }
 
@@ -880,15 +947,14 @@ int param_scan_complex(const char *str, param_t *param)
 
 /***************************************************************************//**
  *
- * @brief Adds an integer to a parameter iterator.
+ * @brief Increments number of elements in a parameter iterator,
+ *        dynamically growing its storage as needed.
  *
- * @param[in]    ival  - integer
  * @param[inout] param - parameter iterator
  *
  ******************************************************************************/
-void param_add_int(int ival, param_t *param)
+void param_add(param_t *param)
 {
-    param->val[param->num].i = ival;
     param->num++;
     if (param->num == param->size) {
         param->size *= 2;
@@ -896,6 +962,20 @@ void param_add_int(int ival, param_t *param)
             param->val, param->size*sizeof(param_value_t));
         assert(param->val != NULL);
     }
+}
+
+/***************************************************************************//**
+ *
+ * @brief Adds an integer to a parameter iterator.
+ *
+ * @param[in]    ival  - integer
+ * @param[in,out] param - parameter iterator
+ *
+ ******************************************************************************/
+void param_add_int(int ival, param_t *param)
+{
+    param->val[param->num].i = ival;
+    param_add(param);
 }
 
 /***************************************************************************//**
@@ -909,13 +989,7 @@ void param_add_int(int ival, param_t *param)
 void param_add_char(char cval, param_t *param)
 {
     param->val[param->num].c = cval;
-    param->num++;
-    if (param->num == param->size) {
-        param->size *= 2;
-        param->val = (param_value_t*) realloc(
-            param->val, param->size*sizeof(param_value_t));
-        assert(param->val != NULL);
-    }
+    param_add(param);
 }
 
 /***************************************************************************//**
@@ -929,13 +1003,7 @@ void param_add_char(char cval, param_t *param)
 void param_add_double(double dval, param_t *param)
 {
     param->val[param->num].d = dval;
-    param->num++;
-    if (param->num == param->size) {
-        param->size *= 2;
-        param->val = (param_value_t*) realloc(
-            param->val, param->size*sizeof(param_value_t));
-        assert(param->val != NULL);
-    }
+    param_add(param);
 }
 
 /***************************************************************************//**
@@ -949,13 +1017,7 @@ void param_add_double(double dval, param_t *param)
 void param_add_complex(plasma_complex64_t zval, param_t *param)
 {
     param->val[param->num].z = zval;
-    param->num++;
-    if (param->num == param->size) {
-        param->size *= 2;
-        param->val = (param_value_t*) realloc(
-            param->val, param->size*sizeof(param_value_t));
-        assert(param->val != NULL);
-    }
+    param_add(param);
 }
 
 /***************************************************************************//**
