@@ -1130,14 +1130,15 @@ int param_step_inner(param_t param[])
  ******************************************************************************/
 int param_step_outer(param_t param[], int idx)
 {
-    while (param[idx].num == 0) {
-        if (++idx == PARAM_SIZEOF) {
-            return 0;
-        }
-    }
+    // reverse index to iterate right-to-left (e.g., ib, then nb, k, n, m).
+    int ridx = PARAM_SIZEOF - 1 - idx;
+    while (ridx >= 0 && param[ridx].num == 0)
+        --ridx;
+    if (ridx < 0)
+        return 0;
 
-    if (++param[idx].pos == param[idx].num) {
-        param[idx].pos = 0;
+    if (++param[ridx].pos == param[ridx].num) {
+        param[ridx].pos = 0;
         return param_step_outer(param, idx+1);
     }
     return 1;
