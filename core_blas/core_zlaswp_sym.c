@@ -15,8 +15,10 @@
 #include "plasma_internal.h"
 #include "core_lapack.h"
 
+#define COMPLEX
 #define A(m,n) ((plasma_complex64_t*)plasma_tile_addr(A, m, n))
 #define W2(j)  ((plasma_complex64_t*)plasma_tile_addr(W, j+A.mt, 0))   // 2mt x nb*nb
+
 
 /***************************************************************************//**
  *
@@ -55,178 +57,110 @@
  *          ldb >= max(1,m).
  *
  ******************************************************************************/
-void core_zhetrf_pivot_out(int k, int i1, int nn, int uplo,
-                           int ib,
-                           plasma_desc_t A,
-                           plasma_complex64_t *B, int ldb,
-                           int *iperm, int *iperm2work) {
-
-    plasma_complex64_t *Bi;
-    int i, j, ii, kk, ldan, tempn;
-    int *iperm_i = &iperm2work[i1*A.mb];
-
+void core_zlaswp_sym(int uplo, plasma_desc_t A, int k1, int k2, const int *ipiv, int incx)
+{
     if (uplo == PlasmaLower) {
+        if (incx > 0) {
+            for (int i = k1-1; i <= k2-1; i += incx) {
+                //printf( " ipiv[%d]=%d\n",i,ipiv[i] );
+                if (ipiv[i]-1 != i) {
+                    int p1 = i;
+                    int p2 = ipiv[i]-1;
 
-        /* copy the offdiagonal in i1-th row */
-        for( j=k; j<i1; j++ ) {
-            iperm_i = &iperm2work[j*A.mb];
-            ldan = plasma_tile_mmain(A, i1);
-            tempn = j == A.mt-1 ? A.m-j*A.mb : A.mb;
-            for( i=0; i<tempn; i++ ) {
-                if( iperm_i[i] >= 0 ) {
-                    ii = i1*A.mb;
-                    Bi = &B[iperm_i[i]*ldb-k*A.mb];
+                    int i1 = p1%A.mb;
+                    int i2 = p2%A.mb;
+                    int m1 = p1/A.mb;
+                    int m2 = p2/A.mb;
+                    int lda1 = plasma_tile_mmain(A, m1);
+                    int lda2 = plasma_tile_mmain(A, m2);
 
-                    plasma_complex64_t *Aij = A(i1, j);
-                    for( kk=0; kk<nn; kk++ ) Bi[iperm[ii+kk]] = Aij[kk + i*ldan];
-                }
-            }
-        }
 
-        /* copy the diagonal */
-        iperm_i = &iperm2work[i1*A.mb];
-        ldan = plasma_tile_mmain(A, i1);
-        for( i=0; i<nn; i++ ) {
-            if( iperm_i[i] >= 0 ) {
-                ii = i1*A.mb;
-                Bi = &B[iperm_i[i]*ldb-k*A.mb];
+                    int i1p1 = (p1+1)%A.mb;
+                    int i2p1 = (p2+1)%A.mb;
+                    int m1p1 = (p1+1)/A.mb;
+                    int m2p1 = (p2+1)/A.mb;
+                    int lda1p1 = plasma_tile_mmain(A, m1p1);
+                    int lda2p1 = plasma_tile_mmain(A, m2p1);
+                    //printf( " swap(p1=%d<->p2=%d), i1=%d<->i2=%d, m1=%d,m2=%d (m1p1=%d,m2p2=%d)\n",p1,p2,i1,i2,m1,m2,m1p1,m2p1 );
 
-                plasma_complex64_t *Aij = A(i1, j);
-                for( kk=0; kk<i; kk++ ) Bi[iperm[ii+kk]] = conj(Aij[i+ kk*ldan]);
-                for( kk=i; kk<nn; kk++ ) Bi[iperm[ii+kk]] = Aij[kk+i*ldan];
-            }
-        }
-        /* copy the offdiagonal in i1-th col */
-        for( j=i1+1; j<A.mt; j++ ) {
-            iperm_i = &iperm2work[j*A.mb];
-            ldan = plasma_tile_mmain(A, j);
-            tempn = j == A.mt-1 ? A.m-j*A.mb : A.mb;
-            for( i=0; i<tempn; i++ ) {
-                if( iperm_i[i] >= 0 ) {
-                    ii = i1*A.mb;
-                    Bi = &B[iperm_i[i]*ldb-k*A.mb];
-
-                    plasma_complex64_t *Aij = A(j, i1);
-                    for( kk=0; kk<nn; kk++ ) Bi[iperm[ii+kk]] = conj(Aij[i+kk*ldan]);
-                }
-            }
-        }
-    } else {
-    }
-}
-
-void core_zhetrf_pivot_in(int k, int i1, int nn, int uplo, int ib,
-                          plasma_desc_t A,
-                          plasma_complex64_t *B, int ldb,
-                          int *perm2work ) {
-
-    plasma_complex64_t *Bi;
-    int i, j, ii, kk, kkk, ldan, tempn;
-    int *perm2work_i = &perm2work[i1*A.mb];
-
-    if( uplo == PlasmaLower ) {
-        /* copy the offdiagonal in i1-th row */
-        for( j=k; j<i1; j++ ) {
-            /* column swap */
-            perm2work_i = &perm2work[j*A.mb];
-            tempn = j == A.mt-1 ? A.m-j*A.mb : A.mb;
-            for( i=0; i<tempn; i++ ) {
-                if( perm2work_i[i] >= 0 ) { // this is a pivot column
-                    ii = (i1-k)*A.mb;
-                    Bi = &B[perm2work_i[i]*ldb];
-
-                    ldan = plasma_tile_mmain(A, i1);
-                    plasma_complex64_t *Aij = A(i1, j);
-                    for( kk=0; kk<nn; kk++ ) Aij[kk + i*ldan] = Bi[ii+kk];
-                }
-            }
-
-            /* row swap,  trying inner-blocking */
-            perm2work_i = &perm2work[i1*A.mb];
-            ldan = plasma_tile_mmain(A, i1);
-            tempn = j == A.mt-1 ? A.m-j*A.mb : A.mb;
-            for( i=0; i<nn; ) {
-                int istart = i;
-                int iend   = imin(nn, i+ib);
-                for( i=istart; i<iend; i++ ) {
-                    if( perm2work_i[i] >= 0 ) { // this is a pivot row
-                        ii = (j-k)*A.mb;
-                        Bi = &B[perm2work_i[i]*ldb];
-
-                        plasma_complex64_t *Aij = A(i1, j);
-                        for( kk=0; kk<tempn; kk+=ib ) {
-                            for( kkk=kk; kkk<imin(kk+ib, tempn); kkk++ ) {
-                                Aij[i + kkk*ldan] = conj(Bi[ii+kkk]);
-                            }
-                        }
+                    // swap rows of previous column (assuming (k1,k2) stay within a tile)
+                    if (i > k1-1) {
+                        //printf( " 1: swap %d rows in A(%d,%d)[%d,%d] and A(%d,%d)[%d,%d]\n",i-(k1-1),
+                        //         m1,m1,i1,0, m2,m1,i2,0 );
+                        cblas_zswap(i-(k1-1),
+                                    A(m1, m1) + i1, lda1,
+                                    A(m2, m1) + i2, lda2);
                     }
+
+                    // swap columns p1 and p2
+                    int mvam = plasma_tile_mview(A, m2p1);
+                    if (mvam > i2+1) {
+                        // between first tiles A(p2,p1) and A(p2,p2)
+                        //printf( " 2.1: swap %d cols in A(%d,%d)[%d,%d] and A(%d,%d)[%d,%d]\n",mvam-(i2+1),
+                        //          m2p1,m1,i2p1,i1, m2p1,m2,i2p1,i2 );
+                        cblas_zswap(mvam-(i2+1),
+                                    A(m2p1, m1) + i2p1 + i1*lda2p1, 1,
+                                    A(m2p1, m2) + i2p1 + i2*lda2p1, 1);
+                    }
+                    for (int k = m2+1; k < A.mt; k++) {
+                        int mvak = plasma_tile_mview(A, k);
+                        int ldak = plasma_tile_mmain(A, k);
+                        //printf( " 2.2: swap %d cols in A(%d,%d)[%d,%d] and A(%d,%d)[%d,%d]\n",mvak,
+                        //          k,m1,0,i1, k,m2,0,i2 );
+                        cblas_zswap(mvak,
+                                    A(k, m1) + i1*ldak, 1,
+                                    A(k, m2) + i2*ldak, 1);
+                    }
+
+                    // sym swap 
+                    mvam = plasma_tile_mview(A, m1);
+                    if (imin(mvam,p2-(k1-1)) > i1+1) {
+                        //printf( " 3.1: swap %d syms in A(%d,%d)[%d,%d] and A(%d,%d)[%d,%d]\n",imin(mvam,p2-(k1-1))-(i1+1), //imin(mvam,p2-p1)-((p1+1)-(k1-1)),
+                        //         m1p1,m1,i1p1,i1, m2,m1p1,i2,i1p1 );
+                        #ifdef COMPLEX
+                        LAPACKE_zlacgv_work(imin(mvam,p2-(k1-1))-(i1+1), A(m1p1, m1) + i1p1 + i1*lda1p1, 1);
+                        LAPACKE_zlacgv_work(imin(mvam,p2-(k1-1))-(i1+1), A(m2, m1p1) + i2 + i1p1*lda2, lda2);
+                        #endif
+                        cblas_zswap(imin(mvam,p2-(k1-1))-(i1+1),
+                                    A(m1p1, m1) + i1p1 + i1*lda1p1, 1,
+                                    A(m2, m1p1) + i2 + i1p1*lda2, lda2);
+                    }
+                    for (int k = m1+1; k <= m2; k++) {
+                        int mvak = plasma_tile_mview(A, k);
+                        int ldak = plasma_tile_mmain(A, k);
+                        //printf( " 3.2: swap %d syms in A(%d,%d)[%d,%d] and A(%d,%d)[%d,%d]\n",imin(mvak, (p2-1)-k*A.mb+1),
+                        //          k,m1,0,i1, m2,k,i2,0 );
+                        #ifdef COMPLEX
+                        LAPACKE_zlacgv_work(imin(mvak, (p2-1)-k*A.mb+1), A(k, m1) +  i1*ldak, 1);
+                        LAPACKE_zlacgv_work(imin(mvak, (p2-1)-k*A.mb+1), A(m2, k) +  i2, lda2);
+                        #endif
+                        cblas_zswap(imin(mvak, (p2-1)-k*A.mb+1),
+                                    A(k, m1) +  i1*ldak, 1,
+                                    A(m2, k) +  i2, lda2);
+                    }
+                    #ifdef COMPLEX
+                    LAPACKE_zlacgv_work(1, A(m2, m1) +  i2 + i1*lda2, 1);
+                    #endif
+
+                    // swap diagonal
+                    cblas_zswap(1,
+                                A(m1, m1) + i1 + i1*lda1, lda1,
+                                A(m2, m2) + i2 + i2*lda2, lda2);
+
                 }
             }
         }
-        /* copy the diagonal */
-        perm2work_i = &perm2work[i1*A.mb];
-        for( i=0; i<nn; i++ ) {
-            if( perm2work_i[i] >= 0 ) {
-                ii = i1*A.mb;
-                Bi = &B[perm2work_i[i]*ldb-k*A.mb];
-
-                ldan = plasma_tile_mmain(A, i1);
-                tempn = i1 == A.mt-1 ? A.m-i1*A.mb : A.mb;
-                plasma_complex64_t *Aij = A(i1, i1);
-                for( kk=0; kk<i; kk++ ) Aij[i + kk*ldan] = conj(Bi[ii+kk]);
-                for( kk=i; kk<nn; kk++ ) Aij[kk + i*ldan] = Bi[ii+kk];
-            }
-        }
-    } else {
     }
 }
+
 /******************************************************************************/
-void core_omp_zlaswp_sym(plasma_enum_t uplo, int k, int tempm, int mvak, int ib, 
-                         plasma_desc_t A, plasma_desc_t W,
-                         int *ipiv, int *perm,
-                         int *iperm, int *iperm2work, int *perm2work,
+void core_omp_zlaswp_sym(int uplo,
+                         plasma_desc_t A, int k1, int k2, const int *ipiv, int incx,
                          plasma_sequence_t *sequence, plasma_request_t *request)
 {
     {
         if (sequence->status == PlasmaSuccess) {
-            /* initialize permutation matrices */
-            int tempi = (k+1)*A.mb;
-            for (int i=0; i<tempm; i++) perm[tempi+i] = tempi+i;
-            for (int i=0; i<imin(tempm, mvak); i++) {
-                int piv = perm[ipiv[i]-1];
-                perm[ipiv[i]-1] = perm[tempi+i];
-                perm[tempi+i] = piv;
-            }
-            int npiv = 0;
-            for (int i=0; i<tempm; i++) {
-                if( perm[tempi+i] != tempi+i ) {
-                    perm2work[tempi+i] = npiv;
-                    npiv ++;
-                } else {
-                    perm2work[tempi+i] = -1;
-                }
-                iperm[perm[tempi+i]] = tempi+i;
-            }
-            for (int i=0; i<tempm; i++) iperm2work[tempi+i] = perm2work[iperm[tempi+i]];
-
-            /* copy pivots columns into workspace */
-            for (int n=k+1; n<A.nt; n ++) {
-                int tempn = n == A.nt-1 ? A.n-n*A.nb : A.nb;
-                core_zhetrf_pivot_out( k+1, n, tempn, PlasmaLower,
-                                       ib,
-                                       A,
-                                       W2(0), A.n,
-                                       iperm, iperm2work);
-            }
-            /* copy back pivots columns into A */
-            for (int n=k+1; n<A.nt; n ++) {
-                int tempn = n == A.nt-1 ? A.n-n*A.nb : A.nb;
-                core_zhetrf_pivot_in(k+1, n, tempn, PlasmaLower,
-                                     ib,
-                                     A,
-                                     W2(0), A.n,
-                                     perm2work);
-            }
+            core_zlaswp_sym(uplo, A, k1, k2, ipiv, incx);
         }
     }
 }

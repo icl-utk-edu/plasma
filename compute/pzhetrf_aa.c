@@ -126,7 +126,7 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                         beta,  W3(id),  A.mb,
                         sequence, request);
                 }
-                /* NOTE: In old PLASMA, had an option to reduce in a set of tiles */
+                /* NOTE: Old PLASMA had an option to reduce in a set of tiles */
                 int num_players = num;                                           /* number of players          */
                 int skip  = 2;                                                   /* intervals between brackets */
                 int num_rounds = ceil( log10((double)num_players)/log10(2.0) );  /* height of tournament       */
@@ -383,14 +383,47 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                     }
                 }
                 #pragma omp taskwait
+/*for (int ii=0; ii<imin(tempm,mvak); ii++) printf( "%d\n",IPIV(k+1)[ii] );
+for (int k1=k+1; k1<A.mt; k1++) {
+    for (int k2=k+1; k2<=k1; k2++) {
+        printf( "A(%d,%d)\n",k1,k2 );
+        int mva1 = plasma_tile_mview(A, k1);
+        int mva2 = plasma_tile_mview(A, k2);
+        int lda1 = plasma_tile_nmain(A, k1);
+        for (int ii=0; ii<mva1; ii++) {
+            for (int jj=0; jj<mva2; jj++) printf( "%.2e ",A(k1,k2)[ii+jj*lda1] );
+            printf( "\n" );
+        }
+    }
+}
+printf( "\n" );*/
 
                 /* -- symmetrically apply pivoting to trailing A -- */
-                core_omp_zlaswp_sym(PlasmaLower, k, tempm, mvak, ib,
-                                    A, W,
-                                    IPIV(k+1), perm, 
-                                    iperm, iperm2work, perm2work,
+                //#define OLD_PLASMA_LASWP_SYM
+                #ifdef OLD_PLASMA_LASWP_SYM
+                core_omp_zlaswp_sym_old(PlasmaLower, k, tempm, mvak, ib,
+                                        A, W,
+                                        IPIV(k+1), perm, 
+                                        iperm, iperm2work, perm2work,
+                                        sequence, request);
+                #else
+                core_omp_zlaswp_sym(PlasmaLower,
+                                    A, (k+1)*A.mb+1, (k+1)*A.mb+imin(tempm,mvak), ipiv, 1,
                                     sequence, request);
-
+                #endif
+/*#pragma omp taskwait
+for (int k1=k+1; k1<A.mt; k1++) {
+    for (int k2=k+1; k2<=k1; k2++) {
+        printf( "A(%d,%d)\n",k1,k2 );
+        int mva1 = plasma_tile_mview(A, k1);
+        int mva2 = plasma_tile_mview(A, k2);
+        int lda1 = plasma_tile_nmain(A, k1);
+        for (int ii=0; ii<mva1; ii++) {
+            for (int jj=0; jj<mva2; jj++) printf( "%.2e ",A(k1,k2)[ii+jj*lda1] );
+            printf( "\n" );
+        }
+    }
+}*/
                 /* ================================== */
                 /* ==  end of PLASMA recursive LU  == */
                 /* ================================== */

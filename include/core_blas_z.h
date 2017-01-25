@@ -142,6 +142,9 @@ void core_zlaset(plasma_enum_t uplo,
 void core_zlaswp(plasma_enum_t colrow,
                  plasma_desc_t A, int k1, int k2, const int *ipiv, int incx);
 
+void core_zlaswp_sym(int uplo,
+                     plasma_desc_t A, int k1, int k2, const int *ipiv, int incx);
+
 int core_zlauum(plasma_enum_t uplo,
                 int n,
                 plasma_complex64_t *A, int lda);
@@ -439,10 +442,14 @@ void core_omp_zlansy_aux(plasma_enum_t norm, plasma_enum_t uplo,
                          plasma_sequence_t *sequence,
                          plasma_request_t *request);
 
-void core_omp_zlaswp_sym(plasma_enum_t uplo, int k, int tmpm, int mvak, int ib,
-                         plasma_desc_t A, plasma_desc_t W,
-                         int *ipiv, int *perm,
-                         int *iperm, int *iperm2work, int *perm2work,
+void core_omp_zlaswp_sym_old(plasma_enum_t uplo, int k, int tmpm, int mvak, int ib,
+                             plasma_desc_t A, plasma_desc_t W,
+                             int *ipiv, int *perm,
+                             int *iperm, int *iperm2work, int *perm2work,
+                             plasma_sequence_t *sequence, plasma_request_t *request);
+
+void core_omp_zlaswp_sym(int uplo,
+                         plasma_desc_t A, int k1, int k2, const int *ipiv, int incx,
                          plasma_sequence_t *sequence, plasma_request_t *request);
 
 void core_omp_zlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,

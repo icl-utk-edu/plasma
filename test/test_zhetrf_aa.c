@@ -53,27 +53,30 @@ void test_zhetrf_aa(param_value_t param[], char *info)
             print_usage(PARAM_PADA);
             print_usage(PARAM_NRHS);
             print_usage(PARAM_NB);
+            print_usage(PARAM_NTPF);
         }
         else {
             // Return column labels.
             snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s %*s",
+                     "%*s %*s %*s %*s %*s %*s",
                      InfoSpacing, "Uplo",
                      InfoSpacing, "N",
                      InfoSpacing, "PadA",
                      InfoSpacing, "NRHS",
-                     InfoSpacing, "NB");
+                     InfoSpacing, "NB",
+                     InfoSpacing, "NTPF");
         }
         return;
     }
     // Return column values.
     snprintf(info, InfoLen,
-             "%*c %*d %*d %*d %*d",
+             "%*c %*d %*d %*d %*d %*d",
              InfoSpacing, param[PARAM_UPLO].c,
              InfoSpacing, param[PARAM_N].i,
              InfoSpacing, param[PARAM_PADA].i,
              InfoSpacing, param[PARAM_NRHS].i,
-             InfoSpacing, param[PARAM_NB].i);
+             InfoSpacing, param[PARAM_NB].i,
+             InfoSpacing, param[PARAM_NTPF].i);
 
     //================================================================
     // Set parameters.
