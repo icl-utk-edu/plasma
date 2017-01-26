@@ -97,7 +97,7 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
 void plasma_pzhetrf_aa(plasma_enum_t uplo, 
                        plasma_desc_t A,
                        plasma_desc_t T, int *ipiv,
-                       plasma_desc_t W, int *iwork,
+                       plasma_desc_t W,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzlacpy(plasma_enum_t uplo, plasma_desc_t A, plasma_desc_t B,

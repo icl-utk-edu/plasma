@@ -148,11 +148,6 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
         plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
-    int *iwork = (int*)malloc((4*n+1)*sizeof(int));
-    if (iwork == NULL) {
-        plasma_error("malloc(iwork) failed");
-        return PlasmaErrorOutOfMemory;
-    }
 
     // Create sequence.
     plasma_sequence_t *sequence = NULL;
@@ -177,7 +172,7 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
         plasma_omp_zge2desc(pA, lda, A, sequence, &request);
 
         // Call the tile async function.
-        plasma_omp_zhetrf_aa(uplo, A, T, ipiv, W, iwork, sequence, &request);
+        plasma_omp_zhetrf_aa(uplo, A, T, ipiv, W, sequence, &request);
 
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
@@ -189,9 +184,6 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
     plasma_desc_destroy(&A);
     plasma_desc_destroy(&T);
     plasma_desc_destroy(&W);
-
-    // Free workspace
-    free(iwork);
 
     // Return status.
     int status = sequence->status;
@@ -263,7 +255,7 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
 void plasma_omp_zhetrf_aa(plasma_enum_t uplo, 
                           plasma_desc_t A,
                           plasma_desc_t T, int *ipiv,
-                          plasma_desc_t W, int *iwork,
+                          plasma_desc_t W,
                           plasma_sequence_t *sequence, 
                           plasma_request_t *request)
 {
@@ -303,5 +295,5 @@ void plasma_omp_zhetrf_aa(plasma_enum_t uplo,
         return;
 
     // Call the parallel function.
-    plasma_pzhetrf_aa(uplo, A, T, ipiv, W, iwork, sequence, request);
+    plasma_pzhetrf_aa(uplo, A, T, ipiv, W, sequence, request);
 }
