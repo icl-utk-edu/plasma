@@ -46,6 +46,7 @@ void test_zlacpy(param_value_t param[], char *info)
         if (info == NULL) {
             // Print usage info
             print_usage(PARAM_UPLO);
+            print_usage(PARAM_TRANSA);
             print_usage(PARAM_M);
             print_usage(PARAM_N);
             print_usage(PARAM_PADA);
@@ -55,8 +56,9 @@ void test_zlacpy(param_value_t param[], char *info)
         else {
             // Return column labels
             snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s %*s %*s",
+                     "%*s %*s %*s %*s %*s %*s %*s",
                      InfoSpacing, "UpLo",
+                     InfoSpacing, "TransA",
                      InfoSpacing, "m",
                      InfoSpacing, "n",
                      InfoSpacing, "PadA",
@@ -67,8 +69,9 @@ void test_zlacpy(param_value_t param[], char *info)
     }
     // Return column values
     snprintf(info, InfoLen,
-             "%*c %*d %*d %*d %*d %*d",
+             "%*c %*c %*d %*d %*d %*d %*d",
              InfoSpacing, param[PARAM_UPLO].c,
+             InfoSpacing, param[PARAM_TRANSA].c,
              InfoSpacing, param[PARAM_M].i,
              InfoSpacing, param[PARAM_N].i,
              InfoSpacing, param[PARAM_PADA].i,
@@ -79,6 +82,7 @@ void test_zlacpy(param_value_t param[], char *info)
     // Set parameters
     //================================================================
     plasma_enum_t uplo = plasma_uplo_const(param[PARAM_UPLO].c);
+    plasma_enum_t transa = plasma_trans_const(param[PARAM_TRANSA].c);
 
     int m = param[PARAM_M].i;
     int n = param[PARAM_N].i;
@@ -117,36 +121,29 @@ void test_zlacpy(param_value_t param[], char *info)
     // For now, zero out the opposite triangle and use lange.
     // @sa test_ztrmm
 
-    // Enforce zeroes in general rectangle or upper or lower triangle of B
+    // Enforce zeroes in general rectangle or upper or lower triangle of A
     switch (uplo) {
         case PlasmaLower:
             LAPACKE_zlaset_work(
-                mtrxLayout, 'U', m-1, n-1, 0.0, 0.0, &B[m], ldb);
+                mtrxLayout, 'U', m-1, n-1, 0.0, 0.0, &A[m], lda);
             break;
         case PlasmaUpper:
             LAPACKE_zlaset_work(
-                mtrxLayout, 'L', m-1, n-1, 0.0, 0.0, &B[1], ldb);
+                mtrxLayout, 'L', m-1, n-1, 0.0, 0.0, &A[1], lda);
             break;
-        default:
-            LAPACKE_zlaset_work(
-                mtrxLayout, 'G', m,   n,   0.0, 0.0,  B,    ldb);
     }
-
-    plasma_complex64_t *Bref = NULL;
-    if (test) {
-        Bref = (plasma_complex64_t*)malloc(
-            (size_t)ldb*n*sizeof(plasma_complex64_t));
-        assert(Bref != NULL);
-
-        memcpy(Bref, B, (size_t)ldb*n*sizeof(plasma_complex64_t));
-    }
+    // Zero out B
+    int Bm = (transa == PlasmaGeneral ? m : n);
+    int Bn = (transa == PlasmaGeneral ? n : m);
+    LAPACKE_zlaset_work(
+        mtrxLayout, 'G', Bm, Bn, 0.0, 0.0, B, ldb);
 
     //================================================================
     // Run and time PLASMA
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    retval = plasma_zlacpy(uplo, m, n, A, lda, B, ldb);
+    retval = plasma_zlacpy(uplo, transa, m, n, A, lda, B, ldb);
 
     plasma_time_t stop = omp_get_wtime();
 
@@ -167,12 +164,23 @@ void test_zlacpy(param_value_t param[], char *info)
     // Test results by comparing to result of core_zlacpy function
     //================================================================
     if (test) {
-        // Calculate relative error |B_ref - B|_F / |B_ref|_F < 3*eps
+        // Calculate relative error |op(A) - B|_F / |A|_F < 3*eps
         // Using 3*eps covers complex arithmetic
 
-        retval = LAPACKE_zlacpy_work(
-                    mtrxLayout, lapack_const(uplo), m, n, A, lda, Bref, ldb);
-
+        // Calculate difference op(A)-B
+        if (transa == PlasmaTrans) {
+            for (int i=0; i<m; i++)
+                for (int j=0; j<n; j++)
+                    B[j + i*ldb] -= A[i + j*lda];
+        } else if (transa == PlasmaConjTrans) {
+            for (int i=0; i<m; i++)
+                for (int j=0; j<n; j++)
+                    B[j + i*ldb] -= conj(A[i + j*lda]);
+        } else {
+            for (int i=0; i<m; i++)
+                for (int j=0; j<n; j++)
+                    B[i + j*ldb] -= A[i + j*lda];
+        }
         if (retval != PlasmaSuccess) {
             coreblas_error("LAPACKE_zlacpy_work() failed");
             param[PARAM_ERROR].d   = 1.0;
@@ -182,20 +190,17 @@ void test_zlacpy(param_value_t param[], char *info)
 
         double work[1];
 
-        // Calculate Frobenius norm of reference result B_ref
-        double BnormRef  = LAPACKE_zlange_work(
-                               mtrxLayout, 'F', m, n, Bref, ldb, work);
+        // Calculate Frobenius norm of A
+        double Anorm = LAPACKE_zlange_work(
+                           mtrxLayout, 'F', m, n, A, lda, work);
 
-        // Calculate difference B_ref-B
-        plasma_complex64_t zmone = -1.0;
-        cblas_zaxpy((size_t)ldb*n, CBLAS_SADDR(zmone), B, 1, Bref, 1);
 
-        // Calculate Frobenius norm of B_ref-B
+        // Calculate Frobenius norm of op(A)-B
         double BnormDiff = LAPACKE_zlange_work(
-                               mtrxLayout, 'F', m, n, Bref, ldb, work);
+                               mtrxLayout, 'F', Bm, Bn, B, ldb, work);
 
-        // Calculate relative error |B_ref-B|_F / |B_ref|_F
-        double error = BnormDiff/BnormRef;
+        // Calculate relative error |op(A)-B|_F / |A|_F
+        double error = BnormDiff/Anorm;
 
         param[PARAM_ERROR].d   = error;
         param[PARAM_SUCCESS].i = error < 3*eps;
@@ -206,8 +211,4 @@ void test_zlacpy(param_value_t param[], char *info)
     //================================================================
     free(A);
     free(B);
-
-    if (test) {
-        free(Bref);
-    }
 }

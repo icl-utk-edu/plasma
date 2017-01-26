@@ -99,6 +99,8 @@ void test_zhetrf_aa(param_value_t param[], char *info)
     // Set tuning parameters.
     //================================================================
     plasma_set(PlasmaNb, param[PARAM_NB].i);
+    plasma_set(PlasmaIb, param[PARAM_IB].i);
+    plasma_set(PlasmaNumPanelThreads, param[PARAM_NTPF].i);
 
     //================================================================
     // Allocate and initialize arrays.

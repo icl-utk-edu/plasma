@@ -43,7 +43,8 @@ void plasma_pzgetri_aux(plasma_desc_t A, plasma_desc_t W,
 
         // copy L(k, k) into W(k)
         core_omp_zlacpy(
-            PlasmaLower, mvak, nvak,
+            PlasmaLower, PlasmaNoTrans,
+            mvak, nvak,
             A(k, k), ldak, W(k), ldwk,
             sequence, request );
         // zero strictly-lower part of U(k, k)
@@ -59,7 +60,8 @@ void plasma_pzgetri_aux(plasma_desc_t A, plasma_desc_t W,
             int ldwm = plasma_tile_mmain(W, m);
             // copy L(m, k) to W(m)
             core_omp_zlacpy(
-                PlasmaGeneral, mvam, nvak,
+                PlasmaGeneral, PlasmaNoTrans,
+                mvam, nvak,
                 A(m, k), ldam, W(m), ldwm,
                 sequence, request );
             // zero U(m, k)

@@ -92,7 +92,7 @@ void core_zsyssq(plasma_enum_t uplo,
                  const plasma_complex64_t *A, int lda,
                  double *scale, double *sumsq);
 
-void core_zlacpy(plasma_enum_t uplo,
+void core_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
                  int m, int n,
                  const plasma_complex64_t *A, int lda,
                        plasma_complex64_t *B, int ldb);
@@ -385,7 +385,7 @@ void core_omp_zsyssq_aux(int m, int n,
                          plasma_sequence_t *sequence,
                          plasma_request_t *request);
 
-void core_omp_zlacpy(plasma_enum_t uplo,
+void core_omp_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
                      int m, int n,
                      const plasma_complex64_t *A, int lda,
                            plasma_complex64_t *B, int ldb,

@@ -100,7 +100,8 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                        plasma_desc_t W,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_pzlacpy(plasma_enum_t uplo, plasma_desc_t A, plasma_desc_t B,
+void plasma_pzlacpy(plasma_enum_t uplo, plasma_enum_t transa,
+                    plasma_desc_t A, plasma_desc_t B,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzlange(plasma_enum_t norm,

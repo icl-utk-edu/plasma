@@ -141,7 +141,7 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                     skip = 2*skip;
                 }
                 core_omp_zlacpy(
-                    PlasmaLower,
+                    PlasmaLower, PlasmaNoTrans,
                     mvak, mvak,
                     A(k, k), ldak,
                     T(k, k), ldtk,
@@ -153,17 +153,18 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                     sequence, request);
             } else { /* k == 0 or 1 */
                 core_omp_zlacpy(
-                    PlasmaLower,
+                    PlasmaLower, PlasmaNoTrans,
                     mvak, mvak,
                     A(k, k), ldak,
                     T(k, k), ldtk,
                     sequence, request);
-                #pragma omp taskwait
-                for (int j=0; j<mvak; j++) {
-                    for (int i=0; i<j; i++) {
-                        T(k, k)[i+j*ldtk] = conj(T(k, k)[j+i*ldtk]);
-                    }
-                }
+                /* expanding to full matrix */
+                core_omp_zlacpy(
+                        PlasmaLower, PlasmaConjTrans,
+                        mvak, mvak,
+                        T(k, k), ldtk,
+                        T(k, k), ldtk,
+                        sequence, request);
             }
 
             if (k > 0) {
@@ -191,12 +192,12 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                     L(k, k), ldak,
                     sequence, request);
                 /* expanding to full matrix */
-                #pragma omp taskwait
-                for (int j=0; j<mvak; j++) {
-                    for (int i=0; i<j; i++) {
-                        T(k, k)[i+j*ldtk] = conj(T(k, k)[j+i*ldtk]);
-                    }
-                }
+                core_omp_zlacpy(
+                        PlasmaLower, PlasmaConjTrans,
+                        mvak, mvak,
+                        T(k, k), ldtk,
+                        T(k, k), ldtk,
+                        sequence, request);
             }
 
             /* computing H(k, k) */
@@ -376,7 +377,6 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                         }
                     }
                 }
-                #pragma omp taskwait
 
                 /* -- symmetrically apply pivoting to trailing A -- */
                 core_omp_zlaswp_sym(PlasmaLower,
@@ -394,7 +394,7 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                 /* copy upper-triangular part of L(k+1,k+1) to T(k+1,k) */
                 /* and then zero it out                                 */
                 core_omp_zlacpy(
-                        PlasmaUpper,
+                        PlasmaUpper, PlasmaNoTrans,
                         mvakp1, mvak,
                         L(k+1, k+1), ldakp1,
                         T(k+1, k  ), ldtkp1,
@@ -421,12 +421,13 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                               T(k+1, k), ldtkp1,
                         sequence, request);
                 }
-                #pragma omp taskwait
-                for (int j=0; j<mvakp1; j++) {
-                    for (int i=0; i<mvak; i++) {
-                        T(k, k+1)[i+j*ldtk] = conj(T(k+1, k)[j+i*ldtkp1]);
-                    }
-                }
+                /* copy T(k+1, k) to T(k, k+1) for zgbtrf */
+                core_omp_zlacpy(
+                        PlasmaGeneral, PlasmaConjTrans,
+                        mvakp1, mvak,
+                        T(k+1, k), ldtkp1,
+                        T(k, k+1), ldtk,
+                        sequence, request);
             }
         }
     }
