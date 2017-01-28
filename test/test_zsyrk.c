@@ -47,8 +47,7 @@ void test_zsyrk(param_value_t param[], char *info)
             // Print usage info.
             print_usage(PARAM_UPLO);
             print_usage(PARAM_TRANS);
-            print_usage(PARAM_N);
-            print_usage(PARAM_K);
+            print_usage(PARAM_DIM);
             print_usage(PARAM_ALPHA);
             print_usage(PARAM_BETA);
             print_usage(PARAM_PADA);
@@ -76,8 +75,8 @@ void test_zsyrk(param_value_t param[], char *info)
              "%*c %*c %*d %*d %*.4f %*.4f %*d %*d %*d",
              InfoSpacing, param[PARAM_UPLO].c,
              InfoSpacing, param[PARAM_TRANS].c,
-             InfoSpacing, param[PARAM_N].i,
-             InfoSpacing, param[PARAM_K].i,
+             InfoSpacing, param[PARAM_DIM].dim.n,
+             InfoSpacing, param[PARAM_DIM].dim.k,
              InfoSpacing, creal(param[PARAM_ALPHA].z),
              InfoSpacing, creal(param[PARAM_BETA].z),
              InfoSpacing, param[PARAM_PADA].i,
@@ -90,8 +89,8 @@ void test_zsyrk(param_value_t param[], char *info)
     plasma_enum_t uplo = plasma_uplo_const(param[PARAM_UPLO].c);
     plasma_enum_t trans = plasma_trans_const(param[PARAM_TRANS].c);
 
-    int n = param[PARAM_N].i;
-    int k = param[PARAM_K].i;
+    int n = param[PARAM_DIM].dim.n;
+    int k = param[PARAM_DIM].dim.k;
 
     int Am, An;
     int Cm, Cn;

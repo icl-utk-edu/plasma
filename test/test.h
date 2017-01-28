@@ -10,6 +10,8 @@
 #ifndef TEST_H
 #define TEST_H
 
+#include <stdbool.h>
+
 #include "plasma_types.h"
 
 //==============================================================================
@@ -21,6 +23,7 @@ typedef enum {
     //------------------------------------------------------
     PARAM_ITER,    // outer product iteration?
     PARAM_OUTER,   // outer product iteration?
+    PARAM_DIM_OUTER, // outer product iteration for dimensions M, N, K?
     PARAM_TEST,    // test the solution?
     PARAM_TOL,     // tolerance
     PARAM_TRANS,   // transposition
@@ -30,9 +33,7 @@ typedef enum {
     PARAM_UPLO,    // general rectangular or upper or lower triangular
     PARAM_DIAG,    // non-unit or unit diagonal
     PARAM_COLROW,  // columnwise or rowwise operation
-    PARAM_M,       // M dimension
-    PARAM_N,       // N dimension
-    PARAM_K,       // K dimension
+    PARAM_DIM,     // M, N, K dimensions
     PARAM_KL,      // lower bandwidth
     PARAM_KU,      // upper bandwidth
     PARAM_NRHS,    // number of RHS
@@ -72,7 +73,9 @@ static const char * const ParamUsage[][2] = {
     // input parameters
     //------------------------------------------------------
     {"--iter=", "number of iterations per set of parameters [default: 1]"},
-    {"--outer=[y|n]", "outer product iteration [default: n]"},
+    {"--outer=[y|n]", "outer product iteration [default: y]"},
+    {"--dim-outer=[y|n]", "outer product iteration of M x N x K"
+                          " in subsequent --dim [default: n]"},
     {"--test=[y|n]", "test the solution [default: y]"},
     {"--tol=", "tolerance [default: 50]"},
     {"--trans=[n|t|c]", "transposition [default: n]"},
@@ -83,9 +86,8 @@ static const char * const ParamUsage[][2] = {
         "general rectangular or upper or lower triangular matrix [default: l]"},
     {"--diag=[n|u]", "not unit triangular or unit matrix [default: n]"},
     {"--colrow=[c|r]", "columnwise or rowwise [default: c]"},
-    {"--m=", "M dimension (number of rows) [default: 1000]"},
-    {"--n=", "N dimension (number of columns) [default: 1000]"},
-    {"--k=", "K dimension (number of rows or columns) [default: 1000]"},
+    {"--dim=", "M x N x K dimensions. N and K are optional;"
+               " if not given, N=M and K=N [default: 1000x1000x1000]"},
     {"--kl=", "Lower bandwidth [default: 200]"},
     {"--ku=", "Upper bandwidth [default: 200]"},
     {"--nrhs=", "NHRS dimension (number of columns) [default: 1000]"},
@@ -119,12 +121,17 @@ static const char * const ParamUsage[][2] = {
 //==============================================================================
 // tester infrastructure
 //==============================================================================
+typedef struct {
+    int m, n, k;
+} int3_t;
+
 // parameter value type
 typedef union {
     int i;                 // integer
     char c;                // character
     double d;              // double precision
     plasma_complex64_t z;  // double complex
+    int3_t dim;            // m, n, k problem size
 } param_value_t;
 
 // parameter type
@@ -160,11 +167,16 @@ void run_routine(const char *name, param_value_t pval[], char *info);
 void param_init(param_t param[]);
 int  param_read(int argc, char **argv, param_t param[]);
 int  param_starts_with(const char *str, const char *prefix);
+int  scan_irange(const char **strp, int *start, int *end, int *step);
+int  scan_drange(const char **strp, double *start, double *end, double *step);
 int  param_scan_int(const char *str, param_t *param);
+int  param_scan_int3(const char *str, param_t *param, bool outer);
 int  param_scan_char(const char *str, param_t *param);
 int  param_scan_double(const char *str, param_t *param);
 int  param_scan_complex(const char *str, param_t *param);
+void param_add(param_t *param);
 void param_add_int(int val, param_t *param);
+void param_add_int3(int3_t val, param_t *param);
 void param_add_char(char cval, param_t *param);
 void param_add_double(double dval, param_t *param);
 void param_add_complex(plasma_complex64_t zval, param_t *param);
