@@ -227,7 +227,7 @@ static void trace_finish()
 
 //------------------------------------------------------------------------------
 __attribute__ ((constructor))
-static int trace_init()
+static void trace_init()
 {
     // Check if the maximums are powers of two.
     assert (__builtin_popcount(MAX_THREADS) == 1);
@@ -239,7 +239,6 @@ static int trace_init()
         assert(ColorMap[index] == 0);
         ColorMap[index] = ColorValue[i].value;
     }
-
     // Clip the number of threads.
     NumThreads = omp_get_max_threads() < MAX_THREADS ?
         omp_get_max_threads() : MAX_THREADS;
