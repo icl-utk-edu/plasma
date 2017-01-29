@@ -428,6 +428,9 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                         T(k+1, k), ldtkp1,
                         T(k, k+1), ldtk,
                         sequence, request);
+
+                // synch for pivot to finish before the next update
+                #pragma omp taskwait
             }
         }
     }
