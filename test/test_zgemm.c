@@ -47,9 +47,7 @@ void test_zgemm(param_value_t param[], char *info)
             // Print usage info.
             print_usage(PARAM_TRANSA);
             print_usage(PARAM_TRANSB);
-            print_usage(PARAM_M);
-            print_usage(PARAM_N);
-            print_usage(PARAM_K);
+            print_usage(PARAM_DIM);
             print_usage(PARAM_ALPHA);
             print_usage(PARAM_BETA);
             print_usage(PARAM_PADA);
@@ -80,9 +78,9 @@ void test_zgemm(param_value_t param[], char *info)
              "%*c %*c %*d %*d %*d %*.4f %*.4f %*d %*d %*d %*d",
              InfoSpacing, param[PARAM_TRANSA].c,
              InfoSpacing, param[PARAM_TRANSB].c,
-             InfoSpacing, param[PARAM_M].i,
-             InfoSpacing, param[PARAM_N].i,
-             InfoSpacing, param[PARAM_K].i,
+             InfoSpacing, param[PARAM_DIM].dim.m,
+             InfoSpacing, param[PARAM_DIM].dim.n,
+             InfoSpacing, param[PARAM_DIM].dim.k,
              InfoSpacing, creal(param[PARAM_ALPHA].z),
              InfoSpacing, creal(param[PARAM_BETA].z),
              InfoSpacing, param[PARAM_PADA].i,
@@ -96,9 +94,9 @@ void test_zgemm(param_value_t param[], char *info)
     plasma_enum_t transa = plasma_trans_const(param[PARAM_TRANSA].c);
     plasma_enum_t transb = plasma_trans_const(param[PARAM_TRANSB].c);
 
-    int m = param[PARAM_M].i;
-    int n = param[PARAM_N].i;
-    int k = param[PARAM_K].i;
+    int m = param[PARAM_DIM].dim.m;
+    int n = param[PARAM_DIM].dim.n;
+    int k = param[PARAM_DIM].dim.k;
 
     int Am, An;
     int Bm, Bn;

@@ -46,9 +46,16 @@ void test_zlacpy(param_value_t param[], char *info)
         if (info == NULL) {
             // Print usage info
             print_usage(PARAM_UPLO);
+<<<<<<< working copy
             print_usage(PARAM_TRANSA);
             print_usage(PARAM_M);
             print_usage(PARAM_N);
+||||||| base
+            print_usage(PARAM_M);
+            print_usage(PARAM_N);
+=======
+            print_usage(PARAM_DIM);
+>>>>>>> merge rev
             print_usage(PARAM_PADA);
             print_usage(PARAM_PADB);
             print_usage(PARAM_NB);
@@ -71,9 +78,17 @@ void test_zlacpy(param_value_t param[], char *info)
     snprintf(info, InfoLen,
              "%*c %*c %*d %*d %*d %*d %*d",
              InfoSpacing, param[PARAM_UPLO].c,
+<<<<<<< working copy
              InfoSpacing, param[PARAM_TRANSA].c,
              InfoSpacing, param[PARAM_M].i,
              InfoSpacing, param[PARAM_N].i,
+||||||| base
+             InfoSpacing, param[PARAM_M].i,
+             InfoSpacing, param[PARAM_N].i,
+=======
+             InfoSpacing, param[PARAM_DIM].dim.m,
+             InfoSpacing, param[PARAM_DIM].dim.n,
+>>>>>>> merge rev
              InfoSpacing, param[PARAM_PADA].i,
              InfoSpacing, param[PARAM_PADB].i,
              InfoSpacing, param[PARAM_NB].i);
@@ -84,8 +99,8 @@ void test_zlacpy(param_value_t param[], char *info)
     plasma_enum_t uplo = plasma_uplo_const(param[PARAM_UPLO].c);
     plasma_enum_t transa = plasma_trans_const(param[PARAM_TRANSA].c);
 
-    int m = param[PARAM_M].i;
-    int n = param[PARAM_N].i;
+    int m = param[PARAM_DIM].dim.m;
+    int n = param[PARAM_DIM].dim.n;
 
     int lda = imax(1, m + param[PARAM_PADA].i);
     int ldb = imax(1, m + param[PARAM_PADB].i);

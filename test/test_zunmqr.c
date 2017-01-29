@@ -47,9 +47,7 @@ void test_zunmqr(param_value_t param[], char *info)
             // Print usage info.
             print_usage(PARAM_SIDE);
             print_usage(PARAM_TRANS);
-            print_usage(PARAM_M);
-            print_usage(PARAM_N);
-            print_usage(PARAM_K);
+            print_usage(PARAM_DIM);
             print_usage(PARAM_PADA);
             print_usage(PARAM_PADB);
             print_usage(PARAM_NB);
@@ -78,9 +76,9 @@ void test_zunmqr(param_value_t param[], char *info)
              "%*c %*c %*d %*d %*d %*d %*d %*d %*d %*c",
              InfoSpacing, param[PARAM_SIDE].c,
              InfoSpacing, param[PARAM_TRANS].c,
-             InfoSpacing, param[PARAM_M].i,
-             InfoSpacing, param[PARAM_N].i,
-             InfoSpacing, param[PARAM_K].i,
+             InfoSpacing, param[PARAM_DIM].dim.m,
+             InfoSpacing, param[PARAM_DIM].dim.n,
+             InfoSpacing, param[PARAM_DIM].dim.k,
              InfoSpacing, param[PARAM_PADA].i,
              InfoSpacing, param[PARAM_PADB].i,
              InfoSpacing, param[PARAM_NB].i,
@@ -93,11 +91,11 @@ void test_zunmqr(param_value_t param[], char *info)
     plasma_enum_t trans = plasma_trans_const(param[PARAM_TRANS].c);
     plasma_enum_t side  = plasma_side_const(param[PARAM_SIDE].c);
 
-    int m = param[PARAM_M].i;
-    int n = param[PARAM_N].i;
+    int m = param[PARAM_DIM].dim.m;
+    int n = param[PARAM_DIM].dim.n;
 
     // Number of Householder reflectors to use.
-    int k = param[PARAM_K].i;
+    int k = param[PARAM_DIM].dim.k;
 
     // Dimensions of matrix A differ for different combinations of
     // side and trans.

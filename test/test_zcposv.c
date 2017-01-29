@@ -50,7 +50,7 @@ void test_zcposv(param_value_t param[], char *info)
         if (info == NULL) {
             // Print usage info
             print_usage(PARAM_UPLO);
-            print_usage(PARAM_N);
+            print_usage(PARAM_DIM);
             print_usage(PARAM_NRHS);
             print_usage(PARAM_PADA);
             print_usage(PARAM_PADB);
@@ -75,7 +75,7 @@ void test_zcposv(param_value_t param[], char *info)
     snprintf(info, InfoLen,
         "%*c %*d %*d %*d %*d %*d %*d",
         InfoSpacing, param[PARAM_UPLO].c,
-        InfoSpacing, param[PARAM_N].i,
+        InfoSpacing, param[PARAM_DIM].dim.n,
         InfoSpacing, param[PARAM_NRHS].i,
         InfoSpacing, param[PARAM_PADA].i,
         InfoSpacing, param[PARAM_PADB].i,
@@ -87,7 +87,7 @@ void test_zcposv(param_value_t param[], char *info)
     //================================================================
     plasma_enum_t uplo = plasma_uplo_const(param[PARAM_UPLO].c);
 
-    int n    = param[PARAM_N].i;
+    int n    = param[PARAM_DIM].dim.n;
     int nrhs = param[PARAM_NRHS].i;
     int lda  = imax(1, n + param[PARAM_PADA].i);
     int ldb  = imax(1, n + param[PARAM_PADB].i);

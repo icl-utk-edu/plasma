@@ -48,8 +48,7 @@ void test_zgbtrf(param_value_t param[], char *info)
     if (param == NULL) {
         if (info == NULL) {
             // Print usage info.
-            print_usage(PARAM_M);
-            print_usage(PARAM_N);
+            print_usage(PARAM_DIM);
             print_usage(PARAM_KL);
             print_usage(PARAM_KU);
             print_usage(PARAM_PADA);
@@ -77,8 +76,8 @@ void test_zgbtrf(param_value_t param[], char *info)
     // Return column values.
     snprintf(info, InfoLen,
              "%*d %*d %*d %*d %*d %*d %*d %*d %*d ",
-             InfoSpacing, param[PARAM_M].i,
-             InfoSpacing, param[PARAM_N].i,
+             InfoSpacing, param[PARAM_DIM].dim.m,
+             InfoSpacing, param[PARAM_DIM].dim.n,
              InfoSpacing, param[PARAM_KL].i,
              InfoSpacing, param[PARAM_KU].i,
              InfoSpacing, param[PARAM_PADA].i,
@@ -93,8 +92,8 @@ void test_zgbtrf(param_value_t param[], char *info)
     plasma_complex64_t zone  =  1.0;
     plasma_complex64_t zmone = -1.0;
 
-    int m  = param[PARAM_M].i;
-    int n  = param[PARAM_N].i;
+    int m  = param[PARAM_DIM].dim.m;
+    int n  = param[PARAM_DIM].dim.n;
     int kl = param[PARAM_KL].i;
     int ku = param[PARAM_KU].i;
     int lda = imax(1, m+param[PARAM_PADA].i);
