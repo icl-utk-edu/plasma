@@ -113,6 +113,7 @@ void test_zhetrf_aa(param_value_t param[], char *info)
     assert(T != NULL);
 
     int *ipiv = (int*)calloc((size_t)n, sizeof(int));
+    int *ipiv2 = (int*)calloc((size_t)n, sizeof(int));
     assert(ipiv != NULL);
 
     int seed[] = {0, 0, 0, 1};
@@ -153,7 +154,7 @@ void test_zhetrf_aa(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    plasma_zhetrf_aa(uplo, n, A, lda, T, ldt, ipiv);
+    plasma_zhetrf_aa(uplo, n, A, lda, ipiv, T, ldt, ipiv2);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 /*printf( " L:\n" );
@@ -210,9 +211,8 @@ void test_zhetrf_aa(param_value_t param[], char *info)
             LAPACK_COL_MAJOR, 'F', n, nrhs, B, ldb, X, ldx);
 
         // solve for X
-        int *iwork = (int*)malloc(n * sizeof(int));
         int iinfo = plasma_zhetrs_aa(
-            PlasmaNoTrans, n, nrhs, A, lda, ipiv, T, ldt, iwork, X, ldx);
+            PlasmaNoTrans, n, nrhs, A, lda, ipiv, T, ldt, ipiv2, X, ldx);
         if (iinfo != 0) printf( " zhetrs_aa failed, info = %d\n", iinfo );
 
         // compute residual vector
@@ -239,7 +239,6 @@ void test_zhetrf_aa(param_value_t param[], char *info)
         param[PARAM_SUCCESS].i = residual < tol;
 
         // free workspaces
-        free(iwork);
         free(work);
         free(X);
         free(B);
@@ -248,7 +247,7 @@ void test_zhetrf_aa(param_value_t param[], char *info)
     //================================================================
     // Free arrays.
     //================================================================
-    free(A); free(ipiv);
+    free(A); free(ipiv); free(ipiv2);
     free(T);
     if (test)
         free(Aref);

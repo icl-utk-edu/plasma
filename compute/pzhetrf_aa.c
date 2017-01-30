@@ -37,8 +37,8 @@
  * @see plasma_omp_zhetrf_aa
  ******************************************************************************/
 void plasma_pzhetrf_aa(plasma_enum_t uplo,
-                       plasma_desc_t A,
-                       plasma_desc_t T, int *ipiv,
+                       plasma_desc_t A, int *ipiv,
+                       plasma_desc_t T,
                        plasma_desc_t W,
                        plasma_sequence_t *sequence,
                        plasma_request_t *request)
@@ -318,14 +318,11 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                 // ==  PLASMA recursive LU  == //
                 // =========================== //
                 // -- compute LU of the panel -- //
-                int tempi = (k+1)*A.mb;  // offset
-                int tempj = k*A.nb;      // offset
-                int tempm = A.m - tempi; // dimension
-
                 plasma_complex64_t *a00, *a20;
                 a00 = L(k+1, k+1);
                 a20 = L(A.mt-1, k+1);
 
+                int mlkk  = A.m - (k+1)*A.mb; // dimension
                 int ma00k = (A.mt-(k+1)-1)*A.mb;
                 int na00k = plasma_tile_nmain(A, k);
                 int lda20 = plasma_tile_mmain(A, A.mt-1);
@@ -333,8 +330,8 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                 #pragma omp taskwait
                 #pragma omp task depend(inout:a00[0:ma00k*na00k]) \
                                  depend(inout:a20[0:lda20*mvak]) \
-                                 depend(out:ipiv[k*A.mb:mvak]) // \
-                                 // priority(1)
+                                 depend(out:ipiv[k*A.mb:mvak]) /*\
+                                 priority(1) */
                 {
                     if (sequence->status == PlasmaSuccess) {
                         for (int rank = 0; rank < num_panel_threads; rank++) {
@@ -342,8 +339,8 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                             {
                                 plasma_desc_t view =
                                     plasma_desc_view(A,
-                                                     tempi, tempj,
-                                                     tempm, mvak);
+                                                     (k+1)*A.mb, k*A.nb,
+                                                     mlkk, mvak);
 
                                 int info = core_zgetrf(view, IPIV(k+1), ib,
                                                        rank, num_panel_threads,
@@ -356,8 +353,8 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                     #pragma omp taskwait
                 }
                 #pragma omp taskwait
-                for (int i = 0; i < imin(tempm, mvak); i++) {
-                    IPIV(k+1)[i] += tempi;
+                for (int i = 0; i < imin(mlkk, mvak); i++) {
+                    IPIV(k+1)[i] += (k+1)*A.mb;
                 }
 
                 // -- apply pivoting to previous columns of L -- //
@@ -365,21 +362,22 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                 {
                    plasma_complex64_t *akk = L(k+1, n);
                    int k1 = 1+(k+1)*A.nb;
-                   int k2 = imin(tempm,mvak)+(k+1)*A.nb;
-                   int mvan = plasma_tile_mview(A, n);
+                   int k2 = imin(mlkk ,mvak)+(k+1)*A.nb;
+                   int mlkn = (A.mt-k-1)*A.mb;
+                   int nlkn = plasma_tile_nmain(A, n-1);
                     #pragma omp task depend(in:ipiv[(k1-1):k2]) \
-                                     depend(inout:akk[0:A.m*mvan])
+                                     depend(inout:akk[0:mlkn*nlkn])
                     {
                         if (sequence->status == PlasmaSuccess) {
                             plasma_desc_t view =
-                                plasma_desc_view(A, 0, (n-1)*A.nb, A.m, mvan);
+                                plasma_desc_view(A, 0, (n-1)*A.nb, A.m, nlkn);
                             core_zlaswp(PlasmaRowwise, view, k1, k2, ipiv, 1);
                         }
                     }
                 }
                 // -- symmetrically apply pivoting to trailing A -- //
                 core_omp_zlaswp_sym(PlasmaLower,
-                                    A, (k+1)*A.mb+1, (k+1)*A.mb+imin(tempm,mvak), ipiv, 1,
+                                    A, (k+1)*A.mb+1, (k+1)*A.mb+imin(mlkk, mvak), ipiv, 1,
                                     sequence, request);
 
                 // ================================== //

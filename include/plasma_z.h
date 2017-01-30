@@ -110,15 +110,14 @@ int plasma_zherk(plasma_enum_t uplo, plasma_enum_t trans,
 
 int plasma_zhetrf_aa(plasma_enum_t uplo,
                      int n,
-                     plasma_complex64_t *pA, int lda,
-                     plasma_complex64_t *pT, int ldt,
-                     int *ipiv);
+                     plasma_complex64_t *pA, int lda, int *ipiv,
+                     plasma_complex64_t *pT, int ldt, int *ipiv2);
 
 int plasma_zhetrs_aa(plasma_enum_t trans, int n, int nrhs,
                      plasma_complex64_t *pA, int lda,
                      int *ipiv,
                      plasma_complex64_t *pT, int ldt,
-                     int *iwork,
+                     int *ipiv2,
                      plasma_complex64_t *pB,  int ldb);
 
 int plasma_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
@@ -350,15 +349,15 @@ void plasma_omp_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                       plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_omp_zhetrf_aa(plasma_enum_t uplo, 
-                          plasma_desc_t A,
-                          plasma_desc_t T, int *ipiv,
+                          plasma_desc_t A, int *ipiv,
+                          plasma_desc_t T,
                           plasma_desc_t W,
                           plasma_sequence_t *sequence,
                           plasma_request_t *request);
 
 void plasma_omp_zhetrs_aa(plasma_enum_t trans,
                           plasma_desc_t A, int *ipiv,
-                          plasma_desc_t T, int *iwork,
+                          plasma_desc_t T, int *ipiv2,
                           plasma_desc_t B,
                           plasma_sequence_t *sequence,
                           plasma_request_t *request);

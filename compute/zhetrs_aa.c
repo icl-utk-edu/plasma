@@ -75,7 +75,7 @@ int plasma_zhetrs_aa(plasma_enum_t trans, int n, int nrhs,
                      plasma_complex64_t *pA, int lda,
                      int *ipiv,
                      plasma_complex64_t *pT, int ldt,
-                     int *iwork,
+                     int *ipiv2,
                      plasma_complex64_t *pB,  int ldb)
 {
     // Get PLASMA context.
@@ -168,7 +168,7 @@ int plasma_zhetrs_aa(plasma_enum_t trans, int n, int nrhs,
         plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
 
         // Call the tile async function.
-        plasma_omp_zhetrs_aa(trans, A, ipiv, T, iwork, B, sequence, &request);
+        plasma_omp_zhetrs_aa(trans, A, ipiv, T, ipiv2, B, sequence, &request);
 
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(B, pB, ldb, sequence, &request);
@@ -241,7 +241,7 @@ int plasma_zhetrs_aa(plasma_enum_t trans, int n, int nrhs,
  ******************************************************************************/
 void plasma_omp_zhetrs_aa(plasma_enum_t trans, 
                           plasma_desc_t A, int *ipiv, 
-                          plasma_desc_t T, int *iwork,
+                          plasma_desc_t T, int *ipiv2,
                           plasma_desc_t B,
                           plasma_sequence_t *sequence,
                           plasma_request_t *request)
@@ -291,6 +291,7 @@ void plasma_omp_zhetrs_aa(plasma_enum_t trans,
     if (trans == PlasmaNoTrans) {
         plasma_desc_t vA;
         plasma_desc_t vB;
+        // forward-substitution with L
         if (A.m > A.nb) {
             vA = plasma_desc_view(A,
                                   A.nb, 0,
@@ -299,7 +300,7 @@ void plasma_omp_zhetrs_aa(plasma_enum_t trans,
                                   B.nb, 0,
                                   B.m-B.nb, B.n);
 
-            #pragma omp taskwait
+            #pragma omp taskwait // sync after layer translation
             plasma_pzlaswp(PlasmaRowwise, B, ipiv, 1, sequence, request);
             #pragma omp taskwait
             plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
@@ -307,22 +308,21 @@ void plasma_omp_zhetrs_aa(plasma_enum_t trans,
                                vB,
                           sequence, request);
         }
-        // Note: gbtrf should be moved out.
-        #pragma omp taskwait
-        plasma_pzgbtrf(T, iwork, sequence, request);
+        // solve with band matrix T
         #pragma omp taskwait
         plasma_pztbsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans,
                       PlasmaUnit,
                       1.0, T,
                            B,
-                      iwork,
+                      ipiv2,
                       sequence, request);
         plasma_pztbsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans,
                       PlasmaNonUnit,
                       1.0, T,
                            B,
-                      iwork,
+                      ipiv2,
                       sequence, request);
+        // backward-substitution with L^H
         if (A.m > A.nb) {
             plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaConjTrans, PlasmaUnit,
                           1.0, vA,
@@ -330,7 +330,7 @@ void plasma_omp_zhetrs_aa(plasma_enum_t trans,
                           sequence, request);
             #pragma omp taskwait
             plasma_pzlaswp(PlasmaRowwise, B, ipiv, -1, sequence, request);
-            #pragma omp taskwait
+            #pragma omp taskwait // sync before layout translation
         }
     }
     else {

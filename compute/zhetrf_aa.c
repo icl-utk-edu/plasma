@@ -85,9 +85,8 @@
  ******************************************************************************/
 int plasma_zhetrf_aa(plasma_enum_t uplo,
                      int n,
-                     plasma_complex64_t *pA, int lda,
-                     plasma_complex64_t *pT, int ldt,
-                     int *ipiv)
+                     plasma_complex64_t *pA, int lda, int *ipiv,
+                     plasma_complex64_t *pT, int ldt, int *ipiv2)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -170,10 +169,26 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
     {
         // Translate to tile layout.
         plasma_omp_zge2desc(pA, lda, A, sequence, &request);
+    }
 
-        // Call the tile async function.
-        plasma_omp_zhetrf_aa(uplo, A, T, ipiv, W, sequence, &request);
+    #pragma omp parallel
+    #pragma omp master
+    {
+        // Call the tile async function to compute LTL^H factor of A,
+        // where T is a band matrix
+        plasma_omp_zhetrf_aa(uplo, A, ipiv, T, W, sequence, &request);
+    }
 
+    #pragma omp parallel
+    #pragma omp master
+    {
+        // Call the tile async function to LU factor T
+        plasma_omp_zgbtrf(T, ipiv2, sequence, &request);
+    }
+
+    #pragma omp parallel
+    #pragma omp master
+    {
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
         plasma_omp_zdesc2pb(T, pT, ldt, sequence, &request);
@@ -253,8 +268,8 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
  *
  ******************************************************************************/
 void plasma_omp_zhetrf_aa(plasma_enum_t uplo, 
-                          plasma_desc_t A,
-                          plasma_desc_t T, int *ipiv,
+                          plasma_desc_t A, int *ipiv,
+                          plasma_desc_t T, 
                           plasma_desc_t W,
                           plasma_sequence_t *sequence, 
                           plasma_request_t *request)
@@ -295,5 +310,5 @@ void plasma_omp_zhetrf_aa(plasma_enum_t uplo,
         return;
 
     // Call the parallel function.
-    plasma_pzhetrf_aa(uplo, A, T, ipiv, W, sequence, request);
+    plasma_pzhetrf_aa(uplo, A, ipiv, T, W, sequence, request);
 }
