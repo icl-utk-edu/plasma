@@ -141,7 +141,7 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
         return retval;
     }
     // workspace
-    int ldw = 7*A.mt*nb; /* block column */
+    int ldw = (1+5*A.mt)*nb; /* block column */
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
                                         ldw, nb, 0, 0, ldw, nb, &W);
     if (retval != PlasmaSuccess) {

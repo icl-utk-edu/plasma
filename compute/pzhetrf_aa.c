@@ -20,27 +20,27 @@
 #include "core_blas.h"
 
 #define A(m, n) ((plasma_complex64_t*)plasma_tile_addr(A, (m), (n)))
-#define T(m, n) ((plasma_complex64_t*)plasma_tile_addr(T, (m) , (n)))
+#define T(m, n) ((plasma_complex64_t*)plasma_tile_addr(T, (m), (n)))
 #define L(m, n) ((plasma_complex64_t*)plasma_tile_addr(A, (m), (n)-1))
 #define U(m, n) ((plasma_complex64_t*)plasma_tile_addr(A, (m)-1, (n)))
+
+#define W(j)    ((plasma_complex64_t*)plasma_tile_addr(W, (j),   0)) // nb*nb used to compute T(k,k)
+#define W2(j)   ((plasma_complex64_t*)plasma_tile_addr(W, (j)+1, 0)) // mt*(nb*nb) to store H
+#define W3(j)   ((plasma_complex64_t*)plasma_tile_addr(W, (j)+1+A.mt, 0))   // mt*(nb*nb) used to form T(k,k)
+#define W4(j)   ((plasma_complex64_t*)plasma_tile_addr(W, (j)+1+2*A.mt, 0)) // tot used to update L(:,k)
+
+#define H(m, n) (uplo == PlasmaLower ? W2((m)) : W2((n)))
 #define IPIV(i) (ipiv + (i)*(A.mb))
-
-#define W(j)  ((plasma_complex64_t*)plasma_tile_addr(W, (j), 0))        // mt  x nb*nb
-#define W2(j) ((plasma_complex64_t*)plasma_tile_addr(W, (j)+A.mt, 0))   // 2mt x nb*nb
-#define W3(j) ((plasma_complex64_t*)plasma_tile_addr(W, (j)+3*A.mt, 0)) // tot
-#define W4(j) ((plasma_complex64_t*)plasma_tile_addr(W, (j)+3*A.mt, 0)) // tot
-
-#define H(m,n) (uplo == PlasmaLower ? W2((m)) : W2((n)))
 
 /***************************************************************************//**
  *  Parallel tile LDLt factorization.
  * @see plasma_omp_zhetrf_aa
  ******************************************************************************/
-void plasma_pzhetrf_aa(plasma_enum_t uplo, 
+void plasma_pzhetrf_aa(plasma_enum_t uplo,
                        plasma_desc_t A,
                        plasma_desc_t T, int *ipiv,
                        plasma_desc_t W,
-                       plasma_sequence_t *sequence, 
+                       plasma_sequence_t *sequence,
                        plasma_request_t *request)
 {
     // Return if failed sequence.
@@ -56,7 +56,7 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
     plasma_barrier_t *barrier = &plasma->barrier;
     int ib = plasma->ib;
     int num_panel_threads = plasma->num_panel_threads;
-    int tot = W.mt-(3*A.mt); //(lwork - 3*A.mt*(A.nb*A.nb))/(A.nb*A.nb); //max(2*A.nt, panel_thread_count); 
+    int tot = W.mt-(1+2*A.mt);
 
     //==============
     // PlasmaLower
@@ -68,7 +68,7 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
             int ldak = plasma_tile_mmain(A, k);
             int ldtk = T.mb; //plasma_tile_mmain_band(T, k);
 
-            /* -- computing offdiagonals H(1:k-1, k) -- */
+            // -- computing offdiagonals H(1:k-1, k) -- //
             for (int m=1; m < k; m++) {
                 int mvam = plasma_tile_mview(A, m);
                 int ldtm = T.mb; //plasma_tile_mmain_band(T, m);
@@ -98,20 +98,20 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                     zone,  H(m, k),   A.mb,
                     sequence, request);
             }
-            /* ---- end of computing H(1:(k-1),k) -- */
+            // ---- end of computing H(1:(k-1),k) -- //
 
-            /* -- computing diagonal T(k, k) -- */
+            // -- computing diagonal T(k, k) -- //
             plasma_complex64_t beta;
             if (k > 1) {
-                int num = imin(tot, k-1);
-                for (int m=1; m<k; m++) {
+                int num = k-1;
+                for (int m = 1; m < k; m++) {
                     int mvam = plasma_tile_mview(A, m);
                     int id = (m-1) % num;
-                    if( m < num+1 ) {
+                    if (m < num+1)
                         beta = zzero;
-                    } else{
+                    else
                         beta = zone;
-                    }
+
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaNoTrans,
                         mvak, mvak, mvam,
@@ -120,17 +120,18 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                         beta,  W3(id),  A.mb,
                         sequence, request);
                 }
-                /* NOTE: Old PLASMA had an option to reduce in a set of tiles */
-                int num_players = num;                                           /* number of players          */
-                int skip  = 2;                                                   /* intervals between brackets */
-                int num_rounds = ceil( log10((double)num_players)/log10(2.0) );  /* height of tournament       */
-                for(int round=1; round<=num_rounds; round++) {
-                    int num_brackets = num_players / 2; /* number of brackets */
-                    for (int bracket=0; bracket<num_brackets; bracket++) {
-                        /* first contendar */
-                        int m1 = skip*bracket;
-                        /* second contendar */
-                        int m2 = skip*bracket+skip/2;
+                // all-reduce W3 using a binary tree                          //
+                // NOTE: Old PLASMA had an option to reduce in a set of tiles //
+                int num_players = num;                                           // number of players
+                int num_rounds = ceil( log10((double)num_players)/log10(2.0) );  // height of tournament
+                int base  = 2;                                                   // intervals between brackets
+                for (int round = 1; round <= num_rounds; round++) {
+                    int num_brackets = num_players / 2; // number of brackets
+                    for (int bracket = 0; bracket < num_brackets; bracket++) {
+                        // first contendar
+                        int m1 = base*bracket;
+                        // second contendar
+                        int m2 = m1+base/2;
                         core_omp_zgeadd(
                             PlasmaNoTrans, mvak, mvak,
                             zone, W3(m2), A.mb,
@@ -138,7 +139,7 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                             sequence, request);
                     }
                     num_players = ceil( ((double)num_players)/2.0 );
-                    skip = 2*skip;
+                    base = 2*base;
                 }
                 core_omp_zlacpy(
                     PlasmaLower, PlasmaNoTrans,
@@ -151,14 +152,15 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                     zone, W3(0), A.mb,
                     zone, T(k, k), ldtk,
                     sequence, request);
-            } else { /* k == 0 or 1 */
+            }
+            else { // k == 0 or 1
                 core_omp_zlacpy(
                     PlasmaLower, PlasmaNoTrans,
                     mvak, mvak,
                     A(k, k), ldak,
                     T(k, k), ldtk,
                     sequence, request);
-                /* expanding to full matrix */
+                // expanding to full matrix
                 core_omp_zlacpy(
                         PlasmaLower, PlasmaConjTrans,
                         mvak, mvak,
@@ -185,13 +187,13 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                         sequence, request);
                 }
 
-                /* - symmetrically solve with L(k,k) */
+                // - symmetrically solve with L(k,k) //
                 core_omp_zhegst(
                     1, PlasmaLower, mvak,
                     T(k, k), ldtk,
                     L(k, k), ldak,
                     sequence, request);
-                /* expanding to full matrix */
+                // expand to full matrix
                 core_omp_zlacpy(
                         PlasmaLower, PlasmaConjTrans,
                         mvak, mvak,
@@ -200,7 +202,7 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                         sequence, request);
             }
 
-            /* computing H(k, k) */
+            // computing H(k, k) //
             beta = zzero;
             if (k > 1) {
                 core_omp_zgemm(
@@ -214,110 +216,108 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
             }
 
             if (k+1 < A.nt) {
+                int ldakp1 = plasma_tile_mmain(A, k+1);
                 if (k > 0) {
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaConjTrans,
                         mvak, mvak, mvak,
-                        zone,  T(k, k), ldtk,
-                               L(k, k), ldak,
-                        beta , H(k, k), A.mb,
+                        zone, T(k, k), ldtk,
+                              L(k, k), ldak,
+                        beta, H(k, k), A.mb,
                         sequence, request);
-                }
 
-                /* computing L(k+1:nt, k+1) from A(k+1:nt, k) *
-                 * so the number of the column stays the same */
-                int ldakp1 = plasma_tile_mmain(A, k+1);
-
-                /* computing the (k+1)-th column of L */
-                /* - update with the previous column */
-                if (A.mt-k < plasma->max_threads) {
-                    int num = imin(k, tot/(A.mt-k-1)); /* workspace per row */
-                    for (int n=1; n<=k; n++) {
-                        int mvan = plasma_tile_mview(A, n);
-                        for (int m = k+1; m < A.mt; m++) {
-                            int mvam = plasma_tile_mview(A, m);
-                            int ldam = plasma_tile_mmain(A, m);
-
-                            int id = (m-k-1)*num+(n-1)%num;
-                            if (n < num+1) {
-                                beta = zzero;
-                            } else{
-                                beta = zone;
-                            }
-                            if (n < num+1 || n > k-num) {
-                                core_omp_zgemm(
-                                    PlasmaNoTrans, PlasmaNoTrans,
-                                    mvam, mvak, mvan,
-                                    zmone, L(m, n), ldam,
-                                           H(n, k), A.mb,
-                                    beta,  W4(id),  A.mb,
-                                    sequence, request);
-                            } else {
-                                core_omp_zgemm(
-                                    PlasmaNoTrans, PlasmaNoTrans,
-                                    mvam, mvak, mvan,
-                                    zmone, L(m, n), ldam,
-                                           H(n, k), A.mb,
-                                    beta,  W4(id),  A.mb,
-                                    sequence, request);
-                            }
-                        }
-                    }
-                    /* accumeration within workspace */
-                    int skip  = 2;                                                   /* intervals between brackets */
-                    int num_players = num;                                           /* number of players          */
-                    int num_rounds = ceil( log10((double)num_players)/log10(2.0) );  /* height of tournament       */
-                    for (int round=1; round<=num_rounds; round++) {
-                        int num_brackets = num_players / 2; /* number of brackets */
-                        for (int bracket=0; bracket<num_brackets; bracket++) {
-                            /* first contendar */
-                            int m1 = skip*bracket;
-                            /* second contendar */
-                            int m2 = skip*bracket+skip/2;
-
+                    // computing the (k+1)-th column of L //
+                    // - update with the previous column
+                    if (A.mt-k < plasma->max_threads && k > 0) {
+                        int num = imin(k, tot/(A.mt-k-1)); // workspace per row
+                        for (int n = 1; n <= k; n++) {
+                            int mvan = plasma_tile_mview(A, n);
                             for (int m = k+1; m < A.mt; m++) {
                                 int mvam = plasma_tile_mview(A, m);
-                                core_omp_zgeadd(
-                                    PlasmaNoTrans, mvam, mvak,
-                                    zone, W4((m-k-1)*num+m2), A.mb,
-                                    zone, W4((m-k-1)*num+m1), A.mb,
-                                    sequence, request);
-                            }
-                         }
-                        num_players = ceil( ((double)num_players)/2.0 );
-                        skip = 2*skip;
-                    }
+                                int ldam = plasma_tile_mmain(A, m);
 
-                    /* accumelate into L(:,k+1) */
-                    for (int m = k+1; m < A.mt; m++) {
-                        int mvam = plasma_tile_mview(A, m);
-                        int ldam = plasma_tile_mmain(A, m);
-                        core_omp_zgeadd(
-                            PlasmaNoTrans, mvam, mvak,
-                            zone, W4((m-k-1)*num), A.mb,
-                            zone, L(m, k+1), ldam,
-                            sequence, request);
-                    }
-                } else {
-                    for (int n=1; n<=k; n++) {
-                        int mvan = plasma_tile_mview(A, n);
+                                int id = (m-k-1)*num+(n-1)%num;
+                                if (n < num+1)
+                                    beta = zzero;
+                                else
+                                    beta = zone;
+
+                                if (n < num+1 || n > k-num) {
+                                    core_omp_zgemm(
+                                        PlasmaNoTrans, PlasmaNoTrans,
+                                        mvam, mvak, mvan,
+                                        zmone, L(m, n), ldam,
+                                               H(n, k), A.mb,
+                                        beta,  W4(id),  A.mb,
+                                        sequence, request);
+                                } 
+                                else {
+                                    core_omp_zgemm(
+                                        PlasmaNoTrans, PlasmaNoTrans,
+                                        mvam, mvak, mvan,
+                                        zmone, L(m, n), ldam,
+                                               H(n, k), A.mb,
+                                        beta,  W4(id),  A.mb,
+                                        sequence, request);
+                                }
+                            }
+                        }
+                        // accumerate within workspace using a binary tree
+                        int num_players = num;                                           // number of players
+                        int num_rounds = ceil( log10((double)num_players)/log10(2.0) );  // height of tournament
+                        int base = 2;                                                    // intervals between brackets
+                        for (int round = 1; round <= num_rounds; round++) {
+                            int num_brackets = num_players / 2; // number of brackets
+                            for (int bracket = 0; bracket < num_brackets; bracket++) {
+                                // first contendar
+                                int m1 = base*bracket;
+                                // second contendar
+                                int m2 = m1+base/2;
+
+                                for (int m = k+1; m < A.mt; m++) {
+                                    int mvam = plasma_tile_mview(A, m);
+                                    core_omp_zgeadd(
+                                        PlasmaNoTrans, mvam, mvak,
+                                        zone, W4((m-k-1)*num+m2), A.mb,
+                                        zone, W4((m-k-1)*num+m1), A.mb,
+                                        sequence, request);
+                                }
+                            }
+                            num_players = ceil( ((double)num_players)/2.0 );
+                            base = 2*base;
+                        }
+                        // accumelate into L(:,k+1)
                         for (int m = k+1; m < A.mt; m++) {
                             int mvam = plasma_tile_mview(A, m);
                             int ldam = plasma_tile_mmain(A, m);
-                            core_omp_zgemm(
-                               PlasmaNoTrans, PlasmaNoTrans,
-                               mvam, mvak, mvan,
-                               zmone, L(m, n), ldam,
-                                      H(n, k), A.mb,
-                               zone,  L(m, k+1), ldam,
-                               sequence, request);
+                            core_omp_zgeadd(
+                                PlasmaNoTrans, mvam, mvak,
+                                zone, W4((m-k-1)*num), A.mb,
+                                zone, L(m, k+1), ldam,
+                                sequence, request);
                         }
                     }
-                }
-                /* =========================== */
-                /* ==  PLASMA recursive LU  == */
-                /* =========================== */
-                /* -- compute LU of the panel -- */
+                    else {
+                        for (int n = 1; n <= k; n++) {
+                            int mvan = plasma_tile_mview(A, n);
+                            for (int m = k+1; m < A.mt; m++) {
+                                int mvam = plasma_tile_mview(A, m);
+                                int ldam = plasma_tile_mmain(A, m);
+                                core_omp_zgemm(
+                                    PlasmaNoTrans, PlasmaNoTrans,
+                                    mvam, mvak, mvan,
+                                    zmone, L(m, n), ldam,
+                                           H(n, k), A.mb,
+                                    zone,  L(m, k+1), ldam,
+                                    sequence, request);
+                            }
+                        }
+                    }
+                } // end of if (k > 0)
+                // =========================== //
+                // ==  PLASMA recursive LU  == //
+                // =========================== //
+                // -- compute LU of the panel -- //
                 int tempi = (k+1)*A.mb;  // offset
                 int tempj = k*A.nb;      // offset
                 int tempm = A.m - tempi; // dimension
@@ -333,8 +333,8 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                 #pragma omp taskwait
                 #pragma omp task depend(inout:a00[0:ma00k*na00k]) \
                                  depend(inout:a20[0:lda20*mvak]) \
-                                 depend(out:ipiv[k*A.mb:mvak]) /*\
-                                 priority(1) */
+                                 depend(out:ipiv[k*A.mb:mvak]) // \
+                                 // priority(1)
                 {
                     if (sequence->status == PlasmaSuccess) {
                         for (int rank = 0; rank < num_panel_threads; rank++) {
@@ -360,7 +360,7 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                     IPIV(k+1)[i] += tempi;
                 }
 
-                /* -- apply pivoting to previous columns of L -- */
+                // -- apply pivoting to previous columns of L -- //
                 for (int n = 1; n < k+1; n++)
                 {
                    plasma_complex64_t *akk = L(k+1, n);
@@ -377,35 +377,27 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                         }
                     }
                 }
-
-                /* -- symmetrically apply pivoting to trailing A -- */
+                // -- symmetrically apply pivoting to trailing A -- //
                 core_omp_zlaswp_sym(PlasmaLower,
                                     A, (k+1)*A.mb+1, (k+1)*A.mb+imin(tempm,mvak), ipiv, 1,
                                     sequence, request);
 
-                /* ================================== */
-                /* ==  end of PLASMA recursive LU  == */
-                /* ================================== */
+                // ================================== //
+                // ==  end of PLASMA recursive LU  == //
+                // ================================== //
 
-                /* computing T(k+1, k) */
+                // computing T(k+1, k) //
                 int mvakp1 = plasma_tile_mview(A, k+1);
                 int ldak_n = plasma_tile_nmain(A, k);
                 int ldtkp1 = A.mb; //plasma_tile_mmain_band(T, k+1);
-                /* copy upper-triangular part of L(k+1,k+1) to T(k+1,k) */
-                /* and then zero it out                                 */
+                // copy upper-triangular part of L(k+1,k+1) to T(k+1,k)
+                // and then zero it out
                 core_omp_zlacpy(
                         PlasmaUpper, PlasmaNoTrans,
                         mvakp1, mvak,
                         L(k+1, k+1), ldakp1,
                         T(k+1, k  ), ldtkp1,
                         sequence, request);
-                /* T is zeroed out
-                core_omp_zlaset(
-                        PlasmaLower,
-                        ldtkp1, ldak_n, 1, 0,
-                        mvakp1-1, mvak-1,
-                        zzero, zzero,
-                        T(k+1, k));*/
                 core_omp_zlaset(
                         PlasmaUpper,
                         ldakp1, ldak_n, 0, 0,
@@ -421,7 +413,7 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                               T(k+1, k), ldtkp1,
                         sequence, request);
                 }
-                /* copy T(k+1, k) to T(k, k+1) for zgbtrf */
+                // copy T(k+1, k) to T(k, k+1) for zgbtrf
                 core_omp_zlacpy(
                         PlasmaGeneral, PlasmaConjTrans,
                         mvakp1, mvak,
