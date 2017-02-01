@@ -12,9 +12,9 @@
 // Then wrap the calls you want to trace with calls to trace_event_start()
 // and trace_event_stop(), e.g.:
 //
-//     trace_event_start();
+//     trace_cpu_start();
 //     cblas_zgemm(CblasColMajor, ...
-//     trace_event_stop("LightGoldenrodYellow");
+//     trace_cpu_stop("LightGoldenrodYellow");
 //
 // Provide the name of the color as a string.
 // Use one of the X11 color names: https://en.wikipedia.org/wiki/X11_color_names
@@ -149,7 +149,7 @@ static inline unsigned int color_index(unsigned char *str)
 }
 
 //------------------------------------------------------------------------------
-void trace_event_start()
+void trace_cpu_start()
 {
     int thread_num = omp_get_thread_num() & (MAX_THREADS-1);
     thread_num &= (MAX_THREADS-1);
@@ -159,7 +159,7 @@ void trace_event_start()
 }
 
 //------------------------------------------------------------------------------
-void trace_event_stop(unsigned char *color)
+void trace_cpu_stop(unsigned char *color)
 {
     int thread_num = omp_get_thread_num();
     thread_num &= (MAX_THREADS-1);
