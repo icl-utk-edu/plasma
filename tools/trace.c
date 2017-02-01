@@ -22,6 +22,10 @@
 // Upon completion, the trace is written to an SVG file in the local folder.
 // The name has the form trace_189648000.svg, where the number is the Unix time.
 //
+// By default, tracing is on.
+// You can turn it off by calling tracing_off();
+// You can turn it back on by calling tracing_on();
+//
 // Unlike in the past renditions of this solution, here:
 // - you do not include a header file,
 // - you do not provide the color as an integer, but as a string,
@@ -122,6 +126,10 @@ static struct {
     "DarkGreen",            0x006400,   "SlateGray",       0x708090,
                                         "DarkSlateGray",   0x2F4F4F,
                                         "Black",           0x000000};
+static int Trace = 1;
+void trace_off() {Trace = 0;}
+void trace_on()  {Trace = 1;}
+
 #define IMAGE_WIDTH 2390
 #define IMAGE_HEIGHT 1000
 
@@ -168,7 +176,7 @@ void trace_cpu_stop(unsigned char *color)
     EventStopThread[thread_num][event_num] = omp_get_wtime();
     EventColorThread[thread_num][event_num] = ColorMap[color_index(color)];
 
-    EventNumThread[thread_num]++;
+    EventNumThread[thread_num] += Trace;
     EventNumThread[thread_num] &= (MAX_THREAD_EVENTS-1);
 }
 
