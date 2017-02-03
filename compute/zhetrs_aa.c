@@ -239,8 +239,8 @@ int plasma_zhetrs_aa(plasma_enum_t trans, int n, int nrhs,
  * @sa plasma_omp_zhetrf_aa
  *
  ******************************************************************************/
-void plasma_omp_zhetrs_aa(plasma_enum_t trans, 
-                          plasma_desc_t A, int *ipiv, 
+void plasma_omp_zhetrs_aa(plasma_enum_t trans,
+                          plasma_desc_t A, int *ipiv,
                           plasma_desc_t T, int *ipiv2,
                           plasma_desc_t B,
                           plasma_sequence_t *sequence,

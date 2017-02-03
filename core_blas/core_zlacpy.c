@@ -62,6 +62,7 @@ void core_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
                  const plasma_complex64_t *A, int lda,
                        plasma_complex64_t *B, int ldb)
 {
+    trace_event_start();
     if (transa == PlasmaNoTrans) {
         LAPACKE_zlacpy_work(LAPACK_COL_MAJOR,
                             lapack_const(uplo),
@@ -105,6 +106,7 @@ void core_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
             break;
         }
     }
+    trace_event_stop("Pink");
 }
 
 /******************************************************************************/

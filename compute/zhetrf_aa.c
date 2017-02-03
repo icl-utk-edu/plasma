@@ -19,11 +19,13 @@
 #include "plasma_workspace.h"
 #include <string.h>
 
+#include "omp.h"
+
 /***************************************************************************//**
  *
  * @ingroup plasma_hetrf_aa
  *
- *  Factorize a Hermitian matrix A using a 'communication avoiding' Aasen's 
+ *  Factorize a Hermitian matrix A using a 'communication avoiding' Aasen's
  *  algorithm. The factorization has the form
  *
  *    \f[ A = P \times L \times T \times L^H \times P^H, \f]
@@ -57,7 +59,7 @@
  *          The leading dimension of the array A. lda >= max(1,n).
  *
  * @param[out] pT
- *          On exit, if return value = 0, the band matrix T of the factorization 
+ *          On exit, if return value = 0, the band matrix T of the factorization
  *          factorization A = (P*U^H)*T*(P*U^H)^H or A = (P*L)*T*(P*L)^H.
  *
  * @param[in] ldt
@@ -161,7 +163,7 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
 
     // Initialize data.
     memset(T.matrix, 0, ldt*n*sizeof(plasma_complex64_t));
-    for (int i=0; i<nb; i++) ipiv[i] = 1+i;
+    for (int i = 0; i < nb; i++) ipiv[i] = 1+i;
 
     // asynchronous block
     #pragma omp parallel
@@ -171,6 +173,7 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
         plasma_omp_zge2desc(pA, lda, A, sequence, &request);
     }
 
+    //double start = omp_get_wtime();
     #pragma omp parallel
     #pragma omp master
     {
@@ -178,13 +181,18 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
         // where T is a band matrix
         plasma_omp_zhetrf_aa(uplo, A, ipiv, T, W, sequence, &request);
     }
+    //double time_zhetrf = omp_get_wtime()-start;
 
+    //start = omp_get_wtime();
     #pragma omp parallel
     #pragma omp master
     {
         // Call the tile async function to LU factor T
         plasma_omp_zgbtrf(T, ipiv2, sequence, &request);
     }
+    //double time_zgbtrf = omp_get_wtime()-start;
+    //printf( " zhetrf took %.2f seconds, zgbtrf took %.2f seconds (%.1f%%)\n",
+    //        time_zhetrf,time_zgbtrf,100.0*(time_zgbtrf/(time_zhetrf+time_zgbtrf)) );
 
     #pragma omp parallel
     #pragma omp master
@@ -236,7 +244,7 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
  *          factorization A = (P*U^H)*T(P*U^H)^H or A = (P*L)*T(P*L)^H.
  *
  * @param[out] T
- *          On exit, if return value = 0, the band matrix T of the factorization 
+ *          On exit, if return value = 0, the band matrix T of the factorization
  *          factorization A = (P*U^H)*T*(P*U^H)^H or A = (P*L)*T*(P*L)^H.
  *
  * @param[out] ipiv
@@ -267,11 +275,11 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
  * @sa plasma_omp_shetrf_aa
  *
  ******************************************************************************/
-void plasma_omp_zhetrf_aa(plasma_enum_t uplo, 
+void plasma_omp_zhetrf_aa(plasma_enum_t uplo,
                           plasma_desc_t A, int *ipiv,
-                          plasma_desc_t T, 
+                          plasma_desc_t T,
                           plasma_desc_t W,
-                          plasma_sequence_t *sequence, 
+                          plasma_sequence_t *sequence,
                           plasma_request_t *request)
 {
     // Get PLASMA context.

@@ -27,7 +27,7 @@
 #define W(j)    ((plasma_complex64_t*)plasma_tile_addr(W, (j),   0)) // nb*nb used to compute T(k,k)
 #define W2(j)   ((plasma_complex64_t*)plasma_tile_addr(W, (j)+1, 0)) // mt*(nb*nb) to store H
 #define W3(j)   ((plasma_complex64_t*)plasma_tile_addr(W, (j)+1+A.mt, 0))   // mt*(nb*nb) used to form T(k,k)
-#define W4(j)   ((plasma_complex64_t*)plasma_tile_addr(W, (j)+1+2*A.mt, 0)) // tot used to update L(:,k)
+#define W4(j)   ((plasma_complex64_t*)plasma_tile_addr(W, (j)+1+2*A.mt, 0)) // wmt used to update L(:,k)
 
 #define H(m, n) (uplo == PlasmaLower ? W2((m)) : W2((n)))
 #define IPIV(i) (ipiv + (i)*(A.mb))
@@ -56,7 +56,7 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
     plasma_barrier_t *barrier = &plasma->barrier;
     int ib = plasma->ib;
     int num_panel_threads = plasma->num_panel_threads;
-    int tot = W.mt-(1+2*A.mt);
+    int wmt = W.mt-(1+2*A.mt);
 
     //==============
     // PlasmaLower
@@ -229,7 +229,7 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                     // computing the (k+1)-th column of L //
                     // - update with the previous column
                     if (A.mt-k < plasma->max_threads && k > 0) {
-                        int num = imin(k, tot/(A.mt-k-1)); // workspace per row
+                        int num = imin(k, wmt/(A.mt-k-1)); // workspace per row
                         for (int n = 1; n <= k; n++) {
                             int mvan = plasma_tile_mview(A, n);
                             for (int m = k+1; m < A.mt; m++) {
@@ -250,7 +250,7 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                                                H(n, k), A.mb,
                                         beta,  W4(id),  A.mb,
                                         sequence, request);
-                                } 
+                                }
                                 else {
                                     core_omp_zgemm(
                                         PlasmaNoTrans, PlasmaNoTrans,
@@ -342,9 +342,11 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                                                      (k+1)*A.mb, k*A.nb,
                                                      mlkk, mvak);
 
+                                trace_event_start();
                                 int info = core_zgetrf(view, IPIV(k+1), ib,
                                                        rank, num_panel_threads,
                                                        barrier);
+                                trace_event_stop("MediumPurple");
                                 if (info != 0)
                                     plasma_request_fail(sequence, request, k*A.mb+info);
                             }
@@ -360,11 +362,12 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                 // -- apply pivoting to previous columns of L -- //
                 for (int n = 1; n < k+1; n++)
                 {
-                   plasma_complex64_t *akk = L(k+1, n);
+                   plasma_complex64_t *akk = NULL;
                    int k1 = 1+(k+1)*A.nb;
                    int k2 = imin(mlkk ,mvak)+(k+1)*A.nb;
                    int mlkn = (A.mt-k-1)*A.mb;
                    int nlkn = plasma_tile_nmain(A, n-1);
+                   akk = L(k+1, n);
                     #pragma omp task depend(in:ipiv[(k1-1):k2]) \
                                      depend(inout:akk[0:mlkn*nlkn])
                     {

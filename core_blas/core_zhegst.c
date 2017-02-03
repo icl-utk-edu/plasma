@@ -89,11 +89,14 @@ int core_zhegst(int itype, plasma_enum_t uplo,
                 plasma_complex64_t *A, int lda,
                 plasma_complex64_t *B, int ldb)
 {
-    return LAPACKE_zhegst_work(
+    trace_event_start();
+    int info = LAPACKE_zhegst_work(
         LAPACK_COL_MAJOR,
         itype,
         lapack_const(uplo),
         n, A, lda, B, ldb );
+    trace_event_stop("LightSalmon");
+    return info;
 }
 
 /******************************************************************************/

@@ -92,12 +92,14 @@ void core_zgemm(plasma_enum_t transa, plasma_enum_t transb,
                                           const plasma_complex64_t *B, int ldb,
                 plasma_complex64_t beta,        plasma_complex64_t *C, int ldc)
 {
+    trace_event_start();
     cblas_zgemm(CblasColMajor,
                 (CBLAS_TRANSPOSE)transa, (CBLAS_TRANSPOSE)transb,
                 m, n, k,
                 CBLAS_SADDR(alpha), A, lda,
                                     B, ldb,
                 CBLAS_SADDR(beta),  C, ldc);
+    trace_event_stop("LightSteelBlue");
 }
 
 /******************************************************************************/
