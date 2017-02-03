@@ -12,15 +12,23 @@
 // Then wrap the calls you want to trace with calls to trace_event_start()
 // and trace_event_stop(), e.g.:
 //
-//     trace_event_start();
+//     trace_cpu_start();
 //     cblas_zgemm(CblasColMajor, ...
-//     trace_event_stop("LightGoldenrodYellow");
+//     trace_cpu_stop("LightGoldenrodYellow");
 //
 // Provide the name of the color as a string.
 // Use one of the X11 color names: https://en.wikipedia.org/wiki/X11_color_names
 //
+// Optionally, you can assign a label to a color using trace_label(), e.g.:
+//
+//      trace_label("Teal", "gemm");
+//
 // Upon completion, the trace is written to an SVG file in the local folder.
 // The name has the form trace_189648000.svg, where the number is the Unix time.
+//
+// Initially, tracing is on.
+// You can turn it off by calling tracing_off();
+// You can turn it back on by calling tracing_on();
 //
 // Unlike in the past renditions of this solution, here:
 // - you do not include a header file,
@@ -35,12 +43,13 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <limits.h>
+#include <string.h>
 
 // https://en.wikipedia.org/wiki/X11_color_names
 static struct {
     char *color;
     int value;
-} ColorValue[] = {
+} Color[] = {
     /* Pink colors */                   /* Cyan colors */
     "Pink",                 0xFFC0CB,   "Aqua",            0x00FFFF,
     "LightPink",            0xFFB6C1,   "Cyan",            0x00FFFF,
@@ -122,12 +131,17 @@ static struct {
     "DarkGreen",            0x006400,   "SlateGray",       0x708090,
                                         "DarkSlateGray",   0x2F4F4F,
                                         "Black",           0x000000};
+static int Trace = 1;
+void trace_off() {Trace = 0;}
+void trace_on()  {Trace = 1;}
+
 #define IMAGE_WIDTH 2390
 #define IMAGE_HEIGHT 1000
 
-#define COLOR_MAP_SIZE 1024
-static int ColorMap[COLOR_MAP_SIZE];
-static int NumColors = sizeof(ColorValue) / sizeof(ColorValue[0]);
+#define MAP_SIZE 1024
+static int ColorMap[MAP_SIZE];
+static char *Label[sizeof(Color) /sizeof(Color[0])];
+static int NumColors = sizeof(Color)/sizeof(Color[0]);
 
 static int NumThreads;
 #define MAX_THREADS 256
@@ -145,11 +159,11 @@ static inline unsigned int color_index(unsigned char *str)
     unsigned int c;
     while (c = *str++)
         hash = hash*307+c;
-    return hash%COLOR_MAP_SIZE;
+    return hash%MAP_SIZE;
 }
 
 //------------------------------------------------------------------------------
-void trace_event_start()
+void trace_cpu_start()
 {
     int thread_num = omp_get_thread_num() & (MAX_THREADS-1);
     thread_num &= (MAX_THREADS-1);
@@ -159,7 +173,7 @@ void trace_event_start()
 }
 
 //------------------------------------------------------------------------------
-void trace_event_stop(unsigned char *color)
+void trace_cpu_stop(unsigned char *color)
 {
     int thread_num = omp_get_thread_num();
     thread_num &= (MAX_THREADS-1);
@@ -168,8 +182,13 @@ void trace_event_stop(unsigned char *color)
     EventStopThread[thread_num][event_num] = omp_get_wtime();
     EventColorThread[thread_num][event_num] = ColorMap[color_index(color)];
 
-    EventNumThread[thread_num]++;
+    EventNumThread[thread_num] += Trace;
     EventNumThread[thread_num] &= (MAX_THREAD_EVENTS-1);
+}
+
+//------------------------------------------------------------------------------
+void trace_label(unsigned char *color, char *label) {
+    Label[ColorMap[color_index(color)]] = label;
 }
 
 //------------------------------------------------------------------------------
@@ -196,10 +215,8 @@ static void trace_finish()
     FILE *trace_file = fopen(file_name, "w");
     assert(trace_file != NULL);
 
-    fprintf(
-        trace_file,
-        "<svg viewBox=\"0 0 %d %d\">\n"
-        "  <g>\n", IMAGE_WIDTH, IMAGE_HEIGHT);
+    fprintf(trace_file,
+            "<svg viewBox=\"0 0 %d %d\">\n", IMAGE_WIDTH, IMAGE_HEIGHT);
 
     int thread;
     int event;
@@ -209,19 +226,42 @@ static void trace_finish()
             double stop = EventStopThread[thread][event]-min_time;
             fprintf(
                 trace_file,
-                "    <rect x=\"%lf\" y=\"%lf\" width=\"%lf\" height=\"%lf\" "
-                "fill=\"#%06x\" stroke=\"#000000\" stroke-width=\"1\"/>\n",
+                "<rect x=\"%lf\" y=\"%lf\" width=\"%lf\" height=\"%lf\" "
+                "fill=\"#%06x\" stroke=\"#000000\" stroke-width=\"1\" "
+                "inkscape:label=\"%s\"/>\n",
                 start * hscale,
                 thread * vscale,
                 (stop-start) * hscale,
                 0.9 * vscale,
-                EventColorThread[thread][event]);
+                Color[EventColorThread[thread][event]].value,
+                Label[EventColorThread[thread][event]]);
         }
     }
-    fprintf(
-        trace_file,
-        "  </g>\n"
-        "</svg>\n");
+    int x = 0;
+    int y = IMAGE_HEIGHT+50;
+    for (int color = 0; color < NumColors; color++) {
+        if (Label[color] != NULL) {
+            fprintf(
+                trace_file,
+                "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" "
+                "fill=\"#%06x\" stroke=\"#000000\" stroke-width=\"1\"/>\n"
+                "<text x=\"%d\" y=\"%d\" "
+                "font-family=\"monospace\" font-size=\"35\" fill=\"black\">"
+                "%s</text>\n",
+                x, y,
+                50, 50,
+                Color[color].value,
+                x+75, y+36,
+                Label[color]);
+            x += 150;
+            x += strlen(Label[color])*22;
+            if (x > IMAGE_WIDTH) {
+                x = 0;
+                y += 100;
+            }
+        } 
+    }
+    fprintf(trace_file, "</svg>\n");
     fclose(trace_file);
 }
 
@@ -234,11 +274,9 @@ static void trace_init()
     assert (__builtin_popcount(MAX_THREAD_EVENTS) == 1);
 
     // Initialize the color map.
-    for (int i = 0; i < NumColors; i++) {
-        int index = color_index(ColorValue[i].color);
-        assert(ColorMap[index] == 0);
-        ColorMap[index] = ColorValue[i].value;
-    }
+    for (int i = 0; i < NumColors; i++)
+        ColorMap[color_index(Color[i].color)] = i;
+
     // Clip the number of threads.
     NumThreads = omp_get_max_threads() < MAX_THREADS ?
         omp_get_max_threads() : MAX_THREADS;
