@@ -120,6 +120,10 @@ int plasma_get(plasma_enum_t param, int *value)
         *value = plasma->ib;
         return PlasmaSuccess;
         break;
+    case PlasmaNumPanelThreads:
+        *value = plasma->num_panel_threads;
+        return PlasmaSuccess;
+        break;
     case PlasmaHouseholderMode:
         *value = plasma->householder_mode;
         return PlasmaSuccess;
