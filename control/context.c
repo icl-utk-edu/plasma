@@ -8,11 +8,11 @@
  *
  **/
 
-#include <stdlib.h>
-#include <omp.h>
-
 #include "plasma_context.h"
 #include "plasma_internal.h"
+
+#include <stdlib.h>
+#include <omp.h>
 
 static int max_contexts = 1024;
 static int num_contexts = 0;
@@ -184,6 +184,7 @@ int plasma_context_detach()
         if (context_map[i].context != NULL &&
             pthread_equal(context_map[i].thread_id, pthread_self())) {
 
+            plasma_context_finalize(context_map[i].context);
             free(context_map[i].context);
             context_map[i].context = NULL;
             num_contexts--;
@@ -218,10 +219,21 @@ plasma_context_t *plasma_context_self()
 /******************************************************************************/
 void plasma_context_init(plasma_context_t *context)
 {
+    // Set defaults.
     context->nb = 256;
     context->ib = 64;
     context->inplace_outplace = PlasmaOutplace;
     context->max_threads = omp_get_max_threads();
     context->num_panel_threads = 1;
     context->householder_mode = PlasmaFlatHouseholder;
+
+    // Initialize config.
+    plasma_config_init(context->L);
+}
+
+/******************************************************************************/
+void plasma_context_finalize(plasma_context_t *context)
+{
+    // Finalize config.
+    plasma_config_finalize(context->L);
 }
