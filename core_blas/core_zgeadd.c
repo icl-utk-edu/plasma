@@ -113,7 +113,6 @@ int core_zgeadd(plasma_enum_t transa,
     if (m == 0 || n == 0 || (alpha == 0.0 && beta == 1.0))
         return PlasmaSuccess;
 
-    trace_event_start();
     switch (transa) {
     case PlasmaConjTrans:
         for (int j = 0; j < n; j++)
@@ -132,7 +131,6 @@ int core_zgeadd(plasma_enum_t transa,
             for (int i = 0; i < m; i++)
                 B[ldb*j+i] = beta * B[ldb*j+i] + alpha * A[lda*j+i];
     }
-    trace_event_stop("Orange");
 
     return PlasmaSuccess;
 }

@@ -57,7 +57,6 @@ void core_zlaset(plasma_enum_t uplo, int m, int n,
                  plasma_complex64_t alpha, plasma_complex64_t beta,
                  plasma_complex64_t *A, int lda)
 {
-    trace_event_start();
     if (alpha == 0.0 && beta == 0.0 && uplo == PlasmaGeneral && m == lda) {
         // Use memset to zero continuous memory.
         memset((void*)A, 0, (size_t)m*n*sizeof(plasma_complex64_t));
@@ -67,7 +66,6 @@ void core_zlaset(plasma_enum_t uplo, int m, int n,
         LAPACKE_zlaset_work(LAPACK_COL_MAJOR, lapack_const(uplo),
                             m, n, alpha, beta, A, lda);
     }
-    trace_event_stop("Tomato");
 }
 
 /******************************************************************************/

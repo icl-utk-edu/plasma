@@ -24,7 +24,6 @@ void core_zlaswp(plasma_enum_t colrow,
     //================
     // PlasmaRowwise
     //================
-    trace_event_start();
     if (colrow == PlasmaRowwise) {
         if (incx > 0) {
             for (int m = k1-1; m <= k2-1; m += incx) {
@@ -90,5 +89,4 @@ void core_zlaswp(plasma_enum_t colrow,
             }
         }
     }
-    trace_event_stop("DarkOrange");
 }

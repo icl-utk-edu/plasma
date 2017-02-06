@@ -342,11 +342,9 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                                                      (k+1)*A.mb, k*A.nb,
                                                      mlkk, mvak);
 
-                                trace_event_start();
                                 int info = core_zgetrf(view, IPIV(k+1), ib,
                                                        rank, num_panel_threads,
                                                        barrier);
-                                trace_event_stop("MediumPurple");
                                 if (info != 0)
                                     plasma_request_fail(sequence, request, k*A.mb+info);
                             }

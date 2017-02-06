@@ -41,7 +41,6 @@
  ******************************************************************************/
 void core_zlaswp_sym(int uplo, plasma_desc_t A, int k1, int k2, const int *ipiv, int incx)
 {
-    trace_event_start();
     if (uplo == PlasmaLower) {
         if (incx > 0) {
             for (int i = k1-1; i <= k2-1; i += incx) {
@@ -122,7 +121,6 @@ void core_zlaswp_sym(int uplo, plasma_desc_t A, int k1, int k2, const int *ipiv,
             }
         }
     }
-    trace_event_stop("BlanchedAlmond");
 }
 
 /******************************************************************************/
