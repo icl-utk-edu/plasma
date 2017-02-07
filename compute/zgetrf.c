@@ -17,8 +17,7 @@
 #include "plasma_internal.h"
 #include "plasma_types.h"
 #include "plasma_workspace.h"
-
-#include "mkl_lapacke.h"
+#include "plasma_tuning.h"
 
 /***************************************************************************//**
  *
@@ -50,7 +49,10 @@ int plasma_zgetrf(int m, int n,
     if (imin(m, n) == 0)
         return PlasmaSuccess;
 
-    // Set tiling parameters.
+    // Tune parameters.
+    if (plasma->tuning)
+        plasma_tune_getrf(plasma, PlasmaComplexDouble, m, n);
+
     int nb = plasma->nb;
 
     // Initialize barrier.

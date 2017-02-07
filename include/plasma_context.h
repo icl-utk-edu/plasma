@@ -11,7 +11,6 @@
 #define ICL_PLASMA_CONTEXT_H
 
 #include "plasma_types.h"
-#include "plasma_config.h"
 #include "plasma_barrier.h"
 
 #include <pthread.h>
@@ -26,6 +25,7 @@ extern "C" {
 /******************************************************************************/
 typedef struct {
     lua_State *L;                   ///< Lua state
+    int tuning;                     ///< PlasmaEnabled or PlasmaDisabled
     int nb;                         ///< PlasmaNb
     int ib;                         ///< PlasmaIb
     plasma_enum_t inplace_outplace; ///< PlasmaInplaceOutplace

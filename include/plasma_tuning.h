@@ -7,8 +7,10 @@
  *  University of Manchester, UK.
  *
  **/
-#ifndef ICL_PLASMA_CONFIG_H
-#define ICL_PLASMA_CONFIG_H
+#ifndef ICL_PLASMA_TUNING_H
+#define ICL_PLASMA_TUNING_H
+
+#include "plasma_context.h"
 
 #include <lua.h>
 #include <lauxlib.h>
@@ -19,11 +21,13 @@ extern "C" {
 #endif
 
 /******************************************************************************/
-void plasma_config_init(lua_State *L);
-void plasma_config_finalize(lua_State *L);
+lua_State *plasma_tuning_init();
+void plasma_tuning_finalize(lua_State *L);
+void plasma_tune_getrf(plasma_context_t *plasma, plasma_enum_t dtyp,
+					   int m, int n);
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif
 
-#endif // ICL_PLASMA_CONFIG_H
+#endif // ICL_PLASMA_TUNING_H
