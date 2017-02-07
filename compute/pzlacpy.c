@@ -58,7 +58,8 @@ void plasma_pzlacpy(plasma_enum_t uplo, plasma_enum_t transa,
                         A(m, n), ldam,
                         B(m, n), ldbm,
                         sequence, request);
-                } else {
+                }
+                else {
                     int ldbn = plasma_tile_mmain(B, n);
                     core_omp_zlacpy(
                         PlasmaGeneral, transa,
@@ -96,7 +97,8 @@ void plasma_pzlacpy(plasma_enum_t uplo, plasma_enum_t transa,
                         A(m, n), ldam,
                         B(m, n), ldbm,
                         sequence, request);
-                } else {
+                }
+                else {
                     int ldbn = plasma_tile_mmain(B, n);
                     core_omp_zlacpy(
                         PlasmaGeneral, transa,
@@ -126,7 +128,8 @@ void plasma_pzlacpy(plasma_enum_t uplo, plasma_enum_t transa,
                         A(m, n), ldam,
                         B(m, n), ldbm,
                         sequence, request);
-                } else {
+                }
+                else {
                     int ldbn = plasma_tile_mmain(B, n);
                     core_omp_zlacpy(
                         PlasmaGeneral, transa,

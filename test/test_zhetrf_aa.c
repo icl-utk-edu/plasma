@@ -30,7 +30,7 @@
 
 /***************************************************************************//**
  *
- * @brief Tests ZPOTRF.
+ * @brief Tests ZHETRF_AA.
  *
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen

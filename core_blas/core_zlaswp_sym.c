@@ -17,8 +17,6 @@
 
 #define COMPLEX
 #define A(m,n) ((plasma_complex64_t*)plasma_tile_addr(A, m, n))
-#define W2(j)  ((plasma_complex64_t*)plasma_tile_addr(W, j+A.mt, 0))   // 2mt x nb*nb
-
 
 /***************************************************************************//**
  *
@@ -119,18 +117,6 @@ void core_zlaswp_sym(int uplo, plasma_desc_t A, int k1, int k2, const int *ipiv,
 
                 }
             }
-        }
-    }
-}
-
-/******************************************************************************/
-void core_omp_zlaswp_sym(int uplo,
-                         plasma_desc_t A, int k1, int k2, const int *ipiv, int incx,
-                         plasma_sequence_t *sequence, plasma_request_t *request)
-{
-    {
-        if (sequence->status == PlasmaSuccess) {
-            core_zlaswp_sym(uplo, A, k1, k2, ipiv, incx);
         }
     }
 }

@@ -442,10 +442,6 @@ void core_omp_zlansy_aux(plasma_enum_t norm, plasma_enum_t uplo,
                          plasma_sequence_t *sequence,
                          plasma_request_t *request);
 
-void core_omp_zlaswp_sym(int uplo,
-                         plasma_desc_t A, int k1, int k2, const int *ipiv, int incx,
-                         plasma_sequence_t *sequence, plasma_request_t *request);
-
 void core_omp_zlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
                      int m, int n,
                      const plasma_complex64_t *A, int lda,

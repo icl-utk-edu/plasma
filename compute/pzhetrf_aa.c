@@ -35,6 +35,7 @@
 /***************************************************************************//**
  *  Parallel tile LDLt factorization.
  * @see plasma_omp_zhetrf_aa
+ * TODO: Use nested-parallelisation to remove synchronization points?
  ******************************************************************************/
 void plasma_pzhetrf_aa(plasma_enum_t uplo,
                        plasma_desc_t A, int *ipiv,
@@ -314,6 +315,7 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                         }
                     }
                 } // end of if (k > 0)
+
                 // =========================== //
                 // ==  PLASMA recursive LU  == //
                 // =========================== //
@@ -362,7 +364,7 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                 {
                    plasma_complex64_t *akk = NULL;
                    int k1 = 1+(k+1)*A.nb;
-                   int k2 = imin(mlkk ,mvak)+(k+1)*A.nb;
+                   int k2 = imin(mlkk, mvak)+(k+1)*A.nb;
                    int mlkn = (A.mt-k-1)*A.mb;
                    int nlkn = plasma_tile_nmain(A, n-1);
                    akk = L(k+1, n);
@@ -376,10 +378,6 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                         }
                     }
                 }
-                // -- symmetrically apply pivoting to trailing A -- //
-                core_omp_zlaswp_sym(PlasmaLower,
-                                    A, (k+1)*A.mb+1, (k+1)*A.mb+imin(mlkk, mvak), ipiv, 1,
-                                    sequence, request);
 
                 // ================================== //
                 // ==  end of PLASMA recursive LU  == //
@@ -420,7 +418,12 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                         T(k, k+1), ldtk,
                         sequence, request);
 
-                // synch for pivot to finish before the next update
+                // -- symmetrically apply pivoting to trailing A -- //
+                // TODO: calling core routine for now.
+                core_zlaswp_sym(PlasmaLower,
+                                A, (k+1)*A.mb+1, (k+1)*A.mb+imin(mlkk, mvak), ipiv, 1);
+
+                // synch the row-swap of previous column before the next update
                 #pragma omp taskwait
             }
         }
@@ -429,46 +432,6 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
     // PlasmaUpper
     //==============
     else {
-        for (int k = 0; k < A.nt; k++) {
-            int nvak = plasma_tile_nview(A, k);
-            int ldak = plasma_tile_mmain(A, k);
-            core_omp_zpotrf(
-                PlasmaUpper, nvak,
-                A(k, k), ldak,
-                A.nb*k,
-                sequence, request);
-
-            for (int m = k+1; m < A.nt; m++) {
-                int nvam = plasma_tile_nview(A, m);
-                core_omp_ztrsm(
-                    PlasmaLeft, PlasmaUpper,
-                    PlasmaConjTrans, PlasmaNonUnit,
-                    A.nb, nvam,
-                    1.0, A(k, k), ldak,
-                         A(k, m), ldak,
-                    sequence, request);
-            }
-            for (int m = k+1; m < A.nt; m++) {
-                int nvam = plasma_tile_nview(A, m);
-                int ldam = plasma_tile_mmain(A, m);
-                core_omp_zherk(
-                    PlasmaUpper, PlasmaConjTrans,
-                    nvam, A.mb,
-                    -1.0, A(k, m), ldak,
-                     1.0, A(m, m), ldam,
-                    sequence, request);
-
-                for (int n = k+1; n < m; n++) {
-                    int ldan = plasma_tile_mmain(A, n);
-                    core_omp_zgemm(
-                        PlasmaConjTrans, PlasmaNoTrans,
-                        A.mb, nvam, A.mb,
-                        -1.0, A(k, n), ldak,
-                              A(k, m), ldak,
-                         1.0, A(n, m), ldan,
-                        sequence, request);
-                }
-            }
-        }
+        // TODO: Upper
     }
 }
