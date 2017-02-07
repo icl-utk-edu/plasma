@@ -24,9 +24,7 @@
 #include <omp.h>
 
 #define COMPLEX
-
 #define A(i_, j_) A[(i_) + (size_t)lda*(j_)]
-#define T(i_, j_) T[(i_) + (size_t)ldt*(j_)]
 
 /***************************************************************************//**
  *
@@ -176,11 +174,11 @@ void test_zhetrf_aa(param_value_t param[], char *info)
         // set up right-hand-side B = A*rand
         retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*nrhs, X);
         assert(retval == 0);
-        cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans,
-                    n, nrhs, n,
-                    CBLAS_SADDR(zone),  Aref, lda,
-                                        X, ldx,
-                    CBLAS_SADDR(zzero), B, ldb);
+        plasma_zgemm(PlasmaNoTrans, PlasmaNoTrans,
+                     n, nrhs, n,
+                     zone,  Aref, lda,
+                               X, ldx,
+                     zzero,    B, ldb);
 
         // copy B to X
         LAPACKE_zlacpy_work(
@@ -192,11 +190,11 @@ void test_zhetrf_aa(param_value_t param[], char *info)
         if (iinfo != 0) printf( " zhetrs_aa failed, info = %d\n", iinfo );
 
         // compute residual vector
-        cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans,
-                    n, nrhs, n,
-                    CBLAS_SADDR(zmone), Aref, lda,
-                                        X, ldx,
-                    CBLAS_SADDR(zone),  B, ldb);
+        plasma_zgemm(PlasmaNoTrans, PlasmaNoTrans,
+                     n, nrhs, n,
+                     zmone, Aref, lda,
+                               X, ldx,
+                     zone,     B, ldb);
 
         // compute various norms
         double *work = NULL;

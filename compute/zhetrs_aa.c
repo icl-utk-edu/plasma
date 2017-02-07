@@ -22,7 +22,7 @@
  *
  * @ingroup plasma_hetrs_aa
  *
- *  Solves a system of linear equations A * X = B with triangular factorization
+ *  Solves a system of linear equations A * X = B with LTLt factorization
  *  computed by plasma_zhetrf_aa.
  *
  *******************************************************************************
@@ -31,6 +31,7 @@
  *          - PlasmaNoTrans:   A is not transposed,
  *          - PlasmaTrans:     A is transposed,
  *          - PlasmaConjTrans: A is conjugate transposed.
+ *            TODO: only supports NoTrans for now
  *
  * @param[in] n
  *          The order of the matrix A. n >= 0.
@@ -40,15 +41,26 @@
  *          columns of the matrix B. nrhs >= 0.
  *
  * @param[in,out] A
- *          Details of the LU factorization of the band matrix A, as
- *          computed by plasma_zhetrf_aa.
+ *          Details of the LTL factorization of the Hermitian matrix A,
+ *          as computed by plasma_zhetrf_aa.
  *
  * @param[in] lda
  *          The leading dimension of the array A.
  *
+ * @param[in,out] T
+ *          Details of the LU factorization of the band matrix A, as
+ *          computed by plasma_zgbtrf.
+ *
+ * @param[in] ldt
+ *          The leading dimension of the array T.
+ *
  * @param[in] ipiv
- *          The pivot indices; for 1 <= i <= min(m,n), row i of the
- *          matrix was interchanged with row ipiv(i).
+ *          The pivot indices used for zhetrf; for 1 <= i <= min(m,n),
+ *          row i of the matrix was interchanged with row ipiv(i).
+ *
+ * @param[in] ipiv2
+ *          The pivot indices used for zgbtrf; for 1 <= i <= min(m,n),
+ *          row i of the matrix was interchanged with row ipiv(i).
  *
  * @param[in,out] B
  *          On entry, the n-by-nrhs right hand side matrix B.
@@ -166,10 +178,18 @@ int plasma_zhetrs_aa(plasma_enum_t trans, int n, int nrhs,
         plasma_omp_zge2desc(pA, lda, A, sequence, &request);
         plasma_omp_zpb2desc(pT, ldt, T, sequence, &request);
         plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
+    }
 
+    #pragma omp parallel
+    #pragma omp master
+    {
         // Call the tile async function.
         plasma_omp_zhetrs_aa(trans, A, ipiv, T, ipiv2, B, sequence, &request);
+    }
 
+    #pragma omp parallel
+    #pragma omp master
+    {
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(B, pB, ldb, sequence, &request);
     }
@@ -300,7 +320,6 @@ void plasma_omp_zhetrs_aa(plasma_enum_t trans,
                                   B.nb, 0,
                                   B.m-B.nb, B.n);
 
-            #pragma omp taskwait // sync after layer translation
             plasma_pzlaswp(PlasmaRowwise, B, ipiv, 1, sequence, request);
             #pragma omp taskwait
             plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
@@ -330,21 +349,9 @@ void plasma_omp_zhetrs_aa(plasma_enum_t trans,
                           sequence, request);
             #pragma omp taskwait
             plasma_pzlaswp(PlasmaRowwise, B, ipiv, -1, sequence, request);
-            #pragma omp taskwait // sync before layout translation
         }
     }
     else {
-        /*plasma_pztbsm(PlasmaLeft, PlasmaUpper, trans,
-                      PlasmaNonUnit,
-                      1.0, A,
-                           B,
-                      ipiv,
-                      sequence, request);
-        plasma_pztbsm(PlasmaLeft, PlasmaLower, trans,
-                      PlasmaUnit,
-                      1.0, A,
-                           B,
-                      ipiv,
-                      sequence, request);*/
+        // TODO: transpose solve
     }
 }

@@ -378,7 +378,6 @@ void plasma_pzhetrf_aa(plasma_enum_t uplo,
                         }
                     }
                 }
-
                 // ================================== //
                 // ==  end of PLASMA recursive LU  == //
                 // ================================== //

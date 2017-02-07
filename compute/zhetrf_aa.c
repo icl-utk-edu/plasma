@@ -26,7 +26,7 @@
  * @ingroup plasma_hetrf_aa
  *
  *  Factorize a Hermitian matrix A using a 'communication avoiding' Aasen's
- *  algorithm. The factorization has the form
+ *  algorithm, followed by band LU factorization. The factorization has the form
  *
  *    \f[ A = P \times L \times T \times L^H \times P^H, \f]
  *    or
@@ -40,6 +40,7 @@
  * @param[in] uplo
  *          - PlasmaUpper: Upper triangle of A is stored;
  *          - PlasmaLower: Lower triangle of A is stored.
+ *            TODO: only support Lower for now
  *
  * @param[in] n
  *          The order of the matrix A. n >= 0.
@@ -52,22 +53,25 @@
  *          If uplo = PlasmaLower, the leading N-by-N lower triangular part of A
  *          contains the lower triangular part of the matrix A, and the strictly
  *          upper triangular part of A is not referenced.
- *          On exit, if return value = 0, the factor U or L from the Cholesky
+ *          On exit, if return value = 0, the factor U or L from the Aasen's
  *          factorization A = (P*U^H)*T*(P*U^H)^H or A = (P*L)*T*(P*L)^H.
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,n).
  *
  * @param[out] pT
- *          On exit, if return value = 0, the band matrix T of the factorization
- *          factorization A = (P*U^H)*T*(P*U^H)^H or A = (P*L)*T*(P*L)^H.
+ *          On exit, if return value = 0, the LU factors of the band matrix T.
  *
  * @param[in] ldt
  *          The leading dimension of the array T.
  *
  * @param[out] ipiv
- *          The pivot indices; for 1 <= i <= min(m,n), row and column i of the
- *          matrix was interchanged with row and column ipiv(i).
+ *          The pivot indices used by the Aasen's algorithm; for 1 <= i <= min(m,n),
+ *          row and column i of the matrix was interchanged with row and column ipiv(i).
+ *
+ * @param[out] ipiv2
+ *          The pivot indices used by the band LU; for 1 <= i <= min(m,n),
+ *          row and column i of the matrix was interchanged with row and column ipiv(i).
  *
  *******************************************************************************
  *
