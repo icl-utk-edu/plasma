@@ -16,72 +16,53 @@
 
 /***************************************************************************//**
  *
- * @ingroup core_trsm
+ * @ingroup core_hegst
  *
- *  Solves one of the matrix equations
+ *  Reduces a complex Hermitian-definite generalized eigenproblem to standard
+ *  form.
  *
- *    \f[ op( A )\times X  = \alpha B, \f] or
- *    \f[ X \times op( A ) = \alpha B, \f]
+ *  If ITYPE = 1, the problem is A*x = lambda*B*x,
+ *  and A is overwritten by inv(U^H)*A*inv(U) or inv(L)*A*inv(L^H)
  *
- *  where op( A ) is one of:
- *    \f[ op( A ) = A,   \f]
- *    \f[ op( A ) = A^T, \f]
- *    \f[ op( A ) = A^H, \f]
- *
- *  alpha is a scalar, X and B are m-by-n matrices, and
- *  A is a unit or non-unit, upper or lower triangular matrix.
- *  The matrix X overwrites B.
+ *  If ITYPE = 2 or 3, the problem is A*B*x = lambda*x or
+ *  B*A*x = lambda*x, and A is overwritten by U*A*U^H or L^H*A*L.
  *
  *******************************************************************************
  *
- * @param[in] side
- *          - PlasmaLeft:  op(A)*X = B,
- *          - PlasmaRight: X*op(A) = B.
+ * @param[in] itype
+ *          = 1: compute inv(U^H)*A*inv(U) or inv(L)*A*inv(L^H);
+ *          = 2 or 3: compute U*A*U^H or L^H*A*L.
  *
  * @param[in] uplo
- *          - PlasmaUpper: A is upper triangular,
- *          - PlasmaLower: A is lower triangular.
- *
- * @param[in] transa
- *          - PlasmaNoTrans:   A is not transposed,
- *          - PlasmaTrans:     A is transposed,
- *          - PlasmaConjTrans: A is conjugate transposed.
- *
- * @param[in] diag
- *          - PlasmaNonUnit: A has non-unit diagonal,
- *          - PlasmaUnit:    A has unit diagonal.
- *
- * @param[in] m
- *          The number of rows of the matrix B. m >= 0.
+ *          If PlasmaUpper, upper triangle of A is stored and B is factored as
+ *          U^H*U;
+ *          If PlasmaLower, lower triangle of A is stored and B is factored as
+ *          L*L^H.
  *
  * @param[in] n
- *          The number of columns of the matrix B. n >= 0.
+ *          The order of the matrices A and B.  N >= 0.
  *
- * @param[in] alpha
- *          The scalar alpha.
+ * @param[in,out] A
+ *          On entry, the Hermitian matrix A.  If UPLO = 'U', the leading
+ *          N-by-N upper triangular part of A contains the upper
+ *          triangular part of the matrix A, and the strictly lower
+ *          triangular part of A is not referenced.  If UPLO = 'L', the
+ *          leading N-by-N lower triangular part of A contains the lower
+ *          triangular part of the matrix A, and the strictly upper
+ *          triangular part of A is not referenced.
  *
- * @param[in] A
- *          The lda-by-ka triangular matrix,
- *          where ka = m if side = PlasmaLeft,
- *            and ka = n if side = PlasmaRight.
- *          If uplo = PlasmaUpper, the leading k-by-k upper triangular part
- *          of the array A contains the upper triangular matrix, and the
- *          strictly lower triangular part of A is not referenced.
- *          If uplo = PlasmaLower, the leading k-by-k lower triangular part
- *          of the array A contains the lower triangular matrix, and the
- *          strictly upper triangular part of A is not referenced.
- *          If diag = PlasmaUnit, the diagonal elements of A are also not
- *          referenced and are assumed to be 1.
+ *          On exit, if INFO = 0, the transformed matrix, stored in the
+ *          same format as A.
  *
  * @param[in] lda
- *          The leading dimension of the array A. lda >= max(1,k).
+ *          The leading dimension of the array A.  LDA >= max(1,N).
  *
  * @param[in,out] B
- *          On entry, the ldb-by-n right hand side matrix B.
- *          On exit, if return value = 0, the ldb-by-n solution matrix X.
+ *          The triangular factor from the Cholesky factorization of B,
+ *          as returned by ZPOTRF.
  *
  * @param[in] ldb
- *          The leading dimension of the array B. ldb >= max(1,m).
+ *          The leading dimension of the array B.  LDB >= max(1,N).
  *
  ******************************************************************************/
 int core_zhegst(int itype, plasma_enum_t uplo,
