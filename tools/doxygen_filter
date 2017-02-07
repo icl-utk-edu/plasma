@@ -1,0 +1,10 @@
+#!/usr/bin/perl -0777 -p
+#
+# Used as INPUT_FILTER in Doxyfile to strip out:
+#    @generated
+#    @precisions
+# from PLASMA docs, as doxygen yields warnings and they end up in the docs.
+#
+# -0777 slurps whole files; see 'man perlrun'
+
+s/\@(generated|precisions).*//g;

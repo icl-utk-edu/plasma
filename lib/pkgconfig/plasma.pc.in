@@ -1,0 +1,13 @@
+prefix=@INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: plasma
+Description: Parallel Linear Algebra Software for Multicore Architectures
+Version: 3.0.0
+Cflags: -I${includedir} @CFLAGS@
+Libs: -L${libdir} -lplasma -lcoreblas @LIBS@
+Libs.private:
+Requires: @REQUIRES@
+Requires.private:
