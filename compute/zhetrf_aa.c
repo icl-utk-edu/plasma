@@ -98,9 +98,9 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
     }
 
     // Check input arguments.
-    if ((uplo != PlasmaUpper) &&
+    if (//(uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
-        plasma_error("illegal value of uplo");
+        plasma_error("illegal value of uplo (Upper not supported, yet)");
         return -1;
     }
     if (n < 0) {
@@ -291,9 +291,9 @@ void plasma_omp_zhetrf_aa(plasma_enum_t uplo,
     }
 
     // Check input arguments.
-    if ((uplo != PlasmaUpper) &&
+    if (//(uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
-        plasma_error("illegal value of uplo");
+        plasma_error("illegal value of uplo (Upper not supported, yet)");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }

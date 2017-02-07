@@ -133,14 +133,6 @@ void test_zhetrf_aa(param_value_t param[], char *info)
         }
     }
 
-/*printf( " A:\n" );
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < n; ++j) {
-            printf( "%.2e ",A(i,j) );
-        }
-        printf( "\n" );
-    }*/
-
     plasma_complex64_t *Aref = NULL;
     if (test) {
         Aref = (plasma_complex64_t*)malloc(
@@ -154,25 +146,9 @@ void test_zhetrf_aa(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    plasma_zhetrf_aa(uplo, n, A, lda, ipiv, T, ldt, ipiv2);
+    int plainfo = plasma_zhetrf_aa(uplo, n, A, lda, ipiv, T, ldt, ipiv2);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
-/*printf( " L:\n" );
-    for (int i = 0; i < n; ++i) printf( "%d ",ipiv[i] );
-    printf( "\n" );
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < n; ++j) {
-            printf( "%.2e ",A(i,j) );
-        }
-        printf( "\n" );
-    }*/
-/*printf( " T:\n" );
-    for (int i = 0; i < ldt; ++i) {
-        for (int j = 0; j < n; ++j) {
-            printf( "%.2e ",T(i,j) );
-        }
-        printf( "\n" );
-    }*/
 
     param[PARAM_TIME].d = time;
     param[PARAM_GFLOPS].d = flops_zpotrf(n) / time / 1e9;
@@ -180,7 +156,7 @@ void test_zhetrf_aa(param_value_t param[], char *info)
     //================================================================
     // Test results by comparing to a reference implementation.
     //================================================================
-    if (test) {
+    if (test && plainfo == 0) {
         plasma_complex64_t zzero =  0.0;
         plasma_complex64_t zone  =  1.0;
         plasma_complex64_t zmone = -1.0;
