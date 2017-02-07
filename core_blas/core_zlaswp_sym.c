@@ -34,10 +34,26 @@
  * @param[in] A
  *          The matrix to be pivoted.
  *
+ * @param[in] k1
+ *          The first element of IPIV for which a row interchange will
+ *          be done.
  *
+ * @param[in] k2
+ *          The last element of IPIV for which a row interchange will
+ *          be done.
+ *
+ * @param[in] ipiv
+ *          The vector of pivot indices.  Only the elements in positions
+ *          K1 through K2 of IPIV are accessed.
+ *          IPIV(K) = L implies rows K and L are to be interchanged.
+ *
+ * @param[in] incx
+ *          The increment between successive values of IPIV.  If IPIV
+ *          is negative, the pivots are applied in reverse order.
  *
  ******************************************************************************/
-void core_zlaswp_sym(int uplo, plasma_desc_t A, int k1, int k2, const int *ipiv, int incx)
+void core_zlaswp_sym(int uplo, plasma_desc_t A, int k1, int k2, const int *ipiv,
+                     int incx)
 {
     if (uplo == PlasmaLower) {
         if (incx > 0) {
@@ -84,7 +100,7 @@ void core_zlaswp_sym(int uplo, plasma_desc_t A, int k1, int k2, const int *ipiv,
                                     A(k, m2) + i2*ldak, 1);
                     }
 
-                    // sym swap 
+                    // sym swap
                     mvam = plasma_tile_mview(A, m1);
                     if (imin(mvam,p2-(k1-1)) > i1+1) {
                         #ifdef COMPLEX
@@ -114,7 +130,6 @@ void core_zlaswp_sym(int uplo, plasma_desc_t A, int k1, int k2, const int *ipiv,
                     cblas_zswap(1,
                                 A(m1, m1) + i1 + i1*lda1, lda1,
                                 A(m2, m2) + i2 + i2*lda2, lda2);
-
                 }
             }
         }
