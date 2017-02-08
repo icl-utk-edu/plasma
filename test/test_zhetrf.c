@@ -154,10 +154,6 @@ void test_zhetrf(param_value_t param[], char *info)
     // Test results by comparing to a reference implementation.
     //================================================================
     if (test && plainfo == 0) {
-        plasma_complex64_t zzero =  0.0;
-        plasma_complex64_t zone  =  1.0;
-        plasma_complex64_t zmone = -1.0;
-
         // compute the residual norm ||A-bx||
         int nrhs = param[PARAM_NRHS].i;
         int ldb = imax(1, n + param[PARAM_PADB].i);
@@ -175,9 +171,9 @@ void test_zhetrf(param_value_t param[], char *info)
         assert(retval == 0);
         plasma_zgemm(PlasmaNoTrans, PlasmaNoTrans,
                      n, nrhs, n,
-                     zone,  Aref, lda,
-                               X, ldx,
-                     zzero,    B, ldb);
+                     1.0, Aref, lda,
+                             X, ldx,
+                     0.0,    B, ldb);
 
         // copy B to X
         LAPACKE_zlacpy_work(
@@ -191,9 +187,9 @@ void test_zhetrf(param_value_t param[], char *info)
         // compute residual vector
         plasma_zgemm(PlasmaNoTrans, PlasmaNoTrans,
                      n, nrhs, n,
-                     zmone, Aref, lda,
-                               X, ldx,
-                     zone,     B, ldb);
+                     -1.0, Aref, lda,
+                              X, ldx,
+                      1.0,    B, ldb);
 
         // compute various norms
         double *work = NULL;

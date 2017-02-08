@@ -48,10 +48,6 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
     if (sequence->status != PlasmaSuccess)
         return;
 
-    plasma_complex64_t zzero =  0.0;
-    plasma_complex64_t zone  =  1.0;
-    plasma_complex64_t zmone = -1.0;
-
     // Read parameters from the context.
     plasma_context_t *plasma = plasma_context_self();
     plasma_barrier_t *barrier = &plasma->barrier;
@@ -76,17 +72,17 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                 core_omp_zgemm(
                     PlasmaNoTrans, PlasmaConjTrans,
                     mvam, mvak, mvam,
-                    zone,  T(m, m), ldtm,
-                           L(k, m), ldak,
-                    zzero, H(m, k), A.mb,
+                    1.0, T(m, m), ldtm,
+                         L(k, m), ldak,
+                    0.0, H(m, k), A.mb,
                     sequence, request);
                 if (m > 1) {
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaConjTrans,
                         mvam, mvak, A.mb,
-                        zone,  T(m, m-1), ldtm,
-                               L(k, m-1), ldak,
-                        zone,  H(m, k),   A.mb,
+                        1.0, T(m, m-1), ldtm,
+                             L(k, m-1), ldak,
+                        1.0, H(m, k),   A.mb,
                         sequence, request);
                 }
                 int mvamp1 = plasma_tile_mview(A, m+1);
@@ -94,9 +90,9 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                 core_omp_zgemm(
                     PlasmaConjTrans, PlasmaConjTrans,
                     mvam, mvak, mvamp1,
-                    zone,  T(m+1, m), ldtmp1,
-                           L(k, m+1), ldak,
-                    zone,  H(m, k),   A.mb,
+                    1.0, T(m+1, m), ldtmp1,
+                         L(k, m+1), ldak,
+                    1.0, H(m, k),   A.mb,
                     sequence, request);
             }
             // ---- end of computing H(1:(k-1),k) -- //
@@ -109,16 +105,16 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                     int mvam = plasma_tile_mview(A, m);
                     int id = (m-1) % num;
                     if (m < num+1)
-                        beta = zzero;
+                        beta = 0.0;
                     else
-                        beta = zone;
+                        beta = 1.0;
 
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaNoTrans,
                         mvak, mvak, mvam,
-                        zmone, L(k, m), ldak,
-                               H(m, k), A.mb,
-                        beta,  W3(id),  A.mb,
+                        -1.0, L(k, m), ldak,
+                              H(m, k), A.mb,
+                        beta, W3(id),  A.mb,
                         sequence, request);
                 }
                 // all-reduce W3 using a binary tree                          //
@@ -135,8 +131,8 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                         int m2 = m1+base/2;
                         core_omp_zgeadd(
                             PlasmaNoTrans, mvak, mvak,
-                            zone, W3(m2), A.mb,
-                            zone, W3(m1), A.mb,
+                            1.0, W3(m2), A.mb,
+                            1.0, W3(m1), A.mb,
                             sequence, request);
                     }
                     num_players = ceil( ((double)num_players)/2.0 );
@@ -150,8 +146,8 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                     sequence, request);
                 core_omp_zgeadd(
                     PlasmaNoTrans, mvak, mvak,
-                    zone, W3(0), A.mb,
-                    zone, T(k, k), ldtk,
+                    1.0, W3(0), A.mb,
+                    1.0, T(k, k), ldtk,
                     sequence, request);
             }
             else { // k == 0 or 1
@@ -175,16 +171,16 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaNoTrans,
                         mvak, A.mb, mvak,
-                        zone,  L(k, k),   ldak,
-                               T(k, k-1), ldtk,
-                        zzero, W(0), A.mb,
+                        1.0, L(k, k),   ldak,
+                             T(k, k-1), ldtk,
+                        0.0, W(0), A.mb,
                         sequence, request);
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaConjTrans,
                         mvak, mvak, A.mb,
-                        zmone, W(0), A.mb,
-                               L(k, k-1), ldak,
-                        zone,  T(k, k), ldtk,
+                        -1.0, W(0), A.mb,
+                              L(k, k-1), ldak,
+                         1.0, T(k, k), ldtk,
                         sequence, request);
                 }
 
@@ -204,16 +200,16 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
             }
 
             // computing H(k, k) //
-            beta = zzero;
+            beta = 0.0;
             if (k > 1) {
                 core_omp_zgemm(
                     PlasmaNoTrans, PlasmaConjTrans,
                     mvak, mvak, A.nb,
-                    zone,  T(k, k-1), ldtk,
-                           L(k, k-1), ldak,
-                    zzero, H(k, k), A.mb,
+                    1.0, T(k, k-1), ldtk,
+                         L(k, k-1), ldak,
+                    0.0, H(k, k), A.mb,
                     sequence, request);
-                beta = zone;
+                beta = 1.0;
             }
 
             if (k+1 < A.nt) {
@@ -222,7 +218,7 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                     core_omp_zgemm(
                         PlasmaNoTrans, PlasmaConjTrans,
                         mvak, mvak, mvak,
-                        zone, T(k, k), ldtk,
+                        1.0,  T(k, k), ldtk,
                               L(k, k), ldak,
                         beta, H(k, k), A.mb,
                         sequence, request);
@@ -239,26 +235,26 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
 
                                 int id = (m-k-1)*num+(n-1)%num;
                                 if (n < num+1)
-                                    beta = zzero;
+                                    beta = 0.0;
                                 else
-                                    beta = zone;
+                                    beta = 1.0;
 
                                 if (n < num+1 || n > k-num) {
                                     core_omp_zgemm(
                                         PlasmaNoTrans, PlasmaNoTrans,
                                         mvam, mvak, mvan,
-                                        zmone, L(m, n), ldam,
-                                               H(n, k), A.mb,
-                                        beta,  W4(id),  A.mb,
+                                        -1.0, L(m, n), ldam,
+                                              H(n, k), A.mb,
+                                        beta, W4(id),  A.mb,
                                         sequence, request);
                                 }
                                 else {
                                     core_omp_zgemm(
                                         PlasmaNoTrans, PlasmaNoTrans,
                                         mvam, mvak, mvan,
-                                        zmone, L(m, n), ldam,
-                                               H(n, k), A.mb,
-                                        beta,  W4(id),  A.mb,
+                                        -1.0, L(m, n), ldam,
+                                              H(n, k), A.mb,
+                                        beta, W4(id),  A.mb,
                                         sequence, request);
                                 }
                             }
@@ -279,8 +275,8 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                                     int mvam = plasma_tile_mview(A, m);
                                     core_omp_zgeadd(
                                         PlasmaNoTrans, mvam, mvak,
-                                        zone, W4((m-k-1)*num+m2), A.mb,
-                                        zone, W4((m-k-1)*num+m1), A.mb,
+                                        1.0, W4((m-k-1)*num+m2), A.mb,
+                                        1.0, W4((m-k-1)*num+m1), A.mb,
                                         sequence, request);
                                 }
                             }
@@ -293,8 +289,8 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                             int ldam = plasma_tile_mmain(A, m);
                             core_omp_zgeadd(
                                 PlasmaNoTrans, mvam, mvak,
-                                zone, W4((m-k-1)*num), A.mb,
-                                zone, L(m, k+1), ldam,
+                                1.0, W4((m-k-1)*num), A.mb,
+                                1.0, L(m, k+1), ldam,
                                 sequence, request);
                         }
                     }
@@ -307,9 +303,9 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                                 core_omp_zgemm(
                                     PlasmaNoTrans, PlasmaNoTrans,
                                     mvam, mvak, mvan,
-                                    zmone, L(m, n), ldam,
-                                           H(n, k), A.mb,
-                                    zone,  L(m, k+1), ldam,
+                                    -1.0, L(m, n), ldam,
+                                          H(n, k), A.mb,
+                                     1.0, L(m, k+1), ldam,
                                     sequence, request);
                             }
                         }
@@ -398,15 +394,15 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                         PlasmaUpper,
                         ldakp1, ldak_n, 0, 0,
                         mvakp1, mvak,
-                        zzero, zone,
+                        0.0, 1.0,
                         L(k+1, k+1));
                 if (k > 0) {
                     core_omp_ztrsm(
                         PlasmaRight, PlasmaLower,
                         PlasmaConjTrans, PlasmaUnit,
                         mvakp1, mvak,
-                        zone, L(k,   k), ldak,
-                              T(k+1, k), ldtkp1,
+                        1.0, L(k,   k), ldak,
+                             T(k+1, k), ldtkp1,
                         sequence, request);
                 }
                 // copy T(k+1, k) to T(k, k+1) for zgbtrf
