@@ -127,10 +127,10 @@ struct routines_t routines[] =
     { "cherk", test_cherk },
     { "", NULL },
 
-    { "zhetrf_aa", test_zhetrf_aa },
-    { "dsytrf_aa", test_dsytrf_aa },
-    { "chetrf_aa", test_chetrf_aa },
-    { "ssytrf_aa", test_ssytrf_aa },
+    { "zhetrf", test_zhetrf },
+    { "dsytrf", test_dsytrf },
+    { "chetrf", test_chetrf },
+    { "ssytrf", test_ssytrf },
 
     { "zlacpy", test_zlacpy },
     { "dlacpy", test_dlacpy },

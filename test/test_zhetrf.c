@@ -37,7 +37,7 @@
  * If param is non-NULL and info is non-NULL, set info to column values
  * and run test.
  ******************************************************************************/
-void test_zhetrf_aa(param_value_t param[], char *info)
+void test_zhetrf(param_value_t param[], char *info)
 {
     //================================================================
     // Print usage info or return column labels or values.
@@ -143,7 +143,7 @@ void test_zhetrf_aa(param_value_t param[], char *info)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    int plainfo = plasma_zhetrf_aa(uplo, n, A, lda, ipiv, T, ldt, ipiv2);
+    int plainfo = plasma_zhetrf(uplo, n, A, lda, ipiv, T, ldt, ipiv2);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
@@ -184,9 +184,9 @@ void test_zhetrf_aa(param_value_t param[], char *info)
             LAPACK_COL_MAJOR, 'F', n, nrhs, B, ldb, X, ldx);
 
         // solve for X
-        int iinfo = plasma_zhetrs_aa(
+        int iinfo = plasma_zhetrs(
             PlasmaNoTrans, n, nrhs, A, lda, ipiv, T, ldt, ipiv2, X, ldx);
-        if (iinfo != 0) printf( " zhetrs_aa failed, info = %d\n", iinfo );
+        if (iinfo != 0) printf( " zhetrs failed, info = %d\n", iinfo );
 
         // compute residual vector
         plasma_zgemm(PlasmaNoTrans, PlasmaNoTrans,

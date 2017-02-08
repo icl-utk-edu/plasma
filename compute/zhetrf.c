@@ -23,7 +23,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup plasma_hetrf_aa
+ * @ingroup plasma_hetrf
  *
  *  Factorize a Hermitian matrix A using a 'communication avoiding' Aasen's
  *  algorithm, followed by band LU factorization. The factorization has the form
@@ -83,16 +83,16 @@
  *
  *******************************************************************************
  *
- * @sa plasma_omp_zhetrf_aa
- * @sa plasma_chetrf_aa
- * @sa plasma_dhetrf_aa
- * @sa plasma_shetrf_aa
+ * @sa plasma_omp_zhetrf
+ * @sa plasma_chetrf
+ * @sa plasma_dhetrf
+ * @sa plasma_shetrf
  *
  ******************************************************************************/
-int plasma_zhetrf_aa(plasma_enum_t uplo,
-                     int n,
-                     plasma_complex64_t *pA, int lda, int *ipiv,
-                     plasma_complex64_t *pT, int ldt, int *ipiv2)
+int plasma_zhetrf(plasma_enum_t uplo,
+                  int n,
+                  plasma_complex64_t *pA, int lda, int *ipiv,
+                  plasma_complex64_t *pT, int ldt, int *ipiv2)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -183,7 +183,7 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
     {
         // Call the tile async function to compute LTL^H factor of A,
         // where T is a band matrix
-        plasma_omp_zhetrf_aa(uplo, A, ipiv, T, W, sequence, &request);
+        plasma_omp_zhetrf(uplo, A, ipiv, T, W, sequence, &request);
     }
     //double time_zhetrf = omp_get_wtime()-start;
 
@@ -220,10 +220,10 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
 
 /***************************************************************************//**
  *
- * @ingroup plasma_hetrf_aa
+ * @ingroup plasma_hetrf
  *
  *  Factorize a Hermitian matrix.
- *  Non-blocking tile version of plasma_zhetrf_aa().
+ *  Non-blocking tile version of plasma_zhetrf().
  *  May return before the computation is finished.
  *  Operates on matrices stored by tiles.
  *  All matrices are passed through descriptors.
@@ -272,19 +272,19 @@ int plasma_zhetrf_aa(plasma_enum_t uplo,
  *
  *******************************************************************************
  *
- * @sa plasma_zhetrf_aa
- * @sa plasma_omp_zhetrf_aa
- * @sa plasma_omp_chetrf_aa
- * @sa plasma_omp_dhetrf_aa
- * @sa plasma_omp_shetrf_aa
+ * @sa plasma_zhetrf
+ * @sa plasma_omp_zhetrf
+ * @sa plasma_omp_chetrf
+ * @sa plasma_omp_dhetrf
+ * @sa plasma_omp_shetrf
  *
  ******************************************************************************/
-void plasma_omp_zhetrf_aa(plasma_enum_t uplo,
-                          plasma_desc_t A, int *ipiv,
-                          plasma_desc_t T,
-                          plasma_desc_t W,
-                          plasma_sequence_t *sequence,
-                          plasma_request_t *request)
+void plasma_omp_zhetrf(plasma_enum_t uplo,
+                       plasma_desc_t A, int *ipiv,
+                       plasma_desc_t T,
+                       plasma_desc_t W,
+                       plasma_sequence_t *sequence,
+                       plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -322,5 +322,5 @@ void plasma_omp_zhetrf_aa(plasma_enum_t uplo,
         return;
 
     // Call the parallel function.
-    plasma_pzhetrf_aa(uplo, A, ipiv, T, W, sequence, request);
+    plasma_pzhetrf_aasen(uplo, A, ipiv, T, W, sequence, request);
 }

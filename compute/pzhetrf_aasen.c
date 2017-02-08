@@ -37,12 +37,12 @@
  * @see plasma_omp_zhetrf_aa
  * TODO: Use nested-parallelisation to remove synchronization points?
  ******************************************************************************/
-void plasma_pzhetrf_aa(plasma_enum_t uplo,
-                       plasma_desc_t A, int *ipiv,
-                       plasma_desc_t T,
-                       plasma_desc_t W,
-                       plasma_sequence_t *sequence,
-                       plasma_request_t *request)
+void plasma_pzhetrf_aasen(plasma_enum_t uplo,
+                          plasma_desc_t A, int *ipiv,
+                          plasma_desc_t T,
+                          plasma_desc_t W,
+                          plasma_sequence_t *sequence,
+                          plasma_request_t *request)
 {
     // Return if failed sequence.
     if (sequence->status != PlasmaSuccess)

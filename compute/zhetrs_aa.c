@@ -20,10 +20,10 @@
 
 /***************************************************************************//**
  *
- * @ingroup plasma_hetrs_aa
+ * @ingroup plasma_hetrs
  *
  *  Solves a system of linear equations A * X = B with LTLt factorization
- *  computed by plasma_zhetrf_aa.
+ *  computed by plasma_zhetrf.
  *
  *******************************************************************************
  *
@@ -42,7 +42,7 @@
  *
  * @param[in,out] A
  *          Details of the LTL factorization of the Hermitian matrix A,
- *          as computed by plasma_zhetrf_aa.
+ *          as computed by plasma_zhetrf.
  *
  * @param[in] lda
  *          The leading dimension of the array A.
@@ -76,19 +76,19 @@
  *
  *******************************************************************************
  *
- * @sa plasma_omp_zhetrs_aa
- * @sa plasma_chetrs_aa
- * @sa plasma_dsytrs_aa
- * @sa plasma_ssytrs_aa
- * @sa plasma_zhetrf_aa
+ * @sa plasma_omp_zhetrs
+ * @sa plasma_chetrs
+ * @sa plasma_dsytrs
+ * @sa plasma_ssytrs
+ * @sa plasma_zhetrf
  *
  ******************************************************************************/
-int plasma_zhetrs_aa(plasma_enum_t trans, int n, int nrhs,
-                     plasma_complex64_t *pA, int lda,
-                     int *ipiv,
-                     plasma_complex64_t *pT, int ldt,
-                     int *ipiv2,
-                     plasma_complex64_t *pB,  int ldb)
+int plasma_zhetrs(plasma_enum_t trans, int n, int nrhs,
+                  plasma_complex64_t *pA, int lda,
+                  int *ipiv,
+                  plasma_complex64_t *pT, int ldt,
+                  int *ipiv2,
+                  plasma_complex64_t *pB,  int ldb)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -184,7 +184,7 @@ int plasma_zhetrs_aa(plasma_enum_t trans, int n, int nrhs,
     #pragma omp master
     {
         // Call the tile async function.
-        plasma_omp_zhetrs_aa(trans, A, ipiv, T, ipiv2, B, sequence, &request);
+        plasma_omp_zhetrs(trans, A, ipiv, T, ipiv2, B, sequence, &request);
     }
 
     #pragma omp parallel
@@ -208,11 +208,11 @@ int plasma_zhetrs_aa(plasma_enum_t trans, int n, int nrhs,
 
 /***************************************************************************//**
  *
- * @ingroup plasma_hetrs_aa
+ * @ingroup plasma_hetrs
  *
  *  Solves a system of linear equations using previously
  *  computed factorization.
- *  Non-blocking tile version of plasma_zhetrs_aa().
+ *  Non-blocking tile version of plasma_zhetrs().
  *  May return before the computation is finished.
  *  Operates on matrices stored by tiles.
  *  All matrices are passed through descriptors.
@@ -251,20 +251,20 @@ int plasma_zhetrs_aa(plasma_enum_t trans, int n, int nrhs,
  *
  *******************************************************************************
  *
- * @sa plasma_zhetrs_aa
- * @sa plasma_omp_zhetrs_aa
- * @sa plasma_omp_chetrs_aa
- * @sa plasma_omp_dsytrs_aa
- * @sa plasma_omp_ssytrs_aa
- * @sa plasma_omp_zhetrf_aa
+ * @sa plasma_zhetrs
+ * @sa plasma_omp_zhetrs
+ * @sa plasma_omp_chetrs
+ * @sa plasma_omp_dsytrs
+ * @sa plasma_omp_ssytrs
+ * @sa plasma_omp_zhetrf
  *
  ******************************************************************************/
-void plasma_omp_zhetrs_aa(plasma_enum_t trans,
-                          plasma_desc_t A, int *ipiv,
-                          plasma_desc_t T, int *ipiv2,
-                          plasma_desc_t B,
-                          plasma_sequence_t *sequence,
-                          plasma_request_t *request)
+void plasma_omp_zhetrs(plasma_enum_t trans,
+                       plasma_desc_t A, int *ipiv,
+                       plasma_desc_t T, int *ipiv2,
+                       plasma_desc_t B,
+                       plasma_sequence_t *sequence,
+                       plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
