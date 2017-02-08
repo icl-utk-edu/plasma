@@ -177,7 +177,6 @@ int plasma_zhetrf(plasma_enum_t uplo,
         plasma_omp_zge2desc(pA, lda, A, sequence, &request);
     }
 
-    //double start = omp_get_wtime();
     #pragma omp parallel
     #pragma omp master
     {
@@ -185,18 +184,13 @@ int plasma_zhetrf(plasma_enum_t uplo,
         // where T is a band matrix
         plasma_omp_zhetrf(uplo, A, ipiv, T, W, sequence, &request);
     }
-    //double time_zhetrf = omp_get_wtime()-start;
 
-    //start = omp_get_wtime();
     #pragma omp parallel
     #pragma omp master
     {
         // Call the tile async function to LU factor T
         plasma_omp_zgbtrf(T, ipiv2, sequence, &request);
     }
-    //double time_zgbtrf = omp_get_wtime()-start;
-    //printf( " zhetrf took %.2f seconds, zgbtrf took %.2f seconds (%.1f%%)\n",
-    //        time_zhetrf,time_zgbtrf,100.0*(time_zgbtrf/(time_zhetrf+time_zgbtrf)) );
 
     #pragma omp parallel
     #pragma omp master
