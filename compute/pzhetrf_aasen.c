@@ -344,7 +344,7 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                                                        rank, num_panel_threads,
                                                        barrier);
                                 if (info != 0)
-                                    plasma_request_fail(sequence, request, k*A.mb+info);
+                                    plasma_request_fail(sequence, request, (k+1)*A.mb+info);
                             }
                         }
                     }
