@@ -125,9 +125,9 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                 for (int round = 1; round <= num_rounds; round++) {
                     int num_brackets = num_players / 2; // number of brackets
                     for (int bracket = 0; bracket < num_brackets; bracket++) {
-                        // first contendar
+                        // first contender
                         int m1 = base*bracket;
-                        // second contendar
+                        // second contender
                         int m2 = m1+base/2;
                         core_omp_zgeadd(
                             PlasmaNoTrans, mvak, mvak,
@@ -266,9 +266,9 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                         for (int round = 1; round <= num_rounds; round++) {
                             int num_brackets = num_players / 2; // number of brackets
                             for (int bracket = 0; bracket < num_brackets; bracket++) {
-                                // first contendar
+                                // first contender
                                 int m1 = base*bracket;
-                                // second contendar
+                                // second contender
                                 int m2 = m1+base/2;
 
                                 for (int m = k+1; m < A.mt; m++) {
@@ -312,9 +312,9 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                     }
                 } // end of if (k > 0)
 
-                // =========================== //
-                // ==  PLASMA recursive LU  == //
-                // =========================== //
+                // ============================= //
+                // ==     PLASMA LU panel     == //
+                // ============================= //
                 // -- compute LU of the panel -- //
                 plasma_complex64_t *a00, *a20;
                 a00 = L(k+1, k+1);
@@ -374,9 +374,9 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                         }
                     }
                 }
-                // ================================== //
-                // ==  end of PLASMA recursive LU  == //
-                // ================================== //
+                // ============================== //
+                // ==  end of PLASMA LU panel  == //
+                // ============================== //
 
                 // computing T(k+1, k) //
                 int mvakp1 = plasma_tile_mview(A, k+1);
