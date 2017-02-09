@@ -24,17 +24,17 @@
 #define L(m, n) ((plasma_complex64_t*)plasma_tile_addr(A, (m), (n)-1))
 #define U(m, n) ((plasma_complex64_t*)plasma_tile_addr(A, (m)-1, (n)))
 
-#define W(j)    ((plasma_complex64_t*)plasma_tile_addr(W, (j),   0)) // nb*nb used to compute T(k,k)
-#define W2(j)   ((plasma_complex64_t*)plasma_tile_addr(W, (j)+1, 0)) // mt*(nb*nb) to store H
-#define W3(j)   ((plasma_complex64_t*)plasma_tile_addr(W, (j)+1+A.mt, 0))   // mt*(nb*nb) used to form T(k,k)
-#define W4(j)   ((plasma_complex64_t*)plasma_tile_addr(W, (j)+1+2*A.mt, 0)) // wmt used to update L(:,k)
+#define W(j)    ((plasma_complex64_t*)plasma_tile_addr(W,  (j), 0)) // nb*nb used to compute T(k,k)
+#define W2(j)   ((plasma_complex64_t*)plasma_tile_addr(W2, (j), 0)) // mt*(nb*nb) to store H
+#define W3(j)   ((plasma_complex64_t*)plasma_tile_addr(W3, (j), 0)) // mt*(nb*nb) used to form T(k,k)
+#define W4(j)   ((plasma_complex64_t*)plasma_tile_addr(W4, (j), 0)) // wmt used to update L(:,k)
 
 #define H(m, n) (uplo == PlasmaLower ? W2((m)) : W2((n)))
 #define IPIV(i) (ipiv + (i)*(A.mb))
 
 /***************************************************************************//**
  *  Parallel tile LDLt factorization.
- * @see plasma_omp_zhetrf_aa
+ * @see plasma_omp_zhetrf_aasen
  * TODO: Use nested-parallelisation to remove synchronization points?
  ******************************************************************************/
 void plasma_pzhetrf_aasen(plasma_enum_t uplo,
@@ -54,6 +54,11 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
     int ib = plasma->ib;
     int num_panel_threads = plasma->num_panel_threads;
     int wmt = W.mt-(1+2*A.mt);
+
+    // Creaet views for the workspaces
+    plasma_desc_t W2 = plasma_desc_view(W, A.mb,            0, A.mt*A.mb, A.nb);
+    plasma_desc_t W3 = plasma_desc_view(W, (1+A.mt)*A.mb,   0, A.mt*A.mb, A.nb);
+    plasma_desc_t W4 = plasma_desc_view(W, (1+2*A.mt)*A.mb, 0, wmt,       A.nb);
 
     //==============
     // PlasmaLower
@@ -354,6 +359,9 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                 for (int i = 0; i < imin(mlkk, mvak); i++) {
                     IPIV(k+1)[i] += (k+1)*A.mb;
                 }
+                // ============================== //
+                // ==  end of PLASMA LU panel  == //
+                // ============================== //
 
                 // -- apply pivoting to previous columns of L -- //
                 for (int n = 1; n < k+1; n++)
@@ -374,9 +382,6 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                         }
                     }
                 }
-                // ============================== //
-                // ==  end of PLASMA LU panel  == //
-                // ============================== //
 
                 // computing T(k+1, k) //
                 int mvakp1 = plasma_tile_mview(A, k+1);
