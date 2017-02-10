@@ -193,7 +193,7 @@ void test_zhetrf(param_value_t param[], char *info)
 
             // solve for X
             int iinfo = plasma_zhetrs(
-                PlasmaNoTrans, n, nrhs, A, lda, ipiv, T, ldt, ipiv2, X, ldx);
+                uplo, n, nrhs, A, lda, ipiv, T, ldt, ipiv2, X, ldx);
             if (iinfo != 0) printf( " zhetrs failed, info = %d\n", iinfo );
 
             // compute residual vector

@@ -27,11 +27,10 @@
  *
  *******************************************************************************
  *
- * @param[in] trans
- *          - PlasmaNoTrans:   A is not transposed,
- *          - PlasmaTrans:     A is transposed,
- *          - PlasmaConjTrans: A is conjugate transposed.
- *            TODO: only supports NoTrans for now
+ * @param[in] uplo
+ *          - PlasmaUpper: Upper triangle of A is stored;
+ *          - PlasmaLower: Lower triangle of A is stored.
+ *            TODO: only support Lower for now
  *
  * @param[in] n
  *          The order of the matrix A. n >= 0.
@@ -83,7 +82,7 @@
  * @sa plasma_zhetrf
  *
  ******************************************************************************/
-int plasma_zhetrs(plasma_enum_t trans, int n, int nrhs,
+int plasma_zhetrs(plasma_enum_t uplo, int n, int nrhs,
                   plasma_complex64_t *pA, int lda,
                   int *ipiv,
                   plasma_complex64_t *pT, int ldt,
@@ -98,10 +97,9 @@ int plasma_zhetrs(plasma_enum_t trans, int n, int nrhs,
     }
 
     // Check input arguments.
-    if ((trans != PlasmaNoTrans) &&
-        (trans != PlasmaTrans) &&
-        (trans != PlasmaConjTrans)) {
-        plasma_error("illegal value of trans");
+    if (//(uplo != PlasmaUpper) &&
+        (uplo != PlasmaLower)) {
+        plasma_error("illegal value of uplo (Upper not supported, yet)");
         return -1;
     }
     if (n < 0) {
@@ -184,7 +182,7 @@ int plasma_zhetrs(plasma_enum_t trans, int n, int nrhs,
     #pragma omp master
     {
         // Call the tile async function.
-        plasma_omp_zhetrs(trans, A, ipiv, T, ipiv2, B, sequence, &request);
+        plasma_omp_zhetrs(uplo, A, ipiv, T, ipiv2, B, sequence, &request);
     }
 
     #pragma omp parallel
@@ -221,10 +219,9 @@ int plasma_zhetrs(plasma_enum_t trans, int n, int nrhs,
  *
  *******************************************************************************
  *
- * @param[in] trans
- *          - PlasmaNoTrans:   A is not transposed,
- *          - PlasmaTrans:     A is transposed,
- *          - PlasmaConjTrans: A is conjugate transposed.
+ * @param[in] uplo
+ *          - PlasmaUpper: Upper triangle of A is stored;
+ *          - PlasmaLower: Lower triangle of A is stored.
  *
  * @param[in] A
  *          The triangular factor U or L from the Cholesky factorization
@@ -259,7 +256,7 @@ int plasma_zhetrs(plasma_enum_t trans, int n, int nrhs,
  * @sa plasma_omp_zhetrf
  *
  ******************************************************************************/
-void plasma_omp_zhetrs(plasma_enum_t trans,
+void plasma_omp_zhetrs(plasma_enum_t uplo,
                        plasma_desc_t A, int *ipiv,
                        plasma_desc_t T, int *ipiv2,
                        plasma_desc_t B,
@@ -275,10 +272,9 @@ void plasma_omp_zhetrs(plasma_enum_t trans,
     }
 
     // Check input arguments.
-    if ((trans != PlasmaNoTrans) &&
-        (trans != PlasmaTrans) &&
-        (trans != PlasmaConjTrans)) {
-        plasma_error("illegal value of trans");
+    if (//(uplo != PlasmaUpper) &&
+        (uplo != PlasmaLower)) {
+        plasma_error("illegal value of uplo (Upper not supported, yet)");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
@@ -308,7 +304,7 @@ void plasma_omp_zhetrs(plasma_enum_t trans,
         return;
 
     // Call the parallel functions.
-    if (trans == PlasmaNoTrans) {
+    if (uplo == PlasmaLower) {
         plasma_desc_t vA;
         plasma_desc_t vB;
         // forward-substitution with L
@@ -352,6 +348,6 @@ void plasma_omp_zhetrs(plasma_enum_t trans,
         }
     }
     else {
-        // TODO: transpose solve
+        // TODO: upper
     }
 }
