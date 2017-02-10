@@ -21,17 +21,9 @@
 
 /***************************************************************************//**
  *
- * @ingroup plasma_hetrf
+ * @ingroup plasma_hesv
  *
- *  Factorize a Hermitian matrix A using a 'communication avoiding' Aasen's
- *  algorithm, followed by band LU factorization. The factorization has the form
- *
- *    \f[ A = P \times L \times T \times L^H \times P^H, \f]
- *    or
- *    \f[ A = P \times U^H \times T \times U \times P^H, \f]
- *
- *  where U is a unit-diagonal upper triangular matrix and L is a unit-diagonal
- *  lower triangular matrix, T is a band matrix, and P is a permutation matrix.
+ *  Solves a system of linear equations A * X = B with LTLt factorization.
  *
  *******************************************************************************
  *
@@ -43,54 +35,60 @@
  * @param[in] n
  *          The order of the matrix A. n >= 0.
  *
- * @param[in,out] pA
- *          On entry, the Hermitian matrix A.
- *          If uplo = PlasmaUpper, the leading N-by-N upper triangular part of A
- *          contains the upper triangular part of the matrix A, and the strictly
- *          lower triangular part of A is not referenced.
- *          If uplo = PlasmaLower, the leading N-by-N lower triangular part of A
- *          contains the lower triangular part of the matrix A, and the strictly
- *          upper triangular part of A is not referenced.
- *          On exit, if return value = 0, the factor U or L from the Aasen's
- *          factorization A = (P*U^H)*T*(P*U^H)^H or A = (P*L)*T*(P*L)^H.
+ * @param[in] nrhs
+ *          The number of right hand sides, i.e., the number of
+ *          columns of the matrix B. nrhs >= 0.
+ *
+ * @param[in,out] A
+ *          Details of the LTL factorization of the Hermitian matrix A,
+ *          as computed by plasma_zhetrf.
  *
  * @param[in] lda
- *          The leading dimension of the array A. lda >= max(1,n).
+ *          The leading dimension of the array A.
  *
- * @param[out] pT
- *          On exit, if return value = 0, the LU factors of the band matrix T.
+ * @param[in,out] T
+ *          Details of the LU factorization of the band matrix A, as
+ *          computed by plasma_zgbtrf.
  *
  * @param[in] ldt
  *          The leading dimension of the array T.
  *
- * @param[out] ipiv
- *          The pivot indices used by the Aasen's algorithm; for 1 <= i <= min(m,n),
- *          row and column i of the matrix was interchanged with row and column ipiv(i).
+ * @param[in] ipiv
+ *          The pivot indices used for zhetrf; for 1 <= i <= min(m,n),
+ *          row i of the matrix was interchanged with row ipiv(i).
  *
- * @param[out] ipiv2
- *          The pivot indices used by the band LU; for 1 <= i <= min(m,n),
- *          row and column i of the matrix was interchanged with row and column ipiv(i).
+ * @param[in] ipiv2
+ *          The pivot indices used for zgbtrf; for 1 <= i <= min(m,n),
+ *          row i of the matrix was interchanged with row ipiv(i).
+ *
+ * @param[in,out] B
+ *          On entry, the n-by-nrhs right hand side matrix B.
+ *          On exit, if return value = 0, the n-by-nrhs solution matrix X.
+ *
+ * @param[in] ldb
+ *          The leading dimension of the array B. ldb >= max(1,n).
  *
  *******************************************************************************
  *
  * @retval PlasmaSuccess successful exit
  * @retval  < 0 if -i, the i-th argument had an illegal value
- * @retval  > 0 if i, the leading minor of order i of A is not
- *          positive definite, so the factorization could not
- *          be completed, and the solution has not been computed.
  *
  *******************************************************************************
  *
- * @sa plasma_omp_zhetrf
- * @sa plasma_chetrf
- * @sa plasma_dhetrf
- * @sa plasma_shetrf
+ * @sa plasma_omp_zhesv
+ * @sa plasma_chesv
+ * @sa plasma_dsysv
+ * @sa plasma_ssysv
+ * @sa plasma_zhetrf
+ * @sa plasma_zhetrs
  *
  ******************************************************************************/
-int plasma_zhetrf(plasma_enum_t uplo,
-                  int n,
-                  plasma_complex64_t *pA, int lda, int *ipiv,
-                  plasma_complex64_t *pT, int ldt, int *ipiv2)
+int plasma_zhesv(plasma_enum_t uplo, int n, int nrhs,
+                 plasma_complex64_t *pA, int lda,
+                 int *ipiv,
+                 plasma_complex64_t *pT, int ldt,
+                 int *ipiv2,
+                 plasma_complex64_t *pB,  int ldb)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -109,13 +107,21 @@ int plasma_zhetrf(plasma_enum_t uplo,
         plasma_error("illegal value of n");
         return -2;
     }
+    if (nrhs < 0) {
+        plasma_error("illegal value of nrhs");
+        return -5;
+    }
     if (lda < imax(1, n)) {
         plasma_error("illegal value of lda");
-        return -4;
+        return -7;
+    }
+    if (ldb < imax(1, n)) {
+        plasma_error("illegal value of ldb");
+        return -10;
     }
 
     // quick return
-    if (imax(n, 0) == 0)
+    if (imax(n, nrhs) == 0)
         return PlasmaSuccess;
 
     // Set tiling parameters.
@@ -125,10 +131,15 @@ int plasma_zhetrf(plasma_enum_t uplo,
     int num_panel_threads = plasma->num_panel_threads;
     plasma_barrier_init(&plasma->barrier, num_panel_threads);
 
-    // Create tile matrix.
+    // Initialize tile matrix descriptors.
     plasma_desc_t A;
     plasma_desc_t T;
-    plasma_desc_t W;
+    plasma_desc_t B;
+    int tku = (nb+nb+nb-1)/nb; // number of tiles in upper band (not including diagonal)
+    int tkl = (nb+nb-1)/nb;    // number of tiles in lower band (not including diagonal)
+    int lm  = (tku+tkl+1)*nb;  // since we use zgetrf on panel, we pivot back within panel.
+                               // this could fill the last tile of the panel,
+                               // and we need extra NB space on the bottom
     int retval;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
                                         n, n, 0, 0, n, n, &A);
@@ -136,14 +147,23 @@ int plasma_zhetrf(plasma_enum_t uplo,
         plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
-    // band matrix (general band to prepare for band solve)
-    retval = plasma_desc_general_band_create(PlasmaComplexDouble, PlasmaGeneral, nb, nb,
-                                             ldt, n, 0, 0, n, n, nb, nb, &T);
+    retval = plasma_desc_general_band_create(PlasmaComplexDouble, PlasmaGeneral,
+                                             nb, nb, lm, n, 0, 0, n, n, nb, nb,
+                                             &T);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_band_create() failed");
         return retval;
     }
-    // workspace
+    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
+                                        n, nrhs, 0, 0, n, nrhs, &B);
+    if (retval != PlasmaSuccess) {
+        plasma_error("plasma_desc_general_create() failed");
+        plasma_desc_destroy(&A);
+        return retval;
+    }
+
+    // Create workspace.
+    plasma_desc_t W;
     int ldw = (1+5*A.mt)*nb; /* block column */
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
                                         ldw, nb, 0, 0, ldw, nb, &W);
@@ -173,28 +193,29 @@ int plasma_zhetrf(plasma_enum_t uplo,
     {
         // Translate to tile layout.
         plasma_omp_zge2desc(pA, lda, A, sequence, &request);
+        plasma_omp_zpb2desc(pT, ldt, T, sequence, &request);
+        plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
     }
 
     #pragma omp parallel
     #pragma omp master
     {
-        // Call the tile async function to compute LTL^H factor of A,
-        // where T is a band matrix
-        plasma_omp_zhetrf(uplo, A, ipiv, T, ipiv2, W, sequence, &request);
+        // Call the tile async function.
+        plasma_omp_zhesv(uplo, A, ipiv, T, ipiv2, B, W, sequence, &request);
     }
 
     #pragma omp parallel
     #pragma omp master
     {
         // Translate back to LAPACK layout.
-        plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
-        plasma_omp_zdesc2pb(T, pT, ldt, sequence, &request);
+        plasma_omp_zdesc2ge(B, pB, ldb, sequence, &request);
     }
     // implicit synchronization
 
-    // Free matrices in tile layout.
+    // Free matrix A in tile layout.
     plasma_desc_destroy(&A);
     plasma_desc_destroy(&T);
+    plasma_desc_destroy(&B);
     plasma_desc_destroy(&W);
 
     // Return status.
@@ -205,10 +226,11 @@ int plasma_zhetrf(plasma_enum_t uplo,
 
 /***************************************************************************//**
  *
- * @ingroup plasma_hetrf
+ * @ingroup plasma_hesv
  *
- *  Factorize a Hermitian matrix.
- *  Non-blocking tile version of plasma_zhetrf().
+ *  Solves a system of linear equations using previously
+ *  computed factorization.
+ *  Non-blocking tile version of plasma_zhesv().
  *  May return before the computation is finished.
  *  Operates on matrices stored by tiles.
  *  All matrices are passed through descriptors.
@@ -222,23 +244,12 @@ int plasma_zhetrf(plasma_enum_t uplo,
  *          - PlasmaLower: Lower triangle of A is stored.
  *
  * @param[in] A
- *          On entry, the Hermitian matrix A.
- *          If uplo = PlasmaUpper, the leading N-by-N upper triangular part of A
- *          contains the upper triangular part of the matrix A, and the strictly
- *          lower triangular part of A is not referenced.
- *          If uplo = PlasmaLower, the leading N-by-N lower triangular part of A
- *          contains the lower triangular part of the matrix A, and the strictly
- *          upper triangular part of A is not referenced.
- *          On exit, if return value = 0, the factor U or L from the Cholesky
- *          factorization A = (P*U^H)*T(P*U^H)^H or A = (P*L)*T(P*L)^H.
+ *          The triangular factor U or L from the Cholesky factorization
+ *          A = U^H*U or A = L*L^H, computed by plasma_zpotrf.
  *
- * @param[out] T
- *          On exit, if return value = 0, the band matrix T of the factorization
- *          factorization A = (P*U^H)*T*(P*U^H)^H or A = (P*L)*T*(P*L)^H.
- *
- * @param[out] ipiv
- *          The pivot indices; for 1 <= i <= min(m,n), row and column i of the
- *          matrix was interchanged with row and column ipiv(i).
+ * @param[in,out] B
+ *          On entry, the n-by-nrhs right hand side matrix B.
+ *          On exit, if return value = 0, the n-by-nrhs solution matrix X.
  *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to
@@ -257,19 +268,22 @@ int plasma_zhetrf(plasma_enum_t uplo,
  *
  *******************************************************************************
  *
- * @sa plasma_zhetrf
+ * @sa plasma_zhesv
+ * @sa plasma_omp_zhesv
+ * @sa plasma_omp_chesv
+ * @sa plasma_omp_dsysv
+ * @sa plasma_omp_ssysv
  * @sa plasma_omp_zhetrf
- * @sa plasma_omp_chetrf
- * @sa plasma_omp_dhetrf
- * @sa plasma_omp_shetrf
+ * @sa plasma_omp_zhetrs
  *
  ******************************************************************************/
-void plasma_omp_zhetrf(plasma_enum_t uplo,
-                       plasma_desc_t A, int *ipiv,
-                       plasma_desc_t T, int *ipiv2,
-                       plasma_desc_t W,
-                       plasma_sequence_t *sequence,
-                       plasma_request_t *request)
+void plasma_omp_zhesv(plasma_enum_t uplo,
+                      plasma_desc_t A, int *ipiv,
+                      plasma_desc_t T, int *ipiv2,
+                      plasma_desc_t B,
+                      plasma_desc_t W,
+                      plasma_sequence_t *sequence,
+                      plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -287,8 +301,13 @@ void plasma_omp_zhetrf(plasma_enum_t uplo,
         return;
     }
     if (plasma_desc_check(A) != PlasmaSuccess) {
-        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         plasma_error("invalid A");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+    if (plasma_desc_check(B) != PlasmaSuccess) {
+        plasma_error("invalid B");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
     if (sequence == NULL) {
@@ -303,10 +322,56 @@ void plasma_omp_zhetrf(plasma_enum_t uplo,
     }
 
     // quick return
-    if (A.m == 0)
+    if (A.n == 0 || B.n == 0)
         return;
 
-    // Call the parallel function.
+    // Call the parallel functions.
     plasma_pzhetrf_aasen(uplo, A, ipiv, T, W, sequence, request);
     plasma_pzgbtrf(T, ipiv2, sequence, request);
+    if (uplo == PlasmaLower) {
+        plasma_desc_t vA;
+        plasma_desc_t vB;
+        // forward-substitution with L
+        if (A.m > A.nb) {
+            vA = plasma_desc_view(A,
+                                  A.nb, 0,
+                                  A.m-A.nb, A.n-A.nb);
+            vB = plasma_desc_view(B,
+                                  B.nb, 0,
+                                  B.m-B.nb, B.n);
+
+            plasma_pzlaswp(PlasmaRowwise, B, ipiv, 1, sequence, request);
+            #pragma omp taskwait
+            plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
+                          1.0, vA,
+                               vB,
+                          sequence, request);
+        }
+        // solve with band matrix T
+        #pragma omp taskwait
+        plasma_pztbsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans,
+                      PlasmaUnit,
+                      1.0, T,
+                           B,
+                      ipiv2,
+                      sequence, request);
+        plasma_pztbsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans,
+                      PlasmaNonUnit,
+                      1.0, T,
+                           B,
+                      ipiv2,
+                      sequence, request);
+        // backward-substitution with L^H
+        if (A.m > A.nb) {
+            plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaConjTrans, PlasmaUnit,
+                          1.0, vA,
+                               vB,
+                          sequence, request);
+            #pragma omp taskwait
+            plasma_pzlaswp(PlasmaRowwise, B, ipiv, -1, sequence, request);
+        }
+    }
+    else {
+        // TODO: upper
+    }
 }

@@ -132,6 +132,11 @@ struct routines_t routines[] =
     { "chetrf", test_chetrf },
     { "ssytrf", test_ssytrf },
 
+    { "zhesv", test_zhesv },
+    { "dsysv", test_dsysv },
+    { "chesv", test_chesv },
+    { "ssysv", test_ssysv },
+
     { "zlacpy", test_zlacpy },
     { "dlacpy", test_dlacpy },
     { "clacpy", test_clacpy },

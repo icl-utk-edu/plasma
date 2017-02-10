@@ -36,6 +36,7 @@ void test_zhemm(param_value_t param[], char *info);
 void test_zher2k(param_value_t param[], char *info);
 void test_zherk(param_value_t param[], char *info);
 void test_zhetrf(param_value_t param[], char *info);
+void test_zhesv(param_value_t param[], char *info);
 void test_zlacpy(param_value_t param[], char *info);
 void test_zlag2c(param_value_t param[], char *info);
 void test_zlange(param_value_t param[], char *info);

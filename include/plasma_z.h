@@ -113,6 +113,13 @@ int plasma_zhetrf(plasma_enum_t uplo,
                   plasma_complex64_t *pA, int lda, int *ipiv,
                   plasma_complex64_t *pT, int ldt, int *ipiv2);
 
+int plasma_zhesv(plasma_enum_t uplo, int n, int nrhs,
+                 plasma_complex64_t *pA, int lda,
+                 int *ipiv,
+                 plasma_complex64_t *pT, int ldt,
+                 int *ipiv2,
+                 plasma_complex64_t *pB,  int ldb);
+
 int plasma_zhetrs(plasma_enum_t uplo, int n, int nrhs,
                   plasma_complex64_t *pA, int lda,
                   int *ipiv,
@@ -354,6 +361,14 @@ void plasma_omp_zhetrf(plasma_enum_t uplo,
                        plasma_desc_t W,
                        plasma_sequence_t *sequence,
                        plasma_request_t *request);
+
+void plasma_omp_zhesv(plasma_enum_t uplo,
+                      plasma_desc_t A, int *ipiv,
+                      plasma_desc_t T, int *ipiv2,
+                      plasma_desc_t B,
+                      plasma_desc_t W,
+                      plasma_sequence_t *sequence,
+                      plasma_request_t *request);
 
 void plasma_omp_zhetrs(plasma_enum_t uplo,
                        plasma_desc_t A, int *ipiv,
