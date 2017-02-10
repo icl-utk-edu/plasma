@@ -350,7 +350,7 @@ void plasma_omp_zherk(plasma_enum_t uplo, plasma_enum_t trans,
 
 void plasma_omp_zhetrf(plasma_enum_t uplo, 
                        plasma_desc_t A, int *ipiv,
-                       plasma_desc_t T,
+                       plasma_desc_t T, int *ipiv2,
                        plasma_desc_t W,
                        plasma_sequence_t *sequence,
                        plasma_request_t *request);

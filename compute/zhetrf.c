@@ -182,14 +182,7 @@ int plasma_zhetrf(plasma_enum_t uplo,
     {
         // Call the tile async function to compute LTL^H factor of A,
         // where T is a band matrix
-        plasma_omp_zhetrf(uplo, A, ipiv, T, W, sequence, &request);
-    }
-
-    #pragma omp parallel
-    #pragma omp master
-    {
-        // Call the tile async function to LU factor T
-        plasma_omp_zgbtrf(T, ipiv2, sequence, &request);
+        plasma_omp_zhetrf(uplo, A, ipiv, T, ipiv2, W, sequence, &request);
     }
 
     #pragma omp parallel
@@ -275,7 +268,7 @@ int plasma_zhetrf(plasma_enum_t uplo,
  ******************************************************************************/
 void plasma_omp_zhetrf(plasma_enum_t uplo,
                        plasma_desc_t A, int *ipiv,
-                       plasma_desc_t T,
+                       plasma_desc_t T, int *ipiv2,
                        plasma_desc_t W,
                        plasma_sequence_t *sequence,
                        plasma_request_t *request)
@@ -317,4 +310,5 @@ void plasma_omp_zhetrf(plasma_enum_t uplo,
 
     // Call the parallel function.
     plasma_pzhetrf_aasen(uplo, A, ipiv, T, W, sequence, request);
+    plasma_pzgbtrf(T, ipiv2, sequence, request);
 }
