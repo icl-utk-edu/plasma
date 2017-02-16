@@ -210,8 +210,9 @@ void trace_finish()
             if (EventStopThread[thread][EventNumThread[thread]-1] > max_time)
                 max_time = EventStopThread[thread][EventNumThread[thread]-1];
 
-    double hscale = IMAGE_WIDTH / (max_time-min_time);
-    double vscale = IMAGE_HEIGHT / NumThreads;
+    double total_time = max_time - min_time;
+    double hscale = IMAGE_WIDTH / total_time;
+    double vscale = IMAGE_HEIGHT / (NumThreads + 1);
 
     char file_name[32];
     snprintf(file_name, 32, "trace_%ld.svg", (unsigned long int)time(NULL));
@@ -221,6 +222,7 @@ void trace_finish()
     fprintf(trace_file,
             "<svg viewBox=\"0 0 %d %d\">\n", IMAGE_WIDTH, IMAGE_HEIGHT);
 
+    // output events
     int thread;
     int event;
     for (thread = 0; thread < NumThreads; thread++) {
@@ -240,6 +242,8 @@ void trace_finish()
                 Label[EventColorThread[thread][event]]);
         }
     }
+
+    // output legend
     int x = 0;
     int y = IMAGE_HEIGHT+50;
     for (int color = 0; color < NumColors; color++) {
@@ -262,8 +266,30 @@ void trace_finish()
                 x = 0;
                 y += 100;
             }
-        } 
+        }
     }
+
+    // output xticks time scale
+    // xtick spacing is power of 10, with at most 20 tick marks
+    double pwr = ceil( log10( total_time / 20 ));
+    double xtick = pow( 10., pwr );
+    int decimal_places = (pwr < 0 ? (int)-pwr : 0);
+    for (double t = 0; t < total_time; t += xtick) {
+        fprintf(
+            trace_file,
+            "<line x1=\"%f\" x2=\"%f\" y1=\"%f\" y2=\"%f\" "
+            "stroke=\"#000000\" stroke-width=\"1\" />\n"
+            "<text x=\"%f\" y=\"%f\" "
+            "font-family=\"monospace\" font-size=\"35\">%.*f</text>\n",
+            hscale * t,
+            hscale * t,
+            vscale * NumThreads,
+            vscale * (NumThreads + 0.9),
+            hscale * (t + 0.05*xtick),
+            vscale * (NumThreads + 0.9),
+            decimal_places, t);
+    }
+
     fprintf(trace_file, "</svg>\n");
     fclose(trace_file);
     fprintf(stderr, "trace file: %s\n", file_name);
