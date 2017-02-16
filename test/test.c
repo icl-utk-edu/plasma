@@ -177,10 +177,10 @@ struct routines_t routines[] =
     { "claset", test_claset },
     { "slaset", test_slaset },
 
-    { "zlaswp", test_zlaswp },
-    { "dlaswp", test_dlaswp },
-    { "claswp", test_claswp },
-    { "slaswp", test_slaswp },
+    { "zgeswp", test_zgeswp },
+    { "dgeswp", test_dgeswp },
+    { "cgeswp", test_cgeswp },
+    { "sgeswp", test_sgeswp },
 
     { "zlauum", test_zlauum },
     { "dlauum", test_dlauum },

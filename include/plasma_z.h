@@ -158,7 +158,7 @@ int plasma_zlaset(plasma_enum_t uplo,
                   plasma_complex64_t alpha, plasma_complex64_t beta,
                   plasma_complex64_t *pA, int lda);
 
-int plasma_zlaswp(plasma_enum_t colrow,
+int plasma_zgeswp(plasma_enum_t colrow,
                   int m, int n,
                   plasma_complex64_t *pA, int lda,
                   int *ipiv, int incx);
@@ -408,7 +408,7 @@ void plasma_omp_zlaset(plasma_enum_t uplo,
                        plasma_desc_t A,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_omp_zlaswp(plasma_enum_t colrow,
+void plasma_omp_zgeswp(plasma_enum_t colrow,
                        plasma_desc_t A,
                        int *ipiv, int incx,
                        plasma_sequence_t *sequence, plasma_request_t *request);

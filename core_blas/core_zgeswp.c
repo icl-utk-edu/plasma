@@ -18,7 +18,7 @@
 #define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
 
 /******************************************************************************/
-void core_zlaswp(plasma_enum_t colrow,
+void core_zgeswp(plasma_enum_t colrow,
                  plasma_desc_t A, int k1, int k2, const int *ipiv, int incx)
 {
     //================

@@ -139,7 +139,7 @@ void core_zlaset(plasma_enum_t uplo,
                  plasma_complex64_t alpha, plasma_complex64_t beta,
                  plasma_complex64_t *A, int lda);
 
-void core_zlaswp(plasma_enum_t colrow,
+void core_zgeswp(plasma_enum_t colrow,
                  plasma_desc_t A, int k1, int k2, const int *ipiv, int incx);
 
 void core_zlaswp_sym(int uplo,

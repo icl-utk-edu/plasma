@@ -130,7 +130,7 @@ void plasma_pzlaset(plasma_enum_t uplo,
                     plasma_desc_t A,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_pzlaswp(plasma_enum_t colrow,
+void plasma_pzgeswp(plasma_enum_t colrow,
                     plasma_desc_t A, int *ipiv, int incx,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 

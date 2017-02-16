@@ -223,5 +223,5 @@ void plasma_omp_zgetri(plasma_desc_t A, int *ipiv, plasma_desc_t W,
 
     // Apply pivot.
     #pragma omp taskwait
-    plasma_pzlaswp(PlasmaColumnwise, A, ipiv, -1, sequence, request);
+    plasma_pzgeswp(PlasmaColumnwise, A, ipiv, -1, sequence, request);
 }

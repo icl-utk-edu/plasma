@@ -378,7 +378,7 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                         if (sequence->status == PlasmaSuccess) {
                             plasma_desc_t view =
                                 plasma_desc_view(A, 0, (n-1)*A.nb, A.m, nlkn);
-                            core_zlaswp(PlasmaRowwise, view, k1, k2, ipiv, 1);
+                            core_zgeswp(PlasmaRowwise, view, k1, k2, ipiv, 1);
                         }
                     }
                 }

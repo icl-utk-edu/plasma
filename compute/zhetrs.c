@@ -316,7 +316,7 @@ void plasma_omp_zhetrs(plasma_enum_t uplo,
                                   B.nb, 0,
                                   B.m-B.nb, B.n);
 
-            plasma_pzlaswp(PlasmaRowwise, B, ipiv, 1, sequence, request);
+            plasma_pzgeswp(PlasmaRowwise, B, ipiv, 1, sequence, request);
             #pragma omp taskwait
             plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
                           1.0, vA,
@@ -344,7 +344,7 @@ void plasma_omp_zhetrs(plasma_enum_t uplo,
                                vB,
                           sequence, request);
             #pragma omp taskwait
-            plasma_pzlaswp(PlasmaRowwise, B, ipiv, -1, sequence, request);
+            plasma_pzgeswp(PlasmaRowwise, B, ipiv, -1, sequence, request);
         }
     }
     else {

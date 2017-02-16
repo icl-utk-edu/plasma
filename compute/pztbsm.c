@@ -127,7 +127,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                             // TODO: nested parallelization like getrf
                             #pragma omp taskwait
                             if (sequence->status == PlasmaSuccess) {
-                                core_zlaswp(PlasmaRowwise, view, k*A.nb+1, k*A.nb+mvbk, ipiv, 1);
+                                core_zgeswp(PlasmaRowwise, view, k*A.nb+1, k*A.nb+mvbk, ipiv, 1);
                             }
                         }
                         core_omp_ztrsm(
@@ -195,7 +195,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                             view.type = PlasmaGeneral;
                             #pragma omp taskwait
                             if (sequence->status == PlasmaSuccess) {
-                                core_zlaswp(PlasmaRowwise, view, k1, k2, ipiv, -1);
+                                core_zgeswp(PlasmaRowwise, view, k1, k2, ipiv, -1);
                             }
                         }
                     }
