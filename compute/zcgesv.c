@@ -421,7 +421,7 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
 
     // Solve the system As * Xs = Bs.
     #pragma omp taskwait
-    plasma_pclaswp(PlasmaRowwise, Xs, ipiv, 1, sequence, request);
+    plasma_pcgeswp(PlasmaRowwise, Xs, ipiv, 1, sequence, request);
 
     plasma_pctrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
                   1.0, As, Xs, sequence, request);
@@ -433,7 +433,7 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
     plasma_pclag2z(Xs, X, sequence, request);
 
     // Compute R = B - A * X.
-    plasma_pzlacpy(PlasmaGeneral, B, R, sequence, request);
+    plasma_pzlacpy(PlasmaGeneral, PlasmaNoTrans, B, R, sequence, request);
     plasma_pzgemm(PlasmaNoTrans, PlasmaNoTrans,
                   zmone, A, X, zone, R, sequence, request);
 
@@ -463,7 +463,7 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
 
         // Solve the system As * Xs = Rs.
         #pragma omp taskwait
-        plasma_pclaswp(PlasmaRowwise, Xs, ipiv, 1, sequence, request);
+        plasma_pcgeswp(PlasmaRowwise, Xs, ipiv, 1, sequence, request);
 
         plasma_pctrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
                       1.0, As, Xs, sequence, request);
@@ -476,7 +476,7 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
         plasma_pzgeadd(PlasmaNoTrans, zone, R, zone, X, sequence, request);
 
         // Compute R = B - A * X
-        plasma_pzlacpy(PlasmaGeneral, B, R, sequence, request);
+        plasma_pzlacpy(PlasmaGeneral, PlasmaNoTrans, B, R, sequence, request);
         plasma_pzgemm(PlasmaNoTrans, PlasmaNoTrans, zmone, A, X, zone, R,
                       sequence, request);
 
@@ -509,10 +509,10 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
     plasma_pzgetrf(A, ipiv, sequence, request);
 
     // Solve the system A * X = B.
-    plasma_pzlacpy(PlasmaGeneral, B, X, sequence, request);
+    plasma_pzlacpy(PlasmaGeneral, PlasmaNoTrans, B, X, sequence, request);
 
     #pragma omp taskwait
-    plasma_pzlaswp(PlasmaRowwise, X, ipiv, 1, sequence, request);
+    plasma_pzgeswp(PlasmaRowwise, X, ipiv, 1, sequence, request);
 
     plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
                   1.0, A, X, sequence, request);

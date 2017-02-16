@@ -27,9 +27,6 @@
 void plasma_pzgetri_aux(plasma_desc_t A, plasma_desc_t W,
                         plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    plasma_complex64_t zone  = 1.0;
-    plasma_complex64_t zzero = 0.0;
-
     if (sequence->status != PlasmaSuccess)
         return;
 
@@ -43,7 +40,8 @@ void plasma_pzgetri_aux(plasma_desc_t A, plasma_desc_t W,
 
         // copy L(k, k) into W(k)
         core_omp_zlacpy(
-            PlasmaLower, mvak, nvak,
+            PlasmaLower, PlasmaNoTrans,
+            mvak, nvak,
             A(k, k), ldak, W(k), ldwk,
             sequence, request );
         // zero strictly-lower part of U(k, k)
@@ -51,7 +49,7 @@ void plasma_pzgetri_aux(plasma_desc_t A, plasma_desc_t W,
             PlasmaLower,
             ldak, ldakn, 1, 0,
             nvak-1, nvak-1,
-            zzero, zzero, A(k, k));
+            0.0, 0.0, A(k, k));
 
         for (int m = k+1; m < A.mt; m++) {
             int mvam = plasma_tile_mview(A, m);
@@ -59,7 +57,8 @@ void plasma_pzgetri_aux(plasma_desc_t A, plasma_desc_t W,
             int ldwm = plasma_tile_mmain(W, m);
             // copy L(m, k) to W(m)
             core_omp_zlacpy(
-                PlasmaGeneral, mvam, nvak,
+                PlasmaGeneral, PlasmaNoTrans,
+                mvam, nvak,
                 A(m, k), ldam, W(m), ldwm,
                 sequence, request );
             // zero U(m, k)
@@ -67,7 +66,7 @@ void plasma_pzgetri_aux(plasma_desc_t A, plasma_desc_t W,
                 PlasmaGeneral,
                 ldam, ldakn, 0, 0,
                 mvam, nvak,
-                zzero, zzero, A(m, k));
+                0.0, 0.0, A(m, k));
         }
 
         // update A(:, k) = A(:, k)-A(:, k+1:nt)*L(k+1:nt, k)
@@ -80,9 +79,9 @@ void plasma_pzgetri_aux(plasma_desc_t A, plasma_desc_t W,
                 core_omp_zgemm(
                      PlasmaNoTrans, PlasmaNoTrans,
                      mvam, nvak, nvan,
-                     -zone, A(m, n), ldam,
-                            W( n ),  ldwn,
-                      zone, A(m, k), ldam,
+                     -1.0, A(m, n), ldam,
+                           W( n ),  ldwn,
+                      1.0, A(m, k), ldam,
                       sequence, request);
             }
         }
@@ -95,8 +94,8 @@ void plasma_pzgetri_aux(plasma_desc_t A, plasma_desc_t W,
                 PlasmaRight, PlasmaLower,
                 PlasmaNoTrans, PlasmaUnit,
                 mvam, nvak,
-                zone, W( k ),   ldwk,
-                      A( m, k ),ldam,
+                1.0, W( k ),   ldwk,
+                     A( m, k ),ldam,
                 sequence, request );
         }
     }

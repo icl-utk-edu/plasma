@@ -94,7 +94,14 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
                    double beta,  plasma_desc_t C,
                    plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_pzlacpy(plasma_enum_t uplo, plasma_desc_t A, plasma_desc_t B,
+void plasma_pzhetrf_aasen(plasma_enum_t uplo, 
+                          plasma_desc_t A, int *ipiv,
+                          plasma_desc_t T,
+                          plasma_desc_t W,
+                          plasma_sequence_t *sequence, plasma_request_t *request);
+
+void plasma_pzlacpy(plasma_enum_t uplo, plasma_enum_t transa,
+                    plasma_desc_t A, plasma_desc_t B,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_pzlange(plasma_enum_t norm,
@@ -123,7 +130,7 @@ void plasma_pzlaset(plasma_enum_t uplo,
                     plasma_desc_t A,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_pzlaswp(plasma_enum_t colrow,
+void plasma_pzgeswp(plasma_enum_t colrow,
                     plasma_desc_t A, int *ipiv, int incx,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 

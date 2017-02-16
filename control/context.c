@@ -8,11 +8,12 @@
  *
  **/
 
-#include <stdlib.h>
-#include <omp.h>
-
 #include "plasma_context.h"
 #include "plasma_internal.h"
+#include "plasma_tuning.h"
+
+#include <stdlib.h>
+#include <omp.h>
 
 static int max_contexts = 1024;
 static int num_contexts = 0;
@@ -66,6 +67,13 @@ int plasma_set(plasma_enum_t param, int value)
         return PlasmaErrorNotInitialized;
     }
     switch (param) {
+    case PlasmaTuning:
+        if (value != PlasmaEnabled && value != PlasmaDisabled) {
+            plasma_error("invalid tuning flag");
+            return PlasmaErrorIllegalValue;
+        }
+        plasma->tuning = value;
+        break;
     case PlasmaNb:
         if (value <= 0) {
             plasma_error("invalid tile size");
@@ -112,22 +120,21 @@ int plasma_get(plasma_enum_t param, int *value)
         return PlasmaErrorNotInitialized;
     }
     switch (param) {
+    case PlasmaTuning:
+        *value = plasma->tuning;
+        return PlasmaSuccess;
     case PlasmaNb:
         *value = plasma->nb;
         return PlasmaSuccess;
-        break;
     case PlasmaIb:
         *value = plasma->ib;
         return PlasmaSuccess;
-        break;
     case PlasmaNumPanelThreads:
         *value = plasma->num_panel_threads;
         return PlasmaSuccess;
-        break;
     case PlasmaHouseholderMode:
         *value = plasma->householder_mode;
         return PlasmaSuccess;
-        break;
     default:
         plasma_error("Unknown parameter");
         return PlasmaErrorIllegalValue;
@@ -188,6 +195,7 @@ int plasma_context_detach()
         if (context_map[i].context != NULL &&
             pthread_equal(context_map[i].thread_id, pthread_self())) {
 
+            plasma_context_finalize(context_map[i].context);
             free(context_map[i].context);
             context_map[i].context = NULL;
             num_contexts--;
@@ -222,10 +230,22 @@ plasma_context_t *plasma_context_self()
 /******************************************************************************/
 void plasma_context_init(plasma_context_t *context)
 {
+    // Set defaults.
+    context->tuning = PlasmaEnabled;
     context->nb = 256;
     context->ib = 64;
     context->inplace_outplace = PlasmaOutplace;
     context->max_threads = omp_get_max_threads();
     context->num_panel_threads = 1;
     context->householder_mode = PlasmaFlatHouseholder;
+
+    // Initialize config.
+    context->L = plasma_tuning_init();
+}
+
+/******************************************************************************/
+void plasma_context_finalize(plasma_context_t *context)
+{
+    // Finalize config.
+    plasma_tuning_finalize(context->L);
 }

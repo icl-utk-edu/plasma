@@ -87,7 +87,7 @@ void plasma_pzgbtrf(plasma_desc_t A, int *ipiv,
                              priority(n == k+1) */
             {
                 if (sequence->status == PlasmaSuccess) {
-                    // laswp
+                    // geswp
                     int k1 = k*A.mb+1;
                     int k2 = imin(k*A.mb+A.mb, A.m);
                     plasma_desc_t view =
@@ -95,7 +95,7 @@ void plasma_pzgbtrf(plasma_desc_t A, int *ipiv,
                                         (A.kut-1 + k-n)*A.mb, n*A.nb,
                                          mak, nvan);
                     view.type = PlasmaGeneral;
-                    core_zlaswp(
+                    core_zgeswp(
                         PlasmaRowwise, view, 1, k2-k1+1, &ipiv[k*A.mb], 1);
 
                     // trsm

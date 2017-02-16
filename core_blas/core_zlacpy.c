@@ -12,6 +12,7 @@
 
 #include "core_blas.h"
 #include "plasma_types.h"
+#include "plasma_internal.h"
 #include "core_lapack.h"
 
 /***************************************************************************//**
@@ -26,6 +27,11 @@
  *          - PlasmaGeneral: entire A,
  *          - PlasmaUpper:   upper triangle,
  *          - PlasmaLower:   lower triangle.
+ *
+ * @param[in] transa
+ *          - PlasmaNoTrans:   A is not transposed,
+ *          - PlasmaTrans:     A is transposed,
+ *          - PlasmaConjTrans: A is conjugate transposed.
  *
  * @param[in] m
  *          The number of rows of the matrices A and B.
@@ -51,20 +57,58 @@
  *          ldb >= max(1,m).
  *
  ******************************************************************************/
-void core_zlacpy(plasma_enum_t uplo,
+void core_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
                  int m, int n,
                  const plasma_complex64_t *A, int lda,
                        plasma_complex64_t *B, int ldb)
 {
-    LAPACKE_zlacpy_work(LAPACK_COL_MAJOR,
-                        lapack_const(uplo),
-                        m, n,
-                        A, lda,
-                        B, ldb);
+    if (transa == PlasmaNoTrans) {
+        LAPACKE_zlacpy_work(LAPACK_COL_MAJOR,
+                            lapack_const(uplo),
+                            m, n,
+                            A, lda,
+                            B, ldb);
+    } else if (transa == PlasmaTrans) {
+        switch(uplo) {
+        case PlasmaUpper:
+            for (int i = 0; i < imin(m, n); i++)
+                for (int j = i; j < n; j++)
+                    B[j + i*ldb] = A[i + j*lda];
+            break;
+        case PlasmaLower:
+            for (int i = 0; i < m; i++)
+                for (int j = 0; j <= imin(i, n); j++)
+                    B[j + i*ldb] = A[i + j*lda];
+            break;
+        case PlasmaGeneral:
+            for (int i = 0; i < m; i++)
+                for (int j = 0; j < n; j++)
+                    B[j + i*ldb] = A[i + j*lda];
+            break;
+        }
+    } else {
+        switch(uplo) {
+        case PlasmaUpper:
+            for (int i = 0; i < imin(m, n); i++)
+                for (int j = 0; j < m; j++)
+                    B[j + i*ldb] = conj(A[i + j*lda]);
+            break;
+        case PlasmaLower:
+            for (int i = 0; i < m; i++)
+                for (int j = 0; j <= imin(i, n); j++)
+                    B[j + i*ldb] = conj(A[i + j*lda]);
+            break;
+        case PlasmaGeneral:
+            for (int i = 0; i < m; i++)
+                for (int j = 0; j < n; j++)
+                    B[j + i*ldb] = conj(A[i + j*lda]);
+            break;
+        }
+    }
 }
 
 /******************************************************************************/
-void core_omp_zlacpy(plasma_enum_t uplo,
+void core_omp_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
                      int m, int n,
                      const plasma_complex64_t *A, int lda,
                            plasma_complex64_t *B, int ldb,
@@ -74,7 +118,7 @@ void core_omp_zlacpy(plasma_enum_t uplo,
                      depend(out:B[0:ldb*n])
     {
         if (sequence->status == PlasmaSuccess)
-            core_zlacpy(uplo,
+            core_zlacpy(uplo, transa,
                         m, n,
                         A, lda,
                         B, ldb);

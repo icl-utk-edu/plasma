@@ -171,7 +171,7 @@ void plasma_omp_zgesv(plasma_desc_t A, int *ipiv,
     // before starting row permutations.
     #pragma omp taskwait 
 
-    plasma_pzlaswp(PlasmaRowwise, B, ipiv, 1, sequence, request);
+    plasma_pzgeswp(PlasmaRowwise, B, ipiv, 1, sequence, request);
 
     plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
                   1.0, A,

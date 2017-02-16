@@ -65,7 +65,7 @@
  * @sa plasma_slacpy
  *
  ******************************************************************************/
-int plasma_zlacpy(plasma_enum_t uplo,
+int plasma_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
                   int m, int n,
                   plasma_complex64_t *pA, int lda,
                   plasma_complex64_t *pB, int ldb)
@@ -84,21 +84,31 @@ int plasma_zlacpy(plasma_enum_t uplo,
         plasma_error("illegal value of uplo");
         return -1;
     }
+    if ((transa != PlasmaNoTrans) &&
+        (transa != PlasmaTrans) &&
+        (transa != PlasmaConjTrans)) {
+        plasma_error("illegal value of transa");
+        return -2;
+    }
     if (m < 0) {
         plasma_error("illegal value of m");
-        return -2;
+        return -3;
     }
     if (n < 0) {
         plasma_error("illegal value of n");
+        return -4;
+    }
+    if (transa != PlasmaNoTrans && m != n) {
+        plasma_error("illegal value of m and n");
         return -3;
     }
     if (lda < imax(1, m)) {
         plasma_error("illegal value of lda");
-        return -5;
+        return -6;
     }
-    if (ldb < imax(1, m)) {
+    if (ldb < imax(1, (transa == PlasmaGeneral ? m : n))) {
         plasma_error("illegal value of ldb");
-        return -7;
+        return -8;
     }
 
     // quick return
@@ -145,7 +155,7 @@ int plasma_zlacpy(plasma_enum_t uplo,
         plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
 
         // Call tile async function.
-        plasma_omp_zlacpy(uplo, A, B, sequence, &request);
+        plasma_omp_zlacpy(uplo, transa, A, B, sequence, &request);
 
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
@@ -182,6 +192,11 @@ int plasma_zlacpy(plasma_enum_t uplo,
  *            - PlasmaUpper:   Upper triangular part of A
  *            - PlasmaLower:   Lower triangular part of A
  *
+ * @param[in] transa
+ *          - PlasmaNoTrans:   A is not transposed,
+ *          - PlasmaTrans:     A is transposed,
+ *          - PlasmaConjTrans: A is conjugate transposed.
+ *
  * @param[in] A
  *          Descriptor of matrix A.
  *
@@ -211,7 +226,8 @@ int plasma_zlacpy(plasma_enum_t uplo,
  * @sa plasma_omp_slacpy
  *
  ******************************************************************************/
-void plasma_omp_zlacpy(plasma_enum_t uplo, plasma_desc_t A, plasma_desc_t B,
+void plasma_omp_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
+                       plasma_desc_t A, plasma_desc_t B,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
@@ -227,6 +243,13 @@ void plasma_omp_zlacpy(plasma_enum_t uplo, plasma_desc_t A, plasma_desc_t B,
         (uplo != PlasmaUpper)   &&
         (uplo != PlasmaLower)) {
         plasma_error("illegal value of uplo");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
+    if ((transa != PlasmaNoTrans) &&
+        (transa != PlasmaTrans) &&
+        (transa != PlasmaConjTrans)) {
+        plasma_error("illegal value of transa");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         return;
     }
@@ -256,5 +279,5 @@ void plasma_omp_zlacpy(plasma_enum_t uplo, plasma_desc_t A, plasma_desc_t B,
         return;
 
     // Call the parallel function.
-    plasma_pzlacpy(uplo, A, B, sequence, request);
+    plasma_pzlacpy(uplo, transa, A, B, sequence, request);
 }

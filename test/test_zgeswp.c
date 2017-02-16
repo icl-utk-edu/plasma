@@ -27,7 +27,7 @@
 
 /***************************************************************************//**
  *
- * @brief Tests ZLASWP
+ * @brief Tests ZGESWP
  *
  * @param[in]  param - array of parameters
  * @param[out] info  - string of column labels or column values; length InfoLen
@@ -37,7 +37,7 @@
  * If param is non-NULL and info is non-NULL, set info to column values
  * and run test.
  ******************************************************************************/
-void test_zlaswp(param_value_t param[], char *info)
+void test_zgeswp(param_value_t param[], char *info)
 {
     //================================================================
     // Print usage info or return column labels or values
@@ -134,7 +134,7 @@ void test_zlaswp(param_value_t param[], char *info)
     // Run and time PLASMA
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    retval = plasma_zlaswp(colrow, m, n, A, lda, ipiv, incx);
+    retval = plasma_zgeswp(colrow, m, n, A, lda, ipiv, incx);
     plasma_time_t stop = omp_get_wtime();
 
     param[PARAM_TIME].d = stop-start;

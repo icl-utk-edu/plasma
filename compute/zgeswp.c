@@ -18,7 +18,7 @@
 #include "plasma_types.h"
 
 /******************************************************************************/
-int plasma_zlaswp(plasma_enum_t colrow,
+int plasma_zgeswp(plasma_enum_t colrow,
                   int m, int n,
                   plasma_complex64_t *pA, int lda, int *ipiv, int incx)
 {
@@ -85,7 +85,7 @@ int plasma_zlaswp(plasma_enum_t colrow,
 
         // Call tile async function.
         #pragma omp taskwait
-        plasma_omp_zlaswp(colrow, A, ipiv, incx, sequence, &request);
+        plasma_omp_zgeswp(colrow, A, ipiv, incx, sequence, &request);
 
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
@@ -102,7 +102,7 @@ int plasma_zlaswp(plasma_enum_t colrow,
 }
 
 /******************************************************************************/
-void plasma_omp_zlaswp(plasma_enum_t colrow,
+void plasma_omp_zgeswp(plasma_enum_t colrow,
                        plasma_desc_t A, int *ipiv, int incx,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {
@@ -142,5 +142,5 @@ void plasma_omp_zlaswp(plasma_enum_t colrow,
         return;
 
     // Call the parallel function.
-    plasma_pzlaswp(colrow, A, ipiv, incx, sequence, request);
+    plasma_pzgeswp(colrow, A, ipiv, incx, sequence, request);
 }

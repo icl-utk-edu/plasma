@@ -101,7 +101,9 @@ enum {
     PlasmaErrorOutOfMemory,
     PlasmaErrorNullParameter,
     PlasmaErrorInternal,
-    PlasmaErrorSequence
+    PlasmaErrorSequence,
+    PlasmaErrorComponent,
+    PlasmaErrorEnvironment
 };
 
 enum {
@@ -115,6 +117,12 @@ enum {
 };
 
 enum {
+    PlasmaDisabled = 0,
+    PlasmaEnabled = 1
+};
+
+enum {
+    PlasmaTuning,
     PlasmaNb,
     PlasmaIb,
     PlasmaInplaceOutplace,
