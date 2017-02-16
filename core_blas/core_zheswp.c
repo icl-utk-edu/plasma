@@ -20,7 +20,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup core_laswp_sym
+ * @ingroup core_heswp
  *
  *  Applies symmetric pivoting.
  *
@@ -52,8 +52,8 @@
  *          is negative, the pivots are applied in reverse order.
  *
  ******************************************************************************/
-void core_zlaswp_sym(int uplo, plasma_desc_t A, int k1, int k2, const int *ipiv,
-                     int incx)
+void core_zheswp(int uplo, plasma_desc_t A, int k1, int k2, const int *ipiv,
+                 int incx)
 {
     if (uplo == PlasmaLower) {
         if (incx > 0) {

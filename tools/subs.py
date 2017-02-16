@@ -319,6 +319,7 @@ lapack = [
     ('ssytd2',               'dsytd2',               'chetd2',               'zhetd2'              ),
     ('ssytf2',               'dsytf2',               'chetf2',               'zhetf2'              ),
     ('ssytf2',               'dsytf2',               'csytf2',               'zsytf2'              ),
+    ('ssyswp',               'dsyswp',               'cheswp',               'zheswp'              ),
     ('ssytrd',               'dsytrd',               'chetrd',               'zhetrd'              ),
     ('ssytrf',               'dsytrf',               'chetrf',               'zhetrf'              ),
     ('ssytrf',               'dsytrf',               'csytrf',               'zsytrf'              ),

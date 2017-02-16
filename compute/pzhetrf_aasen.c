@@ -420,8 +420,8 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
 
                 // -- symmetrically apply pivoting to trailing A -- //
                 // TODO: calling core routine for now.
-                core_zlaswp_sym(PlasmaLower,
-                                A, (k+1)*A.mb+1, (k+1)*A.mb+imin(mlkk, mvak), ipiv, 1);
+                core_zheswp(PlasmaLower,
+                            A, (k+1)*A.mb+1, (k+1)*A.mb+imin(mlkk, mvak), ipiv, 1);
 
                 // synch the row-swap of previous column before the next update
                 #pragma omp taskwait
