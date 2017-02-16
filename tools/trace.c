@@ -266,6 +266,7 @@ void trace_finish()
     }
     fprintf(trace_file, "</svg>\n");
     fclose(trace_file);
+    fprintf(stderr, "trace file: %s\n", file_name);
 }
 
 //------------------------------------------------------------------------------
