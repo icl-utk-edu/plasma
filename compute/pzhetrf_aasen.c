@@ -330,10 +330,13 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                 int na00k = plasma_tile_nmain(A, k);
                 int lda20 = plasma_tile_mmain(A, A.mt-1);
 
-                #pragma omp taskwait
+                int k1 = 1+(k+1)*A.nb;
+                int k2 = imin(mlkk, mvak)+(k+1)*A.nb;
+
+                #pragma omp taskwait // make sure all the tiles in the column are ready
                 #pragma omp task depend(inout:a00[0:ma00k*na00k]) \
                                  depend(inout:a20[0:lda20*mvak]) \
-                                 depend(out:ipiv[k*A.mb:mvak]) /*\
+                                 depend(out:ipiv[k1-1:k2]) /*\
                                  priority(1) */
                 {
                     if (sequence->status == PlasmaSuccess) {
@@ -354,11 +357,11 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                         }
                     }
                     #pragma omp taskwait
+                    for (int i = 0; i < imin(mlkk, mvak); i++) {
+                        IPIV(k+1)[i] += (k+1)*A.mb;
+                    }
                 }
-                #pragma omp taskwait
-                for (int i = 0; i < imin(mlkk, mvak); i++) {
-                    IPIV(k+1)[i] += (k+1)*A.mb;
-                }
+                //#pragma omp taskwait
                 // ============================== //
                 // ==  end of PLASMA LU panel  == //
                 // ============================== //
@@ -366,14 +369,12 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                 // -- apply pivoting to previous columns of L -- //
                 for (int n = 1; n < k+1; n++)
                 {
-                   plasma_complex64_t *akk = NULL;
-                   int k1 = 1+(k+1)*A.nb;
-                   int k2 = imin(mlkk, mvak)+(k+1)*A.nb;
-                   int mlkn = (A.mt-k-1)*A.mb;
-                   int nlkn = plasma_tile_nmain(A, n-1);
-                   akk = L(k+1, n);
+                    plasma_complex64_t *akk = NULL;
+                    int mlkn = (A.mt-k-1)*A.mb;
+                    int nlkn = plasma_tile_nmain(A, n-1);
+                    akk = L(k+1, n);
                     #pragma omp task depend(in:ipiv[(k1-1):k2]) \
-                                     depend(inout:akk[0:mlkn*nlkn])
+                                      depend(inout:akk[0:mlkn*nlkn])
                     {
                         if (sequence->status == PlasmaSuccess) {
                             plasma_desc_t view =
@@ -419,10 +420,16 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                         sequence, request);
 
                 // -- symmetrically apply pivoting to trailing A -- //
+                plasma_complex64_t *akk = NULL;
+                int mlkn = (A.mt-k-1)*A.mb;
+                int nlkn = plasma_tile_nmain(A, k+1);
+                akk = A(k+1, k+1);
                 // TODO: calling core routine for now.
-                core_zheswp(PlasmaLower,
-                            A, (k+1)*A.mb+1, (k+1)*A.mb+imin(mlkk, mvak), ipiv, 1);
-
+                #pragma omp task depend(in:ipiv[(k1-1):k2]) \
+                                 depend(inout:akk[0:nlkn*mlkn])
+                {
+                    core_zheswp(PlasmaLower, A, k1, k2, ipiv, 1);
+                }
                 // synch the row-swap of previous column before the next update
                 #pragma omp taskwait
             }
