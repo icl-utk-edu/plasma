@@ -29,64 +29,28 @@
  *
  * @brief Tests ZGEMM.
  *
- * @param[in]  param - array of parameters
- * @param[out] info  - string of column labels or column values; length InfoLen
+ * @param[in,out] param - array of parameters
+ * @param[in]     run - whether to run test
  *
- * If param is NULL and info is NULL,     print usage and return.
- * If param is NULL and info is non-NULL, set info to column labels and return.
- * If param is non-NULL and info is non-NULL, set info to column values
- * and run test.
+ * Sets used flags in param indicating parameters that are used.
+ * If run is true, also runs test and stores output parameters.
  ******************************************************************************/
-void test_zgemm(param_value_t param[], char *info)
+void test_zgemm(param_value_t param[], bool run)
 {
     //================================================================
-    // Print usage info or return column labels or values.
+    // Mark which parameters are used.
     //================================================================
-    if (param == NULL) {
-        if (info == NULL) {
-            // Print usage info.
-            print_usage(PARAM_TRANSA);
-            print_usage(PARAM_TRANSB);
-            print_usage(PARAM_DIM);
-            print_usage(PARAM_ALPHA);
-            print_usage(PARAM_BETA);
-            print_usage(PARAM_PADA);
-            print_usage(PARAM_PADB);
-            print_usage(PARAM_PADC);
-            print_usage(PARAM_NB);
-        }
-        else {
-            // Return column labels.
-            snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s",
-                     InfoSpacing, "TransA",
-                     InfoSpacing, "TransB",
-                     InfoSpacing, "M",
-                     InfoSpacing, "N",
-                     InfoSpacing, "K",
-                     InfoSpacing, "alpha",
-                     InfoSpacing, "beta",
-                     InfoSpacing, "PadA",
-                     InfoSpacing, "PadB",
-                     InfoSpacing, "PadC",
-                     InfoSpacing, "NB");
-        }
+    param[PARAM_TRANSA ].used = true;
+    param[PARAM_TRANSB ].used = true;
+    param[PARAM_DIM    ].used = PARAM_USE_M | PARAM_USE_N | PARAM_USE_K;
+    param[PARAM_ALPHA  ].used = true;
+    param[PARAM_BETA   ].used = true;
+    param[PARAM_PADA   ].used = true;
+    param[PARAM_PADB   ].used = true;
+    param[PARAM_PADC   ].used = true;
+    param[PARAM_NB     ].used = true;
+    if (! run)
         return;
-    }
-    // Return column values.
-    snprintf(info, InfoLen,
-             "%*c %*c %*d %*d %*d %*.4f %*.4f %*d %*d %*d %*d",
-             InfoSpacing, param[PARAM_TRANSA].c,
-             InfoSpacing, param[PARAM_TRANSB].c,
-             InfoSpacing, param[PARAM_DIM].dim.m,
-             InfoSpacing, param[PARAM_DIM].dim.n,
-             InfoSpacing, param[PARAM_DIM].dim.k,
-             InfoSpacing, creal(param[PARAM_ALPHA].z),
-             InfoSpacing, creal(param[PARAM_BETA].z),
-             InfoSpacing, param[PARAM_PADA].i,
-             InfoSpacing, param[PARAM_PADB].i,
-             InfoSpacing, param[PARAM_PADC].i,
-             InfoSpacing, param[PARAM_NB].i);
 
     //================================================================
     // Set parameters.

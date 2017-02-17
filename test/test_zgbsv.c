@@ -32,60 +32,28 @@
  *
  * @brief Tests ZGBSV.
  *
- * @param[in]  param - array of parameters
- * @param[out] info  - string of column labels or column values; length InfoLen
+ * @param[in,out] param - array of parameters
+ * @param[in]     run - whether to run test
  *
- * If param is NULL and info is NULL,     print usage and return.
- * If param is NULL and info is non-NULL, set info to column labels and return.
- * If param is non-NULL and info is non-NULL, set info to column values
- * and run test.
+ * Sets flags in param indicating which parameters are used.
+ * If run is true, also runs test and stores output parameters.
  ******************************************************************************/
-void test_zgbsv(param_value_t param[], char *info)
+void test_zgbsv(param_value_t param[], bool run)
 {
     //================================================================
-    // Print usage info or return column labels or values.
+    // Mark which parameters are used.
     //================================================================
-    if (param == NULL) {
-        if (info == NULL) {
-            // Print usage info.
-            print_usage(PARAM_DIM);
-            print_usage(PARAM_KL);
-            print_usage(PARAM_KU);
-            print_usage(PARAM_NRHS);
-            print_usage(PARAM_PADA);
-            print_usage(PARAM_NB);
-            print_usage(PARAM_IB);
-            print_usage(PARAM_NTPF);
-            print_usage(PARAM_ZEROCOL);
-        }
-        else {
-            // Return column labels.
-            snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s %*s %*s %*s %*s %*s",
-                     InfoSpacing, "N",
-                     InfoSpacing, "KL",
-                     InfoSpacing, "KU",
-                     InfoSpacing, "NRHS",
-                     InfoSpacing, "PadA",
-                     InfoSpacing, "NB",
-                     InfoSpacing, "IB",
-                     InfoSpacing, "NTPF",
-                     InfoSpacing, "ZeroCol");
-        }
+    param[PARAM_DIM    ].used = PARAM_USE_N;
+    param[PARAM_KL     ].used = true;
+    param[PARAM_KU     ].used = true;
+    param[PARAM_NRHS   ].used = true;
+    param[PARAM_PADA   ].used = true;
+    param[PARAM_NB     ].used = true;
+    param[PARAM_IB     ].used = true;
+    param[PARAM_NTPF   ].used = true;
+    param[PARAM_ZEROCOL].used = true;
+    if (! run)
         return;
-    }
-    // Return column values.
-    snprintf(info, InfoLen,
-             "%*d %*d %*d %*d %*d %*d %*d %*d %*d",
-             InfoSpacing, param[PARAM_DIM].dim.n,
-             InfoSpacing, param[PARAM_KL].i,
-             InfoSpacing, param[PARAM_KU].i,
-             InfoSpacing, param[PARAM_KU].i,
-             InfoSpacing, param[PARAM_NRHS].i,
-             InfoSpacing, param[PARAM_NB].i,
-             InfoSpacing, param[PARAM_IB].i,
-             InfoSpacing, param[PARAM_NTPF].i,
-             InfoSpacing, param[PARAM_ZEROCOL].i);
 
     //================================================================
     // Set parameters.

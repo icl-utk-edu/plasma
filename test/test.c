@@ -17,7 +17,7 @@
 #include <stdbool.h>
 
 /******************************************************************************/
-typedef void (*test_func_ptr)(param_value_t param[], char *info);
+typedef void (*test_func_ptr)(param_value_t param[], bool run);
 
 struct routines_t {
     const char *name;
@@ -266,6 +266,135 @@ struct routines_t routines[] =
     { NULL, NULL }  // last entry
 };
 
+//==============================================================================
+// parameter descriptions
+//==============================================================================
+
+// 2nd line indent for help text
+#define INDENT "\t                    "
+
+typedef struct {
+    const char *arg;
+    const char *header;
+    int width;
+    bool is_list;
+    const char *help;
+} param_desc_t;
+
+static param_desc_t ParamDesc[] = {
+    //------------------------------------------------------
+    // output parameters
+    //------------------------------------------------------
+    // argument            header          width  is_list  help
+    {"success",            "Status",       6,     false,
+     "success indicator"},
+
+    {"error",              "Error",        9,     false,
+     "numerical error"},
+
+    {"ortho",              "Orth. error",  9,     false,
+     "orthogonality error"},
+
+    {"time",               "Time",         9,     false,
+     "time to solution"},
+
+    {"gflops",             "Gflop/s",      9,     false,
+     "GFLOPS rate"},
+
+    //------------------------------------------------------
+    // input parameters
+    //------------------------------------------------------
+    // argument            header          width  is_list  help
+    {"--iter=",            "iter",         0,     false,
+     "number of iterations per set of parameters [default: 1]"},
+
+    {"--outer=[y|n]",      "outer",        0,     false,
+     "outer product iteration [default: y]"},
+
+    {"--dim-outer=[y|n]",  "dim-outer",    0,     false,
+     "outer product iteration of subsequent --dim dimensions [default: n]"},
+
+    {"--test=[y|n]",       "test",         0,     false,
+     "test the solution [default: y]"},
+
+    {"--tol=",             "tol",          0,     false,
+     "tolerance [default: 50.0]"},
+
+    {"--trans=[n|t|c]",    "trans",        6,     true,
+     "transposition [default: n]"},
+
+    {"--transa=[n|t|c]",   "transA",       6,     true,
+     "transposition of A [default: n]"},
+
+    {"--transb=[n|t|c]",   "transB",       6,     true,
+     "transposition of B [default: n]"},
+
+    {"--side=[l|r]",       "side",         6,     true,
+     "left or right side application [default: l]"},
+
+    {"--uplo=[g|u|l]",     "uplo",         6,     true,
+     "general rectangular or upper or lower triangular matrix [default: l]"},
+
+    {"--diag=[n|u]",       "diag",         6,     true,
+     "non-unit diagonal or unit diagonal [default: n]"},
+
+    {"--colrow=[c|r]",     "colrow",       6,     true,
+     "columnwise or rowwise [default: c]"},
+
+    {"--dim=",             "Dimensions",   6,     true,
+     "M x N x K dimensions [default: 1000 x 1000 x 1000]\n"
+     INDENT "M, N, K can each be a single value or a range.\n"
+     INDENT "N and K are optional; if not given, N=M and K=N.\n"
+     INDENT "Ex: --dim=100:300:100x64 is 100x64x64, 200x64x64, 300x64x64."},
+
+    {"--kl=",              "kl",           6,     true,
+     "Lower bandwidth [default: 200]"},
+
+    {"--ku=",              "ku",           6,     true,
+     "Upper bandwidth [default: 200]"},
+
+    {"--nrhs=",            "nrhs",         6,     true,
+     "NHRS dimension (number of columns) [default: 1000]"},
+
+    {"--nb=",              "nb",           4,     true,
+     "NB size of tile (NB by NB) [default: 256]"},
+
+    {"--ib=",              "ib",           4,     true,
+     "IB inner blocking size [default: 64]"},
+
+    {"--hmode=[f|t]",      "House. mode",  11,    true,
+     "Householder mode for QR/LQ - flat or tree [default: f]"},
+
+    {"--alpha=",           "alpha",        14,    true,
+     "scalar alpha"},
+
+    {"--beta=",            "beta",         14,    true,
+     "scalar beta"},
+
+    {"--pada=",            "padA",         4,     true,
+     "padding added to lda [default: 0]"},
+
+    {"--padb=",            "padB",         4,     true,
+     "padding added to ldb [default: 0]"},
+
+    {"--padc=",            "padC",         4,     true,
+     "padding added to ldc [default: 0]"},
+
+    {"--ntpf=",            "ntpf",         4,     true,
+     "number of threads for panel factorization [default: 1]"},
+
+    {"--norm=[m|o|i|f]",   "norm",         4,     true,
+     "type of matrix norm (max, one, inf, frobenius) [default: o]"},
+
+    {"--zerocol=",         "zerocol",      7,     true,
+     "if positive, a column of zeros inserted at that index [default: -1]"},
+
+    {"--incx=",            "incx",         4,     true,
+     "1 to pivot forward, -1 to pivot backward [default: 1]"},
+
+    { NULL }  // last entry
+};
+
 /***************************************************************************//**
  *
  * @brief Tests and times a PLASMA routine.
@@ -291,48 +420,35 @@ int main(int argc, char **argv)
 
     const char *routine = argv[1];
 
-    // Ensure that ParamUsage has an entry for every param_label_t value.
-    assert(PARAM_SIZEOF == sizeof(ParamUsage)/(2*sizeof(char*)));
+    // Ensure that ParamDesc has an entry for every param_label_t value.
+    assert(PARAM_SIZEOF == sizeof(ParamDesc)/sizeof(param_desc_t) - 1);
 
     param_t param[PARAM_SIZEOF];      // set of parameters
     param_value_t pval[PARAM_SIZEOF]; // snapshot of values
 
     param_init(param);
-    int iter = param_read(argc, argv, param);
-    int outer = param[PARAM_OUTER].val[0].c == 'y';
-    int test = param[PARAM_TEST].val[0].c == 'y';
+    param_read(argc, argv, param);
+    int  iter  = param[PARAM_ITER].val[0].i;
+    bool outer = param[PARAM_OUTER].val[0].c == 'y';
+    bool test  = param[PARAM_TEST].val[0].c == 'y';
     int err = 0;
 
     // Print labels.
-    test_routine(test, routine, NULL);
+    param_snap(param, pval);
+    print_header(routine, pval);
 
+    // Iterate over parameters and run tests
     plasma_init();
-    if (outer) {
-        // outer product iteration
         do {
             param_snap(param, pval);
             for (int i = 0; i < iter; i++) {
-                err += test_routine(test, routine, pval);
+            err += test_routine(routine, pval, test);
             }
             if (iter > 1) {
                 printf("\n");
             }
         }
-        while (param_step_outer(param, 0));
-    }
-    else {
-        // inner product iteration
-        do {
-            param_snap(param, pval);
-            for (int i = 0; i < iter; i++) {
-                err += test_routine(test, routine, pval);
-            }
-            if (iter > 1) {
-                printf("\n");
-            }
-        }
-        while (param_step_inner(param));
-    }
+    while (outer ? param_step_outer(param, 0) : param_step_inner(param));
     plasma_finalize();
     printf("\n");
     return err;
@@ -365,9 +481,10 @@ void print_main_usage()
  * @brief Prints routine-specific usage information.
  *
  * @param[in] name - routine name
+ * @param[in,out] pval - array of parameter values
  *
  ******************************************************************************/
-void print_routine_usage(const char *name)
+void print_routine_usage(const char *name, param_value_t pval[])
 {
     printf("Usage:\n"
            "\ttest %s [-h|--help]\n"
@@ -382,8 +499,29 @@ void print_routine_usage(const char *name)
     print_usage(PARAM_TEST);
     print_usage(PARAM_TOL);
 
-    printf("\n");
-    run_routine(name, NULL, NULL);
+    printf("\n"
+           "Options below accept multiple values separated by commas\n"
+           "(e.g., --nb=32,64) and may be repeated (--nb=32 --nb=64).\n"
+           "Numeric options accept start:end:step ranges (--nb=32:128:32).\n"
+           "\n");
+    run_routine(name, pval, false);
+    for (int i = 0; i < PARAM_SIZEOF; ++i) {
+        if (pval[i].used) {
+            switch (i) {
+            // ignore output params
+            case PARAM_SUCCESS:
+            case PARAM_ERROR:
+            case PARAM_ORTHO:
+            case PARAM_TIME:
+            case PARAM_GFLOPS:
+                break;
+
+            default:
+                print_usage(i);
+                break;
+}
+        }
+    }
 }
 
 /***************************************************************************//**
@@ -397,59 +535,141 @@ void print_usage(int label)
 {
     printf("\t%*s%s\n",
         DescriptionIndent,
-        ParamUsage[label][0],
-        ParamUsage[label][1]);
+        ParamDesc[label].arg,
+        ParamDesc[label].help);
+}
+
+/***************************************************************************//**
+ *
+ * @brief Prints column headers.
+ *
+ * @param[in]     name - routine name
+ * @param[in,out] pval - array of parameter values
+ *
+ ******************************************************************************/
+void print_header(const char *name, param_value_t pval[])
+{
+    run_routine(name, pval, false);
+
+    printf("\n");
+    for (int i = 0; i < PARAM_SIZEOF; ++i) {
+        if (pval[i].used) {
+            switch (i) {
+            case PARAM_DIM:
+                if (pval[i].used & PARAM_USE_M)
+                    printf("  %*s", ParamDesc[i].width, "m");
+                if (pval[i].used & PARAM_USE_N)
+                    printf("  %*s", ParamDesc[i].width, "n");
+                if (pval[i].used & PARAM_USE_K)
+                    printf("  %*s", ParamDesc[i].width, "k");
+                break;
+
+            default:
+                printf("  %*s", ParamDesc[i].width, ParamDesc[i].header);
+            }
+        }
+    }
+    printf("\n\n");
 }
 
 /***************************************************************************//**
  *
  * @brief Tests a routine for a set of parameter values.
  *        Performs testing and timing.
- *        If pval is NULL, prints column labels.
- *        Otherwise, runs routine and prints column values.
+ *        Runs routine and prints column values.
  *
+ * @param[in]     name - routine name
+ * @param[in,out] pval - array of parameter values
  * @param[in]    test - if true, tests routine, else only times routine
- * @param[in]    name - routine name
- * @param[inout] pval - array of parameter values
  *
  * @retval 1 - failure
  * @retval 0 - success
  *
  ******************************************************************************/
-int test_routine(int test, const char *name, param_value_t pval[])
+int test_routine(const char *name, param_value_t pval[], bool test)
 {
-    char info[InfoLen];
-    run_routine(name, pval, info);
+    run_routine(name, pval, true);
 
-    if (pval == NULL) {
-        printf("\n");
-        printf("%*s %*s %*s %*s %s\n",
-            InfoSpacing, "Status",
-            InfoSpacing, "Error",
-            InfoSpacing, "Seconds",
-            InfoSpacing, "GFLOPS",
-                         info);
-        printf("\n");
-        return 0;
+    for (int i = 0; i < PARAM_SIZEOF; ++i) {
+        if (pval[i].used) {
+            switch (i) {
+            case PARAM_SUCCESS:
+                if (test)
+                    printf("  %*s", ParamDesc[i].width, pval[i].i ? "pass" : "FAILED");
+                else
+                    printf("  %*s", ParamDesc[i].width, "--");
+                break;
+
+            // errors
+            case PARAM_ERROR:
+            case PARAM_ORTHO:
+                if (test)
+                    printf("  %*.2e", ParamDesc[i].width, pval[i].d);
+                else
+                    printf("  %*s", ParamDesc[i].width, "--");
+                break;
+
+            // character parameters
+            case PARAM_TRANS:
+            case PARAM_TRANSA:
+            case PARAM_TRANSB:
+            case PARAM_SIDE:
+            case PARAM_UPLO:
+            case PARAM_DIAG:
+            case PARAM_COLROW:
+            case PARAM_NORM:
+            case PARAM_HMODE:
+                printf("  %*c", ParamDesc[i].width, pval[i].c);
+                break;
+
+            // dimensions
+            case PARAM_DIM:
+                if (pval[i].used & PARAM_USE_M)
+                    printf("  %*d", ParamDesc[i].width, pval[i].dim.m);
+                if (pval[i].used & PARAM_USE_N)
+                    printf("  %*d", ParamDesc[i].width, pval[i].dim.n);
+                if (pval[i].used & PARAM_USE_K)
+                    printf("  %*d", ParamDesc[i].width, pval[i].dim.k);
+                break;
+
+            // integer parameters
+            case PARAM_KL:
+            case PARAM_KU:
+            case PARAM_NRHS:
+            case PARAM_NB:
+            case PARAM_IB:
+            case PARAM_PADA:
+            case PARAM_PADB:
+            case PARAM_PADC:
+            case PARAM_NTPF:
+            case PARAM_ZEROCOL:
+            case PARAM_INCX:
+                printf("  %*d", ParamDesc[i].width, pval[i].i);
+                break;
+
+            // double parameters
+            case PARAM_TIME:
+            case PARAM_GFLOPS:
+                printf("  %*.4f", ParamDesc[i].width, pval[i].d);
+                break;
+
+            // complex parameters
+            case PARAM_ALPHA:
+            case PARAM_BETA:
+                assert(ParamDesc[i].width == 14);
+                printf("  %5.2f + %5.2fi",
+                       creal(pval[i].z), cimag(pval[i].z));
+                break;
+
+            default:
+                fprintf(stderr, "\nunknown column %d\n", i);
+                assert(false);
+                break;
+            }
+        }
     }
-    else if (test) {
-        printf("%*s %*.2le %*.4lf %*.4lf %s\n",
-            InfoSpacing, pval[PARAM_SUCCESS].i ? "pass" : "FAILED",
-            InfoSpacing, pval[PARAM_ERROR].d,
-            InfoSpacing, pval[PARAM_TIME].d,
-            InfoSpacing, pval[PARAM_GFLOPS].d,
-                         info);
-        return (pval[PARAM_SUCCESS].i == 0);
-    }
-    else {
-        printf("%*s %*s %*.4lf %*.4lf %s\n",
-            InfoSpacing, "---",
-            InfoSpacing, "---",
-            InfoSpacing, pval[PARAM_TIME].d,
-            InfoSpacing, pval[PARAM_GFLOPS].d,
-                         info);
-        return 0;
-    }
+    printf("\n");
+    return (pval[PARAM_SUCCESS].i == 0);
 }
 
 /***************************************************************************//**
@@ -457,16 +677,21 @@ int test_routine(int test, const char *name, param_value_t pval[])
  * @brief Invokes a specific routine.
  *
  * @param[in]    name - routine name
- * @param[inout] pval - array of parameter values
- * @param[out]   info - string of column labels or column values; length InfoLen
+ * @param[in,out] pval - array of parameter values
+ * @param[in]     run  - whether to run routine or just mark used parameters
  *
  ******************************************************************************/
-void run_routine(const char *name, param_value_t pval[], char *info)
+void run_routine(const char *name, param_value_t pval[], bool run)
 {
+    pval[PARAM_SUCCESS].used = true;
+    pval[PARAM_ERROR  ].used = true;
+    pval[PARAM_TIME   ].used = true;
+    pval[PARAM_GFLOPS ].used = true;
+
     bool found = false;
     for (int i = 0; routines[i].name != NULL; ++i) {
         if (strcmp(name, routines[i].name) == 0) {
-            routines[i].func(pval, info);
+            routines[i].func(pval, run);
             found = true;
             break;
         }
@@ -487,6 +712,7 @@ void run_routine(const char *name, param_value_t pval[], char *info)
 void param_init(param_t param[])
 {
     for (int i = 0; i < PARAM_SIZEOF; i++) {
+        param[i].is_list = ParamDesc[i].is_list;
         param[i].num = 0;
         param[i].pos = 0;
         param[i].val =
@@ -504,21 +730,22 @@ void param_init(param_t param[])
  *
  * @param[in]    argc
  * @param[in]    argv
- * @param[inout] param - array of parameter iterators
- *
- * @retval iter
+ * @param[in,out] param - array of parameter iterators
  *
  ******************************************************************************/
-int param_read(int argc, char **argv, param_t param[])
+void param_read(int argc, char **argv, param_t param[])
 {
     int err = 0;
-    int iter = 1;
     const char *routine = argv[1];
 
     //================================================================
     // Set default values for singleton parameters before scanning.
     //================================================================
+    param_add_int(1, &param[PARAM_ITER]);
+    param_add_char('y', &param[PARAM_OUTER]);
     param_add_char('n', &param[PARAM_DIM_OUTER]);
+    param_add_char('y', &param[PARAM_TEST]);
+    param_add_double(50.0, &param[PARAM_TOL]);
 
     //================================================================
     // Initialize parameters from the command line.
@@ -529,15 +756,8 @@ int param_read(int argc, char **argv, param_t param[])
         //--------------------------------------------------
         if (param_starts_with(argv[i], "--outer="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_OUTER]);
-        else if (param_starts_with(argv[i], "--dim-outer=")) {
-            // dim-outer should be a singleton, not a list,
-            // otherwise specifying --dim-outer repeats all the tests.
-            // Setting num=0 here is a quick hack to make a singleton;
-            // a more comprehensive solution will be applied.
-            param[PARAM_DIM_OUTER].num = 0;
-            err = param_scan_char(strchr(argv[i], '=')+1,
-                                  &param[PARAM_DIM_OUTER]);
-        }
+        else if (param_starts_with(argv[i], "--dim-outer="))
+            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_DIM_OUTER]);
         else if (param_starts_with(argv[i], "--test="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TEST]);
 
@@ -570,9 +790,9 @@ int param_read(int argc, char **argv, param_t param[])
         // Scan integer parameters.
         //--------------------------------------------------
         else if (param_starts_with(argv[i], "--iter="))
-            iter = strtol(strchr(argv[i], '=')+1, NULL, 10);
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_ITER]);
 
-        else if (param_starts_with(argv[i], "--dim")) {
+        else if (param_starts_with(argv[i], "--dim=")) {
             bool outer = param[PARAM_DIM_OUTER].val[0].c == 'y';
             err = param_scan_int3(strchr(argv[i], '=')+1, &param[PARAM_DIM],
                                   outer);
@@ -625,7 +845,9 @@ int param_read(int argc, char **argv, param_t param[])
         //--------------------------------------------------
         else if (strcmp(argv[i], "-h") == 0 ||
                  strcmp(argv[i], "--help") == 0) {
-            print_routine_usage(routine);
+            param_value_t pval[PARAM_SIZEOF]; // snapshot of values
+            param_snap(param, pval);
+            print_routine_usage(routine, pval);
             exit(EXIT_SUCCESS);
         }
         else {
@@ -640,17 +862,12 @@ int param_read(int argc, char **argv, param_t param[])
     }
 
     //================================================================
-    // Set default values for uninitialized parameters.
+    // Set default values for uninitialized list parameters.
     //================================================================
 
     //--------------------------------------------------
     // Set character parameters.
     //--------------------------------------------------
-    if (param[PARAM_OUTER].num == 0)
-        param_add_char('y', &param[PARAM_OUTER]);
-    if (param[PARAM_TEST].num == 0)
-        param_add_char('y', &param[PARAM_TEST]);
-
     if (param[PARAM_SIDE].num == 0)
         param_add_char('l', &param[PARAM_SIDE]);
     if (param[PARAM_TRANS].num == 0)
@@ -706,8 +923,6 @@ int param_read(int argc, char **argv, param_t param[])
     //--------------------------------------------------
     // Set double precision parameters.
     //--------------------------------------------------
-    if (param[PARAM_TOL].num == 0)
-        param_add_double(50.0, &param[PARAM_TOL]);
 
     //--------------------------------------------------
     // Set complex parameters.
@@ -720,8 +935,6 @@ int param_read(int argc, char **argv, param_t param[])
         plasma_complex64_t z = 6.7890 + 7.8901*_Complex_I;
         param_add_complex(z, &param[PARAM_BETA]);
     }
-
-    return iter;
 }
 
 /***************************************************************************//**
@@ -1078,14 +1291,17 @@ int param_scan_complex(const char *str, param_t *param)
 
 /***************************************************************************//**
  *
- * @brief Increments number of elements in a parameter iterator,
- *        dynamically growing its storage as needed.
+ * @brief If parameter is a list, increments number of elements in a parameter
+ *        iterator, dynamically growing its storage as needed.
+ *        Also clears parameter's used flag.
  *
  * @param[inout] param - parameter iterator
  *
  ******************************************************************************/
 void param_add(param_t *param)
 {
+    param->val[param->num].used = false;
+    if (param->is_list) {
     param->num++;
     if (param->num == param->size) {
         param->size *= 2;
@@ -1093,6 +1309,7 @@ void param_add(param_t *param)
             param->val, param->size*sizeof(param_value_t));
         assert(param->val != NULL);
     }
+}
 }
 
 /***************************************************************************//**

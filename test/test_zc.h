@@ -17,9 +17,9 @@
 //==============================================================================
 // test routines
 //==============================================================================
-void test_zcgesv(param_value_t param[], char *info);
-void test_zcposv(param_value_t param[], char *info);
-void test_zlag2c(param_value_t param[], char *info);
-void test_clag2z(param_value_t param[], char *info);
+void test_zcgesv(param_value_t param[], bool run);
+void test_zcposv(param_value_t param[], bool run);
+void test_zlag2c(param_value_t param[], bool run);
+void test_clag2z(param_value_t param[], bool run);
 
 #endif // TEST_ZC_H

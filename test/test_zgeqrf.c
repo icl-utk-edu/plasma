@@ -28,52 +28,24 @@
  *
  * @brief Tests ZGEQRF.
  *
- * @param[in]  param - array of parameters
- * @param[out] info  - string of column labels or column values; length InfoLen
+ * @param[in,out] param - array of parameters
+ * @param[in]     run - whether to run test
  *
- * If param is NULL and info is NULL,     print usage and return.
- * If param is NULL and info is non-NULL, set info to column labels and return.
- * If param is non-NULL and info is non-NULL, set info to column values
- * and run test.
+ * Sets flags in param indicating which parameters are used.
+ * If run is true, also runs test and stores output parameters.
  ******************************************************************************/
-void test_zgeqrf(param_value_t param[], char *info)
+void test_zgeqrf(param_value_t param[], bool run)
 {
     //================================================================
-    // Print usage info or return column labels or values.
+    // Mark which parameters are used.
     //================================================================
-    if (param == NULL) {
-        if (info == NULL) {
-            // Print usage info.
-            print_usage(PARAM_DIM);
-            print_usage(PARAM_PADA);
-            print_usage(PARAM_NB);
-            print_usage(PARAM_IB);
-            print_usage(PARAM_HMODE);
-        }
-        else {
-            // Return column labels.
-            snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s %*s %*s %*s",
-                     InfoSpacing, "M",
-                     InfoSpacing, "N",
-                     InfoSpacing, "PadA",
-                     InfoSpacing, "NB",
-                     InfoSpacing, "IB",
-                     InfoSpacing, "Hous. mode",
-                     InfoSpacing, "Ortho.");
-        }
+    param[PARAM_DIM    ].used = PARAM_USE_M | PARAM_USE_N;
+    param[PARAM_PADA   ].used = true;
+    param[PARAM_NB     ].used = true;
+    param[PARAM_IB     ].used = true;
+    param[PARAM_HMODE  ].used = true;
+    if (! run)
         return;
-    }
-    // Return column values.
-    // ortho. column appended later.
-    snprintf(info, InfoLen,
-             "%*d %*d %*d %*d %*d %*c",
-             InfoSpacing, param[PARAM_DIM].dim.m,
-             InfoSpacing, param[PARAM_DIM].dim.n,
-             InfoSpacing, param[PARAM_PADA].i,
-             InfoSpacing, param[PARAM_NB].i,
-             InfoSpacing, param[PARAM_IB].i,
-             InfoSpacing, param[PARAM_HMODE].c);
 
     //================================================================
     // Set parameters.
@@ -215,19 +187,6 @@ void test_zgeqrf(param_value_t param[], char *info)
 
         free(work);
         free(R);
-
-        // Return ortho. column value.
-        int len = strlen(info);
-        snprintf(&info[len], imax(0, InfoLen - len),
-                 " %*.2e",
-                 InfoSpacing, param[PARAM_ORTHO].d);
-    }
-    else {
-        // No ortho. test.
-        int len = strlen(info);
-        snprintf(&info[len], imax(0, InfoLen - len),
-                 " %*s",
-                 InfoSpacing, "---");
     }
 
     //================================================================

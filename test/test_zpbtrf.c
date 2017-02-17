@@ -32,49 +32,30 @@
  *
  * @brief Tests ZPBTRF.
  *
- * @param[in]  param - array of parameters
- * @param[out] info  - string of column labels or column values; length InfoLen
+ * @param[in,out] param - array of parameters
+ * @param[in]     run - whether to run test
  *
- * If param is NULL and info is NULL,     print usage and return.
- * If param is NULL and info is non-NULL, set info to column labels and return.
- * If param is non-NULL and info is non-NULL, set info to column values
- * and run test.
+ * Sets flags in param indicating which parameters are used.
+ * If run is true, also runs test and stores output parameters.
  ******************************************************************************/
-void test_zpbtrf(param_value_t param[], char *info)
+void test_zpbtrf(param_value_t param[], bool run)
 {
     //================================================================
-    // Print usage info or return column labels.
+    // Mark which parameters are used.
     //================================================================
-    if (param == NULL) {
-        if (info == NULL) {
-            // Print usage info.
             //  pbtrf params
-            print_usage(PARAM_UPLO);
-            print_usage(PARAM_DIM);
-            print_usage(PARAM_KU);
-            print_usage(PARAM_KL);
-            print_usage(PARAM_PADA);
-            print_usage(PARAM_NB);
+    param[PARAM_UPLO   ].used = true;
+    param[PARAM_DIM    ].used = PARAM_USE_N;
+    param[PARAM_KU     ].used = true;
+    param[PARAM_KL     ].used = true;
+    param[PARAM_PADA   ].used = true;
+    param[PARAM_NB     ].used = true;
             //  gbtrs params for check
-            print_usage(PARAM_NRHS);
-            print_usage(PARAM_PADB);
-            print_usage(PARAM_ZEROCOL);
-        }
-        else {
-            // Return column labels.
-            snprintf(info, InfoLen,
-                "%*s %*s %*s %*s %*s %*s %*s %*s ",
-                InfoSpacing, "UpLo",
-                InfoSpacing, "N",
-                InfoSpacing, "KD",
-                InfoSpacing, "PadA",
-                InfoSpacing, "NB",
-                InfoSpacing, "NRHS",
-                InfoSpacing, "PadB",
-                InfoSpacing, "ZeroCol");
-        }
+    param[PARAM_NRHS   ].used = true;
+    param[PARAM_PADB   ].used = true;
+    param[PARAM_ZEROCOL].used = true;
+    if (! run)
         return;
-    }
 
     //================================================================
     // Set parameters.
@@ -89,20 +70,6 @@ void test_zpbtrf(param_value_t param[], char *info)
 
     int test = param[PARAM_TEST].c == 'y';
     double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
-
-    //================================================================
-    // Return column values.
-    //================================================================
-    snprintf(info, InfoLen,
-        "%*c %*d %*d %*d %*d %*d %*d %*d",
-        InfoSpacing, param[PARAM_UPLO].c,
-        InfoSpacing, param[PARAM_DIM].dim.n,
-        InfoSpacing, kd,
-        InfoSpacing, param[PARAM_PADA].i,
-        InfoSpacing, param[PARAM_NB].i,
-        InfoSpacing, param[PARAM_NRHS].i,
-        InfoSpacing, param[PARAM_PADB].i,
-        InfoSpacing, param[PARAM_ZEROCOL].i);
 
     //================================================================
     // Set tuning parameters.
