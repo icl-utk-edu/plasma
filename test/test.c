@@ -568,6 +568,9 @@ int param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--norm="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_NORM]);
 
+        else if (param_starts_with(argv[i], "--hmode="))
+            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_HMODE]);
+
         //--------------------------------------------------
         // Scan integer parameters.
         //--------------------------------------------------
@@ -591,10 +594,6 @@ int param_read(int argc, char **argv, param_t param[])
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NB]);
         else if (param_starts_with(argv[i], "--ib="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_IB]);
-
-        else if (param_starts_with(argv[i], "--hmode="))
-            err = param_scan_char(strchr(argv[i], '=')+1,
-                    &param[PARAM_HMODE]);
 
         else if (param_starts_with(argv[i], "--pada="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_PADA]);
@@ -673,6 +672,8 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_char('c', &param[PARAM_COLROW]);
     if (param[PARAM_NORM].num == 0)
         param_add_char('o', &param[PARAM_NORM]);
+    if (param[PARAM_HMODE].num == 0)
+        param_add_char('f', &param[PARAM_HMODE]);
 
     //--------------------------------------------------
     // Set integer parameters.
@@ -692,9 +693,6 @@ int param_read(int argc, char **argv, param_t param[])
         param_add_int(256, &param[PARAM_NB]);
     if (param[PARAM_IB].num == 0)
         param_add_int(64, &param[PARAM_IB]);
-
-    if (param[PARAM_HMODE].num == 0)
-        param_add_char('f', &param[PARAM_HMODE]);
 
     if (param[PARAM_PADA].num == 0)
         param_add_int(0, &param[PARAM_PADA]);
