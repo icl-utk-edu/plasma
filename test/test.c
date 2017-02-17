@@ -28,11 +28,6 @@ struct routines_t {
 // use { "", NULL }  entries for missing precisions.
 struct routines_t routines[] =
 {
-    { "clag2z", test_clag2z },
-    { "", NULL },
-    { "slag2d", test_slag2d },
-    { "", NULL },
-
     { "dzamax", test_dzamax },
     { "damax",  test_damax  },
     { "scamax", test_scamax },
@@ -149,9 +144,9 @@ struct routines_t routines[] =
     { "slacpy", test_slacpy },
 
     { "zlag2c", test_zlag2c },
-    { "", NULL },
+    { "clag2z", test_clag2z },
     { "dlag2s", test_dlag2s },
-    { "", NULL },
+    { "slag2d", test_slag2d },
 
     { "zlange", test_zlange },
     { "dlange", test_dlange },
