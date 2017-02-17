@@ -24,6 +24,8 @@ struct routines_t {
     test_func_ptr func;
 };
 
+// To maintain 4 columns (z, d, s, c), each routine should have 4 entries;
+// use { "", NULL }  entries for missing precisions.
 struct routines_t routines[] =
 {
     { "clag2z", test_clag2z },
@@ -38,6 +40,8 @@ struct routines_t routines[] =
 
     { "zcposv", test_zcposv },
     { "dsposv", test_dsposv },
+    { "", NULL },
+    { "", NULL },
 
     { "zgbsv",  test_zgbsv },
     { "dgbsv",  test_dgbsv },
@@ -86,6 +90,8 @@ struct routines_t routines[] =
 
     { "zcgesv", test_zcgesv },
     { "dsgesv", test_dsgesv },
+    { "", NULL },
+    { "", NULL },
 
     { "zgesv", test_zgesv },
     { "dgesv", test_dgesv },
