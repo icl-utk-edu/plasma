@@ -302,7 +302,7 @@ static param_desc_t ParamDesc[] = {
      "GFLOPS rate"},
 
     //------------------------------------------------------
-    // input parameters
+    // tester parameters
     //------------------------------------------------------
     // argument            header          width  is_list  help
     {"--iter=",            "iter",         0,     false,
@@ -319,6 +319,16 @@ static param_desc_t ParamDesc[] = {
 
     {"--tol=",             "tol",          0,     false,
      "tolerance [default: 50.0]"},
+
+    //------------------------------------------------------
+    // function input parameters
+    //------------------------------------------------------
+    // argument            header          width  is_list  help
+    {"--colrow=[c|r]",     "colrow",       6,     true,
+     "columnwise or rowwise [default: c]"},
+
+    {"--norm=[m|o|i|f]",   "norm",         4,     true,
+     "type of matrix norm (max, one, inf, frobenius) [default: o]"},
 
     {"--trans=[n|t|c]",    "trans",        6,     true,
      "transposition [default: n]"},
@@ -338,8 +348,8 @@ static param_desc_t ParamDesc[] = {
     {"--diag=[n|u]",       "diag",         6,     true,
      "non-unit diagonal or unit diagonal [default: n]"},
 
-    {"--colrow=[c|r]",     "colrow",       6,     true,
-     "columnwise or rowwise [default: c]"},
+    {"--hmode=[f|t]",      "House. mode",  11,    true,
+     "Householder mode for QR/LQ - flat or tree [default: f]"},
 
     {"--dim=",             "Dimensions",   6,     true,
      "M x N x K dimensions [default: 1000 x 1000 x 1000]\n"
@@ -362,9 +372,6 @@ static param_desc_t ParamDesc[] = {
     {"--ib=",              "ib",           4,     true,
      "IB inner blocking size [default: 64]"},
 
-    {"--hmode=[f|t]",      "House. mode",  11,    true,
-     "Householder mode for QR/LQ - flat or tree [default: f]"},
-
     {"--alpha=",           "alpha",        14,    true,
      "scalar alpha"},
 
@@ -382,9 +389,6 @@ static param_desc_t ParamDesc[] = {
 
     {"--ntpf=",            "ntpf",         4,     true,
      "number of threads for panel factorization [default: 1]"},
-
-    {"--norm=[m|o|i|f]",   "norm",         4,     true,
-     "type of matrix norm (max, one, inf, frobenius) [default: o]"},
 
     {"--zerocol=",         "zerocol",      7,     true,
      "if positive, a column of zeros inserted at that index [default: -1]"},

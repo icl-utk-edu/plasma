@@ -29,34 +29,41 @@ typedef enum {
     PARAM_GFLOPS,  // GFLOPS rate
 
     //------------------------------------------------------
-    // input parameters
+    // tester parameters
     //------------------------------------------------------
     PARAM_ITER,    // number of iterations
     PARAM_OUTER,   // outer product iteration?
     PARAM_DIM_OUTER, // outer product iteration for dimensions M, N, K?
     PARAM_TEST,    // test the solution?
     PARAM_TOL,     // tolerance
+
+    //------------------------------------------------------
+    // function input parameters
+    //------------------------------------------------------
+    // char params
+    PARAM_COLROW,  // columnwise or rowwise operation
+    PARAM_NORM,    // type of matrix norm
     PARAM_TRANS,   // transposition
     PARAM_TRANSA,  // transposition of A
     PARAM_TRANSB,  // transposition of B
     PARAM_SIDE,    // left of right side application
     PARAM_UPLO,    // general rectangular or upper or lower triangular
     PARAM_DIAG,    // non-unit or unit diagonal
-    PARAM_COLROW,  // columnwise or rowwise operation
+    PARAM_HMODE,   // Householder mode - tree or flat
+
+    // numeric params
     PARAM_DIM,     // M, N, K dimensions
     PARAM_KL,      // lower bandwidth
     PARAM_KU,      // upper bandwidth
     PARAM_NRHS,    // number of RHS
     PARAM_NB,      // tile size NBxNB
     PARAM_IB,      // inner blocking size
-    PARAM_HMODE,   // Householder mode - tree or flat
     PARAM_ALPHA,   // scalar alpha
     PARAM_BETA,    // scalar beta
     PARAM_PADA,    // padding of A
     PARAM_PADB,    // padding of B
     PARAM_PADC,    // padding of C
     PARAM_NTPF,    // number of threads for panel factorization
-    PARAM_NORM,    // type of matrix norm
     PARAM_ZEROCOL, // if positive, a column of zeros inserted at that index
     PARAM_INCX,    // 1 to pivot forward, -1 to pivot backward
 
