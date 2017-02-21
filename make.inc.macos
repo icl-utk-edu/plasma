@@ -21,27 +21,32 @@ RANLIB    = ranlib
 # can be commented out if making only static libraries.
 FPIC      = -fPIC
 
-CFLAGS    = -fopenmp $(FPIC) -O3 -std=c99 -Wall -pedantic -Wshadow -Wno-unused-function
+CFLAGS    = -fopenmp $(FPIC) -O3 -std=c99   -Wall -pedantic -Wshadow -Wno-unused-function -Wno-unused
 LDFLAGS   = -fopenmp $(FPIC)
 
-# options for MKL
-CFLAGS   += -DPLASMA_WITH_MKL \
-            -DMKL_Complex16="double _Complex" \
-            -DMKL_Complex8="float _Complex"
-
 # one of: aix bsd c89 freebsd generic linux macosx mingw posix solaris
-lua_platform = linux
+lua_platform = macosx
 
 
 # --------------------
 # libraries
+
+# ----- with MKL
 # This assumes $MKLROOT is set in your environment.
 # Add these to your .cshrc or .bashrc, adjusting for where MKL is installed:
 # in .cshrc:   source /opt/intel/bin/compilervars.csh intel64
 # in .bashrc:  source /opt/intel/bin/compilervars.sh  intel64
+# Currently, MKL on MacOS has only Intel threads, which may not work with gcc,
+# so use sequential.
+CFLAGS   += -DPLASMA_WITH_MKL
 
-# With gcc OpenMP (libgomp), use -lmkl_sequential or (-lmkl_gnu_thread   with MKL_NUM_THREADS=1).
-# With icc OpenMP (liomp5),  use -lmkl_sequential or (-lmkl_intel_thread with MKL_NUM_THREADS=1).
-LIBS      = -L$(MKLROOT)/lib -lmkl_intel_lp64 -lmkl_core -lmkl_sequential -lm
+LIBS      = -L$(MKLROOT)/lib -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lm
 
 INC       = -I$(MKLROOT)/include
+
+
+# ----- with MacOS Accelerate (Veclib)
+# do not use Netlib LAPACK with Accelerate; zdotc crashes.
+#LIBS      = -L$(LAPACKDIR) -llapacke -framework Accelerate
+
+#INC       = -I$(LAPACKDIR)/LAPACKE/include -I$(CBLASDIR)

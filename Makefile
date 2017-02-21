@@ -32,11 +32,17 @@ RANLIB    ?= ranlib
 CFLAGS    ?= -std=c99 -fopenmp -O3 -Wall -Wno-unused-variable -Wno-unused-function
 LDFLAGS   ?= -fopenmp
 
-# INC and LIBS indicate where to find LAPACK, and LAPACKE, and CBLAS
+# INC and LIBS indicate where to find LAPACK, LAPACKE, and CBLAS
 INC       ?= -I$(LAPACKDIR)/LAPACKE/include -I$(CBLASDIR)/include
 LIBS      ?= -L$(LAPACKDIR) -llapack -llapacke -L$(CBLASDIR)/lib -lcblas -lblas
 
 prefix    ?= /usr/local/plasma
+
+# one of: aix bsd c89 freebsd generic linux macosx mingw posix solaris
+lua_platform ?= generic
+lua_version   = lua-5.3.4
+lua_dir       = tools/$(lua_version)/src
+lua_lib       = $(lua_dir)/liblua.a
 
 
 # ----------------------------------------
@@ -44,8 +50,8 @@ prefix    ?= /usr/local/plasma
 
 codegen     := ./tools/codegen.py
 
-PLASMA_INC  := -Iinclude
-PLASMA_LIBS := -Llib -lplasma -lcoreblas
+PLASMA_INC  := -Iinclude -I$(lua_dir)
+PLASMA_LIBS := -Llib -lplasma -lcoreblas -L$(lua_dir) -llua
 
 .DELETE_ON_ERROR:
 
@@ -74,6 +80,20 @@ coreblas_obj := $(addsuffix .o, $(basename $(filter-out %.h, $(coreblas_all))))
 test_obj     := $(addsuffix .o, $(basename $(filter-out %.h, $(test_all))))
 
 test_exe     := test/test
+
+
+# ----------------------------------------
+# Build dependencies (Lua)
+
+$(lua_dir): tools/$(lua_version).tar.gz
+	cd tools && tar -zxvf $(lua_version).tar.gz
+
+$(lua_lib): | $(lua_dir)
+	cd $(lua_dir) && make $(lua_platform)
+
+$(plasma_obj): | $(lua_dir)
+
+$(test_exe): $(lua_lib)
 
 
 # ----------------------------------------
@@ -201,6 +221,7 @@ install: lib install_dirs
 
 clean:
 	-rm -f $(plasma_obj) $(coreblas_obj) $(test_obj) $(test_exe) $(libs) $(shared)
+	-cd $(lua_dir) && make clean
 
 # cleangen removes generated files if the template still exists;
 # grep for any stale generated files without a template.
@@ -209,6 +230,7 @@ distclean: clean cleangen
 	-rm -f compute/*.o control/*.o core_blas/*.o test/*.o
 	-rm -f $(makefiles_gen)
 	-rm -rf docs/html
+	-rm -rf tools/$(lua_version)
 
 
 # ----------------------------------------
