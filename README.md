@@ -14,8 +14,6 @@
 
 * * *
 
-[Download PLASMA Software](https://bitbucket.org/icl/plasma/get/17.01.tar.gz)
-
 [TOC]
 
 * * *
