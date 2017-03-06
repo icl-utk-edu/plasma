@@ -46,7 +46,7 @@
 #include <string.h>
 
 // https://en.wikipedia.org/wiki/X11_color_names
-struct {
+static struct {
     const char *color;
     int value;
 } Color[] = {
@@ -133,7 +133,7 @@ struct {
                                           {"Black",           0x000000}
 };
 
-int Trace = 1;
+static int Trace = 1;
 void trace_off() {Trace = 0;}
 void trace_on()  {Trace = 1;}
 
@@ -141,17 +141,17 @@ void trace_on()  {Trace = 1;}
 #define IMAGE_HEIGHT 1000
 
 #define MAP_SIZE 1024
-int ColorMap[MAP_SIZE];
-const char *Label[sizeof(Color)/sizeof(Color[0])] = { NULL };
-int NumColors = sizeof(Color)/sizeof(Color[0]);
+static int ColorMap[MAP_SIZE];
+static const char *Label[sizeof(Color)/sizeof(Color[0])] = { NULL };
+static int NumColors = sizeof(Color)/sizeof(Color[0]);
 
-int NumThreads;
+static int NumThreads;
 #define MAX_THREADS 256
 #define MAX_THREAD_EVENTS 1024
-int    EventNumThread  [MAX_THREADS];
-double EventStartThread[MAX_THREADS][MAX_THREAD_EVENTS];
-double EventStopThread [MAX_THREADS][MAX_THREAD_EVENTS];
-int    EventColorThread[MAX_THREADS][MAX_THREAD_EVENTS];
+static int    EventNumThread  [MAX_THREADS];
+static double EventStartThread[MAX_THREADS][MAX_THREAD_EVENTS];
+static double EventStopThread [MAX_THREADS][MAX_THREAD_EVENTS];
+static int    EventColorThread[MAX_THREADS][MAX_THREAD_EVENTS];
 
 //------------------------------------------------------------------------------
 // https://en.wikipedia.org/wiki/Fowler–Noll–Vo_hash_function
@@ -159,7 +159,8 @@ static inline unsigned int color_index(const char *str)
 {
     unsigned int hash = 23;
     unsigned int c;
-    while ((c = *str++) != '\0')
+    unsigned char *ustr = (unsigned char*)str;
+    while ((c = *ustr++) != '\0')
         hash = hash*307+c;
     return hash%MAP_SIZE;
 }
@@ -195,7 +196,7 @@ void trace_label(const char *color, const char *label)
 }
 
 //------------------------------------------------------------------------------
-void trace_finish()
+static void trace_finish()
 {
     double min_time = INFINITY;
     double max_time = 0.0;
@@ -297,7 +298,7 @@ void trace_finish()
 
 //------------------------------------------------------------------------------
 __attribute__ ((constructor))
-void trace_init()
+static void trace_init()
 {
     // Check if the maximums are powers of two.
     assert (__builtin_popcount(MAX_THREADS) == 1);
