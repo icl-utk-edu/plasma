@@ -29,47 +29,23 @@
  *
  * @brief Tests CLAG2Z
  *
- * @param[in]  param - array of parameters
- * @param[out] info  - string of column labels or column values; length InfoLen
+ * @param[in,out] param - array of parameters
+ * @param[in]     run - whether to run test
  *
- * If param is NULL and info is NULL,     print usage and return.
- * If param is NULL and info is non-NULL, set info to column labels and return.
- * If param is non-NULL and info is non-NULL, set info to column values
- * and run test.
+ * Sets flags in param indicating which parameters are used.
+ * If run is true, also runs test and stores output parameters.
  ******************************************************************************/
-void test_clag2z(param_value_t param[], char *info)
+void test_clag2z(param_value_t param[], bool run)
 {
     //================================================================
-    // Print usage info or return column labels or values
+    // Mark which parameters are used.
     //================================================================
-    if (param == NULL) {
-        if (info == NULL) {
-            // Print usage info
-            print_usage(PARAM_DIM);
-            print_usage(PARAM_PADA);
-            print_usage(PARAM_PADB);
-            print_usage(PARAM_NB);
-        }
-        else {
-            // Return column labels
-            snprintf(info, InfoLen,
-                     "%*s %*s %*s %*s %*s",
-                     InfoSpacing, "m",
-                     InfoSpacing, "n",
-                     InfoSpacing, "PadA",
-                     InfoSpacing, "PadB",
-                     InfoSpacing, "nb");
-        }
+    param[PARAM_DIM    ].used = PARAM_USE_M | PARAM_USE_N;
+    param[PARAM_PADA   ].used = true;
+    param[PARAM_PADB   ].used = true;
+    param[PARAM_NB     ].used = true;
+    if (! run)
         return;
-    }
-    // Return column values
-    snprintf(info, InfoLen,
-             "%*d %*d %*d %*d %*d",
-             InfoSpacing, param[PARAM_DIM].dim.m,
-             InfoSpacing, param[PARAM_DIM].dim.n,
-             InfoSpacing, param[PARAM_PADA].i,
-             InfoSpacing, param[PARAM_PADB].i,
-             InfoSpacing, param[PARAM_NB].i);
 
     //================================================================
     // Set parameters
@@ -136,7 +112,7 @@ void test_clag2z(param_value_t param[], char *info)
     }
 
     //================================================================
-    // Test results by comparing to result of core_clag2z function
+    // Test results by comparing to result of LAPACK function
     //================================================================
     if (test) {
         // Calculate relative error |A_ref - A|_F / |A_ref|_F < 3*eps
