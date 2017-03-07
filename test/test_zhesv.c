@@ -41,13 +41,6 @@ void test_zhesv(param_value_t param[], bool run)
     //================================================================
     // Print usage info or return column labels or values.
     //================================================================
-            print_usage(PARAM_UPLO);
-            print_usage(PARAM_DIM);
-            print_usage(PARAM_PADA);
-            print_usage(PARAM_NRHS);
-            print_usage(PARAM_NB);
-            print_usage(PARAM_NTPF);
-            print_usage(PARAM_ZEROCOL);
     param[PARAM_UPLO   ].used = true;
     param[PARAM_DIM    ].used = PARAM_USE_N;
     param[PARAM_NRHS   ].used = true;
