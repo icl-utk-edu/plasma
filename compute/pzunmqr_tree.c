@@ -16,7 +16,7 @@
 #include "plasma_internal.h"
 #include "plasma_types.h"
 #include "plasma_workspace.h"
-#include "plasma_rh_tree.h"
+#include "plasma_tree.h"
 #include "core_blas.h"
 
 #define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
@@ -28,10 +28,10 @@
  *  algorithm
  * @see plasma_omp_zgeqrs
  **/
-void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
-                      plasma_desc_t A, plasma_desc_t T, plasma_desc_t B,
-                      plasma_workspace_t work,
-                      plasma_sequence_t *sequence, plasma_request_t *request)
+void plasma_pzunmqr_tree(plasma_enum_t side, plasma_enum_t trans,
+                         plasma_desc_t A, plasma_desc_t T, plasma_desc_t B,
+                         plasma_workspace_t work,
+                         plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Return if failed sequence.
     if (sequence->status != PlasmaSuccess)
@@ -40,7 +40,7 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
     // Precompute order of QR operations.
     int *operations = NULL;
     int num_operations;
-    plasma_rh_tree_operations(A.mt, A.nt, &operations, &num_operations);
+    plasma_tree_operations(A.mt, A.nt, &operations, &num_operations);
 
     // Set inner blocking from the T tile row-dimension.
     int ib = T.mb;
@@ -61,8 +61,8 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
 
             int j, k, kpiv;
             plasma_enum_t kernel;
-            plasma_rh_tree_get_operation(operations,ind_operation,
-                                         &kernel, &j, &k, &kpiv);
+            plasma_tree_get_operation(operations,ind_operation,
+                                      &kernel, &j, &k, &kpiv);
 
             int nvaj = plasma_tile_nview(A, j);
             int mvak = plasma_tile_mview(A, k);
@@ -146,8 +146,8 @@ void plasma_pzunmqrrh(plasma_enum_t side, plasma_enum_t trans,
 
             int j, k, kpiv;
             plasma_enum_t kernel;
-            plasma_rh_tree_get_operation(operations,ind_operation,
-                                         &kernel, &j, &k, &kpiv);
+            plasma_tree_get_operation(operations,ind_operation,
+                                      &kernel, &j, &k, &kpiv);
 
             int nvbk = plasma_tile_nview(B, k);
             int mvak = plasma_tile_mview(A, k);

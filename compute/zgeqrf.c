@@ -259,7 +259,7 @@ void plasma_omp_zgeqrf(plasma_desc_t A, plasma_desc_t T,
 
     // Call the parallel function.
     if (plasma->householder_mode == PlasmaTreeHouseholder) {
-        plasma_pzgeqrfrh(A, T, work, sequence, request);
+        plasma_pzgeqrf_tree(A, T, work, sequence, request);
     }
     else {
         plasma_pzgeqrf(A, T, work, sequence, request);

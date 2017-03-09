@@ -274,9 +274,9 @@ void plasma_omp_zgeqrs(plasma_desc_t A, plasma_desc_t T,
 
     // Find Y = Q^H * B.
     if (plasma->householder_mode == PlasmaTreeHouseholder) {
-        plasma_pzunmqrrh(PlasmaLeft, Plasma_ConjTrans,
-                         A, T, B, work,
-                         sequence, request);
+        plasma_pzunmqr_tree(PlasmaLeft, Plasma_ConjTrans,
+                            A, T, B, work,
+                            sequence, request);
     }
     else {
         plasma_pzunmqr(PlasmaLeft, Plasma_ConjTrans,

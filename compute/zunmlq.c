@@ -337,9 +337,9 @@ void plasma_omp_zunmlq(plasma_enum_t side, plasma_enum_t trans,
 
     // Call the parallel function.
     if (plasma->householder_mode == PlasmaTreeHouseholder) {
-        plasma_pzunmlqrh(side, trans,
-                         A, T, C,
-                         work, sequence, request);
+        plasma_pzunmlq_tree(side, trans,
+                            A, T, C,
+                            work, sequence, request);
     }
     else {
         plasma_pzunmlq(side, trans,

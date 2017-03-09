@@ -274,7 +274,7 @@ void plasma_omp_zungqr(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
 
     // Construct Q.
     if (plasma->householder_mode == PlasmaTreeHouseholder) {
-        plasma_pzungqrrh(A, T, Q, work, sequence, request);
+        plasma_pzungqr_tree(A, T, Q, work, sequence, request);
     }
     else {
         plasma_pzungqr(A, T, Q, work, sequence, request);

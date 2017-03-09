@@ -348,16 +348,16 @@ void plasma_omp_zgels(plasma_enum_t trans,
     //===============================
     if (A.m >= A.n) {
         if (plasma->householder_mode == PlasmaTreeHouseholder) {
-            plasma_pzgeqrfrh(A, T, work, sequence, request);
+            plasma_pzgeqrf_tree(A, T, work, sequence, request);
         }
         else {
             plasma_pzgeqrf(A, T, work, sequence, request);
         }
 
         if (plasma->householder_mode == PlasmaTreeHouseholder) {
-            plasma_pzunmqrrh(PlasmaLeft, Plasma_ConjTrans,
-                             A, T, B,
-                             work, sequence, request);
+            plasma_pzunmqr_tree(PlasmaLeft, Plasma_ConjTrans,
+                                A, T, B,
+                                work, sequence, request);
         }
         else {
             plasma_pzunmqr(PlasmaLeft, Plasma_ConjTrans,
@@ -377,7 +377,7 @@ void plasma_omp_zgels(plasma_enum_t trans,
     //===============================
     else {
         if (plasma->householder_mode == PlasmaTreeHouseholder) {
-            plasma_pzgelqfrh(A, T, work, sequence, request);
+            plasma_pzgelqf_tree(A, T, work, sequence, request);
         }
         else {
             plasma_pzgelqf(A, T, work, sequence, request);
@@ -398,9 +398,9 @@ void plasma_omp_zgels(plasma_enum_t trans,
 
         // Find X = Q^H * Y.
         if (plasma->householder_mode == PlasmaTreeHouseholder) {
-            plasma_pzunmlqrh(PlasmaLeft, Plasma_ConjTrans,
-                             A, T, B,
-                             work, sequence, request);
+            plasma_pzunmlq_tree(PlasmaLeft, Plasma_ConjTrans,
+                                A, T, B,
+                                work, sequence, request);
         }
         else {
             plasma_pzunmlq(PlasmaLeft, Plasma_ConjTrans,

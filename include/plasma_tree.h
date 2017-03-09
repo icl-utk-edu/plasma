@@ -7,8 +7,8 @@
  *  University of Manchester, UK.
  **/
 
-#ifndef ICL_PLASMA_RH_TREE_H
-#define ICL_PLASMA_RH_TREE_H
+#ifndef ICL_PLASMA_TREE_H
+#define ICL_PLASMA_TREE_H
 
 enum {
     PlasmaGeKernel = 1,
@@ -21,11 +21,11 @@ enum {
  *  QR and LQ factorization.
  * @see plasma_omp_zgeqrf
  **/
-static inline int plasma_rh_tree_insert_operation(int *operations,
-                                                  int loperations,
-                                                  int ind_op,
-                                                  plasma_enum_t kernel,
-                                                  int col, int row, int rowpiv)
+static inline int plasma_tree_insert_operation(int *operations,
+                                               int loperations,
+                                               int ind_op,
+                                               plasma_enum_t kernel,
+                                               int col, int row, int rowpiv)
 {
     assert(ind_op < loperations);
 
@@ -44,10 +44,10 @@ static inline int plasma_rh_tree_insert_operation(int *operations,
  *  QR and LQ factorization.
  * @see plasma_omp_zgeqrf
  **/
-static inline void plasma_rh_tree_get_operation(int *operations,
-                                                int ind_op,
-                                                plasma_enum_t *kernel,
-                                                int *col, int *row, int *rowpiv)
+static inline void plasma_tree_get_operation(int *operations,
+                                             int ind_op,
+                                             plasma_enum_t *kernel,
+                                             int *col, int *row, int *rowpiv)
 {
     *kernel = operations[ind_op*4];
     *col    = operations[ind_op*4+1];
@@ -55,7 +55,7 @@ static inline void plasma_rh_tree_get_operation(int *operations,
     *rowpiv = operations[ind_op*4+3];
 }
 
-void plasma_rh_tree_operations(int mt, int nt,
-                               int **operations, int *num_operations);
+void plasma_tree_operations(int mt, int nt,
+                            int **operations, int *num_operations);
 
-#endif // ICL_PLASMA_RH_TREE_H
+#endif // ICL_PLASMA_TREE_H

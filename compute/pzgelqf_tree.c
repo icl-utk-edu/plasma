@@ -15,7 +15,7 @@
 #include "plasma_descriptor.h"
 #include "plasma_types.h"
 #include "plasma_internal.h"
-#include "plasma_rh_tree.h"
+#include "plasma_tree.h"
 #include "core_blas_z.h"
 
 #define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
@@ -25,9 +25,9 @@
  *  Parallel tile LQ factorization based on a tree Householder reduction
  * @see plasma_omp_zgelqf
  **/
-void plasma_pzgelqfrh(plasma_desc_t A, plasma_desc_t T,
-                      plasma_workspace_t work,
-                      plasma_sequence_t *sequence, plasma_request_t *request)
+void plasma_pzgelqf_tree(plasma_desc_t A, plasma_desc_t T,
+                         plasma_workspace_t work,
+                         plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Return if failed sequence.
     if (sequence->status != PlasmaSuccess)
@@ -38,7 +38,7 @@ void plasma_pzgelqfrh(plasma_desc_t A, plasma_desc_t T,
     int *operations = NULL;
     int num_operations;
     // Transpose m and n to reuse the QR tree.
-    plasma_rh_tree_operations(A.nt, A.mt, &operations, &num_operations);
+    plasma_tree_operations(A.nt, A.mt, &operations, &num_operations);
 
     // Set inner blocking from the T tile row-dimension.
     int ib = T.mb;
@@ -47,7 +47,7 @@ void plasma_pzgelqfrh(plasma_desc_t A, plasma_desc_t T,
         int j, k, kpiv;
         plasma_enum_t kernel;
         // j is row, k and kpiv are columns
-        plasma_rh_tree_get_operation(operations, iop, &kernel, &j, &k, &kpiv);
+        plasma_tree_get_operation(operations, iop, &kernel, &j, &k, &kpiv);
 
         int mvaj    = plasma_tile_mview(A, j);
         int nvak    = plasma_tile_nview(A, k);
