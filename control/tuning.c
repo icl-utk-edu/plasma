@@ -107,6 +107,6 @@ void plasma_tune_getrf(plasma_context_t *plasma, plasma_enum_t dtyp,
 
     plasma_tune_int_int_int(plasma->L, dtyp, "getrf_nb", m, n, &plasma->nb);
     plasma_tune_int_int_int(plasma->L, dtyp, "getrf_ib", m, n, &plasma->ib);
-    plasma_tune_int_int_int(plasma->L, dtyp, "getrf_num_panel_threads", m, n,
-                            &plasma->num_panel_threads);
+    plasma_tune_int_int_int(plasma->L, dtyp, "getrf_max_panel_threads", m, n,
+                            &plasma->max_panel_threads);
 }

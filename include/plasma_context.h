@@ -30,7 +30,7 @@ typedef struct {
     int ib;                         ///< PlasmaIb
     plasma_enum_t inplace_outplace; ///< PlasmaInplaceOutplace
     int max_threads;                ///< the value of OMP_NUM_THREADS
-    int num_panel_threads;          ///< no. threads for panel factorization
+    int max_panel_threads;          ///< max threads for panel factorization
     plasma_barrier_t barrier;       ///< thread barrier for multithreaded tasks
     plasma_enum_t householder_mode; ///< PlasmaHouseholderMode
 } plasma_context_t;

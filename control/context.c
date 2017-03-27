@@ -93,7 +93,7 @@ int plasma_set(plasma_enum_t param, int value)
             plasma_error("invalid number of panel threads");
             return PlasmaErrorIllegalValue;
         }
-        plasma->num_panel_threads = value;
+        plasma->max_panel_threads = value;
         break;
     case PlasmaHouseholderMode:
         if (value != PlasmaFlatHouseholder && value != PlasmaTreeHouseholder) {
@@ -130,7 +130,7 @@ int plasma_get(plasma_enum_t param, int *value)
         *value = plasma->ib;
         return PlasmaSuccess;
     case PlasmaNumPanelThreads:
-        *value = plasma->num_panel_threads;
+        *value = plasma->max_panel_threads;
         return PlasmaSuccess;
     case PlasmaHouseholderMode:
         *value = plasma->householder_mode;
@@ -236,7 +236,7 @@ void plasma_context_init(plasma_context_t *context)
     context->ib = 64;
     context->inplace_outplace = PlasmaOutplace;
     context->max_threads = omp_get_max_threads();
-    context->num_panel_threads = 1;
+    context->max_panel_threads = 1;
     context->householder_mode = PlasmaFlatHouseholder;
 
     // Initialize config.

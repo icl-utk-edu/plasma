@@ -387,8 +387,8 @@ static param_desc_t ParamDesc[] = {
     {"--padc=",            "padC",         4,     true,
      "padding added to ldc [default: 0]"},
 
-    {"--ntpf=",            "ntpf",         4,     true,
-     "number of threads for panel factorization [default: 1]"},
+    {"--mtpf=",            "mtpf",         4,     true,
+     "maximum number of threads for panel factorization [default: 1]"},
 
     {"--zerocol=",         "zerocol",      7,     true,
      "if positive, a column of zeros inserted at that index [default: -1]"},
@@ -645,7 +645,7 @@ int test_routine(const char *name, param_value_t pval[], bool test)
             case PARAM_PADA:
             case PARAM_PADB:
             case PARAM_PADC:
-            case PARAM_NTPF:
+            case PARAM_MTPF:
             case PARAM_ZEROCOL:
             case PARAM_INCX:
                 printf("  %*d", ParamDesc[i].width, pval[i].i);
@@ -821,8 +821,8 @@ void param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--padc="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_PADC]);
 
-        else if (param_starts_with(argv[i], "--ntpf="))
-            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_NTPF]);
+        else if (param_starts_with(argv[i], "--mtpf="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_MTPF]);
         else if (param_starts_with(argv[i], "--zerocol="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_ZEROCOL]);
         else if (param_starts_with(argv[i], "--incx="))
@@ -917,8 +917,8 @@ void param_read(int argc, char **argv, param_t param[])
     if (param[PARAM_PADC].num == 0)
         param_add_int(0, &param[PARAM_PADC]);
 
-    if (param[PARAM_NTPF].num == 0)
-        param_add_int(1, &param[PARAM_NTPF]);
+    if (param[PARAM_MTPF].num == 0)
+        param_add_int(1, &param[PARAM_MTPF]);
     if (param[PARAM_ZEROCOL].num == 0)
         param_add_int(-1, &param[PARAM_ZEROCOL]);
     if (param[PARAM_INCX].num == 0)

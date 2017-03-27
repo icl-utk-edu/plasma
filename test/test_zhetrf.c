@@ -46,7 +46,7 @@ void test_zhetrf(param_value_t param[], bool run)
     param[PARAM_PADA   ].used = true;
     param[PARAM_NRHS   ].used = true;
     param[PARAM_NB     ].used = true;
-    param[PARAM_NTPF   ].used = true;
+    param[PARAM_MTPF   ].used = true;
     param[PARAM_ZEROCOL].used = true;
     if (! run)
         return;
@@ -73,7 +73,7 @@ void test_zhetrf(param_value_t param[], bool run)
     //================================================================
     plasma_set(PlasmaNb, param[PARAM_NB].i);
     plasma_set(PlasmaIb, param[PARAM_IB].i);
-    plasma_set(PlasmaNumPanelThreads, param[PARAM_NTPF].i);
+    plasma_set(PlasmaNumPanelThreads, param[PARAM_MTPF].i);
 
     //================================================================
     // Allocate and initialize arrays.

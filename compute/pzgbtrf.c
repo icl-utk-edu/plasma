@@ -31,7 +31,7 @@ void plasma_pzgbtrf(plasma_desc_t A, int *ipiv,
     // Read parameters from the context.
     plasma_context_t *plasma = plasma_context_self();
     int ib = plasma->ib;
-    int num_panel_threads = plasma->num_panel_threads;
+    int max_panel_threads = plasma->max_panel_threads;
     plasma_barrier_t *barrier = &plasma->barrier;
 
     for (int k = 0; k < imin(A.mt, A.nt); k++) {
@@ -53,7 +53,7 @@ void plasma_pzgbtrf(plasma_desc_t A, int *ipiv,
                          priority(1) */
         {
             if (sequence->status == PlasmaSuccess) {
-                for (int rank = 0; rank < num_panel_threads; rank++) {
+                for (int rank = 0; rank < max_panel_threads; rank++) {
                     #pragma omp task // priority(1)
                     {
                         // create a view for panel as a "general" submatrix
@@ -62,7 +62,7 @@ void plasma_pzgbtrf(plasma_desc_t A, int *ipiv,
                         view.type = PlasmaGeneral;
 
                         int info = core_zgetrf(view, &ipiv[k*A.mb], ib, rank,
-                                               num_panel_threads, barrier);
+                                               max_panel_threads, barrier);
                         if (info != 0)
                             plasma_request_fail(sequence, request, k*A.mb+info);
                     }

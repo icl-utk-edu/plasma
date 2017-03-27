@@ -52,7 +52,7 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
     plasma_context_t *plasma = plasma_context_self();
     plasma_barrier_t *barrier = &plasma->barrier;
     int ib = plasma->ib;
-    int num_panel_threads = plasma->num_panel_threads;
+    int max_panel_threads = plasma->max_panel_threads;
     int wmt = W.mt-(1+2*A.mt);
 
     // Creaet views for the workspaces
@@ -340,7 +340,7 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                                  priority(1) */
                 {
                     if (sequence->status == PlasmaSuccess) {
-                        for (int rank = 0; rank < num_panel_threads; rank++) {
+                        for (int rank = 0; rank < max_panel_threads; rank++) {
                             #pragma omp task // priority(1)
                             {
                                 plasma_desc_t view =
@@ -349,7 +349,7 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                                                      mlkk, mvak);
 
                                 int info = core_zgetrf(view, IPIV(k+1), ib,
-                                                       rank, num_panel_threads,
+                                                       rank, max_panel_threads,
                                                        barrier);
                                 if (info != 0)
                                     plasma_request_fail(sequence, request, (k+1)*A.mb+info);

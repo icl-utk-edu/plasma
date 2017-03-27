@@ -63,7 +63,7 @@ typedef enum {
     PARAM_PADA,    // padding of A
     PARAM_PADB,    // padding of B
     PARAM_PADC,    // padding of C
-    PARAM_NTPF,    // number of threads for panel factorization
+    PARAM_MTPF,    // maximum number of threads for panel factorization
     PARAM_ZEROCOL, // if positive, a column of zeros inserted at that index
     PARAM_INCX,    // 1 to pivot forward, -1 to pivot backward
 

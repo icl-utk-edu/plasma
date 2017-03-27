@@ -88,8 +88,8 @@ int plasma_zgbtrf(int m, int n, int kl, int ku,
     int nb = plasma->nb;
 
     // Initialize barrier.
-    int num_panel_threads = plasma->num_panel_threads;
-    plasma_barrier_init(&plasma->barrier, num_panel_threads);
+    int max_panel_threads = plasma->max_panel_threads;
+    plasma_barrier_init(&plasma->barrier, max_panel_threads);
 
     // Create tile matrix.
     plasma_desc_t AB;
