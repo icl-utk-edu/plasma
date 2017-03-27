@@ -37,7 +37,7 @@ int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
         max_val = (plasma_complex64_t*)malloc(size*sizeof(plasma_complex64_t));
         info = 0;
     }
-    plasma_barrier_wait(barrier);
+    plasma_barrier_wait(barrier, size);
     assert(max_idx != NULL);
     assert(max_val != NULL);
 
@@ -84,7 +84,7 @@ int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
                 }
             }
 
-            plasma_barrier_wait(barrier);
+            plasma_barrier_wait(barrier, size);
             if (rank == 0)
             {
                 // max reduction
@@ -116,7 +116,7 @@ int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
                     }
                 }
             }
-            plasma_barrier_wait(barrier);
+            plasma_barrier_wait(barrier, size);
 
             // column scaling and trailing update (all ranks)
             for (int l = rank; l < A.mt; l += size) {
@@ -164,13 +164,13 @@ int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
                                                     &al[+(j+1)*ldal], ldal);
                 }
             }
-            plasma_barrier_wait(barrier);
+            plasma_barrier_wait(barrier, size);
         }
 
         //===================================
         // right pivoting and trsm (rank 0)
         //===================================
-        plasma_barrier_wait(barrier);
+        plasma_barrier_wait(barrier, size);
         if (rank == 0) {
             // pivot adjustment
             for (int i = k+1; i <= imin(A.m, k+kb); i++)
@@ -195,7 +195,7 @@ int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
                         CBLAS_SADDR(zone), &a0[k+k*lda0], lda0,
                                            &a0[k+(k+kb)*lda0], lda0);
         }
-        plasma_barrier_wait(barrier);
+        plasma_barrier_wait(barrier, size);
 
         //===================
         // gemm (all ranks)
@@ -228,7 +228,7 @@ int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
                             CBLAS_SADDR(zone),  &ai[(k+kb)*ldai], ldai);
             }
         }
-        plasma_barrier_wait(barrier);
+        plasma_barrier_wait(barrier, size);
     }
 
     //============================

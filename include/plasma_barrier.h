@@ -16,14 +16,13 @@ extern "C" {
 
 /******************************************************************************/
 typedef struct {
-    int size;
     int count;
     volatile int passed;
 } plasma_barrier_t;
 
 /******************************************************************************/
-void plasma_barrier_init(plasma_barrier_t *barrier, int size);
-void plasma_barrier_wait(plasma_barrier_t *barrier);
+void plasma_barrier_init(plasma_barrier_t *barrier);
+void plasma_barrier_wait(plasma_barrier_t *barrier, int size);
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -56,8 +56,7 @@ int plasma_zgetrf(int m, int n,
     int nb = plasma->nb;
 
     // Initialize barrier.
-    int max_panel_threads = plasma->max_panel_threads;
-    plasma_barrier_init(&plasma->barrier, max_panel_threads);
+    plasma_barrier_init(&plasma->barrier);
 
     // Create tile matrix.
     plasma_desc_t A;

@@ -128,8 +128,7 @@ int plasma_zhesv(plasma_enum_t uplo, int n, int nrhs,
     int nb = plasma->nb;
 
     // Initialize barrier
-    int max_panel_threads = plasma->max_panel_threads;
-    plasma_barrier_init(&plasma->barrier, max_panel_threads);
+    plasma_barrier_init(&plasma->barrier);
 
     // Initialize tile matrix descriptors.
     plasma_desc_t A;

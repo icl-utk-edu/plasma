@@ -223,8 +223,7 @@ int plasma_zcgesv(int n, int nrhs,
     plasma_request_t request = PlasmaRequestInitializer;
 
     // Initialize barrier.
-    int max_panel_threads = plasma->max_panel_threads;
-    plasma_barrier_init(&plasma->barrier, max_panel_threads);
+    plasma_barrier_init(&plasma->barrier);
 
     // Asynchronous block
     #pragma omp parallel
