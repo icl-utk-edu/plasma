@@ -147,7 +147,7 @@ static int NumColors = sizeof(Color)/sizeof(Color[0]);
 
 static int NumThreads;
 #define MAX_THREADS 256
-#define MAX_THREAD_EVENTS 1024
+#define MAX_THREAD_EVENTS 65536
 static int    EventNumThread  [MAX_THREADS];
 static double EventStartThread[MAX_THREADS][MAX_THREAD_EVENTS];
 static double EventStopThread [MAX_THREADS][MAX_THREAD_EVENTS];
@@ -233,7 +233,7 @@ static void trace_finish()
             fprintf(
                 trace_file,
                 "<rect x=\"%lf\" y=\"%lf\" width=\"%lf\" height=\"%lf\" "
-                "fill=\"#%06x\" stroke=\"#000000\" stroke-width=\"1\" "
+                "fill=\"#%06x\" stroke=\"#000000\" stroke-width=\"0.2\" "
                 "inkscape:label=\"%s\"/>\n",
                 start * hscale,
                 thread * vscale,
