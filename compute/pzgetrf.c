@@ -62,11 +62,9 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                                              k*A.mb, k*A.nb,
                                              A.m-k*A.mb, nvak);
 
-                        trace_cpu_start();
                         int info = core_zgetrf(view, &ipiv[k*A.mb], ib,
                                                rank, max_panel_threads,
                                                barrier);
-                        trace_cpu_stop("Sienna");
                         if (info != 0)
                             plasma_request_fail(sequence, request, k*A.mb+info);
                     }
@@ -104,18 +102,14 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                     int k2 = imin(k*A.mb+A.mb, A.m);
                     plasma_desc_t view =
                         plasma_desc_view(A, 0, n*A.nb, A.m, nvan);
-                    trace_cpu_start();
                     core_zgeswp(PlasmaRowwise, view, k1, k2, ipiv, 1);
-                    trace_cpu_stop("CornflowerBlue");
 
                     // trsm
-                    trace_cpu_start();
                     core_ztrsm(PlasmaLeft, PlasmaLower,
                                PlasmaNoTrans, PlasmaUnit,
                                mvak, nvan,
                                1.0, A(k, k), ldak,
                                     A(k, n), ldak);
-                    trace_cpu_stop("MediumPurple");
 
                     // gemm
                     for (int m = k+1; m < A.mt; m++) {
@@ -124,14 +118,12 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
 
                         #pragma omp task // priority(n == k+1)
                         {
-                            trace_cpu_start();
                             core_zgemm(
                                 PlasmaNoTrans, PlasmaNoTrans,
                                 mvam, nvan, A.nb,
                                 -1.0, A(m, k), ldam,
                                       A(k, n), ldak,
                                 1.0,  A(m, n), ldam);
-                            trace_cpu_stop("DarkSeaGreen");
                         }
                     }
                 }
