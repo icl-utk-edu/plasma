@@ -16,6 +16,8 @@
 
 #include <stdio.h>
 #include <assert.h>
+#include <stdarg.h>
+#include <omp.h>
 
 /******************************************************************************/
 lua_State *plasma_tuning_init()
@@ -65,8 +67,8 @@ void plasma_tuning_finalize(lua_State *L)
 }
 
 /******************************************************************************/
-static void plasma_tune_int_int_int(lua_State *L, plasma_enum_t dtyp,
-                                    char *func_name, int x, int y, int *z)
+static void plasma_tune(lua_State *L, plasma_enum_t dtyp,
+                       char *func_name, int *out, int count, ...)
 {
     int retval;
     retval = lua_getglobal(L, func_name);
@@ -81,10 +83,16 @@ static void plasma_tune_int_int_int(lua_State *L, plasma_enum_t dtyp,
         case PlasmaRealFloat:     lua_pushstring(L, "S"); break;
         default: plasma_error("invalid type"); return;
     }
-    lua_pushinteger(L, x);
-    lua_pushinteger(L, y);
 
-    retval = lua_pcall(L, 3, 1, 0);
+    lua_pushinteger(L, omp_get_max_threads());
+
+    va_list ap;
+    va_start(ap, count);
+    for (int i = 0; i < count; i++)
+        lua_pushinteger(L, va_arg(ap, int));
+    va_end(ap);
+
+    retval = lua_pcall(L, 2+count, 1, 0);
     if (retval != LUA_OK) {
         plasma_error("lua_pcall() failed");
         return;
@@ -94,7 +102,7 @@ static void plasma_tune_int_int_int(lua_State *L, plasma_enum_t dtyp,
         plasma_error("lua_tonumber() failed");
         return;
     }
-    *z = retval;
+    *out = retval;
     lua_pop(L, 1);
 }
 
@@ -105,8 +113,8 @@ void plasma_tune_getrf(plasma_context_t *plasma, plasma_enum_t dtyp,
     if (plasma->L == NULL)
         return;
 
-    plasma_tune_int_int_int(plasma->L, dtyp, "getrf_nb", m, n, &plasma->nb);
-    plasma_tune_int_int_int(plasma->L, dtyp, "getrf_ib", m, n, &plasma->ib);
-    plasma_tune_int_int_int(plasma->L, dtyp, "getrf_max_panel_threads", m, n,
-                            &plasma->max_panel_threads);
+    plasma_tune(plasma->L, dtyp, "getrf_nb", &plasma->nb, 2, m, n);
+    plasma_tune(plasma->L, dtyp, "getrf_ib", &plasma->ib, 2, m, n);
+    plasma_tune(plasma->L, dtyp, "getrf_max_panel_threads",
+                &plasma->max_panel_threads, 2, m, n);
 }
