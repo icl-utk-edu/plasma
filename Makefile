@@ -226,7 +226,7 @@ clean:
 # cleangen removes generated files if the template still exists;
 # grep for any stale generated files without a template.
 distclean: clean cleangen
-	grep -l @generated $(plasma_src) $(coreblas_src) $(test_src) | xargs rm
+	grep -l @generated $(plasma_src) $(coreblas_src) $(test_src) | xargs rm -f
 	-rm -f compute/*.o control/*.o core_blas/*.o test/*.o
 	-rm -f $(makefiles_gen)
 	-rm -rf docs/html
