@@ -39,7 +39,8 @@ At the same time, it is moving from its ICL SVN repository
 to this Bitbucket Mercurial repository.
 The content of this repository reflects the progress of the transition.
 Before the transition is complete, the last release of the old PLASMA
-is available here: https://bitbucket.org/icl/plasma/downloads/plasma_2.8.0.tar.gz
+is available here:
+http://icl.cs.utk.edu/projectsfiles/plasma/pubs/plasma_2.8.0.tar.gz
 
 Documentation
 =============
