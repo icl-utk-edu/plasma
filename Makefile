@@ -1,36 +1,44 @@
-# ----------------------------------------
+# ------------------------------------------------------------------------------
 # Usage:
 #   make [all]      --  make lib test
-#   make lib        --  make lib/libplasma.a lib/libcoreblas.a
-#   make shared     --  make lib/libplasma.so lib/libcoreblas.so
+#   make lib        --  make lib/libplasma.{a,so} lib/libcoreblas.{a,so}
+#   make lua        --  make tools/lua-5.3.4/src/liblua.a
 #   make test       --  make test/test
 #   make docs       --  make docs/html
 #   make generate   --  generate precisions
 #   make clean      --  remove objects, libraries, and executables
 #   make cleangen   --  remove generated precision files
 #   make distclean  --  remove above, Makefile.*.gen, and anything else that can be generated
+#
+# Options:
+#   quiet=1         --  abbreviate long compilation commands
+#   static=0        --  build only shared libraries (no static)
+#   static=1        --  build only static libraries (no shared)
+#                       By default, builds both static and shared libraries.
 
 
-# ----------------------------------------
+# ------------------------------------------------------------------------------
 # Define default rule first, before including Makefiles
 
 all: lib test
 
 
-# ----------------------------------------
+# ------------------------------------------------------------------------------
 # Tools and flags
 # Get from make.inc, or use these defaults
 
 include make.inc
 
+# define FPIC to make shared libraries
+#FPIC      = -fPIC
+
 CC        ?= cc
+CFLAGS    ?= -std=c99 -fopenmp $(FPIC) -O3 -Wall -Wno-unused-variable -Wno-unused-function
+LDFLAGS   ?= -fopenmp $(FPIC)
 
 ARCH      ?= ar
 ARCHFLAGS ?= cr
 RANLIB    ?= ranlib
-
-CFLAGS    ?= -std=c99 -fopenmp -O3 -Wall -Wno-unused-variable -Wno-unused-function
-LDFLAGS   ?= -fopenmp
 
 # INC and LIBS indicate where to find LAPACK, LAPACKE, and CBLAS
 INC       ?= -I$(LAPACKDIR)/LAPACKE/include -I$(CBLASDIR)/include
@@ -39,26 +47,33 @@ LIBS      ?= -L$(LAPACKDIR) -llapack -llapacke -L$(CBLASDIR)/lib -lcblas -lblas
 prefix    ?= /usr/local/plasma
 
 # one of: aix bsd c89 freebsd generic linux macosx mingw posix solaris
+# usually generic is fine
 lua_platform ?= generic
-lua_version   = lua-5.3.4
-lua_dir       = tools/$(lua_version)/src
-lua_lib       = $(lua_dir)/liblua.a
 
 
-# ----------------------------------------
+# ------------------------------------------------------------------------------
 # Internal tools and flags
 
 codegen     := ./tools/codegen.py
 
+lua_version := lua-5.3.4
+lua_dir     := tools/$(lua_version)/src
+lua_lib     := lib/liblua.a
+
 PLASMA_INC  := -Iinclude -I$(lua_dir)
-PLASMA_LIBS := -Llib -lplasma -lcoreblas -L$(lua_dir) -llua
+PLASMA_LIBS := -Llib -lplasma -lcoreblas -llua
 
 .DELETE_ON_ERROR:
 
 .SUFFIXES:
 
+ifeq ($(quiet),1)
+   quiet_CC := @echo "$(CC) ... $@";
+   quiet_AR := @echo "$(ARCH) ... $@";
+endif
 
-# ----------------------------------------
+
+# ------------------------------------------------------------------------------
 # Define sources, objects, libraries, executables.
 # These makefiles define lists of source and header files in
 # $(plasma_all), $(coreblas_all), and $(test_all).
@@ -82,105 +97,113 @@ test_obj     := $(addsuffix .o, $(basename $(filter-out %.h, $(test_all))))
 test_exe     := test/test
 
 
-# ----------------------------------------
+# ------------------------------------------------------------------------------
 # Build dependencies (Lua)
+
+lua: $(lua_lib)
 
 $(lua_dir): tools/$(lua_version).tar.gz
 	cd tools && tar -zxvf $(lua_version).tar.gz
 
+# clear TARGET_ARCH, which Intel's compilervars.sh script (erroneously?) sets to intel64
 $(lua_lib): | $(lua_dir)
-	cd $(lua_dir) && make $(lua_platform)
+	cd $(lua_dir) && make $(lua_platform) MYCFLAGS="-fPIC" CC=$(CC) TARGET_ARCH=
+	cp $(lua_dir)/liblua.a lib
 
-$(plasma_obj): | $(lua_dir)
+# plasma needs lua include files
+$(plasma_obj):   | $(lua_dir)
+$(coreblas_obj): | $(lua_dir)
 
-$(test_exe): $(lua_lib)
+libfiles = $(lua_lib)
 
 
-# ----------------------------------------
-# Build libraries
+# ------------------------------------------------------------------------------
+# Build static libraries
 
-.PHONY: lib
-
-libs := \
+ifneq ($(static),0)
+    libfiles += \
 	lib/libplasma.a    \
 	lib/libcoreblas.a  \
 
-lib: $(libs)
-
-# In case changing Makefile.gen changes $(obj), also depend on it,
-# which recreates the library if a file is removed.
-# ----------
-lib/libplasma.a: $(plasma_obj) Makefile.plasma.gen
+    # In case changing Makefile.gen changes $(obj), also depend on it,
+    # which recreates the library if a file is removed.
+    lib/libplasma.a: $(plasma_obj) Makefile.plasma.gen
 	-rm -f $@
-	$(ARCH) $(ARCHFLAGS) $@ $(plasma_obj)
+	$(quiet_AR) $(ARCH) $(ARCHFLAGS) $@ $(plasma_obj)
 	$(RANLIB) $@
 
-# ----------
-lib/libcoreblas.a: $(coreblas_obj) Makefile.coreblas.gen
+    lib/libcoreblas.a: $(coreblas_obj) Makefile.coreblas.gen
 	-rm -f $@
-	$(ARCH) $(ARCHFLAGS) $@ $(coreblas_obj)
+	$(quiet_AR) $(ARCH) $(ARCHFLAGS) $@ $(coreblas_obj)
 	$(RANLIB) $@
-
-
-# ----------------------------------------
-# Build shared libraries
-
-# check whether all FLAGS have -fPIC
-have_fpic = $(and $(findstring -fPIC, $(CFLAGS)),   \
-                  $(findstring -fPIC, $(LDFLAGS)))
-
-# -----
-# if all FLAGS have -fPIC: allow compiling shared libraries
-ifneq ($(have_fpic),)
-
-shared := \
-	lib/libplasma.so    \
-	lib/libcoreblas.so  \
-
-shared: $(shared)
-
-lib/libplasma.so: $(plasma_obj) Makefile.plasma.gen lib/libcoreblas.so
-	$(CC) -shared $(LDFLAGS) -o $@ $(plasma_obj) -Llib -lcoreblas $(LIBS)
-
-lib/libcoreblas.so: $(coreblas_obj) Makefile.coreblas.gen
-	$(CC) -shared $(LDFLAGS) -o $@ $(coreblas_obj) $(LIBS)
-
-# -----
-# else: some FLAGS missing -fPIC: print error for shared
-else
-
-shared:
-	@echo "Error: 'make shared' requires CFLAGS and LDFLAGS to have -fPIC."
-	@echo "Please edit your make.inc file, make clean && make shared."
-
 endif
 
 
-# ----------------------------------------
+# ------------------------------------------------------------------------------
+# Build shared libraries
+
+# if all FLAGS have -fPIC, allow compiling shared libraries
+have_fpic = $(and $(findstring -fPIC, $(CFLAGS)),   \
+                  $(findstring -fPIC, $(LDFLAGS)))
+
+ifneq ($(static),1)
+ifneq ($(have_fpic),)
+   libfiles += \
+	lib/libplasma.so    \
+	lib/libcoreblas.so  \
+
+   top = $(shell pwd)
+
+   rpath = -Wl,-rpath,$(top)/lib
+
+   # MacOS (darwin) needs shared library's path set
+   ifneq ($(findstring darwin, $(OSTYPE)),)
+       install_name = -install_name @rpath/$(notdir $@)
+   endif
+
+   lib/libplasma.so: $(plasma_obj) Makefile.plasma.gen lib/libcoreblas.so $(lua_lib)
+	$(quiet_CC) $(CC) -shared $(LDFLAGS) -o $@ $(plasma_obj) \
+	-Llib -lcoreblas -llua $(LIBS) \
+	$(install_name)
+
+   lib/libcoreblas.so: $(coreblas_obj) Makefile.coreblas.gen $(lua_lib)
+	$(quiet_CC) $(CC) -shared $(LDFLAGS) -o $@ $(coreblas_obj) \
+	-Llib -llua $(LIBS) \
+	$(install_name)
+endif
+endif
+
+.PHONY: lib
+
+lib: $(libfiles)
+
+
+# ------------------------------------------------------------------------------
 # Build tester
 
 .PHONY: test
 
 test: $(test_exe)
 
-$(test_exe): $(test_obj) $(libs) Makefile.test.gen
-	$(CC) $(LDFLAGS) -o $@ $(test_obj) $(PLASMA_LIBS) $(LIBS)
+$(test_exe): $(test_obj) $(libfiles) Makefile.test.gen
+	$(quiet_CC) $(CC) $(LDFLAGS) -o $@ $(test_obj) $(PLASMA_LIBS) $(LIBS) \
+	$(rpath)
 
 
-# ----------------------------------------
+# ------------------------------------------------------------------------------
 # Build objects
-# Headers must exist before compiling, but use order-only prerequisite (after "|")
-# so as not to force recompiling everything if a header changes.
+# Headers must exist before compiling, but use order-only prerequisite
+# (after "|") so as not to force recompiling everything if a header changes.
 # (Should use compiler's -MMD flag to create header dependencies.)
 
 %.o: %.c | $(headers)
-	$(CC) $(CFLAGS) $(PLASMA_INC) $(INC) -c -o $@ $<
+	$(quiet_CC) $(CC) $(CFLAGS) $(PLASMA_INC) $(INC) -c -o $@ $<
 
 %.i: %.c | $(headers)
-	$(CC) $(CFLAGS) $(PLASMA_INC) $(INC) -E -o $@ $<
+	$(quiet_CC) $(CC) $(CFLAGS) $(PLASMA_INC) $(INC) -E -o $@ $<
 
 
-# ----------------------------------------
+# ------------------------------------------------------------------------------
 # Build documentation
 
 .PHONY: docs
@@ -189,8 +212,9 @@ docs: generate
 	doxygen docs/doxygen/doxyfile.conf
 
 
-# ----------------------------------------
+# ------------------------------------------------------------------------------
 # Install
+# TODO: need to install Lua headers?
 
 .PHONY: install_dirs install
 
@@ -201,9 +225,8 @@ install_dirs:
 	mkdir -p $(prefix)/lib/pkgconfig
 
 install: lib install_dirs
-	cp  include/*.h $(prefix)/include
-	cp  $(libs)     $(prefix)/lib
-	-cp $(shared)   $(prefix)/lib
+	cp include/*.h $(prefix)/include
+	cp $(libfiles) $(prefix)/lib
 	# pkgconfig
 	cat lib/pkgconfig/plasma.pc.in         | \
 	sed -e s:@INSTALL_PREFIX@:"$(prefix)": | \
@@ -212,15 +235,24 @@ install: lib install_dirs
 	sed -e s:@REQUIRES@::                    \
 	    > $(prefix)/lib/pkgconfig/plasma.pc
 
+uninstall:
+	rm -f $(prefix)/include/core_blas*.h
+	rm -f $(prefix)/include/core_lapack*.h
+	rm -f $(prefix)/include/plasma*.h
+	rm -f $(prefix)/lib/libcoreblas*
+	rm -f $(prefix)/lib/libplasma*
+	rm -f $(prefix)/lib/liblua*
+	rm -f $(prefix)/lib/pkgconfig/plasma.pc
 
-# ----------------------------------------
+
+# ------------------------------------------------------------------------------
 # Maintenance rules
 # makefiles_gen define generate and cleangen.
 
 .PHONY: clean distclean
 
 clean:
-	-rm -f $(plasma_obj) $(coreblas_obj) $(test_obj) $(test_exe) $(libs) $(shared)
+	-rm -f $(plasma_obj) $(coreblas_obj) $(test_obj) $(test_exe) $(libfiles)
 	-cd $(lua_dir) && make clean
 
 # cleangen removes generated files if the template still exists;
@@ -233,12 +265,12 @@ distclean: clean cleangen
 	-rm -rf tools/$(lua_version)
 
 
-# ----------------------------------------
+# ------------------------------------------------------------------------------
 # Create dependencies to do precision generation.
 
-plasma_src   := $(wildcard compute/*.c compute/*.h control/*.c control/*.h include/*.h)
+plasma_src   := $(wildcard compute/*.c compute/*.h include/*.h)
 
-coreblas_src := $(wildcard core_blas/*.c core_blas/*.h)
+coreblas_src := $(wildcard core_blas/*.c core_blas/*.h control/*.c control/*.h)
 
 test_src     := $(wildcard test/*.c test/*.h)
 
@@ -252,7 +284,7 @@ Makefile.test.gen: $(codegen)
 	$(codegen) --make --prefix test     $(test_src)     > $@
 
 
-# ----------
+# --------------------
 # If the list of src files changes, then force remaking Makefile.gen
 # To reduce unnecesary remaking, don't remake if either:
 # 1) src == old:
@@ -276,18 +308,21 @@ ifneq ($(filter-out $(test_generated),$(test_src)),$(test_templates))
 Makefile.test.gen: force_gen
 endif
 endif
-# ----------
+# --------------------
 
 force_gen: ;
 
 
-# ----------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Debugging
 
 echo:
 	@echo "CC      $(CC)"
 	@echo "CFLAGS  $(CFLAGS)"
 	@echo "LDFLAGS $(LDFLAGS)"
+	@echo
+	@echo "test_exe           <$(test_exe)>"
+	@echo "libfiles           <$(libfiles)>"
 	@echo
 	@echo "plasma_src         <$(plasma_src)>"
 	@echo "plasma_old         <$(plasma_old)>"
