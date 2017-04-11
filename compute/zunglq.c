@@ -107,11 +107,15 @@ int plasma_zunglq(int m, int n, int k,
     if (m <= 0)
         return PlasmaSuccess;
 
-    // Set tiling parameters.
+    // Tune parameters
+    if (plasma->tuning)
+        plasma_tune_gelqf(plasma, PlasmaComplexDouble, m, n);
+
+    // Set tiling parameters
     int ib = plasma->ib;
     int nb = plasma->nb;
 
-    // Create tile matrices.
+    // Create tile matrices
     plasma_desc_t A;
     plasma_desc_t Q;
     int retval;

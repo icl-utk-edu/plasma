@@ -142,6 +142,10 @@ int plasma_zcgesv(int n, int nrhs,
     if (imin(n, nrhs) == 0)
         return PlasmaSuccess;
 
+    // Tune parameters
+    if (plasma->tuning)
+        plasma_tune_getrf(plasma, PlasmaComplexFloat, n, n);
+
     // Set tiling parameters
     int nb = plasma->nb;
 

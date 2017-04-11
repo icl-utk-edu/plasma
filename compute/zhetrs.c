@@ -123,6 +123,10 @@ int plasma_zhetrs(plasma_enum_t uplo, int n, int nrhs,
     if (imax(n, nrhs) == 0)
         return PlasmaSuccess;
 
+    // Tune parameters
+    if (plasma->tuning)
+        plasma_tune_hetrf(plasma, PlasmaComplexDouble, n);
+
     // Set tiling parameters.
     int nb = plasma->nb;
 

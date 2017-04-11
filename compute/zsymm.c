@@ -147,6 +147,10 @@ int plasma_zsymm(plasma_enum_t side, plasma_enum_t
     if (m == 0 || n == 0 || (alpha == 0.0 && beta == 1.0))
         return PlasmaSuccess;
 
+    // Tune parameters
+    if (plasma->tuning)
+        plasma_tune_symm(plasma, PlasmaComplexDouble, m, n);
+
     // Set tiling parameters.
     int nb = plasma->nb;
 

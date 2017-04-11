@@ -107,7 +107,11 @@ double plasma_zlange(plasma_enum_t norm,
     if (imin(n, m) == 0)
       return 0.0;
 
-    // Set tiling parameters.
+    // Tune parameters
+    if (plasma->tuning)
+        plasma_tune_lange(plasma, PlasmaComplexDouble, m, n);
+
+    // Set tiling parameters
     int nb = plasma->nb;
 
     // Create tile matrices.

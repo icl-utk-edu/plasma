@@ -131,7 +131,11 @@ int plasma_zpbsv(plasma_enum_t uplo,
     if (imin(n, nrhs) == 0)
        return PlasmaSuccess;
 
-    // Set tiling parameters.
+    // Tune parameters
+    if (plasma->tuning)
+        plasma_tune_pbtrf(plasma, PlasmaComplexDouble, n);
+
+    // Set tiling parameters
     int nb = plasma->nb;
 
     // Initialize tile matrix descriptors.

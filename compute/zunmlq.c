@@ -147,6 +147,10 @@ int plasma_zunmlq(plasma_enum_t side, plasma_enum_t trans,
     if (m == 0 || n == 0 || k == 0)
         return PlasmaSuccess;
 
+    // Tune parameters
+    if (plasma->tuning)
+        plasma_tune_gelqf(plasma, PlasmaComplexDouble, m, n);
+
     // Set tiling parameters.
     int ib = plasma->ib;
     int nb = plasma->nb;
