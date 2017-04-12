@@ -50,7 +50,7 @@
  *          Details of the LU factorization of the band matrix A, as
  *          computed by plasma_zgbtrf.
  *
- * @param[in] ldt
+~~ * @param[in] ldt
  *          The leading dimension of the array T.
  *
  * @param[in] ipiv

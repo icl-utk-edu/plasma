@@ -50,7 +50,7 @@
  *          Details of the LU factorization of the band matrix A, as
  *          computed by plasma_zgbtrf.
  *
- * @param[in] ldt
+~ * @param[in] ldt
  *          The leading dimension of the array T.
  *
  * @param[in] ipiv
@@ -125,7 +125,7 @@ int plasma_zhetrs(plasma_enum_t uplo, int n, int nrhs,
 
     // Tune parameters
     if (plasma->tuning)
-        plasma_tune_hetrf(plasma, PlasmaComplexDouble, n);
+        plasma_tune_trsm(plasma, PlasmaComplexDouble, n, n);
 
     // Set tiling parameters.
     int nb = plasma->nb;

@@ -114,7 +114,7 @@ int plasma_zpotrs(plasma_enum_t uplo,
 
     // Tune parameters
     if (plasma->tuning)
-        plasma_tune_potrf(plasma, PlasmaComplexDouble, n);
+        plasma_tune_trsm(plasma, PlasmaComplexDouble, n, n);
 
     // Set tiling parameters
     int nb = plasma->nb;
