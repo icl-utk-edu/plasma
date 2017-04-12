@@ -68,7 +68,7 @@
  *          The number of right hand sides, i.e., the number of columns of the
  *          matrix B. nrhs >= 0.
  *
-5~ * @param[in,out] pA
+ * @param[in,out] pA
  *          The n-by-n Hermitian positive definite coefficient matrix A.
  *          If uplo = PlasmaUpper, the leading n-by-n upper triangular part of
  *          A contains the upper triangular part of the matrix A, and the
