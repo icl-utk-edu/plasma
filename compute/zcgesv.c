@@ -22,87 +22,87 @@
 #include <omp.h>
 
 /***************************************************************************//**
-                                                                              *
-                                                                              * @ingroup plasma_gesv
-                                                                              *
-                                                                              *  Computes the solution to a system of linear equations A * X = B, where A is
-                                                                              *  an n-by-n matrix and X and B are n-by-nrhs matrices.
-                                                                              *
-                                                                              *  plasma_zcgesv first factorizes the matrix using plasma_cgetrf and uses
-                                                                              *  this factorization within an iterative refinement procedure to produce a
-                                                                              *  solution with COMPLEX*16 normwise backward error quality (see below). If
-                                                                              *  the approach fails the method falls back to a COMPLEX*16 factorization and
-                                                                              *  solve.
-                                                                              *
-                                                                              *  The iterative refinement is not going to be a winning strategy if
-                                                                              *  the ratio COMPLEX performance over COMPLEX*16 performance is too
-                                                                              *  small. A reasonable strategy should take the number of right-hand
-                                                                              *  sides and the size of the matrix into account. This might be done
-                                                                              *  with a call to ILAENV in the future. Up to now, we always try
-                                                                              *  iterative refinement.
-                                                                              *
-                                                                              *  The iterative refinement process is stopped if iter > itermax or
-                                                                              *  for all the RHS we have: Rnorm < sqrt(n)*Xnorm*Anorm*eps*BWDmax
-                                                                              *  where:
-                                                                              *
-                                                                              *  - iter is the number of the current iteration in the iterative refinement
-                                                                              *     process
-                                                                              *  - Rnorm is the Infinity-norm of the residual
-                                                                              *  - Xnorm is the Infinity-norm of the solution
-                                                                              *  - Anorm is the Infinity-operator-norm of the matrix A
-                                                                              *  - eps is the machine epsilon returned by DLAMCH('Epsilon').
-                                                                              *  The values itermax and BWDmax are fixed to 30 and 1.0D+00 respectively.
-                                                                              *
-                                                                              *******************************************************************************
-                                                                              *
-                                                                              * @param[in] n
-                                                                              *          The number of linear equations, i.e., the order of the matrix A.
-                                                                              *          n >= 0.
-                                                                              *
-                                                                              * @param[in] nrhs
-                                                                              *          The number of right hand sides, i.e., the number of columns of the
-                                                                              *          matrix B. nrhs >= 0.
-                                                                              *
-                                                                              * @param[in,out] pA
-                                                                              *          The n-by-n matrix A.
-                                                                              *          On exit, contains the LU factors of A.
-                                                                              *
-                                                                              * @param[in] lda
-                                                                              *          The leading dimension of the array A. lda >= max(1,n).
-                                                                              *
-                                                                              * @param[out] ipiv
-                                                                              *          The pivot indices; for 1 <= i <= min(m,n), row i of the
-                                                                              *          matrix was interchanged with row ipiv(i).
-                                                                              *
-                                                                              * @param[in] pB
-                                                                              *          The n-by-nrhs matrix of right hand side matrix B.
-                                                                              *          This matrix remains unchanged.
-                                                                              *
-                                                                              * @param[in] ldb
-                                                                              *          The leading dimension of the array B. ldb >= max(1,n).
-                                                                              *
-                                                                              * @param[out] pX
-                                                                              *          If return value = 0, the n-by-nrhs solution matrix X.
-                                                                              *
-                                                                              * @param[in] ldx
-                                                                              *          The leading dimension of the array X. ldx >= max(1,n).
-                                                                              *
-                                                                              * @param[out] iter
-                                                                              *          The number of the iterations in the iterative refinement
-                                                                              *          process, needed for the convergence. If failed, it is set
-                                                                              *          to be -(1+itermax), where itermax = 30.
-                                                                              *
-                                                                              *******************************************************************************
-                                                                              *
-                                                                              * @retval PlasmaSuccess successful exit
-                                                                              *
-                                                                              *******************************************************************************
-                                                                              *
-                                                                              * @sa plasma_omp_zcgesv
-                                                                              * @sa plasma_dsgesv
-                                                                              * @sa plasma_zgesv
-                                                                              *
-                                                                              ******************************************************************************/
+ *
+ * @ingroup plasma_gesv
+ *
+ *  Computes the solution to a system of linear equations A * X = B, where A is
+ *  an n-by-n matrix and X and B are n-by-nrhs matrices.
+ *
+ *  plasma_zcgesv first factorizes the matrix using plasma_cgetrf and uses
+ *  this factorization within an iterative refinement procedure to produce a
+ *  solution with COMPLEX*16 normwise backward error quality (see below). If
+ *  the approach fails the method falls back to a COMPLEX*16 factorization and
+ *  solve.
+ *
+ *  The iterative refinement is not going to be a winning strategy if
+ *  the ratio COMPLEX performance over COMPLEX*16 performance is too
+ *  small. A reasonable strategy should take the number of right-hand
+ *  sides and the size of the matrix into account. This might be done
+ *  with a call to ILAENV in the future. Up to now, we always try
+ *  iterative refinement.
+ *
+ *  The iterative refinement process is stopped if iter > itermax or
+ *  for all the RHS we have: Rnorm < sqrt(n)*Xnorm*Anorm*eps*BWDmax
+ *  where:
+ *
+ *  - iter is the number of the current iteration in the iterative refinement
+ *     process
+ *  - Rnorm is the Infinity-norm of the residual
+ *  - Xnorm is the Infinity-norm of the solution
+ *  - Anorm is the Infinity-operator-norm of the matrix A
+ *  - eps is the machine epsilon returned by DLAMCH('Epsilon').
+ *  The values itermax and BWDmax are fixed to 30 and 1.0D+00 respectively.
+ *
+ *******************************************************************************
+ *
+ * @param[in] n
+ *          The number of linear equations, i.e., the order of the matrix A.
+ *          n >= 0.
+ *
+ * @param[in] nrhs
+ *          The number of right hand sides, i.e., the number of columns of the
+ *          matrix B. nrhs >= 0.
+ *
+ * @param[in,out] pA
+ *          The n-by-n matrix A.
+ *          On exit, contains the LU factors of A.
+ *
+ * @param[in] lda
+ *          The leading dimension of the array A. lda >= max(1,n).
+ *
+ * @param[out] ipiv
+ *          The pivot indices; for 1 <= i <= min(m,n), row i of the
+ *          matrix was interchanged with row ipiv(i).
+ *
+ * @param[in] pB
+ *          The n-by-nrhs matrix of right hand side matrix B.
+ *          This matrix remains unchanged.
+ *
+ * @param[in] ldb
+ *          The leading dimension of the array B. ldb >= max(1,n).
+ *
+ * @param[out] pX
+ *          If return value = 0, the n-by-nrhs solution matrix X.
+ *
+ * @param[in] ldx
+ *          The leading dimension of the array X. ldx >= max(1,n).
+ *
+ * @param[out] iter
+ *          The number of the iterations in the iterative refinement
+ *          process, needed for the convergence. If failed, it is set
+ *          to be -(1+itermax), where itermax = 30.
+ *
+ *******************************************************************************
+ *
+ * @retval PlasmaSuccess successful exit
+ *
+ *******************************************************************************
+ *
+ * @sa plasma_omp_zcgesv
+ * @sa plasma_dsgesv
+ * @sa plasma_zgesv
+ *
+ ******************************************************************************/
 int plasma_zcgesv(int n, int nrhs,
                   plasma_complex64_t *pA, int lda, int *ipiv,
                   plasma_complex64_t *pB, int ldb,
