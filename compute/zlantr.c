@@ -119,7 +119,7 @@ double plasma_zlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
         printf("%d\n", lda);
         plasma_error("illegal value of lda");
         return -7;
-           }
+    }
 
     // quick return
     if (imin(n, m) == 0)

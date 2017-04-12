@@ -109,60 +109,60 @@ static void plasma_tune(lua_State *L, plasma_enum_t dtyp,
 void plasma_tune_gbtrf(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int n, int bw)
 {
-  if (plasma->L == NULL)
-    return;
+    if (plasma->L == NULL)
+        return;
 
-  plasma_tune(plasma->L, dtyp, "gbtrf_nb", &plasma->nb, 2, n, bw);
-  plasma_tune(plasma->L, dtyp, "gbtrf_ib", &plasma->ib, 2, n, bw);
-  plasma_tune(plasma->L, dtyp, "gbtrf_max_panel_threads",
-              &plasma->max_panel_threads, 2, n, bw);
+    plasma_tune(plasma->L, dtyp, "gbtrf_nb", &plasma->nb, 2, n, bw);
+    plasma_tune(plasma->L, dtyp, "gbtrf_ib", &plasma->ib, 2, n, bw);
+    plasma_tune(plasma->L, dtyp, "gbtrf_max_panel_threads",
+                &plasma->max_panel_threads, 2, n, bw);
 }
 /******************************************************************************/
 void plasma_tune_geadd(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int m, int n)
 {
-  if (plasma->L == NULL)
-    return;
+    if (plasma->L == NULL)
+        return;
 
-  plasma_tune(plasma->L, dtyp, "geadd_nb", &plasma->nb, 2, m, n);
+    plasma_tune(plasma->L, dtyp, "geadd_nb", &plasma->nb, 2, m, n);
 }
 /******************************************************************************/
 void plasma_tune_gelqf(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int m, int n)
 {
-  if (plasma->L == NULL)
-    return;
+    if (plasma->L == NULL)
+        return;
 
-  plasma_tune(plasma->L, dtyp, "gelqf_nb", &plasma->nb, 2, m, n);
-  plasma_tune(plasma->L, dtyp, "gelqf_ib", &plasma->ib, 2, m, n);
+    plasma_tune(plasma->L, dtyp, "gelqf_nb", &plasma->nb, 2, m, n);
+    plasma_tune(plasma->L, dtyp, "gelqf_ib", &plasma->ib, 2, m, n);
 }
 /******************************************************************************/
 void plasma_tune_gemm(plasma_context_t *plasma, plasma_enum_t dtyp,
                       int m, int n, int k)
 {
-  if (plasma->L == NULL)
-    return;
+    if (plasma->L == NULL)
+        return;
 
-  plasma_tune(plasma->L, dtyp, "gemm_nb", &plasma->nb, 3, m, n, k);
+    plasma_tune(plasma->L, dtyp, "gemm_nb", &plasma->nb, 3, m, n, k);
 }
 /******************************************************************************/
 void plasma_tune_geqrf(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int m, int n)
 {
-  if (plasma->L == NULL)
-    return;
+    if (plasma->L == NULL)
+        return;
 
-  plasma_tune(plasma->L, dtyp, "geqrf_nb", &plasma->nb, 2, m, n);
-  plasma_tune(plasma->L, dtyp, "geqrf_ib", &plasma->ib, 2, m, n);
+    plasma_tune(plasma->L, dtyp, "geqrf_nb", &plasma->nb, 2, m, n);
+    plasma_tune(plasma->L, dtyp, "geqrf_ib", &plasma->ib, 2, m, n);
 }
 /******************************************************************************/
 void plasma_tune_geswp(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int m, int n)
 {
-  if (plasma->L == NULL)
-    return;
+    if (plasma->L == NULL)
+        return;
 
-  plasma_tune(plasma->L, dtyp, "geswp_nb", &plasma->nb, 2, m, n);
+    plasma_tune(plasma->L, dtyp, "geswp_nb", &plasma->nb, 2, m, n);
 }
 /******************************************************************************/
 void plasma_tune_getrf(plasma_context_t *plasma, plasma_enum_t dtyp,
@@ -180,46 +180,46 @@ void plasma_tune_getrf(plasma_context_t *plasma, plasma_enum_t dtyp,
 void plasma_tune_hetrf(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int n)
 {
-  if (plasma->L == NULL)
-    return;
+    if (plasma->L == NULL)
+        return;
 
-  plasma_tune(plasma->L, dtyp, "hetrf_nb", &plasma->nb, 1, n);
+    plasma_tune(plasma->L, dtyp, "hetrf_nb", &plasma->nb, 1, n);
 }
 /******************************************************************************/
 void plasma_tune_lacpy(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int m, int n)
 {
-  if (plasma->L == NULL)
-    return;
+    if (plasma->L == NULL)
+        return;
 
-  plasma_tune(plasma->L, dtyp, "lacpy_nb", &plasma->nb, 2, m, n);
+    plasma_tune(plasma->L, dtyp, "lacpy_nb", &plasma->nb, 2, m, n);
 }
 /******************************************************************************/
 void plasma_tune_lag2c(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int m, int n)
 {
-  if (plasma->L == NULL)
-    return;
+    if (plasma->L == NULL)
+        return;
 
-  plasma_tune(plasma->L, dtyp, "lag2c_nb", &plasma->nb, 2, m, n);
+    plasma_tune(plasma->L, dtyp, "lag2c_nb", &plasma->nb, 2, m, n);
 }
 /******************************************************************************/
 void plasma_tune_lange(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int m, int n)
 {
-  if (plasma->L == NULL)
-    return;
+    if (plasma->L == NULL)
+        return;
 
-  plasma_tune(plasma->L, dtyp, "lange_nb", &plasma->nb, 2, m, n);
+    plasma_tune(plasma->L, dtyp, "lange_nb", &plasma->nb, 2, m, n);
 }
 /******************************************************************************/
 void plasma_tune_lansy(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int n)
 {
-  if (plasma->L == NULL)
-    return;
+    if (plasma->L == NULL)
+        return;
 
-  plasma_tune(plasma->L, dtyp, "lansy_nb", &plasma->nb, 1, n);
+    plasma_tune(plasma->L, dtyp, "lansy_nb", &plasma->nb, 1, n);
 }
 /******************************************************************************/
 void plasma_tune_lantr(plasma_context_t *plasma, plasma_enum_t dtyp,
@@ -234,89 +234,89 @@ void plasma_tune_lantr(plasma_context_t *plasma, plasma_enum_t dtyp,
 void plasma_tune_lauum(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int n)
 {
-  if (plasma->L == NULL)
-    return;
+    if (plasma->L == NULL)
+        return;
 
-  plasma_tune(plasma->L, dtyp, "lauum_nb", &plasma->nb, 1, n);
+    plasma_tune(plasma->L, dtyp, "lauum_nb", &plasma->nb, 1, n);
 }
 /******************************************************************************/
 void plasma_tune_pbtrf(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int n)
 {
-  if (plasma->L == NULL)
-    return;
+    if (plasma->L == NULL)
+        return;
 
-  plasma_tune(plasma->L, dtyp, "pbtrf_nb", &plasma->nb, 1, n);
+    plasma_tune(plasma->L, dtyp, "pbtrf_nb", &plasma->nb, 1, n);
 }
 /******************************************************************************/
 void plasma_tune_potrf(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int n)
 {
-  if (plasma->L == NULL)
-    return;
+    if (plasma->L == NULL)
+        return;
 
-  plasma_tune(plasma->L, dtyp, "potrf_nb", &plasma->nb, 1, n);
+    plasma_tune(plasma->L, dtyp, "potrf_nb", &plasma->nb, 1, n);
 }
 /******************************************************************************/
 void plasma_tune_symm(plasma_context_t *plasma, plasma_enum_t dtyp,
                       int m, int n)
 {
-  if (plasma->L == NULL)
-    return;
+    if (plasma->L == NULL)
+        return;
 
-  plasma_tune(plasma->L, dtyp, "symm_nb", &plasma->nb, 2, m, n);
+    plasma_tune(plasma->L, dtyp, "symm_nb", &plasma->nb, 2, m, n);
 }
 /******************************************************************************/
 void plasma_tune_syr2k(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int n, int k)
 {
-  if (plasma->L == NULL)
-    return;
+    if (plasma->L == NULL)
+        return;
 
-  plasma_tune(plasma->L, dtyp, "syr2k_nb", &plasma->nb, 2, n, k);
+    plasma_tune(plasma->L, dtyp, "syr2k_nb", &plasma->nb, 2, n, k);
 }
 /******************************************************************************/
 void plasma_tune_syrk(plasma_context_t *plasma, plasma_enum_t dtyp,
 		              int n, int k)
 {
-  if (plasma->L == NULL)
-    return;
+    if (plasma->L == NULL)
+        return;
 
-  plasma_tune(plasma->L, dtyp, "syrk_nb", &plasma->nb, 2, n, k);
+    plasma_tune(plasma->L, dtyp, "syrk_nb", &plasma->nb, 2, n, k);
 }
 /******************************************************************************/
 void plasma_tune_tradd(plasma_context_t *plasma, plasma_enum_t dtyp,
 		               int m, int n)
 {
-  if (plasma->L == NULL)
-    return;
+    if (plasma->L == NULL)
+        return;
 
-  plasma_tune(plasma->L, dtyp, "tradd_nb", &plasma->nb, 2, m, n);
+    plasma_tune(plasma->L, dtyp, "tradd_nb", &plasma->nb, 2, m, n);
 }
 /******************************************************************************/
 void plasma_tune_trmm(plasma_context_t *plasma, plasma_enum_t dtyp,
                       int m, int n)
 {
-  if (plasma->L == NULL)
-    return;
+    if (plasma->L == NULL)
+        return;
 
-  plasma_tune(plasma->L, dtyp, "trmm_nb", &plasma->nb, 2, m, n);
+    plasma_tune(plasma->L, dtyp, "trmm_nb", &plasma->nb, 2, m, n);
 }
 /******************************************************************************/
 void plasma_tune_trsm(plasma_context_t *plasma, plasma_enum_t dtyp,
                       int m, int n)
 {
-  if (plasma->L == NULL)
-    return;
+    if (plasma->L == NULL)
+        return;
 
-  plasma_tune(plasma->L, dtyp, "trsm_nb", &plasma->nb, 2, m, n);
+    plasma_tune(plasma->L, dtyp, "trsm_nb", &plasma->nb, 2, m, n);
 }
 /******************************************************************************/
 void plasma_tune_trtri(plasma_context_t *plasma, plasma_enum_t dtyp,
    		               int n)
 {
-  if (plasma->L == NULL)
-    return;
+    if (plasma->L == NULL)
+        return;
 
-  plasma_tune(plasma->L, dtyp, "trtri_nb", &plasma->nb, 1, n);
+    plasma_tune(plasma->L, dtyp, "trtri_nb", &plasma->nb, 1, n);
 }
