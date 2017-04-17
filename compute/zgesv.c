@@ -18,7 +18,7 @@
 #include "plasma_types.h"
 #include "plasma_workspace.h"
 
-#include "mkl_lapacke.h"
+
 
 /***************************************************************************//**
  *
