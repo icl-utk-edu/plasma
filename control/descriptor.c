@@ -82,6 +82,43 @@ int plasma_desc_general_band_create(plasma_enum_t precision, plasma_enum_t uplo,
 }
 
 /******************************************************************************/
+int plasma_desc_triangle_create(plasma_enum_t precision, plasma_enum_t uplo, int mb, int nb,
+                                int lm, int ln, int i, int j, int m, int n,
+                                plasma_desc_t *A)
+{
+    plasma_context_t *plasma = plasma_context_self();
+    if (plasma == NULL) {
+        plasma_error("PLASMA not initialized");
+        return PlasmaErrorNotInitialized;
+    }
+    // Initialize the descriptor.
+    int retval = plasma_desc_triangle_init(precision, uplo, NULL, mb, nb,
+                                           lm, ln, i, j, m, n, A);
+    if (retval != PlasmaSuccess) {
+        plasma_error("plasma_desc_general_init() failed");
+        return retval;
+    }
+    // Check the descriptor.
+    retval = plasma_desc_check(*A);
+    if (retval != PlasmaSuccess) {
+        plasma_error("plasma_desc_check() failed");
+        return PlasmaErrorIllegalValue;
+    }
+    // Allocate the matrix.
+    int lm1 = lm/mb;
+    int ln1 = ln/nb;
+    int mnt = (ln1*(1+lm1))/2;
+    size_t size = (size_t)(mnt*mb*nb + (lm * (ln%nb)))*
+                  plasma_element_size(A->precision);
+    A->matrix = malloc(size);
+    if (A->matrix == NULL) {
+        plasma_error("malloc() failed");
+        return PlasmaErrorOutOfMemory;
+    }
+    return PlasmaSuccess;
+}
+
+/******************************************************************************/
 int plasma_desc_destroy(plasma_desc_t *A)
 {
     plasma_context_t *plasma = plasma_context_self();
@@ -170,9 +207,56 @@ int plasma_desc_general_band_init(plasma_enum_t precision, plasma_enum_t uplo,
 }
 
 /******************************************************************************/
+int plasma_desc_triangle_init(plasma_enum_t precision, plasma_enum_t uplo, void *matrix,
+                              int mb, int nb, int lm, int ln, int i, int j,
+                              int m, int n, plasma_desc_t *A)
+{
+    // only for square matrix..
+    if (lm != ln) {
+        plasma_error("invalid lm or ln");
+    }
+    // type and precision
+    A->type = uplo;
+    A->precision = precision;
+
+    // pointer and offsets
+    int lm1 = lm/mb;
+    int ln1 = ln/nb;
+    int mnt = (ln1*(1+lm1))/2;
+    A->matrix = matrix;
+    A->A21 = (size_t)(mb * nb) * mnt; // only for PlasmaLower
+    A->A12 = (size_t)(mb * nb) * mnt; // only for PlasmaUpper
+    A->A22 = (size_t)(lm - lm%mb) * (ln%nb) + A->A12;
+
+    // tile parameters
+    A->mb = mb;
+    A->nb = nb;
+
+    // main matrix parameters
+    A->gm = lm;
+    A->gn = ln;
+
+    A->gmt = (lm%mb == 0) ? (lm/mb) : (lm/mb+1);
+    A->gnt = (ln%nb == 0) ? (ln/nb) : (ln/nb+1);
+
+    // submatrix parameters
+    A->i = i;
+    A->j = j;
+    A->m = m;
+    A->n = n;
+
+    A->mt = (m == 0) ? 0 : (i+m-1)/mb - i/mb + 1;
+    A->nt = (n == 0) ? 0 : (j+n-1)/nb - j/nb + 1;
+
+    return PlasmaSuccess;
+}
+
+/******************************************************************************/
 int plasma_desc_check(plasma_desc_t A)
 {
-    if (A.type == PlasmaGeneral) {
+    if (A.type == PlasmaGeneral || 
+        A.type == PlasmaUpper || 
+        A.type == PlasmaLower) {
         return plasma_desc_general_check(A);
     }
     else if (A.type == PlasmaGeneralBand) {

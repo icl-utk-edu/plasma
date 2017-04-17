@@ -284,6 +284,11 @@ void plasma_omp_zdesc2pb(plasma_desc_t A,
                          plasma_sequence_t *sequence,
                          plasma_request_t *request);
 
+void plasma_omp_zdesc2tr(plasma_desc_t A,
+                         plasma_complex64_t *pA, int lda,
+                         plasma_sequence_t *sequence,
+                         plasma_request_t *request);
+
 void plasma_omp_zge2desc(plasma_complex64_t *pA, int lda,
                          plasma_desc_t A,
                          plasma_sequence_t *sequence,
@@ -459,6 +464,11 @@ void plasma_omp_zsyrk(plasma_enum_t uplo, plasma_enum_t trans,
                       plasma_complex64_t alpha, plasma_desc_t A,
                       plasma_complex64_t beta,  plasma_desc_t C,
                       plasma_sequence_t *sequence, plasma_request_t *request);
+
+void plasma_omp_ztr2desc(plasma_complex64_t *pA, int lda,
+                         plasma_desc_t A,
+                         plasma_sequence_t *sequence,
+                         plasma_request_t *request);
 
 void plasma_omp_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
                        plasma_complex64_t alpha, plasma_desc_t A,

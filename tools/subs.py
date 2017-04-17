@@ -493,6 +493,11 @@ subs = {
     ('sdesc2pb',             'ddesc2pb',             'cdesc2pb',             'zdesc2pb'            ),
     ('spb2desc',             'dpb2desc',             'cpb2desc',             'zpb2desc'            ),
 
+    ('psdesc2tr',            'pddesc2tr',            'pcdesc2tr',            'pzdesc2tr'           ),
+    ('pstr2desc',            'pdtr2desc',            'pctr2desc',            'pztr2desc'           ),
+    ('sdesc2tr',             'ddesc2tr',             'cdesc2tr',             'zdesc2tr'            ),
+    ('str2desc',             'dtr2desc',             'ctr2desc',             'ztr2desc'            ),
+
     # ----- header files
     (r'_s\.h\b',            r'_d\.h\b',             r'_c\.h\b',             r'_z\.h\b'             ),
     (r'_S_H\b',             r'_D_H\b',              r'_C_H\b',              r'_Z_H\b'              ),

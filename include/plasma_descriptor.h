@@ -115,6 +115,42 @@ static inline void *plasma_tile_addr_general(plasma_desc_t A, int m, int n)
 }
 
 /******************************************************************************/
+static inline void *plasma_tile_addr_triangle(plasma_desc_t A, int m, int n)
+{
+    int mm = m + A.i/A.mb;
+    int nn = n + A.j/A.nb;
+    size_t eltsize = plasma_element_size(A.precision);
+    size_t offset = 0;
+
+    int lm1 = A.gm/A.mb;
+    int ln1 = A.gn/A.nb;
+
+    if (mm < lm1) {
+        if (nn < ln1) {
+            if (A.type == PlasmaUpper) {
+                offset = A.mb*A.nb*(mm + (nn * (nn + 1))/2);
+            } 
+            else {
+                offset = A.mb*A.nb*((mm - nn) + (nn * (2*lm1 - (nn-1)))/2);
+            }
+        } 
+        else {
+            offset = A.A12 + ((size_t)A.mb * (A.gn%A.nb) * mm);
+        }
+    } 
+    else {
+        if (nn < ln1) {
+            offset = A.A21 + ((size_t)A.nb * (A.gm%A.mb) * nn);
+        }
+        else {
+            offset = A.A22;
+        }
+    }
+
+    return (void*)((char*)A.matrix + (offset*eltsize));
+}
+
+/******************************************************************************/
 static inline void *plasma_tile_addr_general_band(plasma_desc_t A, int m, int n)
 {
     return plasma_tile_addr_general(A, (A.kut-1)+m-n, n);
@@ -128,6 +164,9 @@ static inline void *plasma_tile_addr(plasma_desc_t A, int m, int n)
     }
     else if (A.type == PlasmaGeneralBand) {
         return plasma_tile_addr_general_band(A, m, n);
+    }
+    else if (A.type == PlasmaUpper || A.type == PlasmaLower) {
+        return plasma_tile_addr_triangle(A, m, n);
     }
     else {
         plasma_fatal_error("invalid matrix type");
@@ -211,6 +250,10 @@ int plasma_desc_general_band_create(plasma_enum_t dtyp, plasma_enum_t uplo,
                                     int i, int j, int m, int n, int kl, int ku,
                                     plasma_desc_t *A);
 
+int plasma_desc_triangle_create(plasma_enum_t dtyp, plasma_enum_t uplo, int mb, int nb,
+                                int lm, int ln, int i, int j, int m, int n,
+                                plasma_desc_t *A);
+
 int plasma_desc_destroy(plasma_desc_t *A);
 
 int plasma_desc_general_init(plasma_enum_t precision, void *matrix,
@@ -221,6 +264,10 @@ int plasma_desc_general_band_init(plasma_enum_t precision, plasma_enum_t uplo,
                                   void *matrix, int mb, int nb, int lm, int ln,
                                   int i, int j, int m, int n, int kl, int ku,
                                   plasma_desc_t *A);
+
+int plasma_desc_triangle_init(plasma_enum_t precision, plasma_enum_t uplo, void *matrix,
+                              int mb, int nb, int lm, int ln, int i, int j,
+                              int m, int n, plasma_desc_t *A);
 
 int plasma_desc_check(plasma_desc_t A);
 int plasma_desc_general_check(plasma_desc_t A);
