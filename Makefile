@@ -156,9 +156,10 @@ ifneq ($(have_fpic),)
 
    rpath = -Wl,-rpath,$(top)/lib
 
+
    # MacOS (darwin) needs shared library's path set
    ifneq ($(findstring darwin, $(OSTYPE)), '')
-       install_name = -install_name @rpath/$(notdir $@)
+        install_name = -install_name @rpath/$(notdir $@)
    endif
 
    lib/libplasma.so: $(plasma_obj) Makefile.plasma.gen lib/libcoreblas.so $(lua_lib)
