@@ -27,128 +27,154 @@ extern "C" {
 
 /******************************************************************************/
 #ifdef COMPLEX
+__attribute__((weak))
 double core_dcabs1(plasma_complex64_t alpha);
 #endif
 
+__attribute__((weak))
 int core_zgeadd(plasma_enum_t transa,
                 int m, int n,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                 plasma_complex64_t beta,        plasma_complex64_t *B, int ldb);
 
+__attribute__((weak))
 int core_zgelqt(int m, int n, int ib,
                 plasma_complex64_t *A, int lda,
                 plasma_complex64_t *T, int ldt,
                 plasma_complex64_t *tau,
                 plasma_complex64_t *work);
 
+__attribute__((weak))
 void core_zgemm(plasma_enum_t transa, plasma_enum_t transb,
                 int m, int n, int k,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                                           const plasma_complex64_t *B, int ldb,
                 plasma_complex64_t beta,        plasma_complex64_t *C, int ldc);
 
+__attribute__((weak))
 int core_zgeqrt(int m, int n, int ib,
                 plasma_complex64_t *A, int lda,
                 plasma_complex64_t *T, int ldt,
                 plasma_complex64_t *tau,
                 plasma_complex64_t *work);
 
+__attribute__((weak))
 void core_zgessq(int m, int n,
                  const plasma_complex64_t *A, int lda,
                  double *scale, double *sumsq);
 
+__attribute__((weak))
 int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
                 plasma_barrier_t *barrier);
 
+__attribute__((weak))
 int core_zhegst(int itype, plasma_enum_t uplo,
                 int n,
                 plasma_complex64_t *A, int lda,
                 plasma_complex64_t *B, int ldb);
 
+__attribute__((weak))
 void core_zhemm(plasma_enum_t side, plasma_enum_t uplo,
                 int m, int n,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                                           const plasma_complex64_t *B, int ldb,
                 plasma_complex64_t beta,        plasma_complex64_t *C, int ldc);
 
+__attribute__((weak))
 void core_zher2k(plasma_enum_t uplo, plasma_enum_t trans,
                  int n, int k,
                  plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                                            const plasma_complex64_t *B, int ldb,
                  double beta,                    plasma_complex64_t *C, int ldc);
 
+__attribute__((weak))
 void core_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                 int n, int k,
                 double alpha, const plasma_complex64_t *A, int lda,
                 double beta,        plasma_complex64_t *C, int ldc);
 
+__attribute__((weak))
 void core_zhessq(plasma_enum_t uplo,
                  int n,
                  const plasma_complex64_t *A, int lda,
                  double *scale, double *sumsq);
 
+__attribute__((weak))
 void core_zsyssq(plasma_enum_t uplo,
                  int n,
                  const plasma_complex64_t *A, int lda,
                  double *scale, double *sumsq);
 
+__attribute__((weak))
 void core_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
                  int m, int n,
                  const plasma_complex64_t *A, int lda,
                        plasma_complex64_t *B, int ldb);
 
+__attribute__((weak))
 void core_zlacpy_lapack2tile_band(plasma_enum_t uplo,
                                   int it, int jt,
                                   int m, int n, int nb, int kl, int ku,
                                   const plasma_complex64_t *A, int lda,
                                         plasma_complex64_t *B, int ldb);
 
+__attribute__((weak))
 void core_zlacpy_tile2lapack_band(plasma_enum_t uplo,
                                   int it, int jt,
                                   int m, int n, int nb, int kl, int ku,
                                   const plasma_complex64_t *B, int ldb,
                                         plasma_complex64_t *A, int lda);
 
+__attribute__((weak))
 void core_zlange(plasma_enum_t norm,
                  int m, int n,
                  const plasma_complex64_t *A, int lda,
                  double *work, double *result);
 
+__attribute__((weak))
 void core_zlanhe(plasma_enum_t norm, plasma_enum_t uplo,
                  int n,
                  const plasma_complex64_t *A, int lda,
                  double *work, double *value);
 
+__attribute__((weak))
 void core_zlansy(plasma_enum_t norm, plasma_enum_t uplo,
                  int n,
                  const plasma_complex64_t *A, int lda,
                  double *work, double *value);
 
+__attribute__((weak))
 void core_zlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
                  int m, int n,
                  const plasma_complex64_t *A, int lda,
                  double *work, double *value);
 
+__attribute__((weak))
 void core_zlascl(plasma_enum_t uplo,
                  double cfrom, double cto,
                  int m, int n,
                  plasma_complex64_t *A, int lda);
 
+__attribute__((weak))
 void core_zlaset(plasma_enum_t uplo,
                  int m, int n,
                  plasma_complex64_t alpha, plasma_complex64_t beta,
                  plasma_complex64_t *A, int lda);
 
+__attribute__((weak))
 void core_zgeswp(plasma_enum_t colrow,
                  plasma_desc_t A, int k1, int k2, const int *ipiv, int incx);
 
+__attribute__((weak))
 void core_zheswp(int uplo, plasma_desc_t A, int k1, int k2, const int *ipiv,
                  int incx);
 
+__attribute__((weak))
 int core_zlauum(plasma_enum_t uplo,
                 int n,
                 plasma_complex64_t *A, int lda);
 
+__attribute__((weak))
 int core_zpamm(int op, plasma_enum_t side, plasma_enum_t storev,
                int m, int n, int k, int l,
                const plasma_complex64_t *A1, int lda1,
@@ -156,6 +182,7 @@ int core_zpamm(int op, plasma_enum_t side, plasma_enum_t storev,
                const plasma_complex64_t *V,  int ldv,
                      plasma_complex64_t *W,  int ldw);
 
+__attribute__((weak))
 int core_zparfb(plasma_enum_t side, plasma_enum_t trans, plasma_enum_t direct,
                 plasma_enum_t storev,
                 int m1, int n1, int m2, int n2, int k, int l,
@@ -165,6 +192,7 @@ int core_zparfb(plasma_enum_t side, plasma_enum_t trans, plasma_enum_t direct,
                 const plasma_complex64_t *T,    int ldt,
                       plasma_complex64_t *work, int ldwork);
 
+__attribute__((weak))
 int core_zpemv(plasma_enum_t trans, int storev,
                int m, int n, int l,
                plasma_complex64_t alpha,
@@ -174,16 +202,19 @@ int core_zpemv(plasma_enum_t trans, int storev,
                plasma_complex64_t *Y, int incy,
                plasma_complex64_t *work);
 
+__attribute__((weak))
 int core_zpotrf(plasma_enum_t uplo,
                 int n,
                 plasma_complex64_t *A, int lda);
 
+__attribute__((weak))
 void core_zsymm(plasma_enum_t side, plasma_enum_t uplo,
                 int m, int n,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                                           const plasma_complex64_t *B, int ldb,
                 plasma_complex64_t beta,        plasma_complex64_t *C, int ldc);
 
+__attribute__((weak))
 void core_zsyr2k(
     plasma_enum_t uplo, plasma_enum_t trans,
     int n, int k,
@@ -191,37 +222,44 @@ void core_zsyr2k(
                               const plasma_complex64_t *B, int ldb,
     plasma_complex64_t beta,        plasma_complex64_t *C, int ldc);
 
+__attribute__((weak))
 void core_zsyrk(plasma_enum_t uplo, plasma_enum_t trans,
                 int n, int k,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                 plasma_complex64_t beta,        plasma_complex64_t *C, int ldc);
 
+__attribute__((weak))
 int core_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
                 int m, int n,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                 plasma_complex64_t beta,        plasma_complex64_t *B, int ldb);
 
+__attribute__((weak))
 void core_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
                 plasma_enum_t transa, plasma_enum_t diag,
                 int m, int n,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                                                 plasma_complex64_t *B, int ldb);
 
+__attribute__((weak))
 void core_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
                 plasma_enum_t transa, plasma_enum_t diag,
                 int m, int n,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                                                 plasma_complex64_t *B, int ldb);
 
+__attribute__((weak))
 void core_ztrssq(plasma_enum_t uplo, plasma_enum_t diag,
                  int m, int n,
                  const plasma_complex64_t *A, int lda,
                  double *scale, double *sumsq);
 
+__attribute__((weak))
 int core_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
                 int n,
                 plasma_complex64_t *A, int lda);
 
+__attribute__((weak))
 int core_ztslqt(int m, int n, int ib,
                 plasma_complex64_t *A1, int lda1,
                 plasma_complex64_t *A2, int lda2,
@@ -229,6 +267,7 @@ int core_ztslqt(int m, int n, int ib,
                 plasma_complex64_t *tau,
                 plasma_complex64_t *work);
 
+__attribute__((weak))
 int core_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
                 int m1, int n1, int m2, int n2, int k, int ib,
                       plasma_complex64_t *A1,   int lda1,
@@ -237,6 +276,7 @@ int core_ztsmlq(plasma_enum_t side, plasma_enum_t trans,
                 const plasma_complex64_t *T,    int ldt,
                       plasma_complex64_t *work, int ldwork);
 
+__attribute__((weak))
 int core_ztsmqr(plasma_enum_t side, plasma_enum_t trans,
                 int m1, int n1, int m2, int n2, int k, int ib,
                       plasma_complex64_t *A1,   int lda1,
@@ -245,6 +285,7 @@ int core_ztsmqr(plasma_enum_t side, plasma_enum_t trans,
                 const plasma_complex64_t *T,    int ldt,
                       plasma_complex64_t *work, int ldwork);
 
+__attribute__((weak))
 int core_ztsqrt(int m, int n, int ib,
                 plasma_complex64_t *A1, int lda1,
                 plasma_complex64_t *A2, int lda2,
@@ -252,6 +293,7 @@ int core_ztsqrt(int m, int n, int ib,
                 plasma_complex64_t *tau,
                 plasma_complex64_t *work);
 
+__attribute__((weak))
 int core_zttlqt(int m, int n, int ib,
                 plasma_complex64_t *A1, int lda1,
                 plasma_complex64_t *A2, int lda2,
@@ -259,6 +301,7 @@ int core_zttlqt(int m, int n, int ib,
                 plasma_complex64_t *tau,
                 plasma_complex64_t *work);
 
+__attribute__((weak))
 int core_zttmlq(plasma_enum_t side, plasma_enum_t trans,
                 int m1, int n1, int m2, int n2, int k, int ib,
                       plasma_complex64_t *A1,   int lda1,
@@ -267,6 +310,7 @@ int core_zttmlq(plasma_enum_t side, plasma_enum_t trans,
                 const plasma_complex64_t *T,    int ldt,
                       plasma_complex64_t *work, int ldwork);
 
+__attribute__((weak))
 int core_zttmqr(plasma_enum_t side, plasma_enum_t trans,
                 int m1, int n1, int m2, int n2, int k, int ib,
                       plasma_complex64_t *A1,   int lda1,
@@ -275,6 +319,7 @@ int core_zttmqr(plasma_enum_t side, plasma_enum_t trans,
                 const plasma_complex64_t *T,    int ldt,
                       plasma_complex64_t *work, int ldwork);
 
+__attribute__((weak))
 int core_zttqrt(int m, int n, int ib,
                 plasma_complex64_t *A1, int lda1,
                 plasma_complex64_t *A2, int lda2,
@@ -282,6 +327,7 @@ int core_zttqrt(int m, int n, int ib,
                 plasma_complex64_t *tau,
                 plasma_complex64_t *work);
 
+__attribute__((weak))
 int core_zunmlq(plasma_enum_t side, plasma_enum_t trans,
                 int m, int n, int k, int ib,
                 const plasma_complex64_t *A,    int lda,
@@ -289,6 +335,7 @@ int core_zunmlq(plasma_enum_t side, plasma_enum_t trans,
                       plasma_complex64_t *C,    int ldc,
                       plasma_complex64_t *work, int ldwork);
 
+__attribute__((weak))
 int core_zunmqr(plasma_enum_t side, plasma_enum_t trans,
                 int m, int n, int k, int ib,
                 const plasma_complex64_t *A,    int lda,

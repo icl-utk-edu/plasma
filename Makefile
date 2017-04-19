@@ -156,8 +156,9 @@ ifneq ($(have_fpic),)
 
    rpath = -Wl,-rpath,$(top)/lib
 
+
    # MacOS (darwin) needs shared library's path set
-   ifneq ($(findstring darwin, $(OSTYPE)),)
+   ifneq ($(findstring darwin, $(OSTYPE)), '')
        install_name = -install_name @rpath/$(notdir $@)
    endif
 
