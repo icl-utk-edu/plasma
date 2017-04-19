@@ -40,7 +40,7 @@ to this Bitbucket Mercurial repository.
 The content of this repository reflects the progress of the transition.
 Before the transition is complete, the last release of the old PLASMA
 is available here:
-http://icl.cs.utk.edu/projectsfiles/plasma/pubs/plasma_2.8.0.tar.gz
+https://bitbucket.org/icl/plasma/downloads/plasma-2.8.tar.gz
 
 Documentation
 =============
