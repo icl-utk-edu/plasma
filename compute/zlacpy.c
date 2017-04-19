@@ -115,7 +115,7 @@ int plasma_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
     if (imin(n, m) == 0)
       return PlasmaSuccess;
 
-    // Tune parameters
+    // Tune parameters.
     if (plasma->tuning)
         plasma_tune_lacpy(plasma, PlasmaComplexDouble, m, n);
 

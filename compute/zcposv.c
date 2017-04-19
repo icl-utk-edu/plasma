@@ -117,14 +117,14 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
                   plasma_complex64_t *pB, int ldb,
                   plasma_complex64_t *pX, int ldx, int *iter)
 {
-    // Get PLASMA context
+    // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
         return PlasmaErrorNotInitialized;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if (uplo != PlasmaUpper && uplo != PlasmaLower) {
         plasma_error("illegal value of uplo");
         return -1;
@@ -150,19 +150,19 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
         return -9;
     }
 
-    // Quick return
+    // quick return
     *iter = 0;
     if (imin(n, nrhs) == 0)
         return PlasmaSuccess;
 
-    // Tune parameters
+    // Tune parameters.
     if (plasma->tuning)
         plasma_tune_potrf(plasma, PlasmaComplexFloat, n);
  
-    // Set tiling parameters
+    // Set tiling parameters.
     int nb = plasma->nb;
 
-    // Create tile matrices
+    // Create tile matrices.
     plasma_desc_t A;
     plasma_desc_t B;
     plasma_desc_t X;
@@ -189,7 +189,7 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
         return retval;
     }
 
-    // Create additional tile matrices
+    // Create additional tile matrices.
     plasma_desc_t R, As, Xs;
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
                                         B.m, B.n, 0, 0, B.m, B.n, &R);
@@ -222,13 +222,13 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
         return retval;
     }
 
-    // Allocate tiled workspace for Infinity norm calculations
+    // Allocate tiled workspace for Infinity norm calculations.
     size_t lwork = imax((size_t)A.nt*A.n+A.n, (size_t)X.mt*X.n+(size_t)R.mt*R.n);
     double *work  = (double*)malloc(((size_t)lwork)*sizeof(double));
     double *Rnorm = (double*)malloc(((size_t)R.n)*sizeof(double));
     double *Xnorm = (double*)malloc(((size_t)X.n)*sizeof(double));
 
-    // Create sequence
+    // Create sequence.
     plasma_sequence_t *sequence = NULL;
     retval = plasma_sequence_create(&sequence);
     if (retval != PlasmaSuccess) {
@@ -236,26 +236,26 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
         return retval;
     }
 
-    // Initialize request
+    // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
 
-    // Asynchronous block
+    // asynchronous block
     #pragma omp parallel
     #pragma omp master
     {
-        // Translate matrices to tile layout
+        // Translate matrices to tile layout.
         plasma_omp_zge2desc(pA, lda, A, sequence, &request);
         plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
 
-        // Call tile async function
+        // Call tile async function.
         plasma_omp_zcposv(uplo, A, B, X, As, Xs, R, work, Rnorm, Xnorm, iter, sequence, &request);
 
-        // Translate back to LAPACK layout
+        // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(X, pX, ldx, sequence, &request);
     }
-    // Implicit synchronization
+    // implicit synchronization
 
-    // Free matrices in tile layout
+    // Free matrices in tile layout.
     plasma_desc_destroy(&A);
     plasma_desc_destroy(&B);
     plasma_desc_destroy(&X);
@@ -266,7 +266,7 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
     free(Rnorm);
     free(Xnorm);
 
-    // Return status
+    // Return status.
     int status = sequence->status;
     plasma_sequence_destroy(sequence);
     return status;
@@ -358,7 +358,7 @@ void plasma_omp_zcposv(plasma_enum_t uplo,
     const plasma_complex64_t zone  =  1.0;
     *iter = 0;
 
-    // Get PLASMA context
+    // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
@@ -366,7 +366,7 @@ void plasma_omp_zcposv(plasma_enum_t uplo,
         return;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if (uplo != PlasmaUpper && uplo != PlasmaLower) {
         plasma_error("illegal value of uplo");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
@@ -413,11 +413,11 @@ void plasma_omp_zcposv(plasma_enum_t uplo,
         return;
     }
 
-    // Quick return.
+    // quick return
     if (A.n == 0 || B.n == 0)
         return;
 
-    // Workspace for dzamax
+    // workspace for dzamax
     double *workX = work;
     double *workR = &work[X.mt*X.n];
 
@@ -471,7 +471,7 @@ void plasma_omp_zcposv(plasma_enum_t uplo,
         }
     }
 
-    // Iterative refinement
+    // iterative refinement
     for (int iiter = 0; iiter < itermax; iiter++) {
         // Convert R from double to single precision, store result in Xs.
         plasma_pzlag2c(R, Xs, sequence, request);
@@ -488,7 +488,7 @@ void plasma_omp_zcposv(plasma_enum_t uplo,
         plasma_pclag2z(Xs, R, sequence, request);
         plasma_pzgeadd(PlasmaNoTrans, zone, R, zone, X, sequence, request);
 
-        // Compute R = B - A * X
+        // Compute R = B - A * X.
         plasma_pzlacpy(PlasmaGeneral, PlasmaNoTrans, B, R, sequence, request);
         plasma_pzhemm(PlasmaLeft, uplo, zmone, A, X, zone, R,
                       sequence, request);
@@ -514,7 +514,8 @@ void plasma_omp_zcposv(plasma_enum_t uplo,
 
     // If we are at this place of the code, this is because we have performed
     // iter = itermax iterations and never satisfied the stopping criterion,
-    // set up the iter flag accordingly and follow up with double precision routine.
+    // set up the iter flag accordingly and follow up with double precision
+    // routine.
     *iter = -itermax - 1;
 
     // Compute Cholesky factorization of A.

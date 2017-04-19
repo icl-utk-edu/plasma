@@ -147,11 +147,11 @@ int plasma_zgeadd(plasma_enum_t transa,
     if (m == 0 || n == 0 || (alpha == 0.0 && beta == 1.0))
         return PlasmaSuccess;
 
-    // Tune parameters
+    // Tune parameters.
     if (plasma->tuning)
         plasma_tune_geadd(plasma, PlasmaComplexDouble, m, n);
 
-    // Set tiling parameters
+    // Set tiling parameters.
     int nb = plasma->nb;
 
     // Create tile matrices.

@@ -106,7 +106,7 @@ int plasma_zgeqrs(int m, int n, int nrhs,
     if (m == 0 || n == 0 || nrhs == 0)
         return PlasmaSuccess;
 
-    // Tune parameters
+    // Tune parameters.
     if (plasma->tuning)
         plasma_tune_geqrf(plasma, PlasmaComplexDouble, m, n);
 

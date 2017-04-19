@@ -112,7 +112,7 @@ int plasma_zgels(plasma_enum_t trans,
         return PlasmaErrorNotInitialized;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if (trans != PlasmaNoTrans) {
         plasma_error("only PlasmaNoTrans supported");
         return PlasmaErrorNotSupported;
@@ -146,15 +146,12 @@ int plasma_zgels(plasma_enum_t trans,
         return PlasmaSuccess;
     }
 
-    // Tune parameters
-    if (plasma->tuning) {
-        if (m<n) {
+    // Tune parameters.
+    if (plasma->tuning)
+        if (m < n)
 	        plasma_tune_gelqf(plasma, PlasmaComplexDouble, m, n);
-        }
-        else {
+        else
 	        plasma_tune_geqrf(plasma, PlasmaComplexDouble, m, n);
-        }
-    }
 
     // Set tiling parameters.
     int ib = plasma->ib;

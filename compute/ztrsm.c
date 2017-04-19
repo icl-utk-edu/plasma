@@ -163,7 +163,7 @@ int plasma_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
     if ((m == 0) || (n == 0))
         return PlasmaSuccess;
 
-    // Tune parameters
+    // Tune parameters.
     if (plasma->tuning)
       plasma_tune_trsm(plasma, PlasmaComplexDouble, m, n);
 
@@ -304,7 +304,7 @@ void plasma_omp_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
         return;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if ((side != PlasmaLeft) &&
         (side != PlasmaRight)) {
         plasma_error("illegal value of side");

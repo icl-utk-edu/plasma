@@ -31,7 +31,7 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
     // Read parameters from the context.
     plasma_context_t *plasma = plasma_context_self();
 
-    // Set tiling parameters
+    // Set tiling parameters.
     int ib = plasma->ib;
 
     plasma_barrier_t *barrier = &plasma->barrier;

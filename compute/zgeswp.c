@@ -52,7 +52,7 @@ int plasma_zgeswp(plasma_enum_t colrow,
     if (imin(n, m) == 0)
       return PlasmaSuccess;
 
-    // Tune parameters
+    // Tune parameters.
     if (plasma->tuning)
         plasma_tune_geswp(plasma, PlasmaComplexDouble, m, n);
 

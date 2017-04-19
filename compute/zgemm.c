@@ -176,7 +176,7 @@ int plasma_zgemm(plasma_enum_t transa, plasma_enum_t transb,
     if (m == 0 || n == 0 || ((alpha == 0.0 || k == 0) && beta == 1.0))
         return PlasmaSuccess;
 
-    // Tune parameters
+    // Tune parameters.
     if (plasma->tuning)
         plasma_tune_gemm(plasma, PlasmaComplexDouble, m, n, k);
 

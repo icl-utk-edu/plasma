@@ -96,11 +96,11 @@ int plasma_zgelqf(int m, int n,
     if (imin(m, n) == 0)
         return PlasmaSuccess;
 
-    // Tune parameters
+    // Tune parameters.
     if (plasma->tuning)
         plasma_tune_gelqf(plasma, PlasmaComplexDouble, m, n);
 
-    // Set tiling parameters
+    // Set tiling parameters.
     int ib = plasma->ib;
     int nb = plasma->nb;
     int householder_mode = plasma->householder_mode;

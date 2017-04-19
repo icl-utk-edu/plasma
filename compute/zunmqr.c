@@ -149,7 +149,7 @@ int plasma_zunmqr(plasma_enum_t side, plasma_enum_t trans,
     if (m == 0 || n == 0 || k == 0)
         return PlasmaSuccess;
 
-    // Tune parameters
+    // Tune parameters.
     if (plasma->tuning)
         plasma_tune_geqrf(plasma, PlasmaComplexDouble, m, n);
 

@@ -105,11 +105,11 @@ int plasma_zgelqs(int m, int n, int nrhs,
     if (m == 0 || n == 0 || nrhs == 0)
         return PlasmaSuccess;
 
-    // Tune parameters
+    // Tune parameters.
     if (plasma->tuning)
         plasma_tune_gelqf(plasma, PlasmaComplexDouble, m, n);
 
-    // Set tiling parameters
+    // Set tiling parameters.
     int ib = plasma->ib;
     int nb = plasma->nb;
 

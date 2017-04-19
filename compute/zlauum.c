@@ -90,7 +90,7 @@ int plasma_zlauum(plasma_enum_t uplo, int n,
     if (imax(n, 0) == 0)
         return PlasmaSuccess;
 
-    // Tune parameters
+    // Tune parameters.
     if (plasma->tuning)
         plasma_tune_lauum(plasma, PlasmaComplexDouble, n);
 
@@ -106,6 +106,7 @@ int plasma_zlauum(plasma_enum_t uplo, int n,
         plasma_error("plasma_desc_general_create() failed");
         return retval;
     }
+
     // Create sequence.
     plasma_sequence_t *sequence = NULL;
     retval = plasma_sequence_create(&sequence);
@@ -117,7 +118,7 @@ int plasma_zlauum(plasma_enum_t uplo, int n,
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
 
-    // Asynchronous block.
+    // asynchronous block
     #pragma omp parallel
     #pragma omp master
     {
@@ -130,7 +131,7 @@ int plasma_zlauum(plasma_enum_t uplo, int n,
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
     }
-        // Implicit synchronization.
+    // implicit synchronization
 
     // Free matrix A in tile layout.
     plasma_desc_destroy(&A);
@@ -217,8 +218,7 @@ void plasma_omp_zlauum(plasma_enum_t uplo, plasma_desc_t A,
         return;
     }
 
-
-    // Quick return
+    // quick return
     if (A.n == 0)
         return;
 

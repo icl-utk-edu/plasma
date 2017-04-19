@@ -125,7 +125,7 @@ int plasma_zgbtrs(plasma_enum_t trans, int n, int kl, int ku, int nrhs,
     if (imax(n, nrhs) == 0)
         return PlasmaSuccess;
 
-    // Tune parameters
+    // Tune parameters/
     if (plasma->tuning)
         plasma_tune_gbtrf(plasma, PlasmaComplexDouble, n, kl+ku+1);
 

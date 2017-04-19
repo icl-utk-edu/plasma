@@ -107,7 +107,7 @@ int plasma_zpbtrf(plasma_enum_t uplo,
     if (imax(n, 0) == 0)
         return PlasmaSuccess;
 
-    // Tune parameters
+    // Tune parameters.
     if (plasma->tuning)
         plasma_tune_pbtrf(plasma, PlasmaComplexDouble, n);
 

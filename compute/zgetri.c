@@ -76,7 +76,7 @@ int plasma_zgetri(int n, plasma_complex64_t *pA, int lda, int *ipiv)
     if (imax(n, 0) == 0)
         return PlasmaSuccess;
 
-    // Tune parameters 
+    // Tune parameters.
     if (plasma->tuning)
         plasma_tune_getrf(plasma, PlasmaComplexDouble, n, n);
 
@@ -112,7 +112,7 @@ int plasma_zgetri(int n, plasma_complex64_t *pA, int lda, int *ipiv)
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
 
-    // Asynchronous block.
+    // asynchronous block
     #pragma omp parallel
     #pragma omp master
     {
@@ -125,7 +125,7 @@ int plasma_zgetri(int n, plasma_complex64_t *pA, int lda, int *ipiv)
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
     }
-    // Implicit synchronization.
+    // implicit synchronization
 
     // Free matrices in tile layout.
     plasma_desc_destroy(&W);
@@ -215,7 +215,7 @@ void plasma_omp_zgetri(plasma_desc_t A, int *ipiv, plasma_desc_t W,
         return;
     }
 
-    // Quick return
+    // quick return
     if (A.n == 0)
         return;
 

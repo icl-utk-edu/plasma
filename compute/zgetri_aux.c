@@ -184,7 +184,7 @@ void plasma_omp_zgetri_aux(plasma_desc_t A, plasma_desc_t W,
         return;
     }
 
-    // Check input arguments
+    // Check input arguments.
     if (plasma_desc_check(A) != PlasmaSuccess) {
         plasma_error("invalid A");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
