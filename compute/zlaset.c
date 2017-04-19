@@ -15,6 +15,7 @@
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
+#include "plasma_tuning.h"
 #include "plasma_types.h"
 
 /******************************************************************************/
@@ -53,6 +54,10 @@ int plasma_zlaset(plasma_enum_t uplo,
     // quick return
     if (imin(n, m) == 0)
       return PlasmaSuccess;
+
+    // Tune parameters.
+    if (plasma->tuning)
+        plasma_tune_laset(plasma, PlasmaComplexDouble, m, n);
 
     // Set tiling parameters.
     int nb = plasma->nb;

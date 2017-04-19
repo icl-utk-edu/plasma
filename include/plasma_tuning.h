@@ -50,6 +50,10 @@ void plasma_tune_lansy(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int n);
 void plasma_tune_lantr(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int m, int n);
+void plasma_tune_lascl(plasma_context_t *plasma, plasma_enum_t dtyp,
+                       int m, int n);
+void plasma_tune_laset(plasma_context_t *plasma, plasma_enum_t dtyp,
+                       int m, int n);
 void plasma_tune_lauum(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int n);
 void plasma_tune_pbtrf(plasma_context_t *plasma, plasma_enum_t dtyp,

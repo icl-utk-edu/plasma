@@ -230,6 +230,27 @@ void plasma_tune_lantr(plasma_context_t *plasma, plasma_enum_t dtyp,
 
     plasma_tune(plasma->L, dtyp, "lantr_nb", &plasma->nb, 2, m, n);
 }
+
+/******************************************************************************/
+void plasma_tune_lascl(plasma_context_t *plasma, plasma_enum_t dtyp,
+                       int m, int n)
+{
+    if (plasma->L == NULL)
+        return;
+
+    plasma_tune(plasma->L, dtyp, "lascl_nb", &plasma->nb, 2, m, n);
+}
+
+/******************************************************************************/
+void plasma_tune_laset(plasma_context_t *plasma, plasma_enum_t dtyp,
+                       int m, int n)
+{
+    if (plasma->L == NULL)
+        return;
+
+    plasma_tune(plasma->L, dtyp, "laset_nb", &plasma->nb, 2, m, n);
+}
+
 /******************************************************************************/
 void plasma_tune_lauum(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int n)
