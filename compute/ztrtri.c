@@ -96,6 +96,10 @@ int plasma_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
     if (imax(n, 0) == 0)
         return PlasmaSuccess;
 
+    // Tune parameters
+    if (plasma->tuning)
+        plasma_tune_trtri(plasma, PlasmaComplexDouble, n);
+
     // Set tiling parameters.
     int nb = plasma->nb;
 

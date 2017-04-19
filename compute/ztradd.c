@@ -157,6 +157,10 @@ int plasma_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
     if (m == 0 || n == 0 || (alpha == 0.0 && beta == 1.0))
         return PlasmaSuccess;
 
+    // Tune parameters
+    if (plasma->tuning)
+        plasma_tune_tradd(plasma, PlasmaComplexDouble, m, n);
+
     // Set tiling parameters
     int nb = plasma->nb;
 

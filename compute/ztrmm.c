@@ -168,6 +168,10 @@ int plasma_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
     if (imin(m, n) == 0)
         return PlasmaSuccess;
 
+    // Tune parameters
+    if (plasma->tuning)
+        plasma_tune_trmm(plasma, PlasmaComplexDouble, m, n);
+
     // Set tiling parameters.
     int nb = plasma->nb;
 

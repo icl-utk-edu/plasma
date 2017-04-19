@@ -76,6 +76,10 @@ int plasma_zgetri(int n, plasma_complex64_t *pA, int lda, int *ipiv)
     if (imax(n, 0) == 0)
         return PlasmaSuccess;
 
+    // Tune parameters 
+    if (plasma->tuning)
+        plasma_tune_getrf(plasma, PlasmaComplexDouble, n, n);
+
     // Set tiling parameters.
     int nb = plasma->nb;
 

@@ -98,9 +98,13 @@ int plasma_zgbsv(int n, int kl, int ku, int nrhs,
 
     // quick return
     if (imin(n, nrhs) == 0)
-       return PlasmaSuccess;
+        return PlasmaSuccess;
 
-    // Set tiling parameters.
+    // Tune parameters
+    if (plasma->tuning)
+        plasma_tune_gbtrf(plasma, PlasmaComplexDouble, n, kl+ku+1);
+
+    // Set tiling parameters
     int nb = plasma->nb;
 
     // Initialize barrier.

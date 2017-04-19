@@ -112,6 +112,10 @@ double plasma_zlansy(plasma_enum_t norm, plasma_enum_t uplo,
     if (n == 0)
       return 0.0;
 
+    // Tune parameters
+    if (plasma->tuning)
+        plasma_tune_lansy(plasma, PlasmaComplexDouble, n);
+
     // Set tiling parameters.
     int nb = plasma->nb;
 

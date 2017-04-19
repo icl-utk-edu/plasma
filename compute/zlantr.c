@@ -125,6 +125,11 @@ double plasma_zlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
     if (imin(n, m) == 0)
       return 0.0;
 
+    // Tune parameters
+    if (plasma->tuning)
+        plasma_tune_lantr(plasma, PlasmaComplexDouble, m, n);
+
+
     // Set tiling parameters.
     int nb = plasma->nb;
 

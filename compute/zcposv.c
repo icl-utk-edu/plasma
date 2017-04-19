@@ -155,6 +155,10 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
     if (imin(n, nrhs) == 0)
         return PlasmaSuccess;
 
+    // Tune parameters
+    if (plasma->tuning)
+        plasma_tune_potrf(plasma, PlasmaComplexFloat, n);
+ 
     // Set tiling parameters
     int nb = plasma->nb;
 

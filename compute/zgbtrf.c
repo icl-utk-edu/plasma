@@ -84,6 +84,11 @@ int plasma_zgbtrf(int m, int n, int kl, int ku,
 
     // quick return
 
+
+    // Tune parameters
+    if (plasma->tuning)
+        plasma_tune_gbtrf(plasma, PlasmaComplexDouble, n, kl+ku+1);
+
     // Set tiling parameters.
     int nb = plasma->nb;
 

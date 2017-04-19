@@ -90,8 +90,13 @@ int plasma_zpotri(plasma_enum_t uplo,
     if (imax(n, 0) == 0)
         return PlasmaSuccess;
 
+    // Tune parameters
+    if (plasma->tuning)
+        plasma_tune_trtri(plasma, PlasmaComplexDouble, n);
+
     // Set tiling parameters.
     int nb = plasma->nb;
+
     // Create tile matrix.
     plasma_desc_t A;
     int retval;

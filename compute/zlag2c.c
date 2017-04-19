@@ -88,6 +88,10 @@ int plasma_zlag2c(int m, int n,
     if (imin(n, m) == 0)
       return PlasmaSuccess;
 
+    // Tune parameters
+    if (plasma->tuning)
+        plasma_tune_lag2c(plasma, PlasmaComplexDouble, m, n);
+
     // Set tiling parameters.
     int nb = plasma->nb;
 

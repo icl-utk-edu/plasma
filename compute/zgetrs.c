@@ -53,6 +53,10 @@ int plasma_zgetrs(int n, int nrhs,
     if (imin(n, nrhs) == 0)
         return PlasmaSuccess;
 
+    // Tune parameters
+    if (plasma->tuning)
+        plasma_tune_trsm(plasma, PlasmaComplexDouble, n, n);
+
     // Set tiling parameters.
     int nb = plasma->nb;
 

@@ -138,12 +138,22 @@ int plasma_zgels(plasma_enum_t trans,
         return -9;
     }
 
-    //quick return
+    // quick return
     if (imin(m, imin(n, nrhs)) == 0) {
         for (int i = 0; i < imax(m, n); i++)
             for (int j = 0; j < nrhs; j++)
                 pB[j*ldb+i] = 0.0;
         return PlasmaSuccess;
+    }
+
+    // Tune parameters
+    if (plasma->tuning) {
+        if (m<n) {
+	        plasma_tune_gelqf(plasma, PlasmaComplexDouble, m, n);
+        }
+        else {
+	        plasma_tune_geqrf(plasma, PlasmaComplexDouble, m, n);
+        }
     }
 
     // Set tiling parameters.

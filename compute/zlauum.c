@@ -90,6 +90,10 @@ int plasma_zlauum(plasma_enum_t uplo, int n,
     if (imax(n, 0) == 0)
         return PlasmaSuccess;
 
+    // Tune parameters
+    if (plasma->tuning)
+        plasma_tune_lauum(plasma, PlasmaComplexDouble, n);
+
     // Set tiling parameters.
     int nb = plasma->nb;
 

@@ -162,6 +162,10 @@ int plasma_zher2k(plasma_enum_t uplo, plasma_enum_t trans,
     if (n == 0 || ((alpha == 0.0 || k == 0.0) && beta == 1.0))
         return PlasmaSuccess;
 
+    // Tune parameters
+    if (plasma->tuning)
+        plasma_tune_syr2k(plasma, PlasmaComplexDouble, n, k);
+
     // Set tiling parameters.
     int nb = plasma->nb;
 

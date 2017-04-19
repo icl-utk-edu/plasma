@@ -110,7 +110,11 @@ double plasma_zlanhe(plasma_enum_t norm, plasma_enum_t uplo,
     if (n == 0)
       return 0.0;
 
-    // Set tiling parameters.
+    // Tune parameters
+    if (plasma->tuning)
+        plasma_tune_lansy(plasma, PlasmaComplexDouble, n);
+
+    // Set tiling parameters
     int nb = plasma->nb;
 
     // Create tile matrices.

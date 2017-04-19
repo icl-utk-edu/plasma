@@ -49,10 +49,11 @@ int plasma_zgetrf(int m, int n,
     if (imin(m, n) == 0)
         return PlasmaSuccess;
 
-    // Tune parameters.
-    // if (plasma->tuning)
-    //     plasma_tune_getrf(plasma, PlasmaComplexDouble, m, n);
+    // Tune parameters
+    if (plasma->tuning)
+        plasma_tune_getrf(plasma, PlasmaComplexDouble, m, n);
 
+    // Set tiling parameters
     int nb = plasma->nb;
 
     // Initialize barrier.
