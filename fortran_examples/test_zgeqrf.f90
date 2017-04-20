@@ -99,6 +99,10 @@ program test_zgeqrf
     !==============================================
     ! Set PLASMA parameters.
     !==============================================
+    ! disable tuning
+    call plasma_set(PlasmaTuning, PlasmaDisabled, info)
+    call check_error('plasma_set()', info)
+
     ! set tile size
     call plasma_set(PlasmaNb, nb, info)
     call check_error('plasma_set()', info)
