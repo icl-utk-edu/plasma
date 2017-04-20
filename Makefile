@@ -184,11 +184,10 @@ ifneq ($(have_fpic),)
 
 
    # MacOS (darwin) needs shared library's path set
-   ifneq ($(findstring darwin, $(OSTYPE)), '')
-       $(info $(findstring darwin, $(OSTYPE)))
+   ifneq ($(findstring darwin, $(OSTYPE)),)
        install_name = -install_name @rpath/$(notdir $@)
    else
-       install_name = 
+       install_name =
    endif
 
    lib/libplasma.so: $(plasma_obj) Makefile.plasma.gen lib/libcoreblas.so $(lua_lib)
@@ -216,8 +215,7 @@ lib: $(libfiles)
 test: $(test_exe)
 
 $(test_exe): $(test_obj) $(libfiles) Makefile.test.gen
-	$(quiet_CC) $(CC) $(LDFLAGS) -o $@ $(test_obj) $(PLASMA_LIBS) $(LIBS) \
-	$(rpath)
+	$(quiet_CC) $(CC) $(LDFLAGS) -o $@ $(test_obj) $(PLASMA_LIBS) $(LIBS) $(rpath)
 
 
 # ------------------------------------------------------------------------------
@@ -229,8 +227,7 @@ fortran_examples: $(fortran_examples_exe)
 
 # implicit rule for building Fortran examples
 % : %.f90 $(libfiles) Makefile.fortran_examples.gen
-	$(quiet_FC) $(FC) $(FFLAGS) $(LDFLAGS) $(PLASMA_INC) $< -o $@ $(PLASMA_LIBS) $(LIBS) \
-	$(rpath)
+	$(quiet_FC) $(FC) $(FFLAGS) $(LDFLAGS) $(PLASMA_INC) $< -o $@ $(PLASMA_LIBS) $(LIBS) $(rpath)
 
 run_fortran_tests: $(fortran_examples_exe)
 	$(foreach exe,$(fortran_examples_exe), ./$(exe);)
@@ -308,7 +305,7 @@ endif
 # cleangen removes generated files if the template still exists;
 # grep for any stale generated files without a template.
 distclean: clean cleangen
-	grep -l @generated $(plasma_src) $(coreblas_src) $(test_src) $(fortran_examples_src) | xargs rm -f
+	grep -s -l @generated $(plasma_src) $(coreblas_src) $(test_src) $(fortran_examples_src) | xargs rm -f
 	-rm -f compute/*.o control/*.o core_blas/*.o test/*.o
 	-rm -f $(makefiles_gen)
 	-rm -rf docs/html
