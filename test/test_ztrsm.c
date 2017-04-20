@@ -88,6 +88,7 @@ void test_ztrsm(param_value_t param[], bool run)
     //================================================================
     // Set tuning parameters.
     //================================================================
+    plasma_set(PlasmaTuning, PlasmaDisabled);
     plasma_set(PlasmaNb, param[PARAM_NB].i);
 
     //================================================================

@@ -61,14 +61,13 @@ void test_zgeqrf(param_value_t param[], bool run)
     //================================================================
     // Set tuning parameters.
     //================================================================
+    plasma_set(PlasmaTuning, PlasmaDisabled);
     plasma_set(PlasmaNb, param[PARAM_NB].i);
     plasma_set(PlasmaIb, param[PARAM_IB].i);
-    if (param[PARAM_HMODE].c == 't') {
+    if (param[PARAM_HMODE].c == 't')
         plasma_set(PlasmaHouseholderMode, PlasmaTreeHouseholder);
-    }
-    else {
+    else
         plasma_set(PlasmaHouseholderMode, PlasmaFlatHouseholder);
-    }
 
     //================================================================
     // Allocate and initialize arrays.
