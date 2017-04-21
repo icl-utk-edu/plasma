@@ -229,7 +229,7 @@ fortran_examples: $(fortran_examples_exe)
 % : %.f90 $(libfiles) Makefile.fortran_examples.gen
 	$(quiet_FC) $(FC) $(FFLAGS) $(LDFLAGS) $(PLASMA_INC) $< -o $@ $(PLASMA_LIBS) $(LIBS) $(rpath)
 
-run_fortran_tests: $(fortran_examples_exe)
+run_fortran_tests: fortran_examples
 	$(foreach exe,$(fortran_examples_exe), ./$(exe);)
 
 # ------------------------------------------------------------------------------

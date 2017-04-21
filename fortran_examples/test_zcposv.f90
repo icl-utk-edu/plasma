@@ -155,7 +155,7 @@
       print *, "Relative error:  ", relerr
 
       if (relerr < tol) then
-        print *, "Solution: correct"
+        print *, "Solution: CORRECT"
       else
         print *, "Solution: WRONG"
       end if
