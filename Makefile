@@ -25,6 +25,7 @@
 
 all: lib test
 
+
 # ------------------------------------------------------------------------------
 # Tools and flags
 # Get from make.inc, or use these defaults
@@ -244,6 +245,7 @@ run_fortran_tests: fortran_examples
 %.i: %.c | $(headers)
 	$(quiet_CC) $(CC) $(CFLAGS) $(PLASMA_INC) $(INC) -E -o $@ $<
 
+
 # ------------------------------------------------------------------------------
 # Build documentation
 
@@ -368,6 +370,7 @@ endif
 # --------------------
 
 force_gen: ;
+
 
 # ------------------------------------------------------------------------------
 # Debugging
