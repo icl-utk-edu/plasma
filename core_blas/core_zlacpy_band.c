@@ -50,6 +50,7 @@
  *          The leading dimension of the array B. ldb >= max(1,M).
  *
  ******************************************************************************/
+__attribute__((weak))
 void core_zlacpy_lapack2tile_band(plasma_enum_t uplo,
                                   int it, int jt,
                                   int m, int n, int nb, int kl, int ku,
@@ -160,6 +161,7 @@ void core_omp_zlacpy_lapack2tile_band(plasma_enum_t uplo,
  *          The leading dimension of the array B. ldb >= max(1, m).
  *
  ******************************************************************************/
+__attribute__((weak))
 void core_zlacpy_tile2lapack_band(plasma_enum_t uplo,
                                   int it, int jt,
                                   int m, int n, int nb, int kl, int ku,

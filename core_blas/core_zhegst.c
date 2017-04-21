@@ -65,6 +65,7 @@
  *          The leading dimension of the array B.  LDB >= max(1,N).
  *
  ******************************************************************************/
+__attribute__((weak))
 int core_zhegst(int itype, plasma_enum_t uplo,
                 int n,
                 plasma_complex64_t *A, int lda,

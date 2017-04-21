@@ -53,6 +53,7 @@
  *         The leading dimension of the array A.  lda >= max(1,m).
  *
  ******************************************************************************/
+__attribute__((weak))
 void core_zlaset(plasma_enum_t uplo, int m, int n,
                  plasma_complex64_t alpha, plasma_complex64_t beta,
                  plasma_complex64_t *A, int lda)

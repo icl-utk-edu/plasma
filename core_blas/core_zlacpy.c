@@ -57,6 +57,7 @@
  *          ldb >= max(1,m).
  *
  ******************************************************************************/
+__attribute__((weak))
 void core_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
                  int m, int n,
                  const plasma_complex64_t *A, int lda,

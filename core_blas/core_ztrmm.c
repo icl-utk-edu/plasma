@@ -92,6 +92,7 @@
  *          The leading dimension of the array B. ldb >= max(1,m).
  *
  ******************************************************************************/
+__attribute__((weak))
 void core_ztrmm(
     plasma_enum_t side, plasma_enum_t uplo,
     plasma_enum_t transa, plasma_enum_t diag,

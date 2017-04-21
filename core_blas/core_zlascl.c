@@ -15,6 +15,7 @@
 #include "core_lapack.h"
 
 /******************************************************************************/
+__attribute__((weak))
 void core_zlascl(plasma_enum_t uplo,
                  double cfrom, double cto,
                  int m, int n,

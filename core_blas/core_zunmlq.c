@@ -101,6 +101,7 @@
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
+__attribute__((weak))
 int core_zunmlq(plasma_enum_t side, plasma_enum_t trans,
                 int m, int n, int k, int ib,
                 const plasma_complex64_t *A,    int lda,

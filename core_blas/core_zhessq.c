@@ -17,6 +17,7 @@
 #include <math.h>
 
 /******************************************************************************/
+__attribute__((weak))
 void core_zhessq(plasma_enum_t uplo,
                  int n,
                  const plasma_complex64_t *A, int lda,

@@ -71,6 +71,7 @@
  *          ldb >= max(1,m)
  *
  ******************************************************************************/
+__attribute__((weak))
 int core_zgeadd(plasma_enum_t transa,
                 int m, int n,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
