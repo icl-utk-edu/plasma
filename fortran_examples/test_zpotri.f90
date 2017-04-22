@@ -159,6 +159,7 @@
       else
           write(*,'(a)') "  The result is WRONG!"
       end if
+      write(*,'(a)') ""
 
       ! Deallocate matrix Aref
       deallocate(Aref, stat=infoPlasma)

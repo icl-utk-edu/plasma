@@ -28,6 +28,7 @@ static volatile int info;
 #define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
 
 /******************************************************************************/
+__attribute__((weak))
 int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
                 plasma_barrier_t *barrier)
 {

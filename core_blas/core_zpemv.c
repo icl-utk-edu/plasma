@@ -108,6 +108,7 @@
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
+__attribute__((weak))
 int core_zpemv(plasma_enum_t trans, int storev,
                int m, int n, int l,
                plasma_complex64_t alpha,

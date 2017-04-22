@@ -51,6 +51,7 @@
  *          The leading dimension of the array A. lda >= max(1,n).
  *
  ******************************************************************************/
+__attribute__((weak))
 int core_zpotrf(plasma_enum_t uplo,
                  int n,
                  plasma_complex64_t *A, int lda)

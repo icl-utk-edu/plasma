@@ -153,6 +153,7 @@
       else
           write(*,'(a)') "  The result is WRONG!"
       end if
+      write(*,'(a)') ""
 
       ! Deallocate matrices Aref, Bref
       deallocate(Aref, Bref, work, stat=infoPlasma)

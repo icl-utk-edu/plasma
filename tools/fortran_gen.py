@@ -75,6 +75,9 @@ arrays_names_1D = ["ipiv", "values", "work"]
 # exclude inline functions from the interface
 exclude_list = ["inline"]
 
+# list of **pointers, to be forced as type(c_ptr)
+force_pointer = ["plasma_sequence_t"]
+
 # ------------------------------------------------------------
 
 # global list used to determine derived types
@@ -87,7 +90,7 @@ def polish_file(whole_file):
 
     clean_file = whole_file
 
-    # kindly borrowed from cfwrapper.py
+    # borrowed from cfwrapper.py
     # Remove C comments:
     clean_file = re.sub(r"(?s)/\*.*?\*/", "", clean_file)
     clean_file = re.sub(r"//.*", "", clean_file)
@@ -180,19 +183,27 @@ def parse_triple(string):
 
     if (len(parts) == 2):
         name_with_pointer = str.strip(parts[1])
-        if (name_with_pointer.find("*") == -1):
-            pointer_part = ""
-            name_part    = name_with_pointer
-        else:
+        if (name_with_pointer.find("**") > -1):
+            pointer_part = "**"
+            name_part = name_with_pointer.replace("**", "")
+        elif (name_with_pointer.find("*") > -1):
             pointer_part = "*"
             name_part    = name_with_pointer.replace("*", "")
+        else:
+            pointer_part = ""
+            name_part    = name_with_pointer
 
     elif (len(parts) == 3):
-        if (str.strip(parts[1]) == "*"):
+        if (str.strip(parts[1]) == "**"):
+            pointer_part = "**"
+            name_part    = str.strip(parts[2])
+        elif (str.strip(parts[1]) == "*"):
             pointer_part = "*"
             name_part    = str.strip(parts[2])
         else:
             print("Error: Too many parts for ", string)
+
+    name_part = name_part.strip()
 
     return [type_part, pointer_part, name_part]
 
@@ -269,26 +280,29 @@ def parse_structs(preprocessed_list):
     while (goAgain):
         goAgain = False
         for istruct in range(0,len(struct_list)-1):
-            for j in range(1,len(struct_list[istruct])-1):
+            struct = struct_list[istruct]
+            for j in range(1,len(struct)-1):
                 type_name = struct_list[istruct][j][0]
 
                 if (type_name in derived_types):
 
                     # try to find the name in the registered types
                     definedEarlier = False
-                    for jstruct in range(0,istruct-1):
-                        if (struct_list[jstruct][0][2] == type_name):
+                    for jstruct in range(0,istruct):
+                        struct2 = struct_list[jstruct]
+                        that_name = struct2[0][2]
+                        if (that_name == type_name):
                             definedEarlier = True
-                            break
 
                     # if not found, try to find it behind
                     if (not definedEarlier):
                         definedLater = False
                         for jstruct in range(istruct+1,len(struct_list)-1):
-                            if ((struct_list[jstruct][0][2] == type_name)):
+                            struct2 = struct_list[jstruct]
+                            that_name = struct2[0][2]
+                            if (that_name == type_name):
                                 index = jstruct
                                 definedLater = True
-                                break
 
                         # swap the entries
                         if (definedLater):
@@ -298,7 +312,7 @@ def parse_structs(preprocessed_list):
                             struct_list[istruct] = tmp
                             goAgain = True
                         else:
-                            print("Error: Cannot find a derived type ", type_name)
+                            print("Error: Cannot find a derived type " + type_name + " in imported structs.")
 
     return struct_list
 
@@ -364,7 +378,7 @@ def parse_prototypes(preprocessed_list):
 def iso_c_interface_type(arg, return_value):
     """Generate a declaration for a variable in the interface."""
 
-    if (arg[1] == "*"):
+    if (arg[1] == "*" or arg[1] == "**"):
         is_pointer = True
     else:
         is_pointer = False
@@ -374,7 +388,7 @@ def iso_c_interface_type(arg, return_value):
     else:
         f_type = types_dict[arg[0]]
 
-    if (not return_value):
+    if (not return_value and arg[1] != "**"):
         f_pointer = ", value"
     else:
         f_pointer = ""
@@ -389,7 +403,7 @@ def iso_c_interface_type(arg, return_value):
 def iso_c_wrapper_type(arg):
     """Generate a declaration for a variable in the Fortran wrapper."""
 
-    if (arg[1] == "*"):
+    if (arg[1] == "*" or arg[1] == "**"):
         is_pointer = True
     else:
         is_pointer = False
@@ -405,7 +419,10 @@ def iso_c_wrapper_type(arg):
         f_intent = ", intent(in)"
 
     if (is_pointer):
-        f_target = ", target"
+        if (arg[1] == "*"):
+           f_target = ", target"
+        else:
+           f_target = ", pointer"
     else:
         f_target = ""
 
@@ -472,7 +489,6 @@ def fortran_interface_function(function):
     used_derived_types = set([])
     for arg in function:
         type_name = arg[0]
-        #if (type_name in derived_types and arg[1] != "*"):
         if (type_name in derived_types):
             used_derived_types.add(type_name)
 
@@ -543,6 +559,7 @@ def fortran_wrapper(function):
     # loop over the arguments to compose the first line and call line
     signature_line = ""
     call_line = ""
+    double_pointers = []
     for j in range(1,len(function)):
         if (j != 1):
             signature_line += ", "
@@ -558,7 +575,11 @@ def fortran_wrapper(function):
         arg_name    = function[j][2]
 
         signature_line += arg_name
-        if (arg_pointer == "*"):
+        if (arg_pointer == "**"):
+            aux_name = arg_name + "_aux"
+            call_line += aux_name
+            double_pointers.append(arg_name)
+        elif (arg_pointer == "*"):
             call_line += "c_loc(" + arg_name + ")"
         else:
             call_line += arg_name
@@ -609,6 +630,12 @@ def fortran_wrapper(function):
 
     f_wrapper += "\n"
 
+    # loop over potential double pointers and generate auxiliary variables for them
+    for double_pointer in double_pointers:
+        aux_name = double_pointer + "_aux"
+        f_wrapper += indent + tab + "type(c_ptr) :: " + aux_name + "\n"
+        f_wrapper += "\n"
+
     if (is_function):
         f_return = return_var
         f_return += " = "
@@ -620,6 +647,11 @@ def fortran_wrapper(function):
         f_wrapper += indent + tab + "call c_f_pointer(" + f_symbol + "(" + call_line + "), " + return_var + ")\n"
     else:
         f_wrapper += indent + tab + f_return + f_symbol + "(" + call_line + ")\n"
+
+    # loop over potential double pointers and translate them to Fortran pointers
+    for double_pointer in double_pointers:
+        aux_name = double_pointer + "_aux"
+        f_wrapper += indent + tab + "call c_f_pointer(" + aux_name + ", " + double_pointer + ")\n"
 
     f_wrapper += indent + "end subroutine\n"
 

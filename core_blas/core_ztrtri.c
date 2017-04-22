@@ -55,6 +55,7 @@
  *          matrix is singular and its inverse can not be computed.
  *
  ******************************************************************************/
+__attribute__((weak))
 int core_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
                  int n,
                  plasma_complex64_t *A, int lda)

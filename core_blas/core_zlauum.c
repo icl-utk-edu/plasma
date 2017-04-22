@@ -54,6 +54,7 @@
  *          - < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
+__attribute__((weak))
 int core_zlauum(plasma_enum_t uplo,
                 int n,
                 plasma_complex64_t *A, int lda)

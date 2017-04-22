@@ -45,6 +45,7 @@
  *          ldas >= max(1,m).
  *
  ******************************************************************************/
+__attribute__((weak))
 void core_zlag2c(int m, int n,
                  plasma_complex64_t *A,  int lda,
                  plasma_complex32_t *As, int ldas)

@@ -17,6 +17,7 @@
 #include "core_lapack.h"
 
 /******************************************************************************/
+__attribute__((weak))
 void core_zgessq(int m, int n,
                  const plasma_complex64_t *A, int lda,
                  double *scale, double *sumsq)

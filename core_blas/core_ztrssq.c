@@ -35,6 +35,7 @@ static inline void ssq(plasma_complex64_t value, double *scale, double *sumsq)
 }
 
 /******************************************************************************/
+__attribute__((weak))
 void core_ztrssq(plasma_enum_t uplo, plasma_enum_t diag,
                  int m, int n,
                  const plasma_complex64_t *A, int lda,

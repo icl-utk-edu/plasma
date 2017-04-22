@@ -21,12 +21,10 @@ extern "C" {
 #endif
 
 /******************************************************************************/
-__attribute__((weak))
 void core_zlag2c(int m, int n,
                  plasma_complex64_t *A,  int lda,
                  plasma_complex32_t *As, int ldas);
 
-__attribute__((weak))
 void core_clag2z(int m, int n,
                  plasma_complex32_t *As, int ldas,
                  plasma_complex64_t *A,  int lda);

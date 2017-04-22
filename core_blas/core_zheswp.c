@@ -52,6 +52,7 @@
  *          is negative, the pivots are applied in reverse order.
  *
  ******************************************************************************/
+__attribute__((weak))
 void core_zheswp(int uplo, plasma_desc_t A, int k1, int k2, const int *ipiv,
                  int incx)
 {

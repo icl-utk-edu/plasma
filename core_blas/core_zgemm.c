@@ -86,6 +86,7 @@
  *          The leading dimension of the array C. ldc >= max(1,m).
  *
  ******************************************************************************/
+__attribute__((weak))
 void core_zgemm(plasma_enum_t transa, plasma_enum_t transb,
                 int m, int n, int k,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,

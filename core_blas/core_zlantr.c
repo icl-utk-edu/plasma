@@ -18,6 +18,7 @@
 #include <math.h>
 
 /******************************************************************************/
+__attribute__((weak))
 void core_zlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
                  int m, int n,
                  const plasma_complex64_t *A, int lda,

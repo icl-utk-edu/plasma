@@ -13,51 +13,52 @@
 #include <omp.h>
 
 /******************************************************************************/
-int plasma_workspace_create(plasma_workspace_t *work, size_t lwork,
+int plasma_workspace_create(plasma_workspace_t *workspace, size_t lworkspace,
                             plasma_enum_t dtyp)
 {
     // Allocate array of pointers.
     #pragma omp parallel
     #pragma omp master
     {
-        work->nthread = omp_get_num_threads();
+        workspace->nthread = omp_get_num_threads();
     }
-    work->lwork = lwork;
-    work->dtyp  = dtyp;
-    if ((work->spaces = (void**)calloc(work->nthread, sizeof(void*))) == NULL) {
-        free(work->spaces);
+    workspace->lworkspace = lworkspace;
+    workspace->dtyp  = dtyp;
+    if ((workspace->spaces = (void**)calloc(workspace->nthread,
+                                            sizeof(void*))) == NULL) {
+        free(workspace->spaces);
         plasma_error("malloc() failed");
         return PlasmaErrorOutOfMemory;
     }
 
     // Each thread allocates its workspace.
-    size_t size = (size_t)lwork * plasma_element_size(work->dtyp);
+    size_t size = (size_t)lworkspace * plasma_element_size(workspace->dtyp);
     int info = PlasmaSuccess;
     #pragma omp parallel
     {
         int tid = omp_get_thread_num();
-        if ((work->spaces[tid] = (void*)malloc(size)) == NULL) {
+        if ((workspace->spaces[tid] = (void*)malloc(size)) == NULL) {
             info = PlasmaErrorOutOfMemory;
         }
     }
     if (info != PlasmaSuccess) {
-        plasma_workspace_destroy(work);
+        plasma_workspace_destroy(workspace);
     }
     return info;
 }
 
 /******************************************************************************/
-int plasma_workspace_destroy(plasma_workspace_t *work)
+int plasma_workspace_destroy(plasma_workspace_t *workspace)
 {
-    if (work->spaces != NULL) {
-        for (int i = 0; i < work->nthread; ++i) {
-            free(work->spaces[i]);
-            work->spaces[i] = NULL;
+    if (workspace->spaces != NULL) {
+        for (int i = 0; i < workspace->nthread; ++i) {
+            free(workspace->spaces[i]);
+            workspace->spaces[i] = NULL;
         }
-        free(work->spaces);
-        work->spaces  = NULL;
-        work->nthread = 0;
-        work->lwork   = 0;
+        free(workspace->spaces);
+        workspace->spaces  = NULL;
+        workspace->nthread = 0;
+        workspace->lworkspace   = 0;
     }
     return PlasmaSuccess;
 }

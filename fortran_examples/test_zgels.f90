@@ -161,6 +161,7 @@ program test_zgels
     else
         write(*,'(a)') "  The result is WRONG!"
     end if
+    write(*,'(a)') ""
 
     deallocate(A)
     deallocate(Aref)

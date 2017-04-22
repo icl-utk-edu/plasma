@@ -159,6 +159,7 @@
       else
         print *, "Solution: WRONG"
       end if
+      write(*,'(a)') ""
 
       ! Deallocate matrices
       deallocate(A, Aref, X, B, work, stat=info)

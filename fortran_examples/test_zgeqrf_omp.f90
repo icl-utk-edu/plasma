@@ -7,7 +7,7 @@
 !>
 !> @precisions normal z -> s d c
 !>
-program test_zgeqrf
+program test_zgeqrf_omp
     use, intrinsic :: iso_fortran_env
 
     use plasma
@@ -27,6 +27,9 @@ program test_zgeqrf
     ! generalization of TAU array known from LAPACK
     type(plasma_desc_t) :: descT
 
+    ! descriptor for A
+    type(plasma_desc_t) :: descA
+
     ! matrices for checking correctness
     complex(wp), allocatable :: Q(:,:)
     complex(wp), allocatable :: Id(:,:)
@@ -39,6 +42,7 @@ program test_zgeqrf
     integer :: nb
     integer :: ib
     logical :: tree_householder
+    logical :: use_tuning
 
     real(wp) :: tol
 
@@ -61,6 +65,15 @@ program test_zgeqrf
 
     integer :: householder_mode
     integer :: householder_mode_check
+    integer :: tuning_mode
+
+    type(plasma_context_t), pointer :: plasma_context
+    integer(kind=c_size_t) :: lworkspace
+    type(plasma_workspace_t) :: workspace
+    type(plasma_sequence_t), pointer :: plasma_sequence
+    type(plasma_request_t) :: plasma_request
+
+    integer :: plasma_status
 
     ! Set parameters.
     m    = 2000 ! number of rows
@@ -72,6 +85,10 @@ program test_zgeqrf
     ! Should tree reduction be used? This is good for tall and skinny matrices.
     tree_householder = .true. 
 
+    ! Should tuning be used?
+    ! If it is on, the tests below reset the nb and ib values and then fail.
+    use_tuning = .false. 
+
     ! tolerance for the correctness check
     tol = 50.0 * dlamch('E')
 
@@ -81,13 +98,18 @@ program test_zgeqrf
     call zlarnv(1, seed, lda*n, A)
     Aref = A
 
-    write(*,'(a, i6, a, i6)') " Testing QR factorization of a matrix ", m, " x ", n
+    write(*,'(a, i6, a, i6)') " Testing asynchronous QR factorization of a matrix ", m, " x ", n
     write(*,'(a, i6)')        "  tile size:        ", nb
     write(*,'(a, i6)')        "  inner block size: ", ib
     if (tree_householder) then
         write(*,'(a, i6)')    "  Using tree-based Householder reduction. "
     else
         write(*,'(a, i6)')    "  Using flat-tree Householder reduction. "
+    end if
+    if (use_tuning) then
+        write(*,'(a, i6)')    "  Tuning enabled. "
+    else
+        write(*,'(a, i6)')    "  Tuning disabled. "
     end if
 
     !==============================================
@@ -99,10 +121,6 @@ program test_zgeqrf
     !==============================================
     ! Set PLASMA parameters.
     !==============================================
-    ! disable tuning
-    call plasma_set(PlasmaTuning, PlasmaDisabled, info)
-    call check_error('plasma_set()', info)
-
     ! set tile size
     call plasma_set(PlasmaNb, nb, info)
     call check_error('plasma_set()', info)
@@ -127,11 +145,75 @@ program test_zgeqrf
             householder_mode_check, " not the same as ", householder_mode
     end if
 
+    ! set tuning
+    if (use_tuning) then
+        tuning_mode = PlasmaEnabled
+    else
+        tuning_mode = PlasmaDisabled
+    end if
+    call plasma_set(PlasmaTuning, tuning_mode, info)
+    call check_error('plasma_set()', info)
+
+    ! get PLASMA context
+    call plasma_context_self(plasma_context)
+    call check_error('plasma_context_self()', info)
+
+    ! set tuning
+    if (tuning_mode == PlasmaEnabled) then
+        call plasma_tune_geqrf(plasma_context, PlasmaComplexDouble, m, n)
+        call check_error('plasma_tune_geqrf()', info)
+    end if
+
+    ! create descriptor for A
+    call plasma_desc_general_create(PlasmaComplexDouble, nb, nb, &
+                                    m, n, 0, 0, m, n, descA, info)
+    call check_error('plasma_desc_general_create()', info)
+
+    ! create descriptor for T
+    call plasma_descT_create(descA, ib, householder_mode, descT, info)
+    call check_error('plasma_descT_create()', info)
+
+    ! Allocate workspace.
+    lworkspace = nb + ib*nb;  ! geqrt: tau + work
+    call plasma_workspace_create(workspace, lworkspace, PlasmaComplexDouble, info)
+    call check_error('plasma_workspace_create()', info)
+
+    ! Create sequence.
+    call plasma_sequence_create(plasma_sequence, info)
+    call check_error('plasma_sequence_create()', info)
+
     !==============================================
     ! Call QR factorization for A.
     !==============================================
-    call plasma_zgeqrf(m, n, A, lda, descT, info)
-    call check_error('plasma_zgeqrf()', info)
+    ! asynchronous block
+    !$omp parallel
+    !$omp master
+        ! Translate to tile layout.
+        call plasma_omp_zge2desc(A, lda, descA, plasma_sequence, &
+                                 plasma_request)
+
+        ! Call the tile async function.
+        call plasma_omp_zgeqrf(descA, descT, workspace, plasma_sequence, &
+                               plasma_request)
+
+        ! Translate back to LAPACK layout.
+        call plasma_omp_zdesc2ge(descA, A, lda, plasma_sequence, &
+                                 plasma_request)
+    !$omp end master
+    !$omp end parallel
+    ! implicit synchronization
+
+    plasma_status = plasma_sequence%status
+    print *, "PLASMA status after the OMP block: ", plasma_status
+    call plasma_sequence_destroy(plasma_sequence, info)
+    call check_error('plasma_sequence_destroy()', info)
+
+    call plasma_workspace_destroy(workspace, info)
+    call check_error('plasma_workspace_destroy()', info)
+
+    ! Free matrix A in tile layout.
+    call plasma_desc_destroy(descA, info)
+    call check_error('plasma_desc_destroy()', info)
 
     ! Test results by checking orthogonality of Q and precision of Q*R.
     ! Allocate space for Q.
@@ -156,6 +238,7 @@ program test_zgeqrf
     ! |Id - Q^H * Q|_oo
     allocate(work(m))
     ortho = zlanhe('I', 'u', minmn, Id, minmn, work)
+    print *, 'ortho', ortho
 
     ! normalize the result
     ! |Id - Q^H * Q|_oo / n
@@ -236,4 +319,4 @@ contains
         end if
     end subroutine
 
-end program test_zgeqrf
+end program test_zgeqrf_omp
