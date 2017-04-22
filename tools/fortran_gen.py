@@ -503,15 +503,22 @@ def fortran_interface_function(function):
 
     f_interface += f_symbol + "("
 
+    if (is_function):
+        initial_indent = len(indent + tab + "function " + f_symbol + "(") * " "
+    else:
+        initial_indent = len(indent + tab + "subroutine " + f_symbol + "(") * " "
+
     # loop over the arguments to compose the first line
     for j in range(1,len(function)):
         if (j != 1):
             f_interface += ", "
+        if (j%9 == 0):
+            f_interface += "&\n" + initial_indent
 
         f_interface += function[j][2]
 
     f_interface += ") &\n"
-    f_interface += indent + tab + " bind(c, name='" + c_symbol +"')\n"
+    f_interface += indent + tab + "  " + "bind(c, name='" + c_symbol +"')\n"
 
     # add common header
     f_interface += indent + 2*tab + "use iso_c_binding\n"
@@ -556,6 +563,13 @@ def fortran_wrapper(function):
     c_symbol = function[0][2]
     f_symbol = c_symbol + "_c"
 
+    if (is_function):
+        initial_indent_signature = len(indent + "subroutine " + c_symbol + "(") * " "
+        initial_indent_call      = len(indent + tab + "info = " + f_symbol + "(") * " "
+    else:
+        initial_indent_signature = len(indent + "subroutine " + c_symbol + "(") * " "
+        initial_indent_call      = len(indent + tab + "call " + f_symbol + "(") * " "
+
     # loop over the arguments to compose the first line and call line
     signature_line = ""
     call_line = ""
@@ -566,8 +580,9 @@ def fortran_wrapper(function):
             call_line += ", "
 
         # do not make the argument list too long
-        if (j%10 == 0):
-            call_line += "&\n" + indent + 2*tab
+        if (j%9 == 0):
+            call_line      += "&\n" + initial_indent_call
+            signature_line += "&\n" + initial_indent_signature
 
         # pointers
         arg_type    = function[j][0]
