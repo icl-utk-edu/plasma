@@ -413,6 +413,10 @@ subs = {
     #('plasma_d',             'plasma_z'            ),
     #('plasma_s',             'plasma_c'            ),
 
+    # ----- Fortran examples
+    ('real\(',               'complex\(',          ),
+    ('\(transpose\(',        'conjg\(transpose\('  ),
+
   ],  # end mixed
 
   # ------------------------------------------------------------
@@ -514,6 +518,11 @@ subs = {
     #('plasma_s',             'plasma_d',             'plasma_c',             'plasma_z'            ),
     #('TEST_S',               'TEST_D',               'TEST_C',               'TEST_Z'              ),
     #('test_s',               'test_d',               'test_c',               'test_z'              ),
+
+    # ----- Fortran examples
+    ('wp = sp',              'wp = dp',              'wp = sp',              'wp = dp'             ),
+    ('real\(wp\)',           'real\(wp\)',           'complex\(wp\)',        'complex\(wp\)'       ),
+    ('\(transpose\(',        '\(transpose\(',        'conjg\(transpose\(',   'conjg\(transpose\('  ),
 
   ],  # end normal
 } # end subs

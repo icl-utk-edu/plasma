@@ -13,7 +13,7 @@
 enum {
     PlasmaGeKernel = 1,
     PlasmaTtKernel = 2,
-    PlasmaTsKernel = 3,
+    PlasmaTsKernel = 3
 };
 
 /***************************************************************************//**

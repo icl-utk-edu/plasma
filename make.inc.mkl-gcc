@@ -32,6 +32,16 @@ CFLAGS   += -DPLASMA_WITH_MKL \
 # one of: aix bsd c89 freebsd generic linux macosx mingw posix solaris
 lua_platform = linux
 
+# --------------------
+# PLASMA is a library in C, but can be also used from Fortran. 
+# In this case, Fortran interface needs to be build.
+# 0 = no  - Fortran codes will not be touched, the FC adn FFLAGS variables 
+#           will not referenced
+# 1 = yes - Fortran interface will be compiled and included into the library 
+
+fortran = 1
+FC        = gfortran
+FFLAGS    = -fopenmp $(FPIC) -O3 --std=f2008 -Wall
 
 # --------------------
 # libraries
