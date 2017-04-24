@@ -316,9 +316,9 @@ distclean: clean cleangen
 # ------------------------------------------------------------------------------
 # Create dependencies to do precision generation.
 
-plasma_src   := $(wildcard compute/*.c compute/*.h include/plasma*.h)
+plasma_src   := $(wildcard compute/*.c include/plasma*.h)
 
-coreblas_src := $(wildcard core_blas/*.c include/coreb_blas*.h control/*.c control/*.h)
+coreblas_src := $(wildcard core_blas/*.c control/*.c include/core*.h)
 
 test_src     := $(wildcard test/*.c test/*.h)
 
