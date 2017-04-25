@@ -19,7 +19,7 @@ RANLIB    = ranlib
 
 # Use -fPIC to make shared (.so) and static (.a) libraries;
 # can be commented out if making only static libraries.
-#FPIC      = -fPIC
+FPIC      = -fPIC
 
 CFLAGS    = -fopenmp $(FPIC) -O3 -std=c99 -Wall -pedantic -Wshadow -Wno-unused-function
 LDFLAGS   = -fopenmp $(FPIC)
