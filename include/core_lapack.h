@@ -10,7 +10,9 @@
 #ifndef ICL_CORE_LAPACK_H
 #define ICL_CORE_LAPACK_H
 
-#ifdef PLASMA_WITH_MKL
+
+
+#if defined(PLASMA_WITH_MKL)
     #include <mkl_cblas.h>
     #include <mkl_lapacke.h>
 
@@ -19,6 +21,17 @@
     #ifndef LAPACK_GLOBAL
     #define LAPACK_GLOBAL(lcname,UCNAME)  lcname##_
     #endif
+#elif defined(PLASMA_WITH_ESSL)
+    //#include <cblas.h>
+    //#include <lapacke.h>
+    // unchanged fortran routine symbol
+    #include <cblas.h>
+    #include <lapacke.h>
+    #ifndef LAPACK_GLOBAL
+    #define LAPACK_GLOBAL(lcname,UCNAME) lcname##_
+    #endif
+    //#include <essl.h>
+    //#define LAPACK_zlascl zlascl
 #else
     #include <cblas.h>
     #include <lapacke.h>
@@ -40,5 +53,4 @@
 #include "core_lapack_d.h"
 #include "core_lapack_c.h"
 #include "core_lapack_z.h"
-
 #endif // ICL_CORE_LAPACK_H

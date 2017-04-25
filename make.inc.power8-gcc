@@ -1,0 +1,51 @@
+# PLASMA example make.inc, using Intel MKL and gcc
+#
+# PLASMA is a software package provided by:
+# University of Tennessee, US,
+# University of Manchester, UK.
+
+# --------------------
+# programs
+
+CC        = gcc
+
+ARCH      = ar
+ARCHFLAGS = cr
+RANLIB    = ranlib
+
+
+# --------------------
+# flags
+
+# Use -fPIC to make shared (.so) and static (.a) libraries;
+# can be commented out if making only static libraries.
+#FPIC      = -fPIC
+
+CFLAGS    = -fopenmp $(FPIC) -O3 -std=c99 -Wall -pedantic -Wshadow -Wno-unused-function
+LDFLAGS   = -fopenmp $(FPIC)
+
+# options for ESSL
+CFLAGS += -DPLASMA_WITH_ESSL
+
+# one of: aix bsd c89 freebsd generic linux macosx mingw posix solaris
+lua_platform = posix
+
+# --------------------
+# PLASMA is a library in C, but can be also used from Fortran. 
+# In this case, Fortran interface needs to be build.
+# 0 = no  - Fortran codes will not be touched, the FC adn FFLAGS variables 
+#           will not referenced
+# 1 = yes - Fortran interface will be compiled and included into the library 
+
+fortran = 0
+FC        = gfortran
+FFLAGS    = -fopenmp $(FPIC) -O3 --std=f2008 -Wall
+
+# --------------------
+# libraries
+
+# USE NETLIB LAPACK distributed LAPACKE,CBLAS and its headers. 
+# Link with ESSL for most of its BLAS/LAPACK functions
+# Link with Netlib LAPACK/BLAS for the missing functions in ESSL.
+LIBS = ~/lapack-3.7.0-US/liblapacke.a ~/lapack-3.7.0-US/libcblas.a /sw/summitdev/essl/5.5.0-20161110/lib64/libessl.so /sw/summitdev/xl/20161123/xlf/15.1.5/lib/libxlf90.so /sw/summitdev/xl/20161123/xlf/15.1.5/lib/libxlfmath.so ~/lapack-3.7.0-US/liblapack.a ~/lapack-3.7.0-US/librefblas.a -lm -lgfortran
+INC       = -I ~/lapack-3.7.0-US/CBLAS/include -I ~/lapack-3.7.0-US/LAPACKE/include -I$(OLCF_ESSL_ROOT)/include
