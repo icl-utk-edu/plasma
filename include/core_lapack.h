@@ -22,16 +22,12 @@
     #define LAPACK_GLOBAL(lcname,UCNAME)  lcname##_
     #endif
 #elif defined(PLASMA_WITH_ESSL)
-    //#include <cblas.h>
-    //#include <lapacke.h>
-    // unchanged fortran routine symbol
+    // GCC + ESSL(BLAS) + LAPACKE/CBLAS from LAPACK
     #include <cblas.h>
     #include <lapacke.h>
     #ifndef LAPACK_GLOBAL
     #define LAPACK_GLOBAL(lcname,UCNAME) lcname##_
     #endif
-    //#include <essl.h>
-    //#define LAPACK_zlascl zlascl
 #else
     #include <cblas.h>
     #include <lapacke.h>
