@@ -82,9 +82,9 @@ int plasma_desc_general_band_create(plasma_enum_t precision, plasma_enum_t uplo,
 }
 
 /******************************************************************************/
-int plasma_desc_triangle_create(plasma_enum_t precision, plasma_enum_t uplo, int mb, int nb,
-                                int lm, int ln, int i, int j, int m, int n,
-                                plasma_desc_t *A)
+int plasma_desc_triangular_create(plasma_enum_t precision, plasma_enum_t uplo, int mb, int nb,
+                                  int lm, int ln, int i, int j, int m, int n,
+                                  plasma_desc_t *A)
 {
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -92,8 +92,8 @@ int plasma_desc_triangle_create(plasma_enum_t precision, plasma_enum_t uplo, int
         return PlasmaErrorNotInitialized;
     }
     // Initialize the descriptor.
-    int retval = plasma_desc_triangle_init(precision, uplo, NULL, mb, nb,
-                                           lm, ln, i, j, m, n, A);
+    int retval = plasma_desc_triangular_init(precision, uplo, NULL, mb, nb,
+                                             lm, ln, i, j, m, n, A);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_init() failed");
         return retval;
@@ -207,9 +207,9 @@ int plasma_desc_general_band_init(plasma_enum_t precision, plasma_enum_t uplo,
 }
 
 /******************************************************************************/
-int plasma_desc_triangle_init(plasma_enum_t precision, plasma_enum_t uplo, void *matrix,
-                              int mb, int nb, int lm, int ln, int i, int j,
-                              int m, int n, plasma_desc_t *A)
+int plasma_desc_triangular_init(plasma_enum_t precision, plasma_enum_t uplo, void *matrix,
+                                int mb, int nb, int lm, int ln, int i, int j,
+                                int m, int n, plasma_desc_t *A)
 {
     // only for square matrix..
     if (lm != ln) {

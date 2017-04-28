@@ -137,8 +137,8 @@ int plasma_zposv(plasma_enum_t uplo,
     plasma_desc_t A;
     plasma_desc_t B;
     int retval;
-    retval = plasma_desc_triangle_create(PlasmaComplexDouble, uplo, nb, nb,
-                                         n, n, 0, 0, n, n, &A);
+    retval = plasma_desc_triangular_create(PlasmaComplexDouble, uplo, nb, nb,
+                                           n, n, 0, 0, n, n, &A);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
