@@ -34,8 +34,6 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
     // Set tiling parameters.
     int ib = plasma->ib;
 
-    plasma_barrier_t *barrier = &plasma->barrier;
-
     for (int k = 0; k < imin(A.mt, A.nt); k++) {
         plasma_complex64_t *a00, *a20;
         a00 = A(k, k);
@@ -57,24 +55,44 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                          depend(out:ipiv[k*A.mb:mvak]) \
                          priority(1)
         {
+            volatile int *max_idx = (int*)malloc(num_panel_threads*sizeof(int));
+            if (max_idx == NULL)
+                plasma_request_fail(sequence, request, PlasmaErrorOutOfMemory);
+
+            volatile plasma_complex64_t *max_val =
+                (plasma_complex64_t*)malloc(num_panel_threads*sizeof(
+                                            plasma_complex64_t));
+            if (max_val == NULL)
+                plasma_request_fail(sequence, request, PlasmaErrorOutOfMemory);
+
+            volatile int info = 0;
+
+            plasma_barrier_t barrier;
+            plasma_barrier_init(&barrier);
+
             if (sequence->status == PlasmaSuccess) {
                 for (int rank = 0; rank < num_panel_threads; rank++) {
-                    #pragma omp task priority(1)
+                    #pragma omp task shared(barrier) priority(1)
                     {
                         plasma_desc_t view =
                             plasma_desc_view(A,
                                              k*A.mb, k*A.nb,
                                              A.m-k*A.mb, nvak);
 
-                        int info = core_zgetrf(view, &ipiv[k*A.mb], ib,
-                                               rank, num_panel_threads,
-                                               barrier);
+                        core_zgetrf(view, &ipiv[k*A.mb], ib,
+                                    rank, num_panel_threads,
+                                    max_idx, max_val, &info,
+                                    &barrier);
+
                         if (info != 0)
                             plasma_request_fail(sequence, request, k*A.mb+info);
                     }
                 }
             }
             #pragma omp taskwait
+
+            free((void*)max_idx);
+            free((void*)max_val);
 
             for (int i = k*A.mb+1; i <= imin(A.m, k*A.mb+nvak); i++)
                 ipiv[i-1] += k*A.mb;
@@ -114,7 +132,6 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                                mvak, nvan,
                                1.0, A(k, k), ldak,
                                     A(k, n), ldak);
-
                     // gemm
                     for (int m = k+1; m < A.mt; m++) {
                         int mvam = plasma_tile_mview(A, m);

@@ -21,29 +21,15 @@
 #include <assert.h>
 #include <math.h>
 
-static int *max_idx;
-static plasma_complex64_t *max_val;
-static volatile int info;
-
 #define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
 
 /******************************************************************************/
 __attribute__((weak))
-int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
-                plasma_barrier_t *barrier)
+void core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
+                 volatile int *max_idx, volatile plasma_complex64_t *max_val,
+                 volatile int *info, plasma_barrier_t *barrier)
 {
-    // Allocate arrays for parallel max search.
-    if (rank == 0) {
-        max_idx = (int*)malloc(size*sizeof(int));
-        max_val = (plasma_complex64_t*)malloc(size*sizeof(plasma_complex64_t));
-        info = 0;
-    }
-    plasma_barrier_wait(barrier, size);
-    assert(max_idx != NULL);
-    assert(max_val != NULL);
-
     double sfmin = LAPACKE_dlamch_work('S');
-
     for (int k = 0; k < imin(A.m, A.n); k += ib) {
         int kb = imin(imin(A.m, A.n)-k, ib);
 
@@ -102,8 +88,8 @@ int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
                 ipiv[j] = jp-k+1;
 
                 // singularity check
-                if (info == 0 && max_val[0] == 0.0) {
-                    info = j+1;
+                if (*info == 0 && max_val[0] == 0.0) {
+                    *info = j+1;
                 }
                 else {
                     // pivot swap
@@ -125,7 +111,7 @@ int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
                 int ldal = plasma_tile_mmain(A, l);
                 int mval = plasma_tile_mview(A, l);
 
-                if (info == 0) {
+                if (*info == 0) {
                     // column scaling
                     if (cabs(a0[j+j*lda0]) >= sfmin) {
                         if (l == 0) {
@@ -249,16 +235,4 @@ int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
             }
         }
     }
-
-    // Free arrays for parallel max search.
-    if (rank == 0) {
-        free(max_idx);
-        free(max_val);
-    }
-
-    // Only rank 0 returns errors.
-    if (rank == 0)
-        return info;
-    else
-        return 0;
 }

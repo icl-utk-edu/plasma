@@ -57,8 +57,9 @@ void core_zgessq(int m, int n,
                  const plasma_complex64_t *A, int lda,
                  double *scale, double *sumsq);
 
-int core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
-                plasma_barrier_t *barrier);
+void core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
+                 volatile int *max_idx, volatile plasma_complex64_t *max_val,
+                 volatile int *info, plasma_barrier_t *barrier);
 
 int core_zhegst(int itype, plasma_enum_t uplo,
                 int n,

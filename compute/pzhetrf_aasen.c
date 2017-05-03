@@ -50,7 +50,6 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
 
     // Read parameters from the context.
     plasma_context_t *plasma = plasma_context_self();
-    plasma_barrier_t *barrier = &plasma->barrier;
     int ib = plasma->ib;
     int max_panel_threads = plasma->max_panel_threads;
     int wmt = W.mt-(1+2*A.mt);
@@ -339,24 +338,49 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                                  depend(out:ipiv[k1-1:k2]) /*\
                                  priority(1) */
                 {
+                    volatile int *max_idx =
+                        (int*)malloc(max_panel_threads*sizeof(int));
+                    if (max_idx == NULL)
+                        plasma_request_fail(sequence, request,
+                                            PlasmaErrorOutOfMemory);
+
+                    volatile plasma_complex64_t *max_val =
+                        (plasma_complex64_t*)malloc(max_panel_threads*sizeof(
+                                                    plasma_complex64_t));
+                    if (max_val == NULL)
+                        plasma_request_fail(sequence, request,
+                                            PlasmaErrorOutOfMemory);
+
+                    volatile int info = 0;
+
+                    plasma_barrier_t barrier;
+                    plasma_barrier_init(&barrier);
+
                     if (sequence->status == PlasmaSuccess) {
                         for (int rank = 0; rank < max_panel_threads; rank++) {
-                            #pragma omp task // priority(1)
+                            #pragma omp task shared(barrier) // priority(1)
                             {
                                 plasma_desc_t view =
                                     plasma_desc_view(A,
                                                      (k+1)*A.mb, k*A.nb,
                                                      mlkk, mvak);
 
-                                int info = core_zgetrf(view, IPIV(k+1), ib,
-                                                       rank, max_panel_threads,
-                                                       barrier);
+                                core_zgetrf(view, IPIV(k+1), ib,
+                                            rank, max_panel_threads,
+                                            max_idx, max_val, &info,
+                                            &barrier);
+
                                 if (info != 0)
-                                    plasma_request_fail(sequence, request, (k+1)*A.mb+info);
+                                    plasma_request_fail(sequence, request,
+                                                        (k+1)*A.mb+info);
                             }
                         }
                     }
                     #pragma omp taskwait
+
+                    free((void*)max_idx);
+                    free((void*)max_val);
+
                     for (int i = 0; i < imin(mlkk, mvak); i++) {
                         IPIV(k+1)[i] += (k+1)*A.mb;
                     }

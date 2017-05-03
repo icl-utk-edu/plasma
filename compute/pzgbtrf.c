@@ -32,7 +32,6 @@ void plasma_pzgbtrf(plasma_desc_t A, int *ipiv,
     plasma_context_t *plasma = plasma_context_self();
     int ib = plasma->ib;
     int max_panel_threads = plasma->max_panel_threads;
-    plasma_barrier_t *barrier = &plasma->barrier;
 
     for (int k = 0; k < imin(A.mt, A.nt); k++) {
         // for band matrix, gm is a multiple of mb,
@@ -52,23 +51,44 @@ void plasma_pzgbtrf(plasma_desc_t A, int *ipiv,
                          depend(out:ipivk[0:size_i]) /*\
                          priority(1) */
         {
+            volatile int *max_idx = (int*)malloc(max_panel_threads*sizeof(int));
+            if (max_idx == NULL)
+                plasma_request_fail(sequence, request, PlasmaErrorOutOfMemory);
+
+            volatile plasma_complex64_t *max_val =
+                (plasma_complex64_t*)malloc(max_panel_threads*sizeof(
+                                            plasma_complex64_t));
+            if (max_val == NULL)
+                plasma_request_fail(sequence, request, PlasmaErrorOutOfMemory);
+
+            volatile int info = 0;
+
+            plasma_barrier_t barrier;
+            plasma_barrier_init(&barrier);
+
             if (sequence->status == PlasmaSuccess) {
                 for (int rank = 0; rank < max_panel_threads; rank++) {
-                    #pragma omp task // priority(1)
+                    #pragma omp task shared(barrier) // priority(1)
                     {
                         // create a view for panel as a "general" submatrix
                         plasma_desc_t view = plasma_desc_view(
                             A, (A.kut-1)*A.mb, k*A.nb, mak, nvak);
                         view.type = PlasmaGeneral;
 
-                        int info = core_zgetrf(view, &ipiv[k*A.mb], ib, rank,
-                                               max_panel_threads, barrier);
+                        core_zgetrf(view, &ipiv[k*A.mb], ib,
+                                    rank, max_panel_threads,
+                                    max_idx, max_val, &info,
+                                    &barrier);
+
                         if (info != 0)
                             plasma_request_fail(sequence, request, k*A.mb+info);
                     }
                 }
             }
             #pragma omp taskwait
+
+            free((void*)max_idx);
+            free((void*)max_val);
         }
         // update
         // TODO: fills are not tracked, see the one in fork
