@@ -206,7 +206,7 @@ struct routines_t routines[] =
 	{ "zpoinv", test_zpoinv },
 	{ "dpoinv", test_dpoinv },
 	{ "cpoinv", test_cpoinv },
-	{ "spoinv", test_dpoinv },
+	{ "spoinv", test_spoinv },
 
     { "zpotrf", test_zpotrf },
     { "dpotrf", test_dpotrf },
