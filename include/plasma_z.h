@@ -180,6 +180,10 @@ int plasma_zpbtrs(plasma_enum_t uplo,
                   plasma_complex64_t *pAB, int ldab,
                   plasma_complex64_t *pB,  int ldb);
 
+int plasma_zpoinv(plasma_enum_t uplo,
+				  int n,
+				  plasma_complex64_t *pA, int lda);
+
 int plasma_zposv(plasma_enum_t uplo,
                  int n, int nrhs,
                  plasma_complex64_t *pA, int lda,
@@ -360,7 +364,7 @@ void plasma_omp_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                       double beta,  plasma_desc_t C,
                       plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_omp_zhetrf(plasma_enum_t uplo, 
+void plasma_omp_zhetrf(plasma_enum_t uplo,
                        plasma_desc_t A, int *ipiv,
                        plasma_desc_t T, int *ipiv2,
                        plasma_desc_t W,

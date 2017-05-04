@@ -284,6 +284,7 @@ lapack = [
     ('splgsy',               'dplgsy',               'cplghe',               'zplghe'              ),
     ('splgsy',               'dplgsy',               'cplgsy',               'zplgsy'              ),
     ('splrnt',               'dplrnt',               'cplrnt',               'zplrnt'              ),
+    ('spoinv',               'dpoinv',               'cpoinv',               'zpoinv'              ),
     ('sposv',                'dposv',                'cposv',                'zposv'               ),
     ('spotf2',               'dpotf2',               'cpotf2',               'zpotf2'              ),
     ('spotrf',               'dpotrf',               'cpotrf',               'zpotrf'              ),

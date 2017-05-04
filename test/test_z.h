@@ -49,6 +49,7 @@ void test_zgeswp(param_value_t param[], bool run);
 void test_zlauum(param_value_t param[], bool run);
 void test_zpbsv(param_value_t param[], bool run);
 void test_zpbtrf(param_value_t param[], bool run);
+void test_zpoinv(param_value_t param[], bool run);
 void test_zposv(param_value_t param[], bool run);
 void test_zpotrf(param_value_t param[], bool run);
 void test_zpotri(param_value_t param[], bool run);
