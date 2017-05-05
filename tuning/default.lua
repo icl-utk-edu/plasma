@@ -110,6 +110,11 @@ function potrf_nb (type, num_threads, n)
 end
 
 --------------------------------------------------------------------------------
+function poinv_nb (type, num_threads, n)
+        return 256
+end
+
+--------------------------------------------------------------------------------
 function symm_nb (type, num_threads, m, n)
         return 256
 end

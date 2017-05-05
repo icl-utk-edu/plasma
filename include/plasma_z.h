@@ -440,6 +440,9 @@ void plasma_omp_zpbtrf(plasma_enum_t uplo, plasma_desc_t AB,
 void plasma_omp_zpbtrs(plasma_enum_t uplo, plasma_desc_t AB, plasma_desc_t B,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 
+void plasma_omp_zpoinv(plasma_enum_t uplo, plasma_desc_t A,
+                       plasma_sequence_t *sequence, plasma_request_t *request);
+
 void plasma_omp_zposv(plasma_enum_t uplo, plasma_desc_t A, plasma_desc_t B,
                       plasma_sequence_t *sequence, plasma_request_t *request);
 

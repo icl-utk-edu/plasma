@@ -121,7 +121,7 @@ void test_zpoinv(param_value_t param[], bool run)
     param[PARAM_GFLOPS].d = flops_ztrtri(n) / time / 1e9;
 
     //================================================================
-    // Test results by checking the residual
+    // Test results by checking the relative error against LAPACK
     // ||B - A|| / (||A||)
     //================================================================
     if (test) {

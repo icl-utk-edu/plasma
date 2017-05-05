@@ -270,6 +270,15 @@ void plasma_tune_pbtrf(plasma_context_t *plasma, plasma_enum_t dtyp,
     plasma_tune(plasma->L, dtyp, "pbtrf_nb", &plasma->nb, 1, n);
 }
 /******************************************************************************/
+void plasma_tune_poinv(plasma_context_t *plasma, plasma_enum_t dtyp,
+                       int n)
+{
+    if (plasma->L == NULL)
+        return;
+
+    plasma_tune(plasma->L, dtyp, "poinv_nb", &plasma->nb, 1, n);
+}
+/******************************************************************************/
 void plasma_tune_potrf(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int n)
 {
