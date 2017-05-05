@@ -181,8 +181,8 @@ int plasma_zpbtrs(plasma_enum_t uplo,
                   plasma_complex64_t *pB,  int ldb);
 
 int plasma_zpoinv(plasma_enum_t uplo,
-				  int n,
-				  plasma_complex64_t *pA, int lda);
+                  int n,
+                  plasma_complex64_t *pA, int lda);
 
 int plasma_zposv(plasma_enum_t uplo,
                  int n, int nrhs,

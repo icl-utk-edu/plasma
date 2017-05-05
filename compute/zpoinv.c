@@ -129,8 +129,8 @@ int plasma_zpoinv(plasma_enum_t uplo,
         // Translate to tile layout.
         plasma_omp_ztr2desc(pA, lda, A, sequence, &request);
 
-        // Call the tile async function..
-		plasma_omp_zpoinv(uplo, A, sequence, &request);
+        // Call the tile async function.
+        plasma_omp_zpoinv(uplo, A, sequence, &request);
 
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2tr(A, pA, lda, sequence, &request);
@@ -227,8 +227,8 @@ void plasma_omp_zpoinv(plasma_enum_t uplo, plasma_desc_t A,
         return;
     }
 
-	// Factoriza A.
-	plasma_pzpotrf(uplo, A, sequence, request);
+    // Factorize A.
+    plasma_pzpotrf(uplo, A, sequence, request);
 
     // Invert triangular part.
     plasma_pztrtri(uplo, PlasmaNonUnit, A, sequence, request);

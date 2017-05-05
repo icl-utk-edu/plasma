@@ -203,10 +203,10 @@ struct routines_t routines[] =
     { "cposv", test_cposv },
     { "sposv", test_sposv },
 
-	{ "zpoinv", test_zpoinv },
-	{ "dpoinv", test_dpoinv },
-	{ "cpoinv", test_cpoinv },
-	{ "spoinv", test_spoinv },
+    { "zpoinv", test_zpoinv },
+    { "dpoinv", test_dpoinv },
+    { "cpoinv", test_cpoinv },
+    { "spoinv", test_spoinv },
 
     { "zpotrf", test_zpotrf },
     { "dpotrf", test_dpotrf },
