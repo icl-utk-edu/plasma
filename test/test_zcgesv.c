@@ -49,6 +49,9 @@ void test_zcgesv(param_value_t param[], bool run)
     param[PARAM_PADA   ].used = true;
     param[PARAM_PADB   ].used = true;
     param[PARAM_NB     ].used = true;
+    param[PARAM_IB     ].used = true;
+    param[PARAM_MTPF   ].used = true;
+    param[PARAM_ITERSV ].used = true;
     param[PARAM_ZEROCOL].used = true;
     if (! run)
         return;
@@ -63,14 +66,16 @@ void test_zcgesv(param_value_t param[], bool run)
     int ldx  = ldb;
     int ITER;
 
-    int test = param[PARAM_TEST].c == 'y';
-    double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
+    int    test = param[PARAM_TEST].c == 'y';
+    double tol  = param[PARAM_TOL].d * LAPACKE_dlamch('E');
 
     //================================================================
     // Set tuning parameters
     //================================================================
     plasma_set(PlasmaTuning, PlasmaDisabled);
     plasma_set(PlasmaNb, param[PARAM_NB].i);
+    plasma_set(PlasmaIb, param[PARAM_IB].i);
+    plasma_set(PlasmaNumPanelThreads, param[PARAM_MTPF].i);
 
     //================================================================
     // Allocate and initialize arrays
@@ -120,7 +125,8 @@ void test_zcgesv(param_value_t param[], bool run)
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
     double flops = flops_zgetrf(n, n) + flops_zgetrs(n, nrhs);
-    param[PARAM_TIME].d = time;
+    param[PARAM_ITERSV].i = ITER;
+    param[PARAM_TIME].d   = time;
     param[PARAM_GFLOPS].d = flops / time / 1e9;
 
     //================================================================

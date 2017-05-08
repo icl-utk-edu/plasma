@@ -306,6 +306,9 @@ static param_desc_t ParamDesc[] = {
     {"gflops",             "Gflop/s",      9,     false,
      "GFLOPS rate"},
 
+    {"itersv",             "IterSv",       9,     false,
+     "iterations to solution"},
+
     //------------------------------------------------------
     // tester parameters
     //------------------------------------------------------
@@ -523,6 +526,7 @@ void print_routine_usage(const char *name, param_value_t pval[])
             case PARAM_ORTHO:
             case PARAM_TIME:
             case PARAM_GFLOPS:
+            case PARAM_ITERSV:
                 break;
 
             default:
@@ -653,6 +657,7 @@ int test_routine(const char *name, param_value_t pval[], bool test)
             case PARAM_MTPF:
             case PARAM_ZEROCOL:
             case PARAM_INCX:
+            case PARAM_ITERSV:
                 printf("  %*d", ParamDesc[i].width, pval[i].i);
                 break;
 
@@ -685,7 +690,7 @@ int test_routine(const char *name, param_value_t pval[], bool test)
  *
  * @brief Invokes a specific routine.
  *
- * @param[in]    name - routine name
+ * @param[in]     name - routine name
  * @param[in,out] pval - array of parameter values
  * @param[in]     run  - whether to run routine or just mark used parameters
  *

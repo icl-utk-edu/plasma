@@ -27,6 +27,7 @@ typedef enum {
     PARAM_ORTHO,   // orthogonality error
     PARAM_TIME,    // time to solution
     PARAM_GFLOPS,  // GFLOPS rate
+    PARAM_ITERSV,  // iterations to solution
 
     //------------------------------------------------------
     // tester parameters

@@ -51,6 +51,7 @@ void test_zcposv(param_value_t param[], bool run)
     param[PARAM_PADB   ].used = true;
     param[PARAM_NB     ].used = true;
     param[PARAM_ZEROCOL].used = true;
+    param[PARAM_ITERSV ].used = true;
     if (! run)
         return;
 
@@ -66,8 +67,8 @@ void test_zcposv(param_value_t param[], bool run)
     int ldx  = ldb;
     int ITER;
 
-    int test = param[PARAM_TEST].c == 'y';
-    double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
+    int    test = param[PARAM_TEST].c == 'y';
+    double tol  = param[PARAM_TOL].d * LAPACKE_dlamch('E');
 
     //================================================================
     // Set tuning parameters
@@ -131,7 +132,8 @@ void test_zcposv(param_value_t param[], bool run)
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
     double flops = flops_zpotrf(n) + flops_zpotrs(n, nrhs);
-    param[PARAM_TIME].d = time;
+    param[PARAM_ITERSV].i = ITER;
+    param[PARAM_TIME].d   = time;
     param[PARAM_GFLOPS].d = flops / time / 1e9;
 
     //================================================================

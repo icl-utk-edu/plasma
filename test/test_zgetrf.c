@@ -58,8 +58,8 @@ void test_zgetrf(param_value_t param[], bool run)
 
     int lda = imax(1, m+param[PARAM_PADA].i);
 
-    int test = param[PARAM_TEST].c == 'y';
-    double tol = param[PARAM_TOL].d * LAPACKE_dlamch('E');
+    int    test = param[PARAM_TEST].c == 'y';
+    double tol  = param[PARAM_TOL].d * LAPACKE_dlamch('E');
 
     //================================================================
     // Set tuning parameters.
