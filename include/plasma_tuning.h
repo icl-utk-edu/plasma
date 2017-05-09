@@ -58,6 +58,8 @@ void plasma_tune_lauum(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int n);
 void plasma_tune_pbtrf(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int n);
+void plasma_tune_poinv(plasma_context_t *plasma, plasma_enum_t dtyp,
+                       int n);
 void plasma_tune_potrf(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int n);
 void plasma_tune_symm(plasma_context_t *plasma, plasma_enum_t dtyp,

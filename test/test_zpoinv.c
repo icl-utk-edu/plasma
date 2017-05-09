@@ -127,24 +127,25 @@ void test_zpoinv(param_value_t param[], bool run)
     if (test) {
         plasma_complex64_t zmone = -1.0;
 
-		// A = Chol(A)
-		int lapinfo = LAPACKE_zpotrf(CblasColMajor, lapack_const(uplo), n, Aref, lda);
+        // A = Chol(A)
+        int lapinfo = LAPACKE_zpotrf(CblasColMajor,
+                                     lapack_const(uplo), n, Aref, lda);
         // A = inv(A)
-		if (lapinfo == 0) {
-			lapinfo = LAPACKE_zpotri_work(CblasColMajor,
-											  lapack_const(uplo), n,
-											  Aref, lda);
-		}
+        if (lapinfo == 0) {
+            lapinfo = LAPACKE_zpotri_work(CblasColMajor,
+                                          lapack_const(uplo), n,
+                                          Aref, lda);
+        }
         if (lapinfo == 0) {
             double work[1];
             double Inorm = LAPACKE_zlanhe_work(
-                   LAPACK_COL_MAJOR, 'F', lapack_const(uplo), n, Aref, lda, work);
+                LAPACK_COL_MAJOR, 'F', lapack_const(uplo), n, Aref, lda, work);
 
             // A -= Aref
             cblas_zaxpy((size_t)lda*n, CBLAS_SADDR(zmone), Aref, 1, A, 1);
 
-            double error = LAPACKE_zlanhe_work(LAPACK_COL_MAJOR, 'F',
-                                               lapack_const(uplo), n, A, lda, work);
+            double error = LAPACKE_zlanhe_work(
+                LAPACK_COL_MAJOR, 'F', lapack_const(uplo), n, A, lda, work);
             if (Inorm != 0.0)
                 error /= Inorm;
 
