@@ -40,8 +40,8 @@ void plasma_pzgeswp(plasma_enum_t colrow,
             int lda10 = plasma_tile_mmain(A, A.mt-1);
             int nva10 = plasma_tile_nview(A, n);
 
-            #pragma omp task depend (inout:a00[ma00*na00]) \
-                             depend (inout:a10[lda10*nva10])
+            #pragma omp task depend (inout:a00[0:ma00*na00]) \
+                             depend (inout:a10[0:lda10*nva10])
             {
                 int nvan = plasma_tile_nview(A, n);
                 plasma_desc_t view = plasma_desc_view(A, 0, n*A.nb, A.m, nvan);
