@@ -107,7 +107,7 @@ int plasma_zgeinv(int m, int n, plasma_complex64_t *pA, int lda, int *ipiv)
         return retval;
     }
 
-	retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
+    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
                                         n, nb, 0, 0, n, nb, &W);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
@@ -140,12 +140,12 @@ int plasma_zgeinv(int m, int n, plasma_complex64_t *pA, int lda, int *ipiv)
         plasma_omp_zgeinv(A, ipiv, W, sequence, &request);
     }
 
-	#pragma omp parallel
-	#pragma omp master
-	{
-		// Translate back to LAPACK layout.
-		plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
-	}
+    #pragma omp parallel
+    #pragma omp master
+    {
+        // Translate back to LAPACK layout.
+        plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
+    }
 
     // Free matrix A in tile layout.
     plasma_desc_destroy(&A);
@@ -240,10 +240,10 @@ void plasma_omp_zgeinv(plasma_desc_t A, int *ipiv, plasma_desc_t W,
     // Invert triangular part.
     plasma_pztrtri(PlasmaUpper, PlasmaNonUnit, A, sequence, request);
 
-	// Compute product of inverse of the upper and lower triangles.
-	plasma_pzgetri_aux(A, W, sequence, request);
+    // Compute product of inverse of the upper and lower triangles.
+    plasma_pzgetri_aux(A, W, sequence, request);
 
     // Apply pivot.
-	#pragma omp taskwait
+    #pragma omp taskwait
     plasma_pzgeswp(PlasmaColumnwise, A, ipiv, -1, sequence, request);
 }
