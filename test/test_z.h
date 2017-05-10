@@ -21,6 +21,7 @@ void test_dzamax(param_value_t param[], bool run);
 void test_zgbsv(param_value_t param[], bool run);
 void test_zgbtrf(param_value_t param[], bool run);
 void test_zgeadd(param_value_t param[], bool run);
+void test_zgeinv(param_value_t param[], bool run);
 void test_zgelqf(param_value_t param[], bool run);
 void test_zgelqs(param_value_t param[], bool run);
 void test_zgels(param_value_t param[], bool run);

@@ -118,7 +118,7 @@ void test_zpoinv(param_value_t param[], bool run)
     plasma_time_t time = stop-start;
 
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = flops_ztrtri(n) / time / 1e9;
+    param[PARAM_GFLOPS].d = (flops_zpotrf(n) + flops_ztrtri(n) + flops_zlauum(n)) / time / 1e9;
 
     //================================================================
     // Test results by checking the relative error against LAPACK

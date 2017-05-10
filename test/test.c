@@ -53,6 +53,11 @@ struct routines_t routines[] =
     { "cgeadd", test_cgeadd },
     { "sgeadd", test_sgeadd },
 
+	{ "zgeinv", test_zgeinv },
+	{ "dgeinv", test_dgeinv },
+	{ "cgeinv", test_cgeinv },
+	{ "sgeinv", test_sgeinv },
+
     { "zgelqf", test_zgelqf },
     { "dgelqf", test_dgelqf },
     { "cgelqf", test_cgelqf },

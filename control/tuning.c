@@ -127,6 +127,18 @@ void plasma_tune_geadd(plasma_context_t *plasma, plasma_enum_t dtyp,
     plasma_tune(plasma->L, dtyp, "geadd_nb", &plasma->nb, 2, m, n);
 }
 /******************************************************************************/
+void plasma_tune_geinv(plasma_context_t *plasma, plasma_enum_t dtyp,
+                       int m, int n)
+{
+    if (plasma->L == NULL)
+        return;
+
+    plasma_tune(plasma->L, dtyp, "geinv_nb", &plasma->nb, 2, m, n);
+    plasma_tune(plasma->L, dtyp, "geinv_ib", &plasma->ib, 2, m, n);
+    plasma_tune(plasma->L, dtyp, "geinv_max_panel_threads",
+                &plasma->max_panel_threads, 2, m, n);
+}
+/******************************************************************************/
 void plasma_tune_gelqf(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int m, int n)
 {

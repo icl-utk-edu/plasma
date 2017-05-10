@@ -46,6 +46,8 @@ int plasma_zgeadd(plasma_enum_t transa,
                   plasma_complex64_t alpha, plasma_complex64_t *pA, int lda,
                   plasma_complex64_t beta,  plasma_complex64_t *pB, int ldb);
 
+int plasma_zgeinv(int m, int n, plasma_complex64_t *pA, int lda, int *ipiv);
+
 int plasma_zgelqf(int m, int n,
                   plasma_complex64_t *pA, int lda,
                   plasma_desc_t *T);
@@ -302,6 +304,9 @@ void plasma_omp_zgeadd(plasma_enum_t transa,
                        plasma_complex64_t alpha, plasma_desc_t A,
                        plasma_complex64_t beta,  plasma_desc_t B,
                        plasma_sequence_t *sequence, plasma_request_t  *request);
+
+void plasma_omp_zgeinv(plasma_desc_t A, int *ipiv, plasma_desc_t W,
+                       plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_omp_zgelqf(plasma_desc_t A, plasma_desc_t T,
                        plasma_workspace_t work,

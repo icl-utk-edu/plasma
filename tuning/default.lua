@@ -14,6 +14,18 @@ function geadd_nb (type, num_threads, m, n)
 end
 
 --------------------------------------------------------------------------------
+function geinv_nb (type, num_threads, m, n)
+        return 256
+end
+
+function geinv_ib (type, num_threads, m, n)
+	return 64
+end
+
+function geinv_max_panel_threads (type, num_threads, m, n)
+	return 1
+end
+--------------------------------------------------------------------------------
 function gelqf_nb (type, num_threads, m, n)
         return 256
 end

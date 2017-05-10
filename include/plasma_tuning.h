@@ -28,6 +28,8 @@ void plasma_tune_gbtrf(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int n, int bw);
 void plasma_tune_geadd(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int m, int n);
+void plasma_tune_geinv(plasma_context_t *plasma, plasma_enum_t dtyp,
+                       int m, int n);
 void plasma_tune_gelqf(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int m, int n);
 void plasma_tune_gemm(plasma_context_t *plasma, plasma_enum_t dtyp,
