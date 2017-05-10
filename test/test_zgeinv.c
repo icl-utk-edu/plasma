@@ -55,7 +55,7 @@ void test_zgeinv(param_value_t param[], bool run)
     //================================================================
     // Set parameters.
     //================================================================
-	int m = param[PARAM_DIM].dim.m;
+    int m = param[PARAM_DIM].dim.m;
     int n = param[PARAM_DIM].dim.n;
     int lda = imax(1, n + param[PARAM_PADA].i);
 
