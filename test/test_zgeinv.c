@@ -127,10 +127,10 @@ void test_zgeinv(param_value_t param[], bool run)
             (plasma_complex64_t*)malloc(lwork * sizeof(plasma_complex64_t));
 
         // B = inv(A)
-		int lapinfo;
-		lapinfo = LAPACKE_zgetrf(CblasColMajor, m, n, Aref, lda, ipiv);
-		if (lapinfo == 0)
-			lapinfo = LAPACKE_zgetri_work(CblasColMajor,
+        int lapinfo;
+        lapinfo = LAPACKE_zgetrf(CblasColMajor, m, n, Aref, lda, ipiv);
+        if (lapinfo == 0)
+            lapinfo = LAPACKE_zgetri_work(CblasColMajor,
                                           n, Aref, lda,
                                           ipiv, work, lwork);
         if (lapinfo == 0) {
