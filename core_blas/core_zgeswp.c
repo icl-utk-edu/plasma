@@ -22,6 +22,7 @@ __attribute__((weak))
 void core_zgeswp(plasma_enum_t colrow,
                  plasma_desc_t A, int k1, int k2, const int *ipiv, int incx)
 {
+    trace_cpu_start();
     //================
     // PlasmaRowwise
     //================
@@ -90,4 +91,5 @@ void core_zgeswp(plasma_enum_t colrow,
             }
         }
     }
+    trace_cpu_stop("RoyalBlue");
 }

@@ -91,12 +91,14 @@ void core_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                                                 plasma_complex64_t *B, int ldb)
 {
+    trace_cpu_start();
     cblas_ztrsm(CblasColMajor,
                 (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
                 (CBLAS_TRANSPOSE)transa, (CBLAS_DIAG)diag,
                 m, n,
                 CBLAS_SADDR(alpha), A, lda,
                                     B, ldb);
+    trace_cpu_stop("MediumPurple");
 }
 
 /******************************************************************************/

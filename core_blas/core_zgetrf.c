@@ -29,6 +29,7 @@ void core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
                  volatile int *max_idx, volatile plasma_complex64_t *max_val,
                  volatile int *info, plasma_barrier_t *barrier)
 {
+    trace_cpu_start();
     double sfmin = LAPACKE_dlamch_work('S');
     for (int k = 0; k < imin(A.m, A.n); k += ib) {
         int kb = imin(imin(A.m, A.n)-k, ib);
@@ -235,4 +236,5 @@ void core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
             }
         }
     }
+    trace_cpu_stop("Coral");
 }
