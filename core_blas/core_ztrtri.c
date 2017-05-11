@@ -60,9 +60,13 @@ int core_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
                  int n,
                  plasma_complex64_t *A, int lda)
 {
-    return LAPACKE_ztrtri_work(LAPACK_COL_MAJOR,
-                        lapack_const(uplo), lapack_const(diag),
-                        n, A, lda);
+    trace_cpu_start();
+    int retval = LAPACKE_ztrtri_work(LAPACK_COL_MAJOR,
+                                     lapack_const(uplo), lapack_const(diag),
+                                     n, A, lda);
+    trace_cpu_stop("Purple");
+    trace_label("Purple", "trtri");
+    return retval;
 }
 
 /******************************************************************************/

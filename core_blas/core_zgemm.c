@@ -101,6 +101,7 @@ void core_zgemm(plasma_enum_t transa, plasma_enum_t transb,
                                     B, ldb,
                 CBLAS_SADDR(beta),  C, ldc);
     trace_cpu_stop("LightGreen");
+    trace_label("LightGreen", "gemm");
 }
 
 /******************************************************************************/

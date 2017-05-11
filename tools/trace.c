@@ -287,7 +287,7 @@ static void trace_finish()
             vscale * NumThreads,
             vscale * (NumThreads + 0.9),
             hscale * (t + 0.05*xtick),
-            vscale * (NumThreads + 0.9),
+            vscale * (NumThreads + 0.9) + 35,
             decimal_places, t);
     }
 

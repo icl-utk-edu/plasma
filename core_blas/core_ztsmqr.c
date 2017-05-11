@@ -269,6 +269,7 @@ void core_omp_ztsmqr(plasma_enum_t side, plasma_enum_t trans,
             int ldwork = side == PlasmaLeft ? ib : m1; // TODO: double check
 
             // Call the kernel.
+            trace_cpu_start();
             int info = core_ztsmqr(side, trans,
                                    m1, n1, m2, n2, k, ib,
                                    A1, lda1,
@@ -276,6 +277,8 @@ void core_omp_ztsmqr(plasma_enum_t side, plasma_enum_t trans,
                                    V,  ldv,
                                    T,  ldt,
                                    W,  ldwork);
+            trace_cpu_stop("LightBlue");
+            trace_label("LightBlue", "tsmqr");
 
             if (info != PlasmaSuccess) {
                 plasma_error("core_ztsmqr() failed");

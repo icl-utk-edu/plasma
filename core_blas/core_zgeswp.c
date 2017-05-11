@@ -91,5 +91,6 @@ void core_zgeswp(plasma_enum_t colrow,
             }
         }
     }
-    trace_cpu_stop("RoyalBlue");
+    trace_cpu_stop("LightSkyBlue");
+    trace_label("LightSkyBlue", "geswp");
 }

@@ -99,6 +99,8 @@ void core_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
                 CBLAS_SADDR(alpha), A, lda,
                                     B, ldb);
     trace_cpu_stop("MediumPurple");
+    trace_label("MediumPurple", "trsm");
+
 }
 
 /******************************************************************************/

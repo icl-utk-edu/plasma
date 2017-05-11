@@ -59,8 +59,12 @@ int core_zlauum(plasma_enum_t uplo,
                 int n,
                 plasma_complex64_t *A, int lda)
 {
-    return LAPACKE_zlauum_work(LAPACK_COL_MAJOR,
-                        lapack_const(uplo), n, A, lda);
+    trace_cpu_start();
+    int retval = LAPACKE_zlauum_work(LAPACK_COL_MAJOR,
+                                     lapack_const(uplo), n, A, lda);
+    trace_cpu_stop("Indigo");
+    trace_label("Indigo", "lauum");
+    return retval;
 }
 
 /******************************************************************************/

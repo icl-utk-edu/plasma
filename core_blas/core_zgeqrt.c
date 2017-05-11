@@ -184,11 +184,14 @@ void core_omp_zgeqrt(int m, int n, int ib,
             plasma_complex64_t *tau = ((plasma_complex64_t*)work.spaces[tid]);
 
             // Call the kernel.
+            trace_cpu_start();
             int info = core_zgeqrt(m, n, ib,
                                    A, lda,
                                    T, ldt,
                                    tau,
                                    tau+n);
+            trace_cpu_stop("Purple");
+            trace_label("Purple", "geqrt");
 
             if (info != PlasmaSuccess) {
                 plasma_error("core_zgeqrt() failed");

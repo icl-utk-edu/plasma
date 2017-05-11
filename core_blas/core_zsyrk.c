@@ -76,11 +76,14 @@ void core_zsyrk(plasma_enum_t uplo, plasma_enum_t trans,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                 plasma_complex64_t beta,        plasma_complex64_t *C, int ldc)
 {
+    trace_cpu_start();
     cblas_zsyrk(CblasColMajor,
                 (CBLAS_UPLO)uplo, (CBLAS_TRANSPOSE)trans,
                 n, k,
                 CBLAS_SADDR(alpha), A, lda,
                 CBLAS_SADDR(beta),  C, ldc);
+    trace_cpu_stop("DeepSkyBlue");
+    trace_label("DeepSkyBlue", "syrk");
 }
 
 /******************************************************************************/

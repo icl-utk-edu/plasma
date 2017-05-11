@@ -252,12 +252,15 @@ void core_omp_zunmqr(plasma_enum_t side, plasma_enum_t trans,
             int ldwork = side == PlasmaLeft ? n : m; // TODO: double check
 
             // Call the kernel.
+            trace_cpu_start();
             int info = core_zunmqr(side, trans,
                                    m, n, k, ib,
                                    A, lda,
                                    T, ldt,
                                    C, ldc,
                                    W, ldwork);
+            trace_cpu_stop("CornflowerBlue");
+            trace_label("CornflowerBlue", "ormqr");
 
             if (info != PlasmaSuccess) {
                 plasma_error("core_zunmqr() failed");

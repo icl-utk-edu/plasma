@@ -56,10 +56,14 @@ int core_zpotrf(plasma_enum_t uplo,
                  int n,
                  plasma_complex64_t *A, int lda)
 {
-    return LAPACKE_zpotrf(LAPACK_COL_MAJOR,
-                          lapack_const(uplo),
-                          n,
-                          A, lda);
+    trace_cpu_start();
+    int retval = LAPACKE_zpotrf(LAPACK_COL_MAJOR,
+                                lapack_const(uplo),
+                                n,
+                                A, lda);
+    trace_cpu_stop("Orange");
+    trace_label("Orange", "potrf");
+    return retval;
 }
 
 /******************************************************************************/

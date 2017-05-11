@@ -237,4 +237,5 @@ void core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
         }
     }
     trace_cpu_stop("Coral");
+    trace_label("Coral", "getrf");
 }

@@ -100,6 +100,7 @@ void core_ztrmm(
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                                     plasma_complex64_t *B, int ldb)
 {
+    trace_cpu_start();
     cblas_ztrmm(
         CblasColMajor,
         (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
@@ -107,6 +108,8 @@ void core_ztrmm(
         m, n,
         CBLAS_SADDR(alpha), A, lda,
                             B, ldb);
+    trace_cpu_stop("MediumOrchid");
+    trace_label("MediumOrchid", "trmm");
 }
 
 /******************************************************************************/

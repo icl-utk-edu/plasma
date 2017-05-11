@@ -227,13 +227,16 @@ void core_omp_ztsqrt(int m, int n, int ib,
             plasma_complex64_t *tau = ((plasma_complex64_t*)work.spaces[tid]);
 
             // Call the kernel.
+            trace_cpu_start();
             int info = core_ztsqrt(m, n, ib,
                                    A1, lda1,
                                    A2, lda2,
                                    T,  ldt,
                                    tau,
                                    tau+n);
-
+            trace_cpu_stop("Orchid");
+            trace_label("Orchid", "tsqrt");
+    
             if (info != PlasmaSuccess) {
                 plasma_error("core_ztsqrt() failed");
                 plasma_request_fail(sequence, request, PlasmaErrorInternal);
