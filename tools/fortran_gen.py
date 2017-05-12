@@ -349,6 +349,7 @@ def parse_prototypes(preprocessed_list):
 
         fun_args = fun_args.split(")")[0]
         fun_args = fun_args.replace(";", "")
+        fun_args = re.sub(r"volatile", "", fun_args)
         fun_args = fun_args.replace("\n", "")
         fun_args_list = fun_args.split(",")
 
