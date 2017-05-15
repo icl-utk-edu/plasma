@@ -239,7 +239,7 @@ void plasma_omp_zgeinv(plasma_desc_t A, int *ipiv, plasma_desc_t W,
 
     // Need to synchronize here because ipiv has to be completed
     // before starting row permutations.
-    #pragma omp taskwait
+    //#pragma omp taskwait
 
     // Invert triangular part.
     plasma_pztrtri(PlasmaUpper, PlasmaNonUnit, A, sequence, request);

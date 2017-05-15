@@ -155,7 +155,7 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
     // pivoting to the left
     for (int k = 1; k < imin(A.mt, A.nt); k++) {
         plasma_complex64_t *akk;
-        akk = A(k, k);
+        akk = A(k-1, k-1);
         int makk = (A.mt-k-1)*A.mb;
         int nakk = plasma_tile_nmain(A, k);
 
