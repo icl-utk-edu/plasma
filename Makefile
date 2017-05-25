@@ -112,7 +112,7 @@ ifeq ($(fortran), 1)
 
     fortran_examples_exe := $(basename $(fortran_examples_all))
 
-all: fortran_examples
+    all: fortran_examples
 endif
 
 # ------------------------------------------------------------------------------
@@ -215,7 +215,10 @@ lib: $(libfiles)
 test: $(test_exe)
 
 $(test_exe): $(test_obj) $(libfiles) Makefile.test.gen
-	$(quiet_CC) $(CC) $(LDFLAGS) -o $@ $(test_obj) $(PLASMA_LIBS) $(LIBS) $(rpath)
+	$(quiet_CC) $(CC) $(LDFLAGS) -o $@ $(test_obj) \
+	$(PLASMA_LIBS) \
+	$(LIBS) \
+	$(rpath)
 
 
 # ------------------------------------------------------------------------------
@@ -226,8 +229,11 @@ $(test_exe): $(test_obj) $(libfiles) Makefile.test.gen
 fortran_examples: $(fortran_examples_exe)
 
 # implicit rule for building Fortran examples
-% : %.f90 $(libfiles) Makefile.fortran_examples.gen
-	$(quiet_FC) $(FC) $(FFLAGS) $(LDFLAGS) $(PLASMA_INC) $< -o $@ $(PLASMA_LIBS) $(LIBS) $(rpath)
+%: %.f90 $(libfiles) Makefile.fortran_examples.gen
+	$(quiet_FC) $(FC) $(FFLAGS) $(LDFLAGS) $(PLASMA_INC) -o $@ $< \
+	$(PLASMA_LIBS) \
+	$(LIBS) \
+	$(rpath)
 
 run_fortran_tests: fortran_examples
 	$(foreach exe,$(fortran_examples_exe), ./$(exe);)
@@ -334,7 +340,7 @@ Makefile.test.gen: $(codegen)
 	$(codegen) --make --prefix test     $(test_src)     > $@
 
 Makefile.fortran_examples.gen: $(codegen)
-	$(codegen) --make --prefix fortran_examples $(fortran_examples_src)     > $@
+	$(codegen) --make --prefix fortran_examples $(fortran_examples_src) > $@
 
 # --------------------
 # If the list of src files changes, then force remaking Makefile.gen
@@ -345,25 +351,25 @@ Makefile.fortran_examples.gen: $(codegen)
 #    src has all the templates from Makefile.gen, and no new non-generated files.
 ifneq ($(plasma_src),$(plasma_old))
 ifneq ($(filter-out $(plasma_generated),$(plasma_src)),$(plasma_templates))
-Makefile.plasma.gen: force_gen
+    Makefile.plasma.gen: force_gen
 endif
 endif
 
 ifneq ($(coreblas_src),$(coreblas_old))
 ifneq ($(filter-out $(coreblas_generated),$(coreblas_src)),$(coreblas_templates))
-Makefile.coreblas.gen: force_gen
+    Makefile.coreblas.gen: force_gen
 endif
 endif
 
 ifneq ($(test_src),$(test_old))
 ifneq ($(filter-out $(test_generated),$(test_src)),$(test_templates))
-Makefile.test.gen: force_gen
+    Makefile.test.gen: force_gen
 endif
 endif
 
 ifneq ($(fortran_examples_src),$(fortran_examples_old))
 ifneq ($(filter-out $(fortran_examples_generated),$(fortran_examples_src)),$(fortran_examples_templates))
-Makefile.fortran_examples.gen: force_gen
+    Makefile.fortran_examples.gen: force_gen
 endif
 endif
 # --------------------
