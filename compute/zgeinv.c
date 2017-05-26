@@ -139,6 +139,15 @@ int plasma_zgeinv(int m, int n, plasma_complex64_t *pA, int lda, int *ipiv)
         // Call the tile async function.
         plasma_omp_zgeinv(A, ipiv, W, sequence, &request);
     }
+// TODO: a workaround to avoid deadlock
+#if 1
+    #pragma omp parallel
+    #pragma omp master
+    {
+        // Call the tile async function.
+        plasma_omp_zgeswp(PlasmaColumnwise, A, ipiv, -1, sequence, &request);
+    }
+#endif
 
     #pragma omp parallel
     #pragma omp master
@@ -247,7 +256,10 @@ void plasma_omp_zgeinv(plasma_desc_t A, int *ipiv, plasma_desc_t W,
     // Compute product of inverse of the upper and lower triangles.
     plasma_pzgetri_aux(A, W, sequence, request);
 
+// TODO: a workaround to avoid deadlock
+#if 0
     // Apply pivot.
     #pragma omp taskwait
     plasma_pzgeswp(PlasmaColumnwise, A, ipiv, -1, sequence, request);
+#endif
 }
