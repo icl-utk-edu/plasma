@@ -100,12 +100,28 @@ int plasma_zgesv(int n, int nrhs,
         plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
     }
 
+// TODO: a workaround to avoid deadlock
+#if 1
+    #pragma omp parallel
+    #pragma omp master
+    {
+        // Call the tile async function.
+        plasma_omp_zgetrf(A, ipiv, sequence, &request);
+    }
+    #pragma omp parallel
+    #pragma omp master
+    {
+        // Call the tile async function.
+        plasma_omp_zgetrs(A, ipiv, B, sequence, &request);
+    }
+#else
     #pragma omp parallel
     #pragma omp master
     {
         // Call the tile async function.
         plasma_omp_zgesv(A, ipiv, B, sequence, &request);
     }
+#endif
 
     #pragma omp parallel
     #pragma omp master
