@@ -8,9 +8,8 @@
 # programs
 
 CC        = gcc
-
-ARCH      = ar
-ARCHFLAGS = cr
+FC        = gfortran
+AR        = ar
 RANLIB    = ranlib
 
 
@@ -21,27 +20,25 @@ RANLIB    = ranlib
 # can be commented out if making only static libraries.
 FPIC      = -fPIC
 
-CFLAGS    = -fopenmp $(FPIC) -O3 -std=c99 -Wall -pedantic -Wshadow -Wno-unused-function
+CFLAGS    = -fopenmp $(FPIC) -O3 -std=c99   -Wall -pedantic -Wshadow -Wno-unused-function
+FCFLAGS   = -fopenmp $(FPIC) -O3 -std=f2008 -Wall
 LDFLAGS   = -fopenmp $(FPIC)
 
 # options for MKL
-CFLAGS   += -DPLASMA_WITH_MKL \
-            -DMKL_Complex16="double _Complex" \
-            -DMKL_Complex8="float _Complex"
+CFLAGS   += -DHAVE_MKL
 
 # one of: aix bsd c89 freebsd generic linux macosx mingw posix solaris
+# usually generic is fine
 lua_platform = linux
 
 # --------------------
 # PLASMA is a library in C, but can be also used from Fortran. 
 # In this case, Fortran interface needs to be build.
-# 0 = no  - Fortran codes will not be touched, the FC adn FFLAGS variables 
-#           will not referenced
+# 0 = no  - Fortran codes will not be touched, the FC and FCFLAGS variables 
+#           will not be referenced
 # 1 = yes - Fortran interface will be compiled and included into the library 
 
-fortran = 1
-FC        = gfortran
-FFLAGS    = -fopenmp $(FPIC) -O3 --std=f2008 -Wall
+fortran ?= 1
 
 # --------------------
 # libraries

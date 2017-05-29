@@ -8,9 +8,8 @@
 # programs
 
 CC        = gcc
-
-ARCH      = ar
-ARCHFLAGS = cr
+FC        = gfortran
+AR        = ar
 RANLIB    = ranlib
 
 
@@ -21,10 +20,12 @@ RANLIB    = ranlib
 # can be commented out if making only static libraries.
 FPIC      = -fPIC
 
-CFLAGS    = -fopenmp $(FPIC) -O3 -std=c99   -Wall -pedantic -Wshadow -Wno-unused-function -Wno-unused
+CFLAGS    = -fopenmp $(FPIC) -O3 -std=c99   -Wall -pedantic -Wshadow -Wno-unused-function
+FCFLAGS   = -fopenmp $(FPIC) -O2 -std=f2008 -Wall
 LDFLAGS   = -fopenmp $(FPIC)
 
 # one of: aix bsd c89 freebsd generic linux macosx mingw posix solaris
+# usually generic is fine
 lua_platform = macosx
 
 
@@ -38,7 +39,7 @@ lua_platform = macosx
 # in .bashrc:  source /opt/intel/bin/compilervars.sh  intel64
 # Currently, MKL on MacOS has only Intel threads, which may not work with gcc,
 # so use sequential.
-CFLAGS   += -DPLASMA_WITH_MKL
+CFLAGS   += -DHAVE_MKL
 
 LIBS      = -L$(MKLROOT)/lib -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lm
 

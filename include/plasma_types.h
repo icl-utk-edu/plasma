@@ -17,7 +17,7 @@ extern "C" {
 #endif
 
 /******************************************************************************/
-#ifdef PLASMA_WITH_MKL
+#if defined(HAVE_MKL) || defined(PLASMA_WITH_MKL)
 #define lapack_complex_float plasma_complex32_t
 #define lapack_complex_double plasma_complex64_t
 #endif

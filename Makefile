@@ -28,30 +28,34 @@ all: lib test
 
 # ------------------------------------------------------------------------------
 # Tools and flags
-# Get from make.inc, or use these defaults
+# Variables defined in make.inc, or use make's defaults:
+#   CC, CFLAGS, INC -- C compiler and flags
+#   FC, FCFLAGS     -- Fortran 2008 compiler and flags
+#   LDFLAGS, LIBS   -- Linker options, library paths, and libraries
+#   AR, RANLIB      -- Archiver, ranlib updates library TOC
+#   prefix          -- where to install PLASMA
+#   lua_platform    -- Lua configuration
 
-include make.inc
+-include make.inc
 
-# define FPIC to make shared libraries
-#FPIC      = -fPIC
+# dependencies here interfere with manually edited make.inc
+make.inc: #make.inc.in configure.py $(wildcard config/*.py)
+	python configure.py
 
-CC        ?= cc
-CFLAGS    ?= -std=c99 -fopenmp $(FPIC) -O3 -Wall -Wno-unused-variable -Wno-unused-function
-LDFLAGS   ?= -fopenmp $(FPIC)
-
-ARCH      ?= ar
-ARCHFLAGS ?= cr
+# GNU make doesn't have defaults for these
 RANLIB    ?= ranlib
-
-# INC and LIBS indicate where to find LAPACK, LAPACKE, and CBLAS
-INC       ?= -I$(LAPACKDIR)/LAPACKE/include -I$(CBLASDIR)/include
-LIBS      ?= -L$(LAPACKDIR) -llapack -llapacke -L$(CBLASDIR)/lib -lcblas -lblas
 
 prefix    ?= /usr/local/plasma
 
 # one of: aix bsd c89 freebsd generic linux macosx mingw posix solaris
 # usually generic is fine
 lua_platform ?= generic
+
+ifeq ($(FCFLAGS),)
+    ifneq ($(FFLAGS),)
+        $(warning Warning: FFLAGS renamed FCFLAGS, per autoconf. Update make.inc.)
+    endif
+endif
 
 
 # ------------------------------------------------------------------------------
@@ -71,9 +75,9 @@ PLASMA_LIBS := -Llib -lplasma -lcoreblas -llua
 .SUFFIXES:
 
 ifeq ($(quiet),1)
-   quiet_CC := @echo "$(CC) ... $@";
-   quiet_FC := @echo "$(FC) ... $@";
-   quiet_AR := @echo "$(ARCH) ... $@";
+   quiet_CC = @echo "$(CC) ... $@";
+   quiet_FC = @echo "$(FC) ... $@";
+   quiet_AR = @echo "$(AR) ... $@";
 endif
 
 
@@ -141,7 +145,7 @@ include/plasma_mod.f90: $(plasma_hdr)
 	$(fortran_gen) --prefix include/ $^
 
 $(fortran_interface_obj): $(fortran_interface_src)
-	$(quiet_FC) $(FC) $(FFLAGS) $(PLASMA_INC) $(INC) -c -o $@ $<
+	$(quiet_FC) $(FC) $(FCFLAGS) $(PLASMA_INC) $(INC) -c -o $@ $<
 	mv -f plasma.mod include/
 
 # ------------------------------------------------------------------------------
@@ -156,12 +160,12 @@ ifneq ($(static),0)
     # which recreates the library if a file is removed.
     lib/libplasma.a: $(plasma_obj) Makefile.plasma.gen
 	-rm -f $@
-	$(quiet_AR) $(ARCH) $(ARCHFLAGS) $@ $(plasma_obj)
+	$(quiet_AR) $(AR) cr $@ $(plasma_obj)
 	$(RANLIB) $@
 
     lib/libcoreblas.a: $(coreblas_obj) Makefile.coreblas.gen
 	-rm -f $@
-	$(quiet_AR) $(ARCH) $(ARCHFLAGS) $@ $(coreblas_obj)
+	$(quiet_AR) $(AR) cr $@ $(coreblas_obj)
 	$(RANLIB) $@
 endif
 
@@ -230,7 +234,7 @@ fortran_examples: $(fortran_examples_exe)
 
 # implicit rule for building Fortran examples
 %: %.f90 $(libfiles) Makefile.fortran_examples.gen
-	$(quiet_FC) $(FC) $(FFLAGS) $(LDFLAGS) $(PLASMA_INC) -o $@ $< \
+	$(quiet_FC) $(FC) $(FCFLAGS) $(LDFLAGS) $(PLASMA_INC) -o $@ $< \
 	$(PLASMA_LIBS) \
 	$(LIBS) \
 	$(rpath)

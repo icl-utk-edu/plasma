@@ -10,9 +10,10 @@
 #ifndef ICL_CORE_LAPACK_H
 #define ICL_CORE_LAPACK_H
 
+#if defined(HAVE_MKL) || defined(PLASMA_WITH_MKL)
+    #define MKL_Complex16 double _Complex
+    #define MKL_Complex8  float _Complex
 
-
-#if defined(PLASMA_WITH_MKL)
     #include <mkl_cblas.h>
     #include <mkl_lapacke.h>
 
@@ -21,10 +22,11 @@
     #ifndef LAPACK_GLOBAL
     #define LAPACK_GLOBAL(lcname,UCNAME)  lcname##_
     #endif
-#elif defined(PLASMA_WITH_ESSL)
+#elif defined(HAVE_ESSL) || defined(PLASMA_WITH_ESSL)
     // GCC + ESSL(BLAS) + LAPACKE/CBLAS from LAPACK
     #include <cblas.h>
     #include <lapacke.h>
+
     #ifndef LAPACK_GLOBAL
     #define LAPACK_GLOBAL(lcname,UCNAME) lcname##_
     #endif
@@ -49,4 +51,5 @@
 #include "core_lapack_d.h"
 #include "core_lapack_c.h"
 #include "core_lapack_z.h"
+
 #endif // ICL_CORE_LAPACK_H

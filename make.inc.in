@@ -1,0 +1,34 @@
+# PLASMA make.inc template, processed by configure.py
+#
+# PLASMA is a software package provided by:
+# University of Tennessee, US,
+# University of Manchester, UK.
+
+# ------------------------------------------------------------------------------
+# programs and flags
+
+CC       = @CC@
+FC       = @FC@
+RANLIB   = ranlib
+AR       = ar
+
+# Use -fPIC to make shared (.so) and static (.a) libraries;
+# can be commented out if making only static libraries.
+FPIC     = -fPIC
+
+CFLAGS   = ${FPIC} @CFLAGS@ @OPENMP_CFLAGS@ @DEFS@
+FCFLAGS  = ${FPIC} @FCFLAGS@ @OPENMP_FCFLAGS@
+LDFLAGS  = ${FPIC} @LDFLAGS@ @OPENMP_CFLAGS@
+LIBS     = @LIBS@
+
+# Enable or disable compiling Fortran 2008 interfaces into PLASMA library
+# 0 - disabled
+# 1 - enabled; build Fortran interfaces and examples
+fortran ?= 0
+
+# where to install PLASMA
+prefix ?= /usr/local/plasma
+
+# one of: aix bsd c89 freebsd generic linux macosx mingw posix solaris
+# usually generic is fine
+lua_platform ?= generic
