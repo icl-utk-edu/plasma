@@ -56,10 +56,10 @@ int core_zpotrf(plasma_enum_t uplo,
                  int n,
                  plasma_complex64_t *A, int lda)
 {
-    return LAPACKE_zpotrf(LAPACK_COL_MAJOR,
-                          lapack_const(uplo),
-                          n,
-                          A, lda);
+    return LAPACKE_zpotrf_work(LAPACK_COL_MAJOR,
+                               lapack_const(uplo),
+                               n,
+                               A, lda);
 }
 
 /******************************************************************************/
