@@ -36,7 +36,7 @@ all: lib test
 #   prefix          -- where to install PLASMA
 #   lua_platform    -- Lua configuration
 
--include make.inc
+include make.inc
 
 # dependencies here interfere with manually edited make.inc
 make.inc: #make.inc.in configure.py $(wildcard config/*.py)

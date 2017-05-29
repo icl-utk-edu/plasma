@@ -85,3 +85,4 @@ try:
 	
 except Error, e:
 	config.print_error( 'Configuration aborted: ' + str(e) )
+	exit(1)
