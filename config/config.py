@@ -748,7 +748,7 @@ def openmp_priority( required=True ):
 # (C)BLAS and LAPACK(E) libraries
 
 # ------------------------------------------------------------------------------
-def blas( required=True ):
+def blas( ilp64=False, required=True ):
 	print_header( 'Detecting BLAS libraries' )
 	push_lang('C')
 	src = 'blas.c'
@@ -772,23 +772,19 @@ def blas( required=True ):
 		libs   = join( *libs )
 		tests.append({
 			'CFLAGS':  cflags,
-			'LDFLAGS': '',
 			'LIBS':    libs,
 		})
 	else:
+		# included by default (e.g., with Cray cc compilers)
+		tests.append( {} )
+		
 		# plain BLAS
-		tests.append({
-			'CFLAGS':  '',
-			'LDFLAGS': '',
-			'LIBS':    '-lblas',
-		})
+		tests.append( {'LIBS': '-lblas'} )
 		
 		# MacOS Accelerate
 		if (sys.platform == 'darwin'):
 			tests.append({
 				'DEFS':    '-DHAVE_ACCELERATE',
-				'CFLAGS':  '',
-				'LDFLAGS': '',
 				'LIBS':    '-framework Accelerate -lm',
 			})
 		# end
@@ -819,9 +815,10 @@ def blas( required=True ):
 		# may be in a subdirectory if user sets
 		# $ACMLDIR = /path/to/acml-5.3.1            instead of
 		# $ACMLDIR = /path/to/acml-5.3.1/gfortran64
+		# modules on titan use ACML_BASE_DIR
 		for gf in ('', 'gfortran64', 'gfortran64_mp',
 		               'gfortran32', 'gfortran32_mp'):
-			(inc, libdir) = get_inc_lib( ['ACML', 'ACMLDIR', 'ACML_DIR'], gf )
+			(inc, libdir) = get_inc_lib( ['ACML', 'ACMLDIR', 'ACML_DIR', 'ACML_BASE_DIR'], gf )
 			if (libdir or not gf):  # if gf != '', require we found lib directory
 				if (re.search( '_mp', gf )):
 					libs = '-lacml_mp -lm'
@@ -846,26 +843,31 @@ def blas( required=True ):
 		# or mkl_intel_*lp64 with mkl_gnu_thread.
 		# todo: if compiler is GNU, suppress intel_thread version,
 		# and if compiler is Intel, suppress gnu_thread versions?
-		mkl_set_library_path()
-		(inc, libdir) = get_inc_lib( ['MKLROOT'] )
-		for libs in (
+		libs = [
 			'-lmkl_gf_lp64 -lmkl_sequential',
 			'-lmkl_gf_lp64 -lmkl_gnu_thread',
 			'-lmkl_intel_lp64 -lmkl_sequential',
 			'-lmkl_intel_lp64 -lmkl_intel_thread',
-			#'-lmkl_gf_ilp64 -lmkl_sequential',
-			#'-lmkl_gf_ilp64 -lmkl_gnu_thread',
-			#'-lmkl_intel_ilp64 -lmkl_sequential',
-			#'-lmkl_intel_ilp64 -lmkl_intel_thread',
-		):
+		]
+		if (ilp64):
+			libs.extend([
+			'-lmkl_gf_ilp64 -lmkl_sequential',
+			'-lmkl_gf_ilp64 -lmkl_gnu_thread',
+			'-lmkl_intel_ilp64 -lmkl_sequential',
+			'-lmkl_intel_ilp64 -lmkl_intel_thread',
+			])
+		# end
+		mkl_set_library_path()
+		(inc, libdir) = get_inc_lib( ['MKLROOT'] )
+		for lib in libs:
 			defs = '-DHAVE_MKL'
-			if (re.search( 'ilp64', libs )):
+			if (re.search( 'ilp64', lib )):
 				defs += ' -DMKL_ILP64'
 			tests.append({
 				'DEFS':    defs,
 				'CFLAGS':  inc,
 				'LDFLAGS': libdir,
-				'LIBS':    join( libs, '-lmkl_core -lm' ),
+				'LIBS':    join( lib, '-lmkl_core -lm' ),
 			})
 		# end
 	# end
@@ -875,7 +877,7 @@ def blas( required=True ):
 	for test in tests:
 		save = merge_env( test )
 		try:
-			print_dots( join( test['CFLAGS'], test['LDFLAGS'], test['LIBS'] ))
+			print_dots( join_vars( test, 'CFLAGS', 'LDFLAGS', 'LIBS' ))
 			try_compile_run( src )
 			choices.append( test )
 			print( str_yes )
@@ -902,8 +904,8 @@ def cblas( required=True ):
 	
 	# test if (1) cblas in blas library, or (2) cblas in -lcblas
 	tests = [
-		{'CFLAGS': '', 'LDFLAGS': '', 'LIBS': ''},
-		{'CFLAGS': '', 'LDFLAGS': '', 'LIBS': '-lcblas'},
+		{},
+		{'LIBS': '-lcblas'},
 	]
 	
 	# add lapack directory
@@ -932,11 +934,7 @@ def cblas( required=True ):
 			(stdout, stderr) = run(
 				'find /System/Library/Frameworks/Accelerate.framework -name cblas.h')
 			(path, fname) = os.path.split( stdout )
-			tests.append({
-				'CFLAGS':  '-I'+path,
-				'LDFLAGS': '',
-				'LIBS':    '',
-			})
+			tests.append( {'CFLAGS':  '-I'+path} )
 		except Error:
 			pass
 	# end
@@ -945,7 +943,7 @@ def cblas( required=True ):
 	for test in tests:
 		save = merge_env( test )
 		try:
-			print_dots( join( test['CFLAGS'], test['LDFLAGS'], test['LIBS'] ))
+			print_dots( join_vars( test, 'CFLAGS', 'LDFLAGS', 'LIBS' ))
 			try_compile_run( src )
 			found = True
 			print( str_yes )
@@ -971,8 +969,8 @@ def lapack( required=True ):
 	
 	# test if (1) lapack in blas library, or (2) lapack in -llapack
 	tests = [
-		{'CFLAGS': '', 'LDFLAGS': '', 'LIBS': ''},
-		{'CFLAGS': '', 'LDFLAGS': '', 'LIBS': '-llapack'},
+		{},
+		{'LIBS': '-llapack'},
 	]
 	
 	# add lapack directory
@@ -994,7 +992,7 @@ def lapack( required=True ):
 	for test in tests:
 		save = merge_env( test )
 		try:
-			print_dots( join( test['CFLAGS'], test['LDFLAGS'], test['LIBS'] ))
+			print_dots( join_vars( test, 'CFLAGS', 'LDFLAGS', 'LIBS' ))
 			try_compile_run( src )
 			found = True
 			print( str_yes )
@@ -1018,10 +1016,10 @@ def lapacke( required=True ):
 	push_lang('C')
 	src = 'lapacke.c'
 	
-	# test if (1) lapack in blas library, or (2) lapacke in -llapacke
+	# test if (1) lapacke in blas library, or (2) lapacke in -llapacke
 	tests = [
-		{'CFLAGS': '', 'LDFLAGS': '', 'LIBS': ''},
-		{'CFLAGS': '', 'LDFLAGS': '', 'LIBS': '-llapacke'},
+		{},
+		{'LIBS': '-llapacke'},
 	]
 	
 	# add lapack directory
@@ -1043,7 +1041,7 @@ def lapacke( required=True ):
 	for test in tests:
 		save = merge_env( test )
 		try:
-			print_dots( join( test['CFLAGS'], test['LDFLAGS'], test['LIBS'] ))
+			print_dots( join_vars( test, 'CFLAGS', 'LDFLAGS', 'LIBS' ))
 			try_compile_run( src )
 			found = True
 			print( str_yes )
@@ -1177,6 +1175,26 @@ def lapacke_dlassq( required=True ):
 
 # ==============================================================================
 # utilities for (C)BLAS and LAPACK(E) tests
+
+# ------------------------------------------------------------------------------
+def join_vars( env2, *variables ):
+	'''
+	For variables v1, ..., vn, joins env2[v1], ..., env2[vn] with spaces.
+	Ignores variables that don't exist in env2.
+	If result is empty, returns "[default flags]".
+	Ex: join_vars( test, 'CFLAGS', 'LIBS' ) is similar to:
+		join( test.has_key('CFLAGS') and test['CFLAGS'] or '',
+			  test.has_key('LIBS')   and test['LIBS']   or '' ) or '[default]'.
+	'''
+	txt = ''
+	for var in variables:
+		if (env2.has_key( var )):
+			txt += ' ' + env2[ var ]
+	txt = txt.strip()
+	if (not txt):
+		txt = '[default flags]'
+	return txt
+# end
 
 # ------------------------------------------------------------------------------
 def merge_env( env2 ):
