@@ -81,7 +81,7 @@ int plasma_dzamax(plasma_enum_t colrow,
 
     // Create sequence.
     plasma_sequence_t sequence;
-    retval = plasma_sequence_create(&sequence);
+    retval = plasma_sequence_init(&sequence);
 
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;

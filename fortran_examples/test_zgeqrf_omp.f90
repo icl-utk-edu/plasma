@@ -178,8 +178,8 @@ program test_zgeqrf_omp
     call plasma_workspace_create(workspace, lworkspace, PlasmaComplexDouble, info)
     call check_error('plasma_workspace_create()', info)
 
-    ! Create sequence.
-    call plasma_sequence_create(plasma_sequence, info)
+    ! Initialize sequence.
+    call plasma_sequence_init(plasma_sequence, info)
     call check_error('plasma_sequence_create()', info)
 
     !==============================================

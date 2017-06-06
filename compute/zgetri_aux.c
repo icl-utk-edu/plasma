@@ -96,7 +96,7 @@ int plasma_zgetri_aux(int n, plasma_complex64_t *pA, int lda)
 
     // Create sequence.
     plasma_sequence_t sequence;
-    retval = plasma_sequence_create(&sequence);
+    retval = plasma_sequence_init(&sequence);
 
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;

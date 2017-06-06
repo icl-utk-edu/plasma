@@ -33,7 +33,7 @@ int plasma_request_fail(plasma_sequence_t *sequence,
                         plasma_request_t *request,
                         int status);
 
-int plasma_sequence_create(plasma_sequence_t *sequence);
+int plasma_sequence_init(plasma_sequence_t *sequence);
 
 #ifdef __cplusplus
 }  // extern "C"

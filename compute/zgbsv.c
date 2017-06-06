@@ -136,7 +136,7 @@ int plasma_zgbsv(int n, int kl, int ku, int nrhs,
 
     // Create sequence.
     plasma_sequence_t sequence;
-    retval = plasma_sequence_create(&sequence);
+    retval = plasma_sequence_init(&sequence);
 
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;

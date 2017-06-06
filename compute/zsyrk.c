@@ -168,7 +168,7 @@ int plasma_zsyrk(plasma_enum_t uplo, plasma_enum_t trans,
 
     // Create sequence.
     plasma_sequence_t sequence;
-    retval = plasma_sequence_create(&sequence);
+    retval = plasma_sequence_init(&sequence);
 
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;

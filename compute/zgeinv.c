@@ -117,7 +117,7 @@ int plasma_zgeinv(int m, int n, plasma_complex64_t *pA, int lda, int *ipiv)
 
     // Create sequence.
     plasma_sequence_t sequence;
-    retval = plasma_sequence_create(&sequence);
+    retval = plasma_sequence_init(&sequence);
 
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;

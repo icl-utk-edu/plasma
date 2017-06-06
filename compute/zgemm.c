@@ -213,7 +213,7 @@ int plasma_zgemm(plasma_enum_t transa, plasma_enum_t transb,
 
     // Create sequence.
     plasma_sequence_t sequence;
-    retval = plasma_sequence_create(&sequence);
+    retval = plasma_sequence_init(&sequence);
 
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
