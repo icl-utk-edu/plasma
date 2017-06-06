@@ -144,12 +144,8 @@ int plasma_zunglq(int m, int n, int k,
     }
 
     // Create sequence.
-    plasma_sequence_t *sequence = NULL;
+    plasma_sequence_t sequence;
     retval = plasma_sequence_create(&sequence);
-    if (retval != PlasmaSuccess) {
-        plasma_error("plasma_sequence_create() failed");
-        return retval;
-    }
 
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
@@ -159,14 +155,14 @@ int plasma_zunglq(int m, int n, int k,
     #pragma omp master
     {
         // Translate to tile layout.
-        plasma_omp_zge2desc(pA, lda, A, sequence, &request);
-        plasma_omp_zge2desc(pQ, ldq, Q, sequence, &request);
+        plasma_omp_zge2desc(pA, lda, A, &sequence, &request);
+        plasma_omp_zge2desc(pQ, ldq, Q, &sequence, &request);
 
         // Call the tile async function.
-        plasma_omp_zunglq(A, T, Q, work, sequence, &request);
+        plasma_omp_zunglq(A, T, Q, work, &sequence, &request);
 
         // Translate Q back to LAPACK layout.
-        plasma_omp_zdesc2ge(Q, pQ, ldq, sequence, &request);
+        plasma_omp_zdesc2ge(Q, pQ, ldq, &sequence, &request);
     }
     // implicit synchronization
 
@@ -177,8 +173,7 @@ int plasma_zunglq(int m, int n, int k,
     plasma_desc_destroy(&Q);
 
     // Return status.
-    int status = sequence->status;
-    plasma_sequence_destroy(sequence);
+    int status = sequence.status;
     return status;
 }
 

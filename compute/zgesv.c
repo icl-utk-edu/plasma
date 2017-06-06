@@ -82,12 +82,8 @@ int plasma_zgesv(int n, int nrhs,
     }
 
     // Create sequence.
-    plasma_sequence_t *sequence = NULL;
+    plasma_sequence_t sequence;
     retval = plasma_sequence_create(&sequence);
-    if (retval != PlasmaSuccess) {
-        plasma_error("plasma_sequence_create() failed");
-        return retval;
-    }
 
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
@@ -96,8 +92,8 @@ int plasma_zgesv(int n, int nrhs,
     #pragma omp master
     {
         // Translate to tile layout.
-        plasma_omp_zge2desc(pA, lda, A, sequence, &request);
-        plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
+        plasma_omp_zge2desc(pA, lda, A, &sequence, &request);
+        plasma_omp_zge2desc(pB, ldb, B, &sequence, &request);
     }
 
 // TODO: a workaround to avoid deadlock
@@ -106,20 +102,20 @@ int plasma_zgesv(int n, int nrhs,
     #pragma omp master
     {
         // Call the tile async function.
-        plasma_omp_zgetrf(A, ipiv, sequence, &request);
+        plasma_omp_zgetrf(A, ipiv, &sequence, &request);
     }
     #pragma omp parallel
     #pragma omp master
     {
         // Call the tile async function.
-        plasma_omp_zgetrs(A, ipiv, B, sequence, &request);
+        plasma_omp_zgetrs(A, ipiv, B, &sequence, &request);
     }
 #else
     #pragma omp parallel
     #pragma omp master
     {
         // Call the tile async function.
-        plasma_omp_zgesv(A, ipiv, B, sequence, &request);
+        plasma_omp_zgesv(A, ipiv, B, &sequence, &request);
     }
 #endif
 
@@ -127,8 +123,8 @@ int plasma_zgesv(int n, int nrhs,
     #pragma omp master
     {
         // Translate back to LAPACK layout.
-        plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
-        plasma_omp_zdesc2ge(B, pB, ldb, sequence, &request);
+        plasma_omp_zdesc2ge(A, pA, lda, &sequence, &request);
+        plasma_omp_zdesc2ge(B, pB, ldb, &sequence, &request);
     }
 
     // Free matrix A in tile layout.
@@ -136,8 +132,7 @@ int plasma_zgesv(int n, int nrhs,
     plasma_desc_destroy(&B);
 
     // Return status.
-    int status = sequence->status;
-    plasma_sequence_destroy(sequence);
+    int status = sequence.status;
     return status;
 }
 

@@ -42,10 +42,6 @@ void test_dzamax(param_value_t param[], bool run)
     //================================================================
     // Mark which parameters are used.
     //================================================================
-            print_usage(PARAM_COLROW);
-            print_usage(PARAM_DIM);
-            print_usage(PARAM_PADA);
-            print_usage(PARAM_NB);
     param[PARAM_COLROW ].used = true;
     param[PARAM_DIM    ].used = PARAM_USE_M | PARAM_USE_N;
     param[PARAM_PADA   ].used = true;

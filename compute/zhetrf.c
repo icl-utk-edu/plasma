@@ -157,12 +157,8 @@ int plasma_zhetrf(plasma_enum_t uplo,
     }
 
     // Create sequence.
-    plasma_sequence_t *sequence = NULL;
+    plasma_sequence_t sequence;
     retval = plasma_sequence_create(&sequence);
-    if (retval != PlasmaSuccess) {
-        plasma_error("plasma_sequence_create() failed");
-        return retval;
-    }
 
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
@@ -176,7 +172,7 @@ int plasma_zhetrf(plasma_enum_t uplo,
     #pragma omp master
     {
         // Translate to tile layout.
-        plasma_omp_zge2desc(pA, lda, A, sequence, &request);
+        plasma_omp_zge2desc(pA, lda, A, &sequence, &request);
     }
 
     #pragma omp parallel
@@ -184,15 +180,15 @@ int plasma_zhetrf(plasma_enum_t uplo,
     {
         // Call the tile async function to compute LTL^H factor of A,
         // where T is a band matrix
-        plasma_omp_zhetrf(uplo, A, ipiv, T, ipiv2, W, sequence, &request);
+        plasma_omp_zhetrf(uplo, A, ipiv, T, ipiv2, W, &sequence, &request);
     }
 
     #pragma omp parallel
     #pragma omp master
     {
         // Translate back to LAPACK layout.
-        plasma_omp_zdesc2ge(A, pA, lda, sequence, &request);
-        plasma_omp_zdesc2pb(T, pT, ldt, sequence, &request);
+        plasma_omp_zdesc2ge(A, pA, lda, &sequence, &request);
+        plasma_omp_zdesc2pb(T, pT, ldt, &sequence, &request);
     }
     // implicit synchronization
 
@@ -202,8 +198,7 @@ int plasma_zhetrf(plasma_enum_t uplo,
     plasma_desc_destroy(&W);
 
     // Return status.
-    int status = sequence->status;
-    plasma_sequence_destroy(sequence);
+    int status = sequence.status;
     return status;
 }
 

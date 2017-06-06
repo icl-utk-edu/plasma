@@ -217,12 +217,8 @@ int plasma_zcgesv(int n, int nrhs,
     double *Xnorm = (double*)malloc(((size_t)X.n)*sizeof(double));
 
     // Create sequence.
-    plasma_sequence_t *sequence = NULL;
+    plasma_sequence_t sequence;
     retval = plasma_sequence_create(&sequence);
-    if (retval != PlasmaSuccess) {
-        plasma_error("plasma_sequence_create() failed");
-        return retval;
-    }
 
     // Initialize request.
     plasma_request_t request = PlasmaRequestInitializer;
@@ -237,25 +233,25 @@ int plasma_zcgesv(int n, int nrhs,
     #pragma omp master
     {
         // Translate matrices to tile layout.
-        plasma_omp_zge2desc(pA, lda, A, sequence, &request);
-        plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
+        plasma_omp_zge2desc(pA, lda, A, &sequence, &request);
+        plasma_omp_zge2desc(pB, ldb, B, &sequence, &request);
         // Convert B from double to single precision, store result in Xs.
-        plasma_omp_zlag2c(B, Xs, sequence, &request);
+        plasma_omp_zlag2c(B, Xs, &sequence, &request);
         // Convert A from double to single precision, store result in As.
-        plasma_omp_zlag2c(A, As, sequence, &request);
+        plasma_omp_zlag2c(A, As, &sequence, &request);
     }
     #pragma omp parallel
     #pragma omp master
     {
         // Factor A in single precision.
-        plasma_omp_cgetrf(As, ipiv, sequence, &request);
+        plasma_omp_cgetrf(As, ipiv, &sequence, &request);
     }
     #pragma omp parallel
     #pragma omp master
     {
         // Run mixed-precision iterative refinement.
         plasma_omp_zcgesv(A, ipiv, B, X, As, Xs, R, work, Rnorm, Xnorm, iter,
-                          sequence, &request);
+                          &sequence, &request);
     }
     const int itermax = 30;
     if (*iter == -itermax-1) {
@@ -263,35 +259,35 @@ int plasma_zcgesv(int n, int nrhs,
         #pragma omp parallel
         #pragma omp master
         {
-            plasma_omp_zgetrf(A, ipiv, sequence, &request);
-            plasma_omp_zlacpy(PlasmaGeneral, PlasmaNoTrans, B, X, sequence, &request);
+            plasma_omp_zgetrf(A, ipiv, &sequence, &request);
+            plasma_omp_zlacpy(PlasmaGeneral, PlasmaNoTrans, B, X, &sequence, &request);
         }
         #pragma omp parallel
         #pragma omp master
         {
-            plasma_omp_zgetrs(A, ipiv, X, sequence, &request);
+            plasma_omp_zgetrs(A, ipiv, X, &sequence, &request);
         }
     }
     #pragma omp parallel
     #pragma omp master
     {
         // Translate back to LAPACK layout.
-        plasma_omp_zdesc2ge(X, pX, ldx, sequence, &request);
+        plasma_omp_zdesc2ge(X, pX, ldx, &sequence, &request);
     }
 #else
     #pragma omp parallel
     #pragma omp master
     {
         // Translate matrices to tile layout.
-        plasma_omp_zge2desc(pA, lda, A, sequence, &request);
-        plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
+        plasma_omp_zge2desc(pA, lda, A, &sequence, &request);
+        plasma_omp_zge2desc(pB, ldb, B, &sequence, &request);
 
         // Call tile async function.
         plasma_omp_zcgesv(A, ipiv, B, X, As, Xs, R, work, Rnorm, Xnorm, iter,
-                          sequence, &request);
+                          &sequence, &request);
 
         // Translate back to LAPACK layout.
-        plasma_omp_zdesc2ge(X, pX, ldx, sequence, &request);
+        plasma_omp_zdesc2ge(X, pX, ldx, &sequence, &request);
     }
 #endif
     // implicit synchronization
@@ -308,8 +304,7 @@ int plasma_zcgesv(int n, int nrhs,
     free(Xnorm);
 
     // Return status.
-    int status = sequence->status;
-    plasma_sequence_destroy(sequence);
+    int status = sequence.status;
     return status;
 }
 
