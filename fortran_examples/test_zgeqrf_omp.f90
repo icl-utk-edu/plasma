@@ -180,7 +180,11 @@ program test_zgeqrf_omp
 
     ! Initialize sequence.
     call plasma_sequence_init(plasma_sequence, info)
-    call check_error('plasma_sequence_create()', info)
+    call check_error('plasma_sequence_init()', info)
+
+    ! Initialize request.
+    call plasma_request_init(plasma_request, info)
+    call check_error('plasma_request_init()', info)
 
     !==============================================
     ! Call QR factorization for A.

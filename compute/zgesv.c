@@ -81,12 +81,13 @@ int plasma_zgesv(int n, int nrhs,
         return retval;
     }
 
-    // Create sequence.
+    // Initialize sequence.
     plasma_sequence_t sequence;
     retval = plasma_sequence_init(&sequence);
 
     // Initialize request.
-    plasma_request_t request = PlasmaRequestInitializer;
+    plasma_request_t request;
+    retval = plasma_request_init(&request);
 
     #pragma omp parallel
     #pragma omp master

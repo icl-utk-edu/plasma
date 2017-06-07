@@ -182,12 +182,13 @@ int plasma_zsymm(plasma_enum_t side, plasma_enum_t
         return retval;
     }
 
-    // Create sequence.
+    // Initialize sequence.
     plasma_sequence_t sequence;
     retval = plasma_sequence_init(&sequence);
 
     // Initialize request.
-    plasma_request_t request = PlasmaRequestInitializer;
+    plasma_request_t request;
+    retval = plasma_request_init(&request);
 
     // asynchronous block
     #pragma omp parallel

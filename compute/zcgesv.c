@@ -216,12 +216,13 @@ int plasma_zcgesv(int n, int nrhs,
     double *Rnorm = (double*)malloc(((size_t)R.n)*sizeof(double));
     double *Xnorm = (double*)malloc(((size_t)X.n)*sizeof(double));
 
-    // Create sequence.
+    // Initialize sequence.
     plasma_sequence_t sequence;
     retval = plasma_sequence_init(&sequence);
 
     // Initialize request.
-    plasma_request_t request = PlasmaRequestInitializer;
+    plasma_request_t request;
+    retval = plasma_request_init(&request);
 
     // Initialize barrier.
     plasma_barrier_init(&plasma->barrier);

@@ -25,6 +25,13 @@ int plasma_request_fail(plasma_sequence_t *sequence,
 }
 
 /******************************************************************************/
+int plasma_request_init(plasma_request_t *request)
+{
+    request->status = PlasmaSuccess;
+    return PlasmaSuccess;
+}
+
+/******************************************************************************/
 int plasma_sequence_init(plasma_sequence_t *sequence)
 {
     sequence->status = PlasmaSuccess;
