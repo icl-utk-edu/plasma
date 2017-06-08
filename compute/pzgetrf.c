@@ -34,7 +34,9 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
     // Set tiling parameters.
     int ib = plasma->ib;
 
-    for (int k = 0; k < imin(A.mt, A.nt); k++) {
+    int minmtnt = imin(A.mt, A.nt);
+
+    for (int k = 0; k < minmtnt; k++) {
         plasma_complex64_t *a00, *a20;
         a00 = A(k, k);
         a20 = A(A.mt-1, k);
@@ -48,7 +50,7 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
         int ldak = plasma_tile_mmain(A, k);
 
         int num_panel_threads = imin(plasma->max_panel_threads,
-                                     imin(A.mt, A.nt)-k);
+                                     minmtnt-k);
         // panel
         #pragma omp task depend(inout:a00[0:ma00k*na00k]) \
                          depend(inout:a20[0:lda20*nvak]) \
@@ -153,19 +155,25 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
         }
     }
     // pivoting to the left
-    for (int k = 1; k < imin(A.mt, A.nt); k++) {
-        plasma_complex64_t *akk;
-        akk = A(k-1, k-1);
-        int makk = (A.mt-k-1)*A.mb;
-        int nakk = plasma_tile_nmain(A, k);
+    for (int k = 0; k < minmtnt-1; k++) {
+        plasma_complex64_t *a00, *a20;
+        a00 = A(k, k);
+        a20 = A(A.mt-1, k);
 
-        #pragma omp task depend(in:ipiv[(imin(A.mt, A.nt)-1)*A.mb]) \
-                         depend(inout:akk[0:makk*nakk])
+        int ma00k = (A.mt-k-1)*A.mb;
+        int na00k = plasma_tile_nmain(A, k);
+        int lda20 = plasma_tile_mmain(A, A.mt-1);
+
+        int nvak = plasma_tile_nview(A, k);
+
+        #pragma omp task depend(in:ipiv[(minmtnt-1)*A.mb]) \
+                         depend(inout:a00[0:ma00k*na00k]) \
+                         depend(inout:a20[0:lda20*nvak])
         {
             if (sequence->status == PlasmaSuccess) {
                 plasma_desc_t view =
-                    plasma_desc_view(A, 0, (k-1)*A.nb, A.m, A.nb);
-                int k1 = k*A.mb+1;
+                    plasma_desc_view(A, 0, k*A.nb, A.m, A.nb);
+                int k1 = (k+1)*A.mb+1;
                 int k2 = imin(A.m, A.n);
                 core_zgeswp(PlasmaRowwise, view, k1, k2, ipiv, 1);
             }
