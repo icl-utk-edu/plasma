@@ -70,7 +70,7 @@ program test_zgeqrf_omp
     type(plasma_context_t), pointer :: plasma_context
     integer(kind=c_size_t) :: lworkspace
     type(plasma_workspace_t) :: workspace
-    type(plasma_sequence_t), pointer :: plasma_sequence
+    type(plasma_sequence_t) :: plasma_sequence
     type(plasma_request_t) :: plasma_request
 
     integer :: plasma_status
@@ -178,9 +178,13 @@ program test_zgeqrf_omp
     call plasma_workspace_create(workspace, lworkspace, PlasmaComplexDouble, info)
     call check_error('plasma_workspace_create()', info)
 
-    ! Create sequence.
-    call plasma_sequence_create(plasma_sequence, info)
-    call check_error('plasma_sequence_create()', info)
+    ! Initialize sequence.
+    call plasma_sequence_init(plasma_sequence, info)
+    call check_error('plasma_sequence_init()', info)
+
+    ! Initialize request.
+    call plasma_request_init(plasma_request, info)
+    call check_error('plasma_request_init()', info)
 
     !==============================================
     ! Call QR factorization for A.
@@ -205,8 +209,6 @@ program test_zgeqrf_omp
 
     plasma_status = plasma_sequence%status
     print *, "PLASMA status after the OMP block: ", plasma_status
-    call plasma_sequence_destroy(plasma_sequence, info)
-    call check_error('plasma_sequence_destroy()', info)
 
     call plasma_workspace_destroy(workspace, info)
     call check_error('plasma_workspace_destroy()', info)

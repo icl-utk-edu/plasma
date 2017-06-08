@@ -229,30 +229,28 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
     double *Rnorm = (double*)malloc(((size_t)R.n)*sizeof(double));
     double *Xnorm = (double*)malloc(((size_t)X.n)*sizeof(double));
 
-    // Create sequence.
-    plasma_sequence_t *sequence = NULL;
-    retval = plasma_sequence_create(&sequence);
-    if (retval != PlasmaSuccess) {
-        plasma_error("plasma_sequence_create() failed");
-        return retval;
-    }
+    // Initialize sequence.
+    plasma_sequence_t sequence;
+    retval = plasma_sequence_init(&sequence);
 
     // Initialize request.
-    plasma_request_t request = PlasmaRequestInitializer;
+    plasma_request_t request;
+    retval = plasma_request_init(&request);
 
     // asynchronous block
     #pragma omp parallel
     #pragma omp master
     {
         // Translate matrices to tile layout.
-        plasma_omp_zge2desc(pA, lda, A, sequence, &request);
-        plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
+        plasma_omp_zge2desc(pA, lda, A, &sequence, &request);
+        plasma_omp_zge2desc(pB, ldb, B, &sequence, &request);
 
         // Call tile async function.
-        plasma_omp_zcposv(uplo, A, B, X, As, Xs, R, work, Rnorm, Xnorm, iter, sequence, &request);
+        plasma_omp_zcposv(uplo, A, B, X, As, Xs, R, work, Rnorm, Xnorm,
+                          iter, &sequence, &request);
 
         // Translate back to LAPACK layout.
-        plasma_omp_zdesc2ge(X, pX, ldx, sequence, &request);
+        plasma_omp_zdesc2ge(X, pX, ldx, &sequence, &request);
     }
     // implicit synchronization
 
@@ -268,8 +266,7 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
     free(Xnorm);
 
     // Return status.
-    int status = sequence->status;
-    plasma_sequence_destroy(sequence);
+    int status = sequence.status;
     return status;
 }
 

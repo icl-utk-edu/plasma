@@ -141,7 +141,10 @@ void test_zgetri_aux(param_value_t param[], bool run)
 
         double error = LAPACKE_zlange_work(
                            LAPACK_COL_MAJOR, 'F', n, n, U, n, work);
-        param[PARAM_ERROR].d = error / (Anorm * Lnorm);
+        if (Anorm*Lnorm != 0)
+            error /= (Anorm * Lnorm);
+
+        param[PARAM_ERROR].d = error;
         param[PARAM_SUCCESS].i = error < tol;
     }
 

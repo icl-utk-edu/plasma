@@ -25,20 +25,16 @@ int plasma_request_fail(plasma_sequence_t *sequence,
 }
 
 /******************************************************************************/
-int plasma_sequence_create(plasma_sequence_t **sequence)
+int plasma_request_init(plasma_request_t *request)
 {
-    *sequence = (plasma_sequence_t*)malloc(sizeof(plasma_sequence_t));
-    if (*sequence == NULL) {
-        plasma_error("malloc() failed");
-        return PlasmaErrorOutOfMemory;
-    }
-    (*sequence)->status = PlasmaSuccess;
+    request->status = PlasmaSuccess;
     return PlasmaSuccess;
 }
 
 /******************************************************************************/
-int plasma_sequence_destroy(plasma_sequence_t *sequence)
+int plasma_sequence_init(plasma_sequence_t *sequence)
 {
-    free(sequence);
+    sequence->status = PlasmaSuccess;
+    sequence->request = NULL;
     return PlasmaSuccess;
 }

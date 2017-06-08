@@ -134,38 +134,35 @@ int plasma_zgbsv(int n, int kl, int ku, int nrhs,
         return retval;
     }
 
-    // Create sequence.
-    plasma_sequence_t *sequence = NULL;
-    retval = plasma_sequence_create(&sequence);
-    if (retval != PlasmaSuccess) {
-        plasma_error("plasma_sequence_create() failed");
-        return retval;
-    }
+    // Initialize sequence.
+    plasma_sequence_t sequence;
+    retval = plasma_sequence_init(&sequence);
 
     // Initialize request.
-    plasma_request_t request = PlasmaRequestInitializer;
+    plasma_request_t request;
+    retval = plasma_request_init(&request);
 
     #pragma omp parallel
     #pragma omp master
     {
         // Translate to tile layout.
-        plasma_omp_zpb2desc(pAB, ldab, AB, sequence, &request);
-        plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
+        plasma_omp_zpb2desc(pAB, ldab, AB, &sequence, &request);
+        plasma_omp_zge2desc(pB, ldb, B, &sequence, &request);
     }
 
     #pragma omp parallel
     #pragma omp master
     {
         // Call the tile async function.
-        plasma_omp_zgbsv(AB, ipiv, B, sequence, &request);
+        plasma_omp_zgbsv(AB, ipiv, B, &sequence, &request);
     }
 
     #pragma omp parallel
     #pragma omp master
     {
         // Translate back to LAPACK layout.
-        plasma_omp_zdesc2pb(AB, pAB, ldab, sequence, &request);
-        plasma_omp_zdesc2ge(B, pB, ldb, sequence, &request);
+        plasma_omp_zdesc2pb(AB, pAB, ldab, &sequence, &request);
+        plasma_omp_zdesc2ge(B, pB, ldb, &sequence, &request);
     }
 
     // Free matrices  in tile layout.
@@ -173,8 +170,7 @@ int plasma_zgbsv(int n, int kl, int ku, int nrhs,
     plasma_desc_destroy(&AB);
 
     // Return status.
-    int status = sequence->status;
-    plasma_sequence_destroy(sequence);
+    int status = sequence.status;
     return status;
 }
 

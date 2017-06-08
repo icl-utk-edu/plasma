@@ -149,16 +149,13 @@ double plasma_zlansy(plasma_enum_t norm, plasma_enum_t uplo,
         return PlasmaErrorOutOfMemory;
     }
 
-    // Create sequence.
-    plasma_sequence_t *sequence = NULL;
-    retval = plasma_sequence_create(&sequence);
-    if (retval != PlasmaSuccess) {
-        plasma_error("plasma_sequence_create() failed");
-        return retval;
-    }
+    // Initialize sequence.
+    plasma_sequence_t sequence;
+    retval = plasma_sequence_init(&sequence);
 
     // Initialize request.
-    plasma_request_t request = PlasmaRequestInitializer;
+    plasma_request_t request;
+    retval = plasma_request_init(&request);
 
     double value;
 
@@ -167,10 +164,10 @@ double plasma_zlansy(plasma_enum_t norm, plasma_enum_t uplo,
     #pragma omp master
     {
         // Translate to tile layout.
-        plasma_omp_zge2desc(pA, lda, A, sequence, &request);
+        plasma_omp_zge2desc(pA, lda, A, &sequence, &request);
 
         // Call tile async function.
-        plasma_omp_zlansy(norm, uplo, A, work, &value, sequence, &request);
+        plasma_omp_zlansy(norm, uplo, A, work, &value, &sequence, &request);
     }
     // implicit synchronization
 
@@ -178,9 +175,6 @@ double plasma_zlansy(plasma_enum_t norm, plasma_enum_t uplo,
 
     // Free matrix in tile layout.
     plasma_desc_destroy(&A);
-
-    // Destroy sequence.
-    plasma_sequence_destroy(sequence);
 
     // Return the norm.
     return value;

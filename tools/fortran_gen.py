@@ -75,9 +75,6 @@ arrays_names_1D = ["ipiv", "values", "work"]
 # exclude inline functions from the interface
 exclude_list = ["inline"]
 
-# list of **pointers, to be forced as type(c_ptr)
-force_pointer = ["plasma_sequence_t"]
-
 # ------------------------------------------------------------
 
 # global list used to determine derived types

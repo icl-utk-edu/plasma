@@ -162,39 +162,36 @@ int plasma_zhetrs(plasma_enum_t uplo, int n, int nrhs,
         return retval;
     }
 
-    // Create sequence.
-    plasma_sequence_t *sequence = NULL;
-    retval = plasma_sequence_create(&sequence);
-    if (retval != PlasmaSuccess) {
-        plasma_error("plasma_sequence_create() failed");
-        return retval;
-    }
+    // Initialize sequence.
+    plasma_sequence_t sequence;
+    retval = plasma_sequence_init(&sequence);
 
     // Initialize request.
-    plasma_request_t request = PlasmaRequestInitializer;
+    plasma_request_t request;
+    retval = plasma_request_init(&request);
 
     // asynchronous block
     #pragma omp parallel
     #pragma omp master
     {
         // Translate to tile layout.
-        plasma_omp_zge2desc(pA, lda, A, sequence, &request);
-        plasma_omp_zpb2desc(pT, ldt, T, sequence, &request);
-        plasma_omp_zge2desc(pB, ldb, B, sequence, &request);
+        plasma_omp_zge2desc(pA, lda, A, &sequence, &request);
+        plasma_omp_zpb2desc(pT, ldt, T, &sequence, &request);
+        plasma_omp_zge2desc(pB, ldb, B, &sequence, &request);
     }
 
     #pragma omp parallel
     #pragma omp master
     {
         // Call the tile async function.
-        plasma_omp_zhetrs(uplo, A, ipiv, T, ipiv2, B, sequence, &request);
+        plasma_omp_zhetrs(uplo, A, ipiv, T, ipiv2, B, &sequence, &request);
     }
 
     #pragma omp parallel
     #pragma omp master
     {
         // Translate back to LAPACK layout.
-        plasma_omp_zdesc2ge(B, pB, ldb, sequence, &request);
+        plasma_omp_zdesc2ge(B, pB, ldb, &sequence, &request);
     }
     // implicit synchronization
 
@@ -204,8 +201,7 @@ int plasma_zhetrs(plasma_enum_t uplo, int n, int nrhs,
     plasma_desc_destroy(&B);
 
     // Return status.
-    int status = sequence->status;
-    plasma_sequence_destroy(sequence);
+    int status = sequence.status;
     return status;
 }
 

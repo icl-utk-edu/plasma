@@ -21,8 +21,6 @@ typedef struct {
     plasma_enum_t status; ///< error code
 } plasma_request_t;
 
-static const plasma_request_t PlasmaRequestInitializer = {PlasmaSuccess};
-
 typedef struct {
     plasma_enum_t status;      ///< error code
     plasma_request_t *request; ///< failed request
@@ -33,8 +31,9 @@ int plasma_request_fail(plasma_sequence_t *sequence,
                         plasma_request_t *request,
                         int status);
 
-int plasma_sequence_create(plasma_sequence_t **sequence);
-int plasma_sequence_destroy(plasma_sequence_t *sequence);
+int plasma_request_init(plasma_request_t *request);
+
+int plasma_sequence_init(plasma_sequence_t *sequence);
 
 #ifdef __cplusplus
 }  // extern "C"
