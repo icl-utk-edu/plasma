@@ -34,10 +34,7 @@ void plasma_pzgeswp(plasma_enum_t colrow,
             a00 = A(0, n);
             a10 = A(A.mt-1, n);
 
-            // Create dependency of the whole panel on the individual tiles.
-            // This is mimicking multidependency on all tiles.
-            // These tasks are inserted to generate a correct DAG rather than
-            // doing any useful work.
+            // Fake multi-dependency of the whole panel on its individual tiles.
             for (int m = 0; m < A.mt; m++) {
                 plasma_complex64_t *amn;
                 amn = A(m, n);
@@ -61,10 +58,7 @@ void plasma_pzgeswp(plasma_enum_t colrow,
                 core_zgeswp(colrow, view, 1, A.m, ipiv, incx);
             }
 
-            // Create dependency of the whole panel on the individual tiles.
-            // This is mimicking multidependency on all tiles.
-            // These tasks are inserted to generate a correct DAG rather than
-            // doing any useful work.
+            // Fake multi-dependency of individual tiles on the whole panel.
             for (int m = 0; m < A.mt; m++) {
                 plasma_complex64_t *amn;
                 amn = A(m, n);
@@ -81,10 +75,8 @@ void plasma_pzgeswp(plasma_enum_t colrow,
             a00 = A(m, 0);
             a01 = A(m, A.nt-1);
 
-            // Create dependency of the whole panel on the individual tiles.
-            // This is mimicking multidependency on all tiles.
-            // These tasks are inserted to generate a correct DAG rather than
-            // doing any useful work.
+            // Fake multi-dependency of the whole (row) panel on its individual
+            // tiles.
             for (int n = 0; n < A.nt; n++) {
                 plasma_complex64_t *amn;
                 amn = A(m, n);
@@ -102,10 +94,8 @@ void plasma_pzgeswp(plasma_enum_t colrow,
                 core_zgeswp(colrow, view, 1, A.n, ipiv, incx);
             }
 
-            // Create dependency of the whole panel on the individual tiles.
-            // This is mimicking multidependency on all tiles.
-            // These tasks are inserted to generate a correct DAG rather than
-            // doing any useful work.
+            // Fake multi-dependency of individual tiles on the whole
+            // (row) panel.
             for (int n = 0; n < A.nt; n++) {
                 plasma_complex64_t *amn;
                 amn = A(m, n);
