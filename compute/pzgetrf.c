@@ -37,9 +37,21 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
     int minmtnt = imin(A.mt, A.nt);
 
     for (int k = 0; k < minmtnt; k++) {
+
         plasma_complex64_t *a00, *a20;
         a00 = A(k, k);
         a20 = A(A.mt-1, k);
+
+        // Create fake dependency of the whole panel on its individual tiles.
+        // These tasks are inserted to generate a correct DAG rather than
+        // doing any useful work.
+        for (int m = k; m < A.mt; m++) {
+            plasma_complex64_t *am;
+            am = A(m, k);
+            #pragma omp task depend (in:am[0]) \
+                             depend (inout:a00[0])
+            {}
+        }
 
         int ma00k = (A.mt-k-1)*A.mb;
         int na00k = plasma_tile_nmain(A, k);
@@ -73,8 +85,14 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
             plasma_barrier_init(&barrier);
 
             if (sequence->status == PlasmaSuccess) {
+                //#pragma omp taskloop untied shared(barrier) \
+                //                     num_tasks(num_panel_threads) \
+                //                     priority(1)
+                #pragma omp parallel for shared(barrier) \
+                                         schedule(static,1) \
+                                         num_threads(num_panel_threads)
                 for (int rank = 0; rank < num_panel_threads; rank++) {
-                    #pragma omp task shared(barrier) priority(1)
+                    //#pragma omp task shared(barrier) priority(1)
                     {
                         plasma_desc_t view =
                             plasma_desc_view(A,
@@ -99,12 +117,34 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
             for (int i = k*A.mb+1; i <= imin(A.m, k*A.mb+nvak); i++)
                 ipiv[i-1] += k*A.mb;
         }
+        
+        // Create dependency of the individual tiles on the whole panel.
+        // This is mimicking output multidependency of all tiles.
+        // These tasks are inserted to generate a correct DAG rather than
+        // doing any useful work.
+        for (int m = k; m < A.mt; m++) {
+            plasma_complex64_t *am;
+            am = A(m, k);
+            #pragma omp task depend (in:a00[0]) \
+                             depend (inout:am[0])
+            {}
+        }
+
         // update
         for (int n = k+1; n < A.nt; n++) {
             plasma_complex64_t *a01, *a11, *a21;
             a01 = A(k, n);
             a11 = A(k+1, n);
             a21 = A(A.mt-1, n);
+
+            // Fake multi-dependency of the whole panel on its individual tiles.
+            for (int m = k; m < A.mt; m++) {
+                plasma_complex64_t *amn;
+                amn = A(m, n);
+                #pragma omp task depend (in:amn[0]) \
+                                 depend (inout:a01[0])
+                {}
+            }
 
             int ma11k = (A.mt-k-2)*A.mb;
             int na11n = plasma_tile_nmain(A, n);
@@ -152,13 +192,40 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                 }
                 #pragma omp taskwait
             }
+
+            // Fake multi-dependency of individual tiles on the whole panel.
+            for (int m = k; m < A.mt; m++) {
+                plasma_complex64_t *amn;
+                amn = A(m, n);
+                #pragma omp task depend (in:a01[0]) \
+                                 depend (inout:amn[0])
+                {}
+            }
         }
     }
+
+    // Fake multi-dependency of the whole ipiv on the individual chunks
+    // corresponding to tiles. 
+    for (int m = 0; m < A.mt; m++) {
+        #pragma omp task depend (in:ipiv[m*A.mb]) \
+                         depend (inout:ipiv[0])
+        {}
+    }
+
     // pivoting to the left
     for (int k = 0; k < minmtnt-1; k++) {
         plasma_complex64_t *a00, *a20;
         a00 = A(k, k);
         a20 = A(A.mt-1, k);
+
+        // Fake multi-dependency of the whole panel on its individual tiles.
+        for (int m = k; m < A.mt; m++) {
+            plasma_complex64_t *amk;
+            amk = A(m, k);
+            #pragma omp task depend (in:amk[0]) \
+                             depend (inout:a00[0])
+            {}
+        }
 
         int ma00k = (A.mt-k-1)*A.mb;
         int na00k = plasma_tile_nmain(A, k);
@@ -166,7 +233,7 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
 
         int nvak = plasma_tile_nview(A, k);
 
-        #pragma omp task depend(in:ipiv[(minmtnt-1)*A.mb]) \
+        #pragma omp task depend(in:ipiv[0:A.m]) \
                          depend(inout:a00[0:ma00k*na00k]) \
                          depend(inout:a20[0:lda20*nvak])
         {
@@ -177,6 +244,15 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                 int k2 = imin(A.m, A.n);
                 core_zgeswp(PlasmaRowwise, view, k1, k2, ipiv, 1);
             }
+        }
+
+        // Fake multi-dependency of individual tiles on the whole panel.
+        for (int m = k; m < A.mt; m++) {
+            plasma_complex64_t *amk;
+            amk = A(m, k);
+            #pragma omp task depend (in:a00[0]) \
+                             depend (inout:amk[0])
+            {}
         }
     }
 }

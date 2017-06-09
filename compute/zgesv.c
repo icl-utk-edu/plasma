@@ -95,34 +95,10 @@ int plasma_zgesv(int n, int nrhs,
         // Translate to tile layout.
         plasma_omp_zge2desc(pA, lda, A, &sequence, &request);
         plasma_omp_zge2desc(pB, ldb, B, &sequence, &request);
-    }
 
-// TODO: a workaround to avoid deadlock
-#if 1
-    #pragma omp parallel
-    #pragma omp master
-    {
-        // Call the tile async function.
-        plasma_omp_zgetrf(A, ipiv, &sequence, &request);
-    }
-    #pragma omp parallel
-    #pragma omp master
-    {
-        // Call the tile async function.
-        plasma_omp_zgetrs(A, ipiv, B, &sequence, &request);
-    }
-#else
-    #pragma omp parallel
-    #pragma omp master
-    {
         // Call the tile async function.
         plasma_omp_zgesv(A, ipiv, B, &sequence, &request);
-    }
-#endif
 
-    #pragma omp parallel
-    #pragma omp master
-    {
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(A, pA, lda, &sequence, &request);
         plasma_omp_zdesc2ge(B, pB, ldb, &sequence, &request);
@@ -180,10 +156,6 @@ void plasma_omp_zgesv(plasma_desc_t A, int *ipiv,
 
     // Call the parallel functions.
     plasma_pzgetrf(A, ipiv, sequence, request);
-
-    // Need to synchronize here because ipiv has to be completed
-    // before starting row permutations.
-    #pragma omp taskwait 
 
     plasma_pzgeswp(PlasmaRowwise, B, ipiv, 1, sequence, request);
 

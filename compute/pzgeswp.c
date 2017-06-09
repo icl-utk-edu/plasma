@@ -34,26 +34,85 @@ void plasma_pzgeswp(plasma_enum_t colrow,
             a00 = A(0, n);
             a10 = A(A.mt-1, n);
 
+            // Create dependency of the whole panel on the individual tiles.
+            // This is mimicking multidependency on all tiles.
+            // These tasks are inserted to generate a correct DAG rather than
+            // doing any useful work.
+            for (int m = 0; m < A.mt; m++) {
+                plasma_complex64_t *amn;
+                amn = A(m, n);
+                #pragma omp task depend (in:amn[0]) \
+                                 depend (inout:a00[0])
+                {}
+            }
+
             int ma00 = (A.mt-1)*A.mb;
             int na00 = plasma_tile_nmain(A, n);
 
             int lda10 = plasma_tile_mmain(A, A.mt-1);
             int nva10 = plasma_tile_nview(A, n);
 
-            #pragma omp task depend (inout:a00[0:ma00*na00]) \
+            #pragma omp task depend (in:ipiv[0:A.m]) \
+                             depend (inout:a00[0:ma00*na00]) \
                              depend (inout:a10[0:lda10*nva10])
             {
                 int nvan = plasma_tile_nview(A, n);
                 plasma_desc_t view = plasma_desc_view(A, 0, n*A.nb, A.m, nvan);
                 core_zgeswp(colrow, view, 1, A.m, ipiv, incx);
             }
+
+            // Create dependency of the whole panel on the individual tiles.
+            // This is mimicking multidependency on all tiles.
+            // These tasks are inserted to generate a correct DAG rather than
+            // doing any useful work.
+            for (int m = 0; m < A.mt; m++) {
+                plasma_complex64_t *amn;
+                amn = A(m, n);
+                #pragma omp task depend (in:a00[0]) \
+                                 depend (inout:amn[0])
+                {}
+            }
         }
     }
-    else {
+    else { // PlasmaColumnwise
         for (int m = 0; m < A.mt; m++) {
-            int mvam = plasma_tile_mview(A, m);
-            plasma_desc_t view = plasma_desc_view(A, m*A.mb, 0, mvam, A.n);
-            core_zgeswp(colrow, view, 1, A.n, ipiv, incx);
+            plasma_complex64_t *a00, *a01;
+
+            a00 = A(m, 0);
+            a01 = A(m, A.nt-1);
+
+            // Create dependency of the whole panel on the individual tiles.
+            // This is mimicking multidependency on all tiles.
+            // These tasks are inserted to generate a correct DAG rather than
+            // doing any useful work.
+            for (int n = 0; n < A.nt; n++) {
+                plasma_complex64_t *amn;
+                amn = A(m, n);
+                #pragma omp task depend (in:amn[0]) \
+                                 depend (inout:a00[0])
+                {}
+            }
+
+            #pragma omp task depend (in:ipiv[m*A.mb:A.mb]) \
+                             depend (inout:a00[0]) \
+                             depend (inout:a01[0])
+            {
+                int mvam = plasma_tile_mview(A, m);
+                plasma_desc_t view = plasma_desc_view(A, m*A.mb, 0, mvam, A.n);
+                core_zgeswp(colrow, view, 1, A.n, ipiv, incx);
+            }
+
+            // Create dependency of the whole panel on the individual tiles.
+            // This is mimicking multidependency on all tiles.
+            // These tasks are inserted to generate a correct DAG rather than
+            // doing any useful work.
+            for (int n = 0; n < A.nt; n++) {
+                plasma_complex64_t *amn;
+                amn = A(m, n);
+                #pragma omp task depend (in:a00[0]) \
+                                 depend (inout:amn[0])
+                {}
+            }
         }
     }
 }
