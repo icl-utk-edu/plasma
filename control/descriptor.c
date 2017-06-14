@@ -165,6 +165,12 @@ int plasma_desc_general_init(plasma_enum_t precision, void *matrix,
     A->mt = (m == 0) ? 0 : (i+m-1)/mb - i/mb + 1;
     A->nt = (n == 0) ? 0 : (j+n-1)/nb - j/nb + 1;
 
+    // band parameters
+    A->kl = m-1;
+    A->ku = n-1;
+    A->klt = A->mt;
+    A->kut = A->nt;
+
     return PlasmaSuccess;
 }
 
@@ -247,6 +253,12 @@ int plasma_desc_triangular_init(plasma_enum_t precision, plasma_enum_t uplo, voi
 
     A->mt = (m == 0) ? 0 : (i+m-1)/mb - i/mb + 1;
     A->nt = (n == 0) ? 0 : (j+n-1)/nb - j/nb + 1;
+
+    // band parameters
+    A->kl = m-1;
+    A->ku = n-1;
+    A->klt = A->mt;
+    A->kut = A->nt;
 
     return PlasmaSuccess;
 }
