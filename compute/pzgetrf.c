@@ -21,7 +21,6 @@
 #define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
 
 /******************************************************************************/
-
 void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
@@ -106,6 +105,7 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                             plasma_desc_view(A,
                                              k*A.mb, k*A.nb,
                                              A.m-k*A.mb, nvak);
+
                         core_zgetrf(view, &ipiv[k*A.mb], ib,
                                     rank, num_panel_threads,
                                     max_idx, max_val, &info,
