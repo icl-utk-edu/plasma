@@ -18,12 +18,15 @@
 
 #define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
 
-inline void insert_dummy_task(plasma_complex64_t *a_in,
-                              plasma_complex64_t *a_out)
+inline void plasma_insert_dummy_task(plasma_complex64_t *a_in,
+                                     plasma_complex64_t *a_out)
 {
-    #pragma omp task depend (in:a_in) \
-                     depend (inout:a_out)
-    {int l = 1;}
+    #pragma omp task depend (in:a_in[0]) \
+                     depend (inout:a_out[0])
+    {
+        int l = 1;
+        l++;
+    }
 }
 
 /******************************************************************************/
@@ -42,9 +45,9 @@ void plasma_pzgeswp(plasma_enum_t colrow,
             a00 = A(0, n);
             a10 = A(A.mt-1, n);
 
-            // Fake multi-dependency of the whole panel on its individual tiles.
+            // Multidependency of the whole panel on its individual tiles.
             for (int m = 1; m < A.mt-1; m++) {
-                insert_dummy_task(A(m, n), a00);
+                plasma_insert_dummy_task(A(m, n), a00);
             }
 
             int ma00 = (A.mt-1)*A.mb;
@@ -62,9 +65,9 @@ void plasma_pzgeswp(plasma_enum_t colrow,
                 core_zgeswp(colrow, view, 1, A.m, ipiv, incx);
             }
 
-            // Fake multi-dependency of individual tiles on the whole panel.
+            // Multidependency of individual tiles on the whole panel.
             for (int m = 1; m < A.mt-1; m++) {
-                insert_dummy_task(a00, A(m, n));
+                plasma_insert_dummy_task(a00, A(m, n));
             }
         }
     }
@@ -75,10 +78,9 @@ void plasma_pzgeswp(plasma_enum_t colrow,
             a00 = A(m, 0);
             a01 = A(m, A.nt-1);
 
-            // Fake multi-dependency of the whole (row) panel on its individual
-            // tiles.
+            // Multidependency of the whole (row) panel on its individual tiles.
             for (int n = 1; n < A.nt-1; n++) {
-                insert_dummy_task(A(m, n), a00);
+                plasma_insert_dummy_task(A(m, n), a00);
             }
 
             #pragma omp task depend (in:ipiv[0:A.n]) \
@@ -90,10 +92,9 @@ void plasma_pzgeswp(plasma_enum_t colrow,
                 core_zgeswp(colrow, view, 1, A.n, ipiv, incx);
             }
 
-            // Fake multi-dependency of individual tiles on the whole
-            // (row) panel.
+            // Multidependency of individual tiles on the whole (row) panel.
             for (int n = 1; n < A.nt-1; n++) {
-                insert_dummy_task(a00, A(m, n));
+                plasma_insert_dummy_task(a00, A(m, n));
             }
         }
     }

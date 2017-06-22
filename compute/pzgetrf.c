@@ -22,14 +22,19 @@
 
 /******************************************************************************/
 
-inline void insert_dummy_task(plasma_complex64_t *a_in,
-                              plasma_complex64_t *a_inout,
-                              int priority)
+inline void plasma_insert_dummy_task_with_priority(plasma_complex64_t *a_in,
+                                                   plasma_complex64_t *a_inout,
+                                                   int priority)
 {
-    #pragma omp task depend (in:a_in) \
-                     depend (inout:a_inout) \
+    #pragma omp task depend (in:a_in[0]) \
+                     depend (inout:a_inout[0]) \
                      priority(priority)
-    {int l = 1;}
+    {
+        // Do some funny work here. It appears so that the compiler might not
+        // insert the task if it is completely empty.
+        int l = 1;
+        l++;
+    }
 }
 
 void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
@@ -38,11 +43,6 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
     // Return if failed sequence.
     if (sequence->status != PlasmaSuccess)
         return;
-
-    //trace_label("OrangeRed", "getrf");
-    //trace_label("LightSteelBlue", "geswp");
-    //trace_label("DarkOliveGreen", "gemm");
-    //trace_label("Plum", "trsm");
 
     // Read parameters from the context.
     plasma_context_t *plasma = plasma_context_self();
@@ -58,12 +58,12 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
         a00 = A(k, k);
         a20 = A(A.mt-1, k);
 
-        // Create fake dependency of the whole panel on its individual tiles.
+        // Create fake dependencies of the whole panel on its individual tiles.
         // These tasks are inserted to generate a correct DAG rather than
         // doing any useful work.
-        //for (int m = k; m < A.mt; m++) {
-        //    insert_dummy_task(A(m, k), a00, 1);
-        //}
+        for (int m = k+1; m < A.mt-1; m++) {
+            plasma_insert_dummy_task_with_priority(A(m, k), a00, 1);
+        }
 
         int ma00k = (A.mt-k-1)*A.mb;
         int na00k = plasma_tile_nmain(A, k);
@@ -97,25 +97,25 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
             plasma_barrier_init(&barrier);
 
             if (sequence->status == PlasmaSuccess) {
-                //#pragma omp parallel for shared(barrier) \
-                //                         schedule(dynamic,1) \
+                // If nesting would not be expensive on architectures such as
+                // KNL, this would resolve the issue with deadlocks caused by 
+                // tasks expected to run are in fact not launched.
+                //#pragma omp parallel for shared(barrier) 
+                //                         schedule(dynamic,1) 
                 //                         num_threads(num_panel_threads)
                 #pragma omp taskloop untied shared(barrier) \
                                      num_tasks(num_panel_threads) \
-                                     priority(1)
+                                     priority(2)
                 for (int rank = 0; rank < num_panel_threads; rank++) {
-                    //#pragma omp task shared(barrier) priority(1)
                     {
                         plasma_desc_t view =
                             plasma_desc_view(A,
                                              k*A.mb, k*A.nb,
                                              A.m-k*A.mb, nvak);
-                        //trace_cpu_start();
                         core_zgetrf(view, &ipiv[k*A.mb], ib,
                                     rank, num_panel_threads,
                                     max_idx, max_val, &info,
                                     &barrier);
-                        //trace_cpu_stop("OrangeRed");
 
                         if (info != 0)
                             plasma_request_fail(sequence, request, k*A.mb+info);
@@ -131,25 +131,12 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                 ipiv[i-1] += k*A.mb;
         }
         
-        // Create dependency of the individual tiles on the whole panel.
-        // This is mimicking output multidependency of all tiles.
-        // These tasks are inserted to generate a correct DAG rather than
-        // doing any useful work.
-        //for (int m = k; m < A.mt; m++) {
-        //    insert_dummy_task(a00, A(m, k), 1);
-        //}
-
         // update
         for (int n = k+1; n < A.nt; n++) {
             plasma_complex64_t *a01, *a11, *a21;
             a01 = A(k, n);
             a11 = A(k+1, n);
             a21 = A(A.mt-1, n);
-
-            // Fake multi-dependency of the whole panel on its individual tiles.
-            //for (int m = k+1; m < A.mt; m++) {
-            //    insert_dummy_task(A(m, n), a11, n == k+1);
-            //}
 
             int ma11k = (A.mt-k-2)*A.mb;
             int na11n = plasma_tile_nmain(A, n);
@@ -171,18 +158,14 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                     int k2 = imin(k*A.mb+A.mb, A.m);
                     plasma_desc_t view =
                         plasma_desc_view(A, 0, n*A.nb, A.m, nvan);
-                    //trace_cpu_start();
                     core_zgeswp(PlasmaRowwise, view, k1, k2, ipiv, 1);
-                    //trace_cpu_stop("LightSteelBlue");
 
                     // trsm
-                    //trace_cpu_start();
                     core_ztrsm(PlasmaLeft, PlasmaLower,
                                PlasmaNoTrans, PlasmaUnit,
                                mvak, nvan,
                                1.0, A(k, k), ldak,
                                     A(k, n), ldak);
-                    //trace_cpu_stop("Plum");
                     // gemm
                     for (int m = k+1; m < A.mt; m++) {
                         int mvam = plasma_tile_mview(A, m);
@@ -190,34 +173,30 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
 
                         #pragma omp task priority(n == k+1)
                         {
-                            //trace_cpu_start();
                             core_zgemm(
                                 PlasmaNoTrans, PlasmaNoTrans,
                                 mvam, nvan, A.nb,
                                 -1.0, A(m, k), ldam,
                                       A(k, n), ldak,
                                 1.0,  A(m, n), ldam);
-                            //trace_cpu_stop("DarkOliveGreen");
                         }
                     }
                 }
                 #pragma omp taskwait
             }
-
-            // Fake multi-dependency of individual tiles on the whole panel.
-            //for (int m = k+2; m < A.mt-1; m++) {
-            //    insert_dummy_task(a11, A(m, n), n == k+1);
-            //}
         }
     }
 
-    // Fake multi-dependency of the whole ipiv on the individual chunks
+    // Multidependency of the whole ipiv on the individual chunks
     // corresponding to tiles. 
     for (int m = 0; m < minmtnt; m++) {
         // insert dummy task
         #pragma omp task depend (in:ipiv[m*A.mb]) \
                          depend (inout:ipiv[0])
-        {int l = 1;}
+        {
+            int l = 1;
+            l++;
+        }
     }
 
     // pivoting to the left
@@ -225,11 +204,6 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
         plasma_complex64_t *a00, *a20;
         a00 = A(k, k);
         a20 = A(A.mt-1, k);
-
-        // Fake multi-dependency of the whole panel on its individual tiles.
-        //for (int m = k; m < A.mt; m++) {
-        //    insert_dummy_task(A(m, k), a00, 0);
-        //}
 
         int ma00k = (A.mt-k-1)*A.mb;
         int na00k = plasma_tile_nmain(A, k);
@@ -246,15 +220,13 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                     plasma_desc_view(A, 0, k*A.nb, A.m, A.nb);
                 int k1 = (k+1)*A.mb+1;
                 int k2 = imin(A.m, A.n);
-                //trace_cpu_start();
                 core_zgeswp(PlasmaRowwise, view, k1, k2, ipiv, 1);
-                //trace_cpu_stop("LightSteelBlue");
             }
         }
 
-        // Fake multi-dependency of individual tiles on the whole panel.
+        // Multidependency of individual tiles on the whole panel.
         for (int m = k+1; m < A.mt-1; m++) {
-            insert_dummy_task(a00, A(m, k), 0);
+            plasma_insert_dummy_task_with_priority(a00, A(m, k), 0);
         }
     }
 }
