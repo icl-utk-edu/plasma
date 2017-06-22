@@ -39,6 +39,11 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
     if (sequence->status != PlasmaSuccess)
         return;
 
+    //trace_label("OrangeRed", "getrf");
+    //trace_label("LightSteelBlue", "geswp");
+    //trace_label("DarkOliveGreen", "gemm");
+    //trace_label("Plum", "trsm");
+
     // Read parameters from the context.
     plasma_context_t *plasma = plasma_context_self();
 
@@ -56,9 +61,9 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
         // Create fake dependency of the whole panel on its individual tiles.
         // These tasks are inserted to generate a correct DAG rather than
         // doing any useful work.
-        for (int m = k; m < A.mt; m++) {
-            insert_dummy_task(A(m, k), a00, 1);
-        }
+        //for (int m = k; m < A.mt; m++) {
+        //    insert_dummy_task(A(m, k), a00, 1);
+        //}
 
         int ma00k = (A.mt-k-1)*A.mb;
         int na00k = plasma_tile_nmain(A, k);
@@ -105,11 +110,12 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                             plasma_desc_view(A,
                                              k*A.mb, k*A.nb,
                                              A.m-k*A.mb, nvak);
-
+                        //trace_cpu_start();
                         core_zgetrf(view, &ipiv[k*A.mb], ib,
                                     rank, num_panel_threads,
                                     max_idx, max_val, &info,
                                     &barrier);
+                        //trace_cpu_stop("OrangeRed");
 
                         if (info != 0)
                             plasma_request_fail(sequence, request, k*A.mb+info);
@@ -165,14 +171,18 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                     int k2 = imin(k*A.mb+A.mb, A.m);
                     plasma_desc_t view =
                         plasma_desc_view(A, 0, n*A.nb, A.m, nvan);
+                    //trace_cpu_start();
                     core_zgeswp(PlasmaRowwise, view, k1, k2, ipiv, 1);
+                    //trace_cpu_stop("LightSteelBlue");
 
                     // trsm
+                    //trace_cpu_start();
                     core_ztrsm(PlasmaLeft, PlasmaLower,
                                PlasmaNoTrans, PlasmaUnit,
                                mvak, nvan,
                                1.0, A(k, k), ldak,
                                     A(k, n), ldak);
+                    //trace_cpu_stop("Plum");
                     // gemm
                     for (int m = k+1; m < A.mt; m++) {
                         int mvam = plasma_tile_mview(A, m);
@@ -180,12 +190,14 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
 
                         #pragma omp task priority(n == k+1)
                         {
+                            //trace_cpu_start();
                             core_zgemm(
                                 PlasmaNoTrans, PlasmaNoTrans,
                                 mvam, nvan, A.nb,
                                 -1.0, A(m, k), ldam,
                                       A(k, n), ldak,
                                 1.0,  A(m, n), ldam);
+                            //trace_cpu_stop("DarkOliveGreen");
                         }
                     }
                 }
@@ -193,9 +205,9 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
             }
 
             // Fake multi-dependency of individual tiles on the whole panel.
-            for (int m = k+2; m < A.mt-1; m++) {
-                insert_dummy_task(a11, A(m, n), n == k+1);
-            }
+            //for (int m = k+2; m < A.mt-1; m++) {
+            //    insert_dummy_task(a11, A(m, n), n == k+1);
+            //}
         }
     }
 
@@ -234,7 +246,9 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                     plasma_desc_view(A, 0, k*A.nb, A.m, A.nb);
                 int k1 = (k+1)*A.mb+1;
                 int k2 = imin(A.m, A.n);
+                //trace_cpu_start();
                 core_zgeswp(PlasmaRowwise, view, k1, k2, ipiv, 1);
+                //trace_cpu_stop("LightSteelBlue");
             }
         }
 
