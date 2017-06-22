@@ -132,6 +132,15 @@ int plasma_zhesv(plasma_enum_t uplo, int n, int nrhs,
     // Set tiling parameters.
     int nb = plasma->nb;
 
+    // Adjust max number of panel threads
+    int max_panel_threads_gbtrf = 1;
+    int max_panel_threads_hetrf = 1;
+    if (plasma->max_panel_threads > 3) {
+        max_panel_threads_gbtrf = 2;
+    }
+    max_panel_threads_hetrf = imax(1, plasma->max_panel_threads - max_panel_threads_gbtrf);
+    plasma->max_panel_threads  = max_panel_threads_hetrf;
+
     // Initialize barrier.
     plasma_barrier_init(&plasma->barrier);
 
@@ -145,8 +154,8 @@ int plasma_zhesv(plasma_enum_t uplo, int n, int nrhs,
                                // this could fill the last tile of the panel,
                                // and we need extra NB space on the bottom
     int retval;
-    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        n, n, 0, 0, n, n, &A);
+    retval = plasma_desc_triangular_create(PlasmaComplexDouble, uplo, nb, nb,
+                                           n, n, 0, 0, n, n, &A);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
@@ -168,7 +177,8 @@ int plasma_zhesv(plasma_enum_t uplo, int n, int nrhs,
 
     // Create workspace.
     plasma_desc_t W;
-    int ldw = (1+5*A.mt)*nb; /* block column */
+    int tot = 3;
+    int ldw = (1+(4+tot)*A.mt)*nb; // block column
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
                                         ldw, nb, 0, 0, ldw, nb, &W);
     if (retval != PlasmaSuccess) {
@@ -186,6 +196,7 @@ int plasma_zhesv(plasma_enum_t uplo, int n, int nrhs,
 
     // Initialize data.
     memset(T.matrix, 0, ldt*n*sizeof(plasma_complex64_t));
+    memset(W.matrix, 0, ldw*nb*sizeof(plasma_complex64_t));
     for (int i = 0; i < nb; i++) ipiv[i] = 1+i;
 
     // asynchronous block
@@ -193,10 +204,11 @@ int plasma_zhesv(plasma_enum_t uplo, int n, int nrhs,
     #pragma omp master
     {
         // Translate to tile layout.
-        plasma_omp_zge2desc(pA, lda, A, &sequence, &request);
+        plasma_omp_ztr2desc(pA, lda, A, &sequence, &request);
         plasma_omp_zpb2desc(pT, ldt, T, &sequence, &request);
         plasma_omp_zge2desc(pB, ldb, B, &sequence, &request);
     }
+    // implicit synchronization
 
     #pragma omp parallel
     #pragma omp master
@@ -204,6 +216,7 @@ int plasma_zhesv(plasma_enum_t uplo, int n, int nrhs,
         // Call the tile async function.
         plasma_omp_zhesv(uplo, A, ipiv, T, ipiv2, B, W, &sequence, &request);
     }
+    // implicit synchronization
 
     #pragma omp parallel
     #pragma omp master
@@ -328,6 +341,8 @@ void plasma_omp_zhesv(plasma_enum_t uplo,
     // Call the parallel functions.
     plasma_pzhetrf_aasen(uplo, A, ipiv, T, W, sequence, request);
     plasma_pzgbtrf(T, ipiv2, sequence, request);
+    // dependency on ipiv
+    #pragma omp taskwait
     if (uplo == PlasmaLower) {
         plasma_desc_t vA;
         plasma_desc_t vB;

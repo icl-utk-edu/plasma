@@ -141,8 +141,8 @@ int plasma_zhetrs(plasma_enum_t uplo, int n, int nrhs,
                                // this could fill the last tile of the panel,
                                // and we need extra NB space on the bottom
     int retval;
-    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        n, n, 0, 0, n, n, &A);
+    retval = plasma_desc_triangular_create(PlasmaComplexDouble, uplo, nb, nb,
+                                           n, n, 0, 0, n, n, &A);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
@@ -175,7 +175,7 @@ int plasma_zhetrs(plasma_enum_t uplo, int n, int nrhs,
     #pragma omp master
     {
         // Translate to tile layout.
-        plasma_omp_zge2desc(pA, lda, A, &sequence, &request);
+        plasma_omp_ztr2desc(pA, lda, A, &sequence, &request);
         plasma_omp_zpb2desc(pT, ldt, T, &sequence, &request);
         plasma_omp_zge2desc(pB, ldb, B, &sequence, &request);
     }

@@ -108,7 +108,7 @@ void test_zgeinv(param_value_t param[], bool run)
     plasma_time_t time = stop-start;
 
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = (flops_zgetrf(m, n) + flops_ztrtri(n) + flops_zlauum(n)) / time / 1e9;
+    param[PARAM_GFLOPS].d = (flops_zgetrf(m, n) + flops_zgetri(n)) / time / 1e9;
 
     //================================================================
     // Test results by checking the relative error

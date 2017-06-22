@@ -9,6 +9,7 @@
  * @precisions normal z -> c d s
  *
  **/
+#include <math.h>
 
 #include "core_blas.h"
 #include "plasma_types.h"
@@ -53,8 +54,9 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-void core_zheswp(int uplo, plasma_desc_t A, int k1, int k2, const int *ipiv,
-                 int incx)
+void core_zheswp(int rank, int num_threads,
+                 int uplo, plasma_desc_t A, int k1, int k2, const int *ipiv,
+                 int incx, plasma_barrier_t *barrier)
 {
     if (uplo == PlasmaLower) {
         if (incx > 0) {
@@ -79,7 +81,7 @@ void core_zheswp(int uplo, plasma_desc_t A, int k1, int k2, const int *ipiv,
                     int lda2p1 = plasma_tile_mmain(A, m2p1);
 
                     // swap rows of previous column (assuming (k1,k2) stay within a tile)
-                    if (i > k1-1) {
+                    if (i > k1-1 && rank == 0) {
                         cblas_zswap(i-(k1-1),
                                     A(m1, m1) + i1, lda1,
                                     A(m2, m1) + i2, lda2);
@@ -87,13 +89,16 @@ void core_zheswp(int uplo, plasma_desc_t A, int k1, int k2, const int *ipiv,
 
                     // swap columns p1 and p2
                     int mvam = plasma_tile_mview(A, m2p1);
-                    if (mvam > i2+1) {
+                    if (mvam > i2+1 && rank == 1%num_threads) {
                         // between first tiles A(p2,p1) and A(p2,p2)
                         cblas_zswap(mvam-(i2+1),
                                     A(m2p1, m1) + i2p1 + i1*lda2p1, 1,
                                     A(m2p1, m2) + i2p1 + i2*lda2p1, 1);
                     }
-                    for (int k = m2+1; k < A.mt; k++) {
+                    int ell = ceil(((double)A.mt - (m1+1))/((double)num_threads));
+                    int k_start = m1+1 + rank*ell;
+                    int k_end   = imin(k_start+ell, A.mt);
+                    for (int k = imax(m2+1, k_start); k < k_end; k++) {
                         int mvak = plasma_tile_mview(A, k);
                         int ldak = plasma_tile_mmain(A, k);
                         cblas_zswap(mvak,
@@ -103,7 +108,7 @@ void core_zheswp(int uplo, plasma_desc_t A, int k1, int k2, const int *ipiv,
 
                     // sym swap
                     mvam = plasma_tile_mview(A, m1);
-                    if (imin(mvam,p2-(k1-1)) > i1+1) {
+                    if (imin(mvam,p2-(k1-1)) > i1+1 && rank == 2%num_threads) {
                         #ifdef COMPLEX
                         LAPACKE_zlacgv_work(imin(mvam,p2-(k1-1))-(i1+1), A(m1p1, m1) + i1p1 + i1*lda1p1, 1);
                         LAPACKE_zlacgv_work(imin(mvam,p2-(k1-1))-(i1+1), A(m2, m1p1) + i2 + i1p1*lda2, lda2);
@@ -112,7 +117,7 @@ void core_zheswp(int uplo, plasma_desc_t A, int k1, int k2, const int *ipiv,
                                     A(m1p1, m1) + i1p1 + i1*lda1p1, 1,
                                     A(m2, m1p1) + i2 + i1p1*lda2, lda2);
                     }
-                    for (int k = m1+1; k <= m2; k++) {
+                    for (int k = k_start; k <= imin(k_end-1, m2); k++) {
                         int mvak = plasma_tile_mview(A, k);
                         int ldak = plasma_tile_mmain(A, k);
                         #ifdef COMPLEX
@@ -123,15 +128,19 @@ void core_zheswp(int uplo, plasma_desc_t A, int k1, int k2, const int *ipiv,
                                     A(k, m1) +  i1*ldak, 1,
                                     A(m2, k) +  i2, lda2);
                     }
-                    #ifdef COMPLEX
-                    LAPACKE_zlacgv_work(1, A(m2, m1) +  i2 + i1*lda2, 1);
-                    #endif
 
-                    // swap diagonal
-                    cblas_zswap(1,
-                                A(m1, m1) + i1 + i1*lda1, lda1,
-                                A(m2, m2) + i2 + i2*lda2, lda2);
+                    if (rank == 3%num_threads) {
+                        #ifdef COMPLEX
+                        LAPACKE_zlacgv_work(1, A(m2, m1) +  i2 + i1*lda2, 1);
+                        #endif
+
+                        // swap diagonal
+                        cblas_zswap(1,
+                                    A(m1, m1) + i1 + i1*lda1, lda1,
+                                    A(m2, m2) + i2 + i2*lda2, lda2);
+                    }
                 }
+                plasma_barrier_wait(barrier, num_threads);
             }
         }
     }

@@ -46,6 +46,7 @@ void test_zhetrf(param_value_t param[], bool run)
     param[PARAM_PADA   ].used = true;
     param[PARAM_NRHS   ].used = true;
     param[PARAM_NB     ].used = true;
+    param[PARAM_IB     ].used = true;
     param[PARAM_MTPF   ].used = true;
     param[PARAM_ZEROCOL].used = true;
     if (! run)

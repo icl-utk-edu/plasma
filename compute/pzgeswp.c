@@ -18,17 +18,6 @@
 
 #define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
 
-inline void plasma_insert_dummy_task(plasma_complex64_t *a_in,
-                                     plasma_complex64_t *a_out)
-{
-    #pragma omp task depend (in:a_in[0]) \
-                     depend (inout:a_out[0])
-    {
-        int l = 1;
-        l++;
-    }
-}
-
 /******************************************************************************/
 void plasma_pzgeswp(plasma_enum_t colrow,
                     plasma_desc_t A, int *ipiv, int incx,
@@ -47,7 +36,13 @@ void plasma_pzgeswp(plasma_enum_t colrow,
 
             // Multidependency of the whole panel on its individual tiles.
             for (int m = 1; m < A.mt-1; m++) {
-                plasma_insert_dummy_task(A(m, n), a00);
+                plasma_complex64_t *amn = A(m, n);
+                #pragma omp task depend (in:amn[0]) \
+                                 depend (inout:a00[0])
+                {
+                    int l = 1;
+                    l++;
+                }
             }
 
             int ma00 = (A.mt-1)*A.mb;
@@ -67,7 +62,13 @@ void plasma_pzgeswp(plasma_enum_t colrow,
 
             // Multidependency of individual tiles on the whole panel.
             for (int m = 1; m < A.mt-1; m++) {
-                plasma_insert_dummy_task(a00, A(m, n));
+                plasma_complex64_t *amn = A(m, n);
+                #pragma omp task depend (in:a00[0]) \
+                                 depend (inout:amn[0])
+                {
+                    int l = 1;
+                    l++;
+                }
             }
         }
     }
@@ -80,7 +81,13 @@ void plasma_pzgeswp(plasma_enum_t colrow,
 
             // Multidependency of the whole (row) panel on its individual tiles.
             for (int n = 1; n < A.nt-1; n++) {
-                plasma_insert_dummy_task(A(m, n), a00);
+                plasma_complex64_t *amn = A(m, n);
+                #pragma omp task depend (in:amn[0]) \
+                                 depend (inout:a00[0])
+                {
+                    int l = 1;
+                    l++;
+                }
             }
 
             #pragma omp task depend (in:ipiv[0:A.n]) \
@@ -94,7 +101,13 @@ void plasma_pzgeswp(plasma_enum_t colrow,
 
             // Multidependency of individual tiles on the whole (row) panel.
             for (int n = 1; n < A.nt-1; n++) {
-                plasma_insert_dummy_task(a00, A(m, n));
+                plasma_complex64_t *amn = A(m, n);
+                #pragma omp task depend (in:a00[0]) \
+                                 depend (inout:amn[0])
+                {
+                    int l = 1;
+                    l++;
+                }
             }
         }
     }

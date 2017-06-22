@@ -143,8 +143,9 @@ void core_zlaset(plasma_enum_t uplo,
 void core_zgeswp(plasma_enum_t colrow,
                  plasma_desc_t A, int k1, int k2, const int *ipiv, int incx);
 
-void core_zheswp(int uplo, plasma_desc_t A, int k1, int k2, const int *ipiv,
-                 int incx);
+void core_zheswp(int rank, int num_threads,
+                 int uplo, plasma_desc_t A, int k1, int k2, const int *ipiv,
+                 int incx, plasma_barrier_t *barrier);
 
 int core_zlauum(plasma_enum_t uplo,
                 int n,

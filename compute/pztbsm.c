@@ -43,7 +43,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                 // ==========================================
                 for (int k = 0; k < B.mt; k++) {
                     int mvbk = plasma_tile_mview(B, B.mt-k-1);
-                    int ldak = plasma_tile_mmain_band(A, B.mt-k-1, B.mt-k-1);
+                    int ldak = plasma_tile_mmain(A, B.mt-k-1);
                     int ldbk = plasma_tile_mmain(B, B.mt-k-1);
                     plasma_complex64_t lalpha = k == 0 ? alpha : 1.0;
                     for (int n = 0; n < B.nt; n++) {
@@ -56,7 +56,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                             sequence, request);
                     }
                     for (int m = imax(0, (B.mt-k-1)-A.kut+1); m < B.mt-k-1; m++) {
-                        int ldam = plasma_tile_mmain_band(A, m, B.mt-k-1);
+                        int ldam = plasma_tile_mmain(A, m);
                         int ldbm = plasma_tile_mmain(B, m);
                         for (int n = 0; n < B.nt; n++) {
                             int nvbn = plasma_tile_nview(B, n);
@@ -77,7 +77,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                 // ==============================================
                 for (int k = 0; k < B.mt; k++) {
                     int mvbk = plasma_tile_mview(B, k);
-                    int ldak = plasma_tile_mmain_band(A, k, k);
+                    int ldak = plasma_tile_mmain(A, k);
                     int ldbk = plasma_tile_mmain(B, k);
                     plasma_complex64_t lalpha = k == 0 ? alpha : 1.0;
                     for (int n = 0; n < B.nt; n++) {
@@ -91,14 +91,13 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                     }
                     for (int m = k+1; m < imin(A.mt, k+A.kut); m++) {
                         int mvbm = plasma_tile_mview(B, m);
-                        int ldam = plasma_tile_mmain_band(A, k, m);
                         int ldbm = plasma_tile_mmain(B, m);
                         for (int n = 0; n < B.nt; n++) {
                             int nvbn = plasma_tile_nview(B, n);
                             core_omp_zgemm(
                                 trans, PlasmaNoTrans,
                                 mvbm, nvbn, B.mb,
-                                -1.0,   A(k, m), ldam,
+                                -1.0,   A(k, m), ldak,
                                         B(k, n), ldbk,
                                 lalpha, B(m, n), ldbm,
                                 sequence, request);
@@ -114,7 +113,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                 // ==========================================
                 for (int k = 0; k < B.mt; k++) {
                     int mvbk = plasma_tile_mview(B, k);
-                    int ldak = plasma_tile_mmain_band(A, k, k);
+                    int ldak = plasma_tile_mmain(A, k);
                     int ldbk = plasma_tile_mmain(B, k);
                     plasma_complex64_t lalpha = k == 0 ? alpha : 1.0;
                     for (int n = 0; n < B.nt; n++) {
@@ -139,7 +138,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                     }
                     for (int m = k+1; m < imin(k+A.klt, A.mt); m++) {
                         int mvbm = plasma_tile_mview(B, m);
-                        int ldam = plasma_tile_mmain_band(A, m, k);
+                        int ldam = plasma_tile_mmain(A, m);
                         int ldbm = plasma_tile_mmain(B, m);
                         for (int n = 0; n < B.nt; n++) {
                             int nvbn = plasma_tile_nview(B, n);
@@ -160,12 +159,12 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                 // ==============================================
                 for (int k = 0; k < B.mt; k++) {
                     int mvbk = plasma_tile_mview(B, B.mt-k-1);
-                    int ldak = plasma_tile_mmain_band(A, B.mt-k-1, B.mt-k-1);
+                    int ldak = plasma_tile_mmain(A, B.mt-k-1);
                     int ldbk = plasma_tile_mmain(B, B.mt-k-1);
                     plasma_complex64_t lalpha = k == 0 ? alpha : 1.0;
                     for (int m = (B.mt-k-1)+1; m < imin((B.mt-k-1)+A.klt, A.mt); m++) {
                         int mvbm = plasma_tile_mview(B, m);
-                        int ldam = plasma_tile_mmain_band(A, m, B.mt-k-1);
+                        int ldam = plasma_tile_mmain(A, m);
                         int ldbm = plasma_tile_mmain(B, m);
                         for (int n = 0; n < B.nt; n++) {
                             int nvbn = plasma_tile_nview(B, n);

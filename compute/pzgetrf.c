@@ -22,21 +22,6 @@
 
 /******************************************************************************/
 
-inline void plasma_insert_dummy_task_with_priority(plasma_complex64_t *a_in,
-                                                   plasma_complex64_t *a_inout,
-                                                   int priority)
-{
-    #pragma omp task depend (in:a_in[0]) \
-                     depend (inout:a_inout[0]) \
-                     priority(priority)
-    {
-        // Do some funny work here. It appears so that the compiler might not
-        // insert the task if it is completely empty.
-        int l = 1;
-        l++;
-    }
-}
-
 void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
@@ -62,7 +47,16 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
         // These tasks are inserted to generate a correct DAG rather than
         // doing any useful work.
         for (int m = k+1; m < A.mt-1; m++) {
-            plasma_insert_dummy_task_with_priority(A(m, k), a00, 1);
+            plasma_complex64_t *amk = A(m, k);
+            #pragma omp task depend (in:amk[0]) \
+                             depend (inout:a00[0]) \
+                             priority(1)
+            {
+                // Do some funny work here. It appears so that the compiler
+                // might not insert the task if it is completely empty.
+                int l = 1;
+                l++;
+            }
         }
 
         int ma00k = (A.mt-k-1)*A.mb;
@@ -226,7 +220,15 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
 
         // Multidependency of individual tiles on the whole panel.
         for (int m = k+1; m < A.mt-1; m++) {
-            plasma_insert_dummy_task_with_priority(a00, A(m, k), 0);
+            plasma_complex64_t *amk = A(m, k);
+            #pragma omp task depend (in:a00[0]) \
+                             depend (inout:amk[0])
+            {
+                // Do some funny work here. It appears so that the compiler
+                // might not insert the task if it is completely empty.
+                int l = 1;
+                l++;
+            }
         }
     }
 }

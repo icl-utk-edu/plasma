@@ -101,7 +101,7 @@ void plasma_pzherk(plasma_enum_t uplo, plasma_enum_t trans,
                    double beta,  plasma_desc_t C,
                    plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_pzhetrf_aasen(plasma_enum_t uplo, 
+void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                           plasma_desc_t A, int *ipiv,
                           plasma_desc_t T,
                           plasma_desc_t W,

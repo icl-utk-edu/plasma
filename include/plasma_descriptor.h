@@ -181,10 +181,14 @@ static inline void *plasma_tile_addr(plasma_desc_t A, int m, int n)
  */
 static inline int plasma_tile_mmain(plasma_desc_t A, int k)
 {
-    if (A.i/A.mb+k < A.gm/A.mb)
+    if (A.type == PlasmaGeneralBand) {
         return A.mb;
-    else
-        return A.gm%A.mb;
+    } else {
+        if (A.i/A.mb+k < A.gm/A.mb)
+            return A.mb;
+        else
+            return A.gm%A.mb;
+    }
 }
 
 /***************************************************************************//**
