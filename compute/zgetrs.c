@@ -95,18 +95,10 @@ int plasma_zgetrs(int n, int nrhs,
         // Translate to tile layout.
         plasma_omp_zge2desc(pA, lda, A, &sequence, &request);
         plasma_omp_zge2desc(pB, ldb, B, &sequence, &request);
-    }
 
-    #pragma omp parallel
-    #pragma omp master
-    {
         // Call the tile async function.
         plasma_omp_zgetrs(A, ipiv, B, &sequence, &request);
-    }
 
-    #pragma omp parallel
-    #pragma omp master
-    {
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(B, pB, ldb, &sequence, &request);
     }

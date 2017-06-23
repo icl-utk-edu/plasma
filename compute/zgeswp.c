@@ -86,7 +86,6 @@ int plasma_zgeswp(plasma_enum_t colrow,
         plasma_omp_zge2desc(pA, lda, A, &sequence, &request);
 
         // Call tile async function.
-        #pragma omp taskwait
         plasma_omp_zgeswp(colrow, A, ipiv, incx, &sequence, &request);
 
         // Translate back to LAPACK layout.
