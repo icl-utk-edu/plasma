@@ -449,7 +449,7 @@ void plasma_tree_block_greedy(int mt, int nt,
 {
     // Multiple of the target concurrency to set sizes of the flat tree in
     // each column.
-    static const int gamma = 4;
+    static const int gamma = 2;
 
     // costant block size
     //int bs = 4;
@@ -533,7 +533,6 @@ void plasma_tree_block_greedy(int mt, int nt,
             // Eliminate every tile triangularized in the previous step.
             int batch = (NT[j] - NZ[j]) / 2; // intentional integer division
             nZnew = NZ[j] + batch;
-            int skipped = 0;
             for (int kk = NZ[j]; kk < nZnew; kk++) {
                 // row index of a tile to be zeroed
                 int pmkk    = get_super_tiles(mt-j, bs)-kk-1;
