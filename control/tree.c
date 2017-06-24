@@ -30,7 +30,8 @@ void plasma_tree_auto_forest(int mt, int nt,
                              int concurrency);
 
 void plasma_tree_block_greedy(int mt, int nt,
-                              int **operations, int *num_operations);
+                              int **operations, int *num_operations,
+                              int concurrency);
 
 /***************************************************************************//**
  *  Routine for precomputing a given order of operations for tile
@@ -57,11 +58,11 @@ void plasma_tree_operations(int mt, int nt,
     //plasma_tree_greedy(mt, nt, operations, num_operations);
 
     // Binary forest of flat trees.
-    //int ncores = omp_get_num_threads();
+    int ncores = omp_get_num_threads();
     //plasma_tree_auto_forest(mt, nt, operations, num_operations, ncores);
     
     // Block greedy tree
-    plasma_tree_block_greedy(mt, nt, operations, num_operations);
+    plasma_tree_block_greedy(mt, nt, operations, num_operations, ncores);
 }
 
 /***************************************************************************//**
@@ -443,16 +444,25 @@ void plasma_tree_auto_forest(int mt, int nt,
  * @see plasma_omp_zgeqrf
  **/
 void plasma_tree_block_greedy(int mt, int nt,
-                              int **operations, int *num_operations)
+                              int **operations, int *num_operations,
+                              int concurrency)
 {
-    int bs = 4;
+    // Multiple of the target concurrency to set sizes of the flat tree in
+    // each column.
+    static const int gamma = 4;
+
+    // costant block size
+    //int bs = 4;
+    // adaptive block size
+    int bs = imax( mt * nt / (gamma * concurrency), 1);
+    //printf("Block size %d \n", bs);
 
     // How many columns to involve?
     int minnt = imin(mt, nt);
 
     // Tiles above diagonal are not triangularized.
-    size_t num_triangularized_tiles  = (mt/bs+1)*minnt
-                                     - (minnt/bs)*(minnt-1)/2;
+    size_t num_triangularized_tiles  = mt*minnt
+                                     - minnt*(minnt-1)/2;
     // Tiles on diagonal and above are not anihilated.
     size_t num_anihilated_tiles      = mt*minnt - (minnt+1)*minnt/2;
 
