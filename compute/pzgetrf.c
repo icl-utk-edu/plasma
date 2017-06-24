@@ -34,10 +34,29 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
     // Set tiling parameters.
     int ib = plasma->ib;
 
-    for (int k = 0; k < imin(A.mt, A.nt); k++) {
+    int minmtnt = imin(A.mt, A.nt);
+
+    for (int k = 0; k < minmtnt; k++) {
+
         plasma_complex64_t *a00, *a20;
         a00 = A(k, k);
         a20 = A(A.mt-1, k);
+
+        // Create fake dependencies of the whole panel on its individual tiles.
+        // These tasks are inserted to generate a correct DAG rather than
+        // doing any useful work.
+        for (int m = k+1; m < A.mt-1; m++) {
+            plasma_complex64_t *amk = A(m, k);
+            #pragma omp task depend (in:amk[0]) \
+                             depend (inout:a00[0]) \
+                             priority(1)
+            {
+                // Do some funny work here. It appears so that the compiler
+                // might not insert the task if it is completely empty.
+                int l = 1;
+                l++;
+            }
+        }
 
         int ma00k = (A.mt-k-1)*A.mb;
         int na00k = plasma_tile_nmain(A, k);
@@ -48,7 +67,7 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
         int ldak = plasma_tile_mmain(A, k);
 
         int num_panel_threads = imin(plasma->max_panel_threads,
-                                     imin(A.mt, A.nt)-k);
+                                     minmtnt-k);
         // panel
         #pragma omp task depend(inout:a00[0:ma00k*na00k]) \
                          depend(inout:a20[0:lda20*nvak]) \
@@ -71,8 +90,16 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
             plasma_barrier_init(&barrier);
 
             if (sequence->status == PlasmaSuccess) {
+                // If nesting would not be expensive on architectures such as
+                // KNL, this would resolve the issue with deadlocks caused by 
+                // tasks expected to run are in fact not launched.
+                //#pragma omp parallel for shared(barrier) 
+                //                         schedule(dynamic,1) 
+                //                         num_threads(num_panel_threads)
+                #pragma omp taskloop untied shared(barrier) \
+                                     num_tasks(num_panel_threads) \
+                                     priority(2)
                 for (int rank = 0; rank < num_panel_threads; rank++) {
-                    #pragma omp task shared(barrier) priority(1)
                     {
                         plasma_desc_t view =
                             plasma_desc_view(A,
@@ -97,6 +124,7 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
             for (int i = k*A.mb+1; i <= imin(A.m, k*A.mb+nvak); i++)
                 ipiv[i-1] += k*A.mb;
         }
+        
         // update
         for (int n = k+1; n < A.nt; n++) {
             plasma_complex64_t *a01, *a11, *a21;
@@ -152,22 +180,54 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
             }
         }
     }
-    // pivoting to the left
-    for (int k = 1; k < imin(A.mt, A.nt); k++) {
-        plasma_complex64_t *akk;
-        akk = A(k-1, k-1);
-        int makk = (A.mt-k-1)*A.mb;
-        int nakk = plasma_tile_nmain(A, k);
 
-        #pragma omp task depend(in:ipiv[(imin(A.mt, A.nt)-1)*A.mb]) \
-                         depend(inout:akk[0:makk*nakk])
+    // Multidependency of the whole ipiv on the individual chunks
+    // corresponding to tiles. 
+    for (int m = 0; m < minmtnt; m++) {
+        // insert dummy task
+        #pragma omp task depend (in:ipiv[m*A.mb]) \
+                         depend (inout:ipiv[0])
+        {
+            int l = 1;
+            l++;
+        }
+    }
+
+    // pivoting to the left
+    for (int k = 0; k < minmtnt-1; k++) {
+        plasma_complex64_t *a00, *a20;
+        a00 = A(k, k);
+        a20 = A(A.mt-1, k);
+
+        int ma00k = (A.mt-k-1)*A.mb;
+        int na00k = plasma_tile_nmain(A, k);
+        int lda20 = plasma_tile_mmain(A, A.mt-1);
+
+        int nvak = plasma_tile_nview(A, k);
+
+        #pragma omp task depend(in:ipiv[0:imin(A.m,A.n)]) \
+                         depend(inout:a00[0:ma00k*na00k]) \
+                         depend(inout:a20[0:lda20*nvak])
         {
             if (sequence->status == PlasmaSuccess) {
                 plasma_desc_t view =
-                    plasma_desc_view(A, 0, (k-1)*A.nb, A.m, A.nb);
-                int k1 = k*A.mb+1;
+                    plasma_desc_view(A, 0, k*A.nb, A.m, A.nb);
+                int k1 = (k+1)*A.mb+1;
                 int k2 = imin(A.m, A.n);
                 core_zgeswp(PlasmaRowwise, view, k1, k2, ipiv, 1);
+            }
+        }
+
+        // Multidependency of individual tiles on the whole panel.
+        for (int m = k+1; m < A.mt-1; m++) {
+            plasma_complex64_t *amk = A(m, k);
+            #pragma omp task depend (in:a00[0]) \
+                             depend (inout:amk[0])
+            {
+                // Do some funny work here. It appears so that the compiler
+                // might not insert the task if it is completely empty.
+                int l = 1;
+                l++;
             }
         }
     }

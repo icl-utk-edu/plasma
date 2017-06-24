@@ -234,7 +234,7 @@ static void trace_finish()
                 trace_file,
                 "<rect x=\"%lf\" y=\"%lf\" width=\"%lf\" height=\"%lf\" "
                 "fill=\"#%06x\" stroke=\"#000000\" stroke-width=\"0.2\" "
-                "inkscape:label=\"%s\"/>\n",
+                "label=\"%s\"/>\n",
                 start * hscale,
                 thread * vscale,
                 (stop-start) * hscale,

@@ -228,54 +228,6 @@ int plasma_zcgesv(int n, int nrhs,
     plasma_barrier_init(&plasma->barrier);
 
     // asynchronous block
-#define PLASMA_ZCGESV_WORKAROUND
-#if defined(PLASMA_ZCGESV_WORKAROUND)
-    #pragma omp parallel
-    #pragma omp master
-    {
-        // Translate matrices to tile layout.
-        plasma_omp_zge2desc(pA, lda, A, &sequence, &request);
-        plasma_omp_zge2desc(pB, ldb, B, &sequence, &request);
-        // Convert B from double to single precision, store result in Xs.
-        plasma_omp_zlag2c(B, Xs, &sequence, &request);
-        // Convert A from double to single precision, store result in As.
-        plasma_omp_zlag2c(A, As, &sequence, &request);
-    }
-    #pragma omp parallel
-    #pragma omp master
-    {
-        // Factor A in single precision.
-        plasma_omp_cgetrf(As, ipiv, &sequence, &request);
-    }
-    #pragma omp parallel
-    #pragma omp master
-    {
-        // Run mixed-precision iterative refinement.
-        plasma_omp_zcgesv(A, ipiv, B, X, As, Xs, R, work, Rnorm, Xnorm, iter,
-                          &sequence, &request);
-    }
-    const int itermax = 30;
-    if (*iter == -itermax-1) {
-        // iterative refinement faild: fall back on standard solver.
-        #pragma omp parallel
-        #pragma omp master
-        {
-            plasma_omp_zgetrf(A, ipiv, &sequence, &request);
-            plasma_omp_zlacpy(PlasmaGeneral, PlasmaNoTrans, B, X, &sequence, &request);
-        }
-        #pragma omp parallel
-        #pragma omp master
-        {
-            plasma_omp_zgetrs(A, ipiv, X, &sequence, &request);
-        }
-    }
-    #pragma omp parallel
-    #pragma omp master
-    {
-        // Translate back to LAPACK layout.
-        plasma_omp_zdesc2ge(X, pX, ldx, &sequence, &request);
-    }
-#else
     #pragma omp parallel
     #pragma omp master
     {
@@ -290,7 +242,6 @@ int plasma_zcgesv(int n, int nrhs,
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(X, pX, ldx, &sequence, &request);
     }
-#endif
     // implicit synchronization
 
     // Free matrices in tile layout.
@@ -458,7 +409,6 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
     double Anorm;
     plasma_pzlange(PlasmaInfNorm, A, work, &Anorm, sequence, request);
 
-#if !defined(PLASMA_ZCGESV_WORKAROUND)
     // Convert B from double to single precision, store result in Xs.
     plasma_pzlag2c(B, Xs, sequence, request);
 
@@ -466,10 +416,9 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
     plasma_pzlag2c(A, As, sequence, request);
 
     // Compute the LU factorization of As.
-    #pragma omp taskwait
+    //#pragma omp taskwait
     plasma_pcgetrf(As, ipiv, sequence, request);
-    #pragma omp taskwait
-#endif
+    //#pragma omp taskwait
 
     // Solve the system As * Xs = Bs.
     plasma_pcgeswp(PlasmaRowwise, Xs, ipiv, 1, sequence, request);
@@ -513,7 +462,7 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
         plasma_pzlag2c(R, Xs, sequence, request);
 
         // Solve the system As * Xs = Rs.
-        #pragma omp taskwait
+        //#pragma omp taskwait
         plasma_pcgeswp(PlasmaRowwise, Xs, ipiv, 1, sequence, request);
 
         plasma_pctrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
@@ -556,15 +505,15 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
     // routine.
     *iter = -itermax - 1;
 
-#if !defined(PLASMA_ZCGESV_WORKAROUND)
+//#if !defined(PLASMA_ZCGESV_WORKAROUND)
     // Compute LU factorization of A.
-    #pragma omp taskwait
+    //#pragma omp taskwait
     plasma_pzgetrf(A, ipiv, sequence, request);
 
     // Solve the system A * X = B.
     plasma_pzlacpy(PlasmaGeneral, PlasmaNoTrans, B, X, sequence, request);
 
-    #pragma omp taskwait
+    //#pragma omp taskwait
     plasma_pzgeswp(PlasmaRowwise, X, ipiv, 1, sequence, request);
 
     plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
@@ -572,5 +521,5 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
 
     plasma_pztrsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans, PlasmaNonUnit,
                   1.0, A, X, sequence, request);
-#endif
+//#endif
 }

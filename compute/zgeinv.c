@@ -128,27 +128,13 @@ int plasma_zgeinv(int m, int n, plasma_complex64_t *pA, int lda, int *ipiv)
     {
         // Translate to tile layout.
         plasma_omp_zge2desc(pA, lda, A, &sequence, &request);
-    }
 
-    #pragma omp parallel
-    #pragma omp master
-    {
         // Call the tile async function.
         plasma_omp_zgeinv(A, ipiv, W, &sequence, &request);
-    }
-// TODO: a workaround to avoid deadlock
-#if 1
-    #pragma omp parallel
-    #pragma omp master
-    {
+
         // Call the tile async function.
         plasma_omp_zgeswp(PlasmaColumnwise, A, ipiv, -1, &sequence, &request);
-    }
-#endif
 
-    #pragma omp parallel
-    #pragma omp master
-    {
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(A, pA, lda, &sequence, &request);
     }
@@ -242,20 +228,9 @@ void plasma_omp_zgeinv(plasma_desc_t A, int *ipiv, plasma_desc_t W,
     // Factorize A.
     plasma_pzgetrf(A, ipiv, sequence, request);
 
-    // Need to synchronize here because ipiv has to be completed
-    // before starting row permutations.
-    //#pragma omp taskwait
-
     // Invert triangular part.
     plasma_pztrtri(PlasmaUpper, PlasmaNonUnit, A, sequence, request);
 
     // Compute product of inverse of the upper and lower triangles.
     plasma_pzgetri_aux(A, W, sequence, request);
-
-// TODO: a workaround to avoid deadlock
-#if 0
-    // Apply pivot.
-    #pragma omp taskwait
-    plasma_pzgeswp(PlasmaColumnwise, A, ipiv, -1, sequence, request);
-#endif
 }

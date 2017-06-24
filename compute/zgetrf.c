@@ -82,18 +82,10 @@ int plasma_zgetrf(int m, int n,
     {
         // Translate to tile layout.
         plasma_omp_zge2desc(pA, lda, A, &sequence, &request);
-    }
 
-    #pragma omp parallel
-    #pragma omp master
-    {
         // Call the tile async function.
         plasma_omp_zgetrf(A, ipiv, &sequence, &request);
-    }
 
-    #pragma omp parallel
-    #pragma omp master
-    {
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(A, pA, lda, &sequence, &request);
     }
