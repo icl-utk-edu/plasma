@@ -331,10 +331,10 @@ void plasma_tree_greedy(int mt, int nt,
 }
 
 /***************************************************************************//**
- *  Parallel tile QR factorization based on the GREEDY algorithm from
- *  H. Bouwmeester, M. Jacquelin, J. Langou, Y. Robert
- *  Tiled QR factorization algorithms. INRIA Report no. 7601, 2011.
- *  It is combined with a flat tree on top of blocks of tiles.
+ *  Parallel tile QR factorization inspired by the AUTO algorithm from
+ *  M. Faverge, J. Langou, Y. Robert, and J. Dongarra. 
+ *  Bidiagonalization with Parallel Tiled Algorithms. (2016). arXiv:1611.06892
+ *  http://arxiv.org/abs/1611.06892
  * @see plasma_omp_zgeqrf
  **/
 static inline int get_super_tiles(int n, int bs) {
@@ -441,6 +441,7 @@ void plasma_tree_auto_forest(int mt, int nt,
  *  Parallel tile QR factorization based on the GREEDY algorithm from
  *  H. Bouwmeester, M. Jacquelin, J. Langou, Y. Robert
  *  Tiled QR factorization algorithms. INRIA Report no. 7601, 2011.
+ *  Extended to blocks of flat-trees combined in the greedy fashion.
  * @see plasma_omp_zgeqrf
  **/
 void plasma_tree_block_greedy(int mt, int nt,
