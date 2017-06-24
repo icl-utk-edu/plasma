@@ -29,6 +29,9 @@ void plasma_tree_auto_forest(int mt, int nt,
                              int **operations, int *num_operations,
                              int concurrency);
 
+void plasma_tree_block_greedy(int mt, int nt,
+                              int **operations, int *num_operations);
+
 /***************************************************************************//**
  *  Routine for precomputing a given order of operations for tile
  *  QR and LQ factorization.
@@ -48,7 +51,7 @@ void plasma_tree_operations(int mt, int nt,
     //plasma_tree_flat_tt(mt, nt, operations, num_operations);
 
     // PLASMA-Tree from PLASMA 2.8.0
-    plasma_tree_plasmatree(mt, nt, operations, num_operations);
+    //plasma_tree_plasmatree(mt, nt, operations, num_operations);
 
     // Pure Greedy algorithm combining only GE and TT kernels.
     //plasma_tree_greedy(mt, nt, operations, num_operations);
@@ -56,6 +59,9 @@ void plasma_tree_operations(int mt, int nt,
     // Binary forest of flat trees.
     //int ncores = omp_get_num_threads();
     //plasma_tree_auto_forest(mt, nt, operations, num_operations, ncores);
+    
+    // Block greedy tree
+    plasma_tree_block_greedy(mt, nt, operations, num_operations);
 }
 
 /***************************************************************************//**
@@ -429,3 +435,133 @@ void plasma_tree_auto_forest(int mt, int nt,
     // Copy over the number of operations.
     *num_operations = iops;
 }
+
+/***************************************************************************//**
+ *  Parallel tile QR factorization based on the GREEDY algorithm from
+ *  H. Bouwmeester, M. Jacquelin, J. Langou, Y. Robert
+ *  Tiled QR factorization algorithms. INRIA Report no. 7601, 2011.
+ * @see plasma_omp_zgeqrf
+ **/
+void plasma_tree_block_greedy(int mt, int nt,
+                              int **operations, int *num_operations)
+{
+    int bs = 4;
+
+    // How many columns to involve?
+    int minnt = imin(mt, nt);
+
+    // Tiles above diagonal are not triangularized.
+    size_t num_triangularized_tiles  = (mt/bs+1)*minnt
+                                     - (minnt/bs)*(minnt-1)/2;
+    // Tiles on diagonal and above are not anihilated.
+    size_t num_anihilated_tiles      = mt*minnt - (minnt+1)*minnt/2;
+
+    // Number of operations can be determined exactly.
+    size_t loperations = num_triangularized_tiles + num_anihilated_tiles;
+
+    // Allocate array of operations.
+    *operations = (int *) malloc(loperations*4*sizeof(int));
+    assert(*operations != NULL);
+
+    // Prepare memory for column counters.
+    int *NZ = (int*) malloc(minnt*sizeof(int));
+    assert(NZ != NULL);
+    int *NT = (int*) malloc(minnt*sizeof(int));
+    assert(NT != NULL);
+
+    // Initialize column counters.
+    for (int j = 0; j < nt; j++) {
+        // NZ[j] is the number of tiles which have been eliminated in column j
+        NZ[j] = 0;
+        // NT[j] is the number of tiles which have been triangularized
+        // in column j
+        NT[j] = 0;
+    }
+
+    int nZnew = 0;
+    int nTnew = 0;
+    int iops  = 0;
+    // Until the last column is finished...
+    while ((NT[minnt-1] < get_super_tiles(mt - minnt + 1, bs) ||
+           (NZ[minnt-1] < get_super_tiles(mt - minnt + 1, bs) - 1))) {
+        int updated = 0;
+        for (int j = minnt-1; j >= 0; j--) {
+            if (j == 0) {
+                // Triangularize the first column if not yet done.
+                nTnew = NT[j] + (get_super_tiles(mt, bs) - NT[j]);
+                if (get_super_tiles(mt, bs) - NT[j] > 0) {
+                    for (int k = get_super_tiles(mt, bs) - 1; k >= 0; k--) {
+                        int itile = j + k*bs;
+                        iops = plasma_tree_insert_flat_tree(*operations,
+                                                            loperations,
+                                                            iops,
+                                                            j, itile,
+                                                            imin(bs, mt-itile));
+                    }
+                }
+            }
+            else {
+                // Triangularize every tile having zero in the previous column.
+                if ((mt - (j-1)) % bs != 1 && bs > 1 && NT[j-1] > NZ[j-1]) {
+                    nTnew = NZ[j-1] + 1;
+                }
+                else {
+                    nTnew = NZ[j-1];
+                }
+
+                for (int k = NT[j]; k < nTnew; k++) {
+                    int kk = get_super_tiles(mt-j, bs) - k - 1;
+                    int itile = j + kk*bs;
+                    iops = plasma_tree_insert_flat_tree(*operations,
+                                                        loperations,
+                                                        iops,
+                                                        j, itile,
+                                                        imin(bs, mt-itile));
+                }
+            }
+
+            // Eliminate every tile triangularized in the previous step.
+            int batch = (NT[j] - NZ[j]) / 2; // intentional integer division
+            nZnew = NZ[j] + batch;
+            int skipped = 0;
+            for (int kk = NZ[j]; kk < nZnew; kk++) {
+                // row index of a tile to be zeroed
+                int pmkk    = get_super_tiles(mt-j, bs)-kk-1;
+                // row index of the anihilator tile
+                int pivpmkk = pmkk-batch;
+
+                int itilepmkk    = j + pmkk*bs;    // row index of a tile to be zeroed
+                int itilepivpmkk = j + pivpmkk*bs; // row index of the anihilator tile
+
+                iops = plasma_tree_insert_operation(*operations,
+                                                    loperations,
+                                                    iops,
+                                                    PlasmaTtKernel,
+                                                    j, itilepmkk, itilepivpmkk);
+            }
+            // Update the number of triangularized and eliminated tiles at the
+            // next step.
+            if (nTnew != NT[j] || nZnew != NZ[j]) {
+                updated = 1;
+            }
+            NT[j] = nTnew;
+            NZ[j] = nZnew;
+        }
+
+        if (!updated) {
+            printf("plasma_tree_block_greedy: Error, no column updated! \n");
+            break;
+        }
+    }
+
+    // Check that we have reached the expected number of operations.
+    assert(iops <= loperations);
+
+    // Copy over the number of operations.
+    *num_operations = iops;
+
+    // Deallocate column counters.
+    free(NZ);
+    free(NT);
+}
+
