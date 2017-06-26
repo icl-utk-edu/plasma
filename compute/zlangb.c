@@ -158,15 +158,16 @@ double plasma_zlangb(plasma_enum_t norm,
     }
 
     // Create sequence.
-    plasma_sequence_t *sequence = NULL;
-    retval = plasma_sequence_create(&sequence);
+    plasma_sequence_t sequence;
+    retval = plasma_sequence_init(&sequence);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_sequence_create() failed");
         return retval;
     }
 
     // Initialize request.
-    plasma_request_t request = PlasmaRequestInitializer;
+    plasma_request_t request;
+    retval = plasma_request_init(&request);
 
     double value;
 
@@ -175,10 +176,10 @@ double plasma_zlangb(plasma_enum_t norm,
     #pragma omp master
     {
         // Translate to tile layout.
-        plasma_omp_zpb2desc(pAB, ldab, AB, sequence, &request);
+        plasma_omp_zpb2desc(pAB, ldab, AB, &sequence, &request);
 
         // Call tile async function.
-        plasma_omp_zlangb(norm, AB, work, &value, sequence, &request);
+        plasma_omp_zlangb(norm, AB, work, &value, &sequence, &request);
     }
     // implicit synchronization
 
@@ -187,8 +188,6 @@ double plasma_zlangb(plasma_enum_t norm,
     // Free matrix in tile layout.
     plasma_desc_destroy(&AB);
 
-    // Destroy sequence.
-    plasma_sequence_destroy(sequence);
 
     // Return the norm.
     printf("[plasma_zlangb]: value=%.3f\n", value);
@@ -200,7 +199,7 @@ double plasma_zlangb(plasma_enum_t norm,
  * @ingroup plasma_langb
  *
  *  Calculates the max, one, infinity or Frobenius norm of a general band matrix.
- *  Non-blocking equivalent of plasma_zlange(). May return before the
+ *  Non-blocking equivalent of plasma_zlangb(). May return before the
  *  computation is finished. Operates on matrices stored by tiles. All matrices
  *  are passed through descriptors. All dimensions are taken from the
  *  descriptors. Allows for pipelining of operations at runtime.
