@@ -36,7 +36,8 @@ void plasma_pzgeqrf_tree(plasma_desc_t A, plasma_desc_t T,
     // Precompute order of QR operations.
     int *operations = NULL;
     int num_operations;
-    plasma_tree_operations(A.mt, A.nt, &operations, &num_operations);
+    plasma_tree_operations(A.mt, A.nt, &operations, &num_operations,
+                           sequence, request);
 
     // Set inner blocking from the T tile row-dimension.
     int ib = T.mb;

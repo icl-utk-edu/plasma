@@ -16,6 +16,15 @@ enum {
     PlasmaTsKernel = 3
 };
 
+enum {
+    PlasmaTreeFlatTs      = 1,
+    PlasmaTreeFlatTt      = 2,
+    PlasmaTreeBinary      = 3,
+    PlasmaTreeAuto        = 4,
+    PlasmaTreeGreedy      = 5,
+    PlasmaTreeBlockGreedy = 6,
+};
+
 /***************************************************************************//**
  *  Routine for registering a kernel into the list of operations for tile
  *  QR and LQ factorization.
@@ -56,6 +65,8 @@ static inline void plasma_tree_get_operation(int *operations,
 }
 
 void plasma_tree_operations(int mt, int nt,
-                            int **operations, int *num_operations);
+                            int **operations, int *num_operations,
+                            plasma_sequence_t *sequence,
+                            plasma_request_t *request);
 
 #endif // ICL_PLASMA_TREE_H
