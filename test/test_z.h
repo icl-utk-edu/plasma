@@ -41,6 +41,7 @@ void test_zhesv(param_value_t param[], bool run);
 void test_zlacpy(param_value_t param[], bool run);
 void test_zlag2c(param_value_t param[], bool run);
 void test_zlange(param_value_t param[], bool run);
+void test_zlangb(param_value_t param[], bool run);
 void test_zlanhe(param_value_t param[], bool run);
 void test_zlansy(param_value_t param[], bool run);
 void test_zlantr(param_value_t param[], bool run);
