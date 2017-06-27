@@ -330,6 +330,12 @@ void plasma_tree_auto(int mt, int nt,
     // each column.
     static const int gamma = 2;
 
+    // Check input.
+    if (concurrency < 1) {
+        plasma_error("Illegal value of concurrency.");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+    }
+
     // How many columns to involve?
     int minnt = imin(mt, nt);
 
@@ -538,7 +544,13 @@ void plasma_tree_block_greedy(int mt, int nt,
 {
     // Multiple of the target concurrency to set sizes of the flat tree in
     // each column.
-    static const int gamma = 2;
+    static const int gamma = 4;
+
+    // Check input.
+    if (concurrency < 1) {
+        plasma_error("Illegal value of concurrency.");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+    }
 
     // costant block size
     //int bs = 4;
@@ -675,4 +687,3 @@ void plasma_tree_block_greedy(int mt, int nt,
     free(NZ);
     free(NT);
 }
-
