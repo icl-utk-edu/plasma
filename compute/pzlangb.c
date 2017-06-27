@@ -46,8 +46,8 @@ void plasma_pzlangb(plasma_enum_t norm,
             for (int m = imax(0, n-A.kut+1); m < imin(A.mt, n+A.klt-1); m++ ) {
                 int ldam = plasma_tile_mmain_band(A, m, n);
                 int mvam = plasma_tile_mview(A, m);
-                printf("[plasma_pzlangb]: dispatching work to work[%d]\n",
-                       (A.kut-1+m-n)+n*klut);
+                /* printf("[plasma_pzlangb]: dispatching work to work[%d]\n", */
+                /*        (A.kut-1+m-n)+n*klut); */
                 core_omp_zlange(PlasmaMaxNorm,
                                 mvam, nvan,
                                 A(m, n), ldam, 

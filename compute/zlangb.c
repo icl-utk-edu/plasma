@@ -121,7 +121,7 @@ double plasma_zlangb(plasma_enum_t norm,
 
     // Create tile matrices.
     plasma_desc_t AB;
-    int tku = (ku+nb-1)/nb; // number of tiles in upper band (not including diagonal)
+    int tku = (ku+kl+nb-1)/nb; // number of tiles in upper band (not including diagonal)
     int tkl = (kl+nb-1)/nb;    // number of tiles in lower band (not including diagonal)
     int lm = (tku+tkl+1)*nb;   
     int retval;
