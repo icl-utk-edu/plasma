@@ -178,6 +178,7 @@ void test_zlangb(param_value_t param[], bool run)
     //================================================================
     if (test) {
         char *cnorm;
+	double *workspace=NULL;
         switch (norm) {
         case PlasmaMaxNorm:
             cnorm = "m";
@@ -185,6 +186,13 @@ void test_zlangb(param_value_t param[], bool run)
         case PlasmaOneNorm:
             cnorm = "1";
             break;
+	case PlasmaInfNorm:
+	    cnorm = "i";
+	    workspace = (double*) malloc(n*sizeof(double));
+	    break;
+	case PlasmaFrobeniusNorm:
+	    cnorm = "f";
+	    break;
         default:
             assert(0);
         }
@@ -197,7 +205,7 @@ void test_zlangb(param_value_t param[], bool run)
             //LAPACKE_zlange(LAPACK_COL_MAJOR, lapack_const(norm),
             //               kl+ku+1, n, ABref+kl, ldab);
             //zlange_(cnorm, &kuu, &n, ABref+kl, &ldab, NULL);
-            zlangb_(cnorm, &n,&kl, &ku, ABref+kl, &ldab, NULL);
+            zlangb_(cnorm, &n,&kl, &ku, ABref+kl, &ldab, workspace);
 
         // Calculate relative error
         double error = fabs(value-valueRef);

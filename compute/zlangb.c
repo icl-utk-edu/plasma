@@ -143,14 +143,16 @@ double plasma_zlangb(plasma_enum_t norm,
         work = (double*)calloc(((size_t)AB.mt*AB.n+AB.n), sizeof(double)); //TODO: too much space.
         break;
         
+    case PlasmaInfNorm:
+        work = (double*)calloc(((size_t)AB.nt*AB.mt*AB.mb),sizeof(double));
+        break;
+	
+    case PlasmaFrobeniusNorm:
+        work = (double*)calloc((size_t)2*(tku+tkl+1)*AB.nt, sizeof(double)); //TODO: too much space
+        break;
+	
     default:
         assert(0); // the following has not been implemented.
-    /*case PlasmaInfNorm:
-        work = (double*)malloc(((size_t)A.nt*A.m+A.m)*sizeof(double));
-        break;
-    case PlasmaFrobeniusNorm:
-        work = (double*)malloc((size_t)2*A.mt*A.nt*sizeof(double));
-        break; */
     }
     if (work == NULL) {
         plasma_error("malloc() failed");
@@ -314,5 +316,5 @@ void plasma_omp_zlangb(plasma_enum_t norm, plasma_desc_t AB,
 
     // Call the parallel function.
     plasma_pzlangb(norm, AB, work, value, sequence, request);
-    printf("[plasma_omp_zlangb]: value=%.3f\n", *value);
+    /* printf("[plasma_omp_zlangb]: value=%.3f\n", *value); */
 }
