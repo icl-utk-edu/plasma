@@ -542,22 +542,20 @@ void plasma_tree_block_greedy(int mt, int nt,
                               plasma_sequence_t *sequence,
                               plasma_request_t *request)
 {
-    // Multiple of the target concurrency to set sizes of the flat tree in
-    // each column.
-    static const int gamma = 4;
-
     // Check input.
     if (concurrency < 1) {
         plasma_error("Illegal value of concurrency.");
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
     }
 
-    // costant block size
+    // Costant block size.
     //int bs = 4;
-    // adaptive block size
-    //int bs = imax( mt * nt / (gamma * concurrency), 1);
+
+    // Block size adapting to the number of columns.
+
+    // Multiple of the target concurrency to set sizes of the flat trees.
+    static const int gamma = 4;
     int bs = imin( mt, imax( 1, mt * (nt*nt/2 + nt/2) / (gamma * concurrency)));
-    //printf("Block size %d \n", bs);
 
     // How many columns to involve?
     int minnt = imin(mt, nt);
