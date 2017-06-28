@@ -35,8 +35,7 @@ void plasma_pzlangb(plasma_enum_t norm,
 
     double stub;
     int wcnt = 0;
-    int ldwork, nwork, klt, kut;
-    char *c;
+    int ldwork, klt, kut;
     double *workspace, *scale, *sumsq;
     
     switch (norm) {
@@ -73,15 +72,15 @@ void plasma_pzlangb(plasma_enum_t norm,
     // PlasmaOneNorm
     //================
     case PlasmaOneNorm:
-        for (int n = 0; n < A.nt; n++ ) {
+      // # of tiles in upper band (not including diagonal)
+      kut  = (A.ku+A.nb-1)/A.nb;
+      // # of tiles in lower band (not including diagonal)
+      klt  = (A.kl+A.nb-1)/A.nb;    
+      ldwork = kut+klt+1;
+      for (int n = 0; n < A.nt; n++ ) {
             int nvan = plasma_tile_nview(A, n);
 	    int m_start = (imax(0, n*A.nb-A.ku)) / A.nb;
 	    int m_end = (imin(A.m-1, (n+1)*A.nb+A.kl-1)) / A.nb;
-	    // # of tiles in upper band (not including diagonal)
-	    int kut  = (A.ku+A.nb-1)/A.nb;
-	    // # of tiles in lower band (not including diagonal)
-	    int klt  = (A.kl+A.nb-1)/A.nb;    
-	    ldwork = kut+klt+1;
             for (int m = m_start; m <= m_end; m++ ) {
                 int ldam = plasma_tile_mmain_band(A, m, n);
                 int mvam = plasma_tile_mview(A, m);
@@ -104,11 +103,11 @@ void plasma_pzlangb(plasma_enum_t norm,
     // PlasmaInfNorm
     //================
     case PlasmaInfNorm:
-        for (int n = 0; n < A.nt; n++ ) {
+      ldwork = A.mb*A.mt; 
+      for (int n = 0; n < A.nt; n++ ) {
             int nvan = plasma_tile_nview(A, n);
 	    int m_start = (imax(0, n*A.nb-A.ku)) / A.nb;
 	    int m_end = (imin(A.m-1, (n+1)*A.nb+A.kl-1)) / A.nb;
-	    ldwork = A.mb*A.mt; 
             for (int m = m_start; m <= m_end; m++ ) {
                 int ldam = plasma_tile_mmain_band(A, m, n);
                 int mvam = plasma_tile_mview(A, m);
@@ -120,10 +119,10 @@ void plasma_pzlangb(plasma_enum_t norm,
             }
         }
         #pragma omp taskwait
-	nwork = A.nt;
-	workspace = &work[ldwork*nwork];
+	/* nwork = A.nt; */
+	workspace = &work[ldwork*A.nt];
 	core_omp_dlange(PlasmaInfNorm,
-			ldwork, nwork,
+			ldwork, A.nt,
 			work, ldwork,
 			workspace, value,
 			sequence, request);

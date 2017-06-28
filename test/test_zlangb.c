@@ -26,7 +26,7 @@
 #include <omp.h>
 
 #define COMPLEX
-double zlangb_(char *, int *, int *, int *, plasma_complex64_t *, int *, plasma_complex64_t *);
+double zlangb_(char *, int *, int *, int *, plasma_complex64_t *, int *, double *);
  //   double value = plasma_zlangb(norm, m, n, kl, ku,  AB, ldab);
 double plasma_zlangb(plasma_enum_t, int, int, int, int, plasma_complex64_t *, int);
 /***************************************************************************//**
@@ -196,7 +196,7 @@ void test_zlangb(param_value_t param[], bool run)
         default:
             assert(0);
         }
-        int kll = kl, kuu = ku+kl;
+
 #if 0
         printf("[test_zlangb]: kll=%d,kuu=%d, ldab=%d, ABref[ku,0]=%f\n", 
                kll, kuu, ldab, *(double*)&ABref[kl]);
