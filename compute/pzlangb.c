@@ -32,27 +32,20 @@ void plasma_pzlangb(plasma_enum_t norm,
     // Return if failed sequence.
     if (sequence->status != PlasmaSuccess)
         return;
-    //int klut = A.klt + A.kut - 1; // # tile rows in band packed storage
-#if 0
-    // let's take a look at the A structure.
-    printf("[plasma_pzlangb]: inspecting the A structure\n");
-    printf("mb\tnb\tgm\tgn\tgmt\tgnt\ti\tj\tm\tn\tmt\tnt\tkl\tku\tklt\tkut\n");
-    printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t\nt",
-	   A.mb, A.nb, A.gm, A.gn, A.gmt, A.gnt, A.i, A.j, A.m, A.n, A.mt, A.nt,
-	   A.kl, A.ku, A.klt, A.kut);
-#endif
+
     double stub;
     int wcnt = 0;
     int ldwork, nwork, klt, kut;
     char *c;
     double *workspace, *scale, *sumsq;
+    
     switch (norm) {
     
     //================
     // PlasmaMaxNorm
     //================
     case PlasmaMaxNorm:
-
+	wcnt = 0;
         for (int n = 0; n < A.nt; n++ ) {
             int nvan = plasma_tile_nview(A, n);
 	    int m_start = (imax(0, n*A.nb-A.ku)) / A.nb;
@@ -76,13 +69,18 @@ void plasma_pzlangb(plasma_enum_t norm,
                         &stub, value,
                         sequence, request);
         break;
+    //================
+    // PlasmaOneNorm
+    //================
     case PlasmaOneNorm:
         for (int n = 0; n < A.nt; n++ ) {
             int nvan = plasma_tile_nview(A, n);
 	    int m_start = (imax(0, n*A.nb-A.ku)) / A.nb;
 	    int m_end = (imin(A.m-1, (n+1)*A.nb+A.kl-1)) / A.nb;
-	    int kut  = (A.ku+A.nb-1)/A.nb; // # of tiles in upper band (not including diagonal)
-	    int klt  = (A.kl+A.nb-1)/A.nb;    // # of tiles in lower band (not including diagonal)
+	    // # of tiles in upper band (not including diagonal)
+	    int kut  = (A.ku+A.nb-1)/A.nb;
+	    // # of tiles in lower band (not including diagonal)
+	    int klt  = (A.kl+A.nb-1)/A.nb;    
 	    ldwork = kut+klt+1;
             for (int m = m_start; m <= m_end; m++ ) {
                 int ldam = plasma_tile_mmain_band(A, m, n);
@@ -95,24 +93,16 @@ void plasma_pzlangb(plasma_enum_t norm,
             }
         }
         #pragma omp taskwait
-#if 0
-	printf("Inspecting work...\n");
-	for (int i=0; i<A.n; i++) {
-	    printf ("R%d\t", i);
-	    for (int j=0; j<ldwork; j++) {
-		if (work[i+j*A.n]!=0) printf("%.2f\t", work[i+j*A.n]);
-		else printf("*\t");
-	    }
-	    printf("\n");
-	}
-#endif
-        c = "i";
-	workspace =
-	    (plasma_complex64_t*)malloc(A.n*sizeof(plasma_complex64_t*));
-        *value = dlange_(c, &A.n, &ldwork, work, &A.n, workspace);
-	free(workspace);
-        /* printf("%s:%d [%s] value = %.3f\n", __FILE__, __LINE__, __FUNCTION__, *value); */
+	workspace = &work[A.n*ldwork];
+	core_omp_dlange(PlasmaInfNorm,
+			A.n, ldwork,
+			work, A.n,
+			workspace, value,
+			sequence, request);
         break;
+    //================
+    // PlasmaInfNorm
+    //================
     case PlasmaInfNorm:
         for (int n = 0; n < A.nt; n++ ) {
             int nvan = plasma_tile_nview(A, n);
@@ -130,24 +120,17 @@ void plasma_pzlangb(plasma_enum_t norm,
             }
         }
         #pragma omp taskwait
-#if 0
-	printf("Inspecting work...\n");
-	for (int i=0; i<ldwork; i++) {
-	    printf ("R%d\t", i);
-	    for (int j=0; j<A.nt; j++) {
-		if (work[i+j*ldwork]!=0) printf("%.2f\t", work[i+j*ldwork]);
-		else printf("*\t");
-	    }
-	    printf("\n");
-	}
-#endif
-        c = "i";
-	workspace = (double*)malloc(ldwork*sizeof(double));
 	nwork = A.nt;
-        *value = dlange_(c, &ldwork, &nwork, work, &ldwork, workspace);
-	free(workspace);
-        /* printf("%s:%d [%s] value = %.3f\n", __FILE__, __LINE__, __FUNCTION__, *value); */
+	workspace = &work[ldwork*nwork];
+	core_omp_dlange(PlasmaInfNorm,
+			ldwork, nwork,
+			work, ldwork,
+			workspace, value,
+			sequence, request);
         break;
+    //======================
+    // PlasmaFrobeniusNorm
+    //======================	
     case PlasmaFrobeniusNorm:
 	kut  = (A.ku+A.nb-1)/A.nb; // # of tiles in upper band (not including diagonal)
 	klt  = (A.kl+A.nb-1)/A.nb;    // # of tiles in lower band (not including diagonal)
@@ -170,17 +153,6 @@ void plasma_pzlangb(plasma_enum_t norm,
             }
         }
         #pragma omp taskwait
-#if 0
-	printf("Inspecting work...\n");
-	for (int i=0; i<ldwork; i++) {
-	    printf ("R%d\t", i);
-	    for (int j=0; j<A.nt; j++) {
-		if (work[i+j*ldwork]!=0) printf("%.2f,%.2f\t", scale[i+j*ldwork], sumsq[i+j*ldwork]);
-		else printf("*\t");
-	    }
-	    printf("\n");
-	}
-#endif
 	core_omp_dgessq_aux(ldwork*A.nt, scale, sumsq,
 			    value, sequence, request);
         break;
