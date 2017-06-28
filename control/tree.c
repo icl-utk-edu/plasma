@@ -548,17 +548,18 @@ void plasma_tree_block_greedy(int mt, int nt,
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
     }
 
+    // How many columns to involve?
+    int minnt = imin(mt, nt);
+
     // Costant block size.
     //int bs = 4;
 
     // Block size adapting to the number of columns.
-
     // Multiple of the target concurrency to set sizes of the flat trees.
     static const int gamma = 4;
-    int bs = imin( mt, imax( 1, mt * (nt*nt/2 + nt/2) / (gamma * concurrency)));
-
-    // How many columns to involve?
-    int minnt = imin(mt, nt);
+    int bs = imin(mt, imax(1, mt * (minnt*minnt/2 + minnt/2)
+                                 / (gamma * concurrency)));
+    //printf("bs = %d \n", bs);
 
     // Tiles above diagonal are not triangularized.
     size_t num_triangularized_tiles  = mt*minnt
@@ -589,7 +590,7 @@ void plasma_tree_block_greedy(int mt, int nt,
     }
 
     // Initialize column counters.
-    for (int j = 0; j < nt; j++) {
+    for (int j = 0; j < minnt; j++) {
         // NZ[j] is the number of tiles which have been eliminated in column j
         NZ[j] = 0;
         // NT[j] is the number of tiles which have been triangularized
