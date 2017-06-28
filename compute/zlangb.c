@@ -107,7 +107,7 @@ double plasma_zlangb(plasma_enum_t norm,
     }
 
     if (ldab < imax(1, 1+kl+ku)) {
-        printf("%d\n", ldab);
+        /* printf("%d\n", ldab); */
         plasma_error("illegal value of lda");
         return -7;
     }
@@ -140,7 +140,7 @@ double plasma_zlangb(plasma_enum_t norm,
         break;
 
     case PlasmaOneNorm:
-        work = (double*)calloc(((size_t)AB.mt*AB.n+AB.n), 2*sizeof(double));
+        work = (double*)calloc(((size_t)AB.mt*AB.n+AB.n), sizeof(double)); //TODO: too much space.
         break;
         
     default:
@@ -177,7 +177,31 @@ double plasma_zlangb(plasma_enum_t norm,
     {
         // Translate to tile layout.
         plasma_omp_zpb2desc(pAB, ldab, AB, &sequence, &request);
-
+#if 0
+	// inspect the tile AB
+	printf("[zlangb]: inspecting tile matrix AB:\n");
+	printf("m\tn\tlda\t\n");
+	printf("%d\t%d\t\n", AB.gmt, AB.gnt);
+	//	printf("tAB\t");
+	for (int j=0; j<AB.nt; j++) {
+	    int m_start = (imax(0, j*AB.nb-AB.ku)) / AB.nb;
+	    int m_end = (imin(AB.m-1, (j+1)*AB.nb+AB.kl-1)) / AB.nb;
+	    for (int i=m_start; i<=m_end; i++) {
+		printf("tAB: row %d col %d\n", i, j);
+		int ld = plasma_tile_mmain_band(AB, i, j);
+		int mv = plasma_tile_mview(AB, i);
+		int nv = plasma_tile_nview(AB, j);
+	        plasma_complex64_t *ABp = plasma_tile_addr(AB, i, j);
+		for (int ii=0; ii<mv; ii++) {
+		    for (int jj=0; jj<nv; jj++) {
+			if (ABp[ii+jj*ld]!=0) printf("%.2f\t", ABp[ii+jj*ld]);
+			else printf("*\t");
+		    }
+		    printf("\n");
+		}
+	    }
+	}
+#endif	
         // Call tile async function.
         plasma_omp_zlangb(norm, AB, work, &value, &sequence, &request);
     }
@@ -190,7 +214,7 @@ double plasma_zlangb(plasma_enum_t norm,
 
 
     // Return the norm.
-    printf("[plasma_zlangb]: value=%.3f\n", value);
+    /* printf("[plasma_zlangb]: value=%.3f\n", value); */
     return value;
 }
 

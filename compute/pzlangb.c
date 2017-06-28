@@ -32,76 +32,84 @@ void plasma_pzlangb(plasma_enum_t norm,
     // Return if failed sequence.
     if (sequence->status != PlasmaSuccess)
         return;
-    int klut = A.klt + A.kut - 1; // # tile rows in band packed storage
-    
+    //int klut = A.klt + A.kut - 1; // # tile rows in band packed storage
+#if 0
+    // let's take a look at the A structure.
+    printf("[plasma_pzlangb]: inspecting the A structure\n");
+    printf("mb\tnb\tgm\tgn\tgmt\tgnt\ti\tj\tm\tn\tmt\tnt\tkl\tku\tklt\tkut\n");
+    printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t\nt",
+	   A.mb, A.nb, A.gm, A.gn, A.gmt, A.gnt, A.i, A.j, A.m, A.n, A.mt, A.nt,
+	   A.kl, A.ku, A.klt, A.kut);
+#endif
     double stub;
+    int wcnt = 0;
+    int ldwork;
     switch (norm) {
     
     //================
     // PlasmaMaxNorm
     //================
     case PlasmaMaxNorm:
+
         for (int n = 0; n < A.nt; n++ ) {
             int nvan = plasma_tile_nview(A, n);
-            for (int m = imax(0, n-A.kut+1); m < imin(A.mt, n+A.klt-1); m++ ) {
+	    int m_start = (imax(0, n*A.nb-A.ku)) / A.nb;
+	    int m_end = (imin(A.m-1, (n+1)*A.nb+A.kl-1)) / A.nb;
+            for (int m = m_start; m <= m_end; m++ ) {
                 int ldam = plasma_tile_mmain_band(A, m, n);
                 int mvam = plasma_tile_mview(A, m);
-                /* printf("[plasma_pzlangb]: dispatching work to work[%d]\n", */
-                /*        (A.kut-1+m-n)+n*klut); */
                 core_omp_zlange(PlasmaMaxNorm,
                                 mvam, nvan,
                                 A(m, n), ldam, 
-                                &stub, &work[(A.kut-1+m-n)+n*klut],
+                                &stub, &work[wcnt],
                                 sequence, request);
+		wcnt++;
             }
         }
-		// zero out the unused elements in work.
-		for (int j = 0; j < A.nt; j++) {
-		    for (int i = 0; i < A.kut - 1 - j; i++ ) 
-		        work[i+j*klut] = 0;
-		    for (int i = klut-1; i >= A.kut+A.nt-j-1; i-- )
-		        work[i+j*klut] = 0;
-		}        
+
         #pragma omp taskwait
-        printf("[plasma_pzlangb]: klt=%d, kut=%d, klut=%d\n", A.klt,A.kut,klut);
-        printf("[plasma_pzlangb]: aggregating...\n");
-        printf("[plasma_work]: work...");
-        for (int i=0; i<klut*A.nt; i++) {
-        	printf("%.3f\t", work[i]);
-        }
-        printf("\n");
         core_omp_dlange(PlasmaMaxNorm,
-                        klut, A.nt,
-                        work, klut,
+                        1, wcnt,
+                        work, 1,
                         &stub, value,
                         sequence, request);
         break;
     case PlasmaOneNorm:
         for (int n = 0; n < A.nt; n++ ) {
             int nvan = plasma_tile_nview(A, n);
-            for (int m = imax(0, n-A.kut+A.klt); m < imin(A.mt, n+A.klt-1); m++ ) {
+	    int m_start = (imax(0, n*A.nb-A.ku)) / A.nb;
+	    int m_end = (imin(A.m-1, (n+1)*A.nb+A.kl-1)) / A.nb;
+	    int kut  = (A.ku+A.nb-1)/A.nb; // # of tiles in upper band (not including diagonal)
+	    int klt  = (A.kl+A.nb-1)/A.nb;    // # of tiles in lower band (not including diagonal)
+	    ldwork = kut+klt+1;
+            for (int m = m_start; m <= m_end; m++ ) {
                 int ldam = plasma_tile_mmain_band(A, m, n);
                 int mvam = plasma_tile_mview(A, m);
                 core_omp_zlange_aux(PlasmaOneNorm,
-                                    mvam, nvan,
-                                    A(m,n), ldam,
-                                    &work[n*A.nb+(m-imax(0, n-A.kut+A.klt))*A.n],
-                                    sequence, request);
+				    mvam, nvan,
+				    A(m,n), ldam,
+				    &work[(m-m_start)*A.n+n*A.nb],
+				    sequence, request);
             }
         }
         #pragma omp taskwait
-        printf("[plasma_work]: work...\n");
-        printf("\n");
-        double *workspace = work + klut*A.n;
-        /*core_omp_dlange(PlasmaInfNorm,
-                        A.n, klut,
-                        work, A.n,
-                        workspace, value,
-                        sequence, request);*/
+#if 0
+	printf("Inspecting work...\n");
+	for (int i=0; i<A.n; i++) {
+	    printf ("R%d\t", i);
+	    for (int j=0; j<ldwork; j++) {
+		if (work[i+j*A.n]!=0) printf("%.2f\t", work[i+j*A.n]);
+		else printf("*\t");
+	    }
+	    printf("\n");
+	}
+#endif
         char *c = "i";
-        klut -= klut - 1;
-        *value = dlange_(c, &A.n, &klut, work, &A.n, workspace);
-        printf("%s:%d [%s] value = %.3f\n", __FILE__, __LINE__, __FUNCTION__, *value);
+	plasma_complex64_t *workspace =
+	    (plasma_complex64_t*)malloc(A.n*sizeof(plasma_complex64_t*));
+        *value = dlange_(c, &A.n, &ldwork, work, &A.n, workspace);
+	free(workspace);
+        /* printf("%s:%d [%s] value = %.3f\n", __FILE__, __LINE__, __FUNCTION__, *value); */
         break;
     default:
         assert(0);
