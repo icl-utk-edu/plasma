@@ -21,7 +21,7 @@
  *
  * @ingroup plasma_langb
  *
- *  Returns the norm of a general matrix as
+ *  Returns the norm of a general band matrix as
  *
  *     zlange = ( max(abs(A(i,j))), NORM = PlasmaMaxNorm
  *              (
@@ -53,16 +53,22 @@
  *          The number of columns of the matrix A. n >= 0. When n = 0,
  *          the returned value is set to zero.
  *
- * @param[in] pA
- *          The m-by-n matrix A.
+ * @param[in] kl
+ *          The number of subdiagonals within the band of A. kl >= 0.
  *
- * @param[in] lda
- *          The leading dimension of the array A. lda >= max(1,m).
+ * @param[in] ku
+ *          The number of superdiagonals within the band of A. ku >= 0.
+ *
+ * @param[in] pAB
+ *          The band matrix AB.
+ *
+ * @param[in] ldab
+ *          The leading dimension of the array AB. lda >= max(1,m).
  *
  *******************************************************************************
  *
  * @retval double
- *         The specified norm of the general matrix A.
+ *         The specified norm of the general band matrix A.
  *
  *******************************************************************************
  *
@@ -179,31 +185,6 @@ double plasma_zlangb(plasma_enum_t norm,
     {
         // Translate to tile layout.
         plasma_omp_zpb2desc(pAB, ldab, AB, &sequence, &request);
-#if 0
-	// inspect the tile AB
-	printf("[zlangb]: inspecting tile matrix AB:\n");
-	printf("m\tn\tlda\t\n");
-	printf("%d\t%d\t\n", AB.gmt, AB.gnt);
-	//	printf("tAB\t");
-	for (int j=0; j<AB.nt; j++) {
-	    int m_start = (imax(0, j*AB.nb-AB.ku)) / AB.nb;
-	    int m_end = (imin(AB.m-1, (j+1)*AB.nb+AB.kl-1)) / AB.nb;
-	    for (int i=m_start; i<=m_end; i++) {
-		printf("tAB: row %d col %d\n", i, j);
-		int ld = plasma_tile_mmain_band(AB, i, j);
-		int mv = plasma_tile_mview(AB, i);
-		int nv = plasma_tile_nview(AB, j);
-	        plasma_complex64_t *ABp = plasma_tile_addr(AB, i, j);
-		for (int ii=0; ii<mv; ii++) {
-		    for (int jj=0; jj<nv; jj++) {
-			if (ABp[ii+jj*ld]!=0) printf("%.2f\t", ABp[ii+jj*ld]);
-			else printf("*\t");
-		    }
-		    printf("\n");
-		}
-	    }
-	}
-#endif	
         // Call tile async function.
         plasma_omp_zlangb(norm, AB, work, &value, &sequence, &request);
     }
@@ -244,9 +225,9 @@ double plasma_zlangb(plasma_enum_t norm,
  * @param[out] work
  *          Workspace of size:
  *          - PlasmaMaxNorm: (AB.klt+AB.kut-1)*A.nt
- *          - PlasmaOneNorm: A.mt*A.n + A.n
- *          - PlasmaInfNorm: A.nt*A.m + A.m
- *          - PlasmaFrobeniusNorm: 2*A.mt*A.nt
+ *          - PlasmaOneNorm: AB.n*(tku+tkl+1)+AB.n
+ *          - PlasmaInfNorm: AB.nt*AB.mt*AB.mb+AB.mb*AB.mt
+ *          - PlasmaFrobeniusNorm: 2*(tku+tkl+1)*AB.nt
  *
  * @param[out] value
  *          The calculated value of the norm requested.
