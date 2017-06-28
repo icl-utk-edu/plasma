@@ -93,22 +93,6 @@ void test_zlangb(param_value_t param[], bool run)
     for (int j = 0; j < n; j++) {
         for (int i = j+kl+1; i < m; i++) A[i + j*lda] = 0.0;
     }
-#if 0
-    printf("[test_zlangb]: inspecting matrix A:\n");
-    printf("m\tn\tlda\t\n");
-    printf("%d\t%d\t%d\t\n", m, n, lda);
-    printf("A\t");
-    for (int j=0; j<n; j++) printf("%d\t", j);
-    printf("\n");
-    for (int i=0; i<m; i++) {
-	printf("%d\t",i);
-	for (int j=0; j<n; j++) {
-	    if (A[i+j*lda]!=0) printf("%.2f\t", A[i+j*lda]);
-	    else printf("*\t");
-	}
-	printf("\n");
-    }
-#endif 
     plasma_complex64_t *Aref = NULL;
     if (test) {
         Aref = (plasma_complex64_t*)malloc(
@@ -135,24 +119,7 @@ void test_zlangb(param_value_t param[], bool run)
         for (int i = 0; i < ldab; i++) AB[i + j*ldab] = 0.0;
         for (int i = i_kl; i <= i_ku; i++) AB[kl + i-(j-ku) + j*ldab] = A[i + j*lda];
     }
-    //retval = LAPACKE_zlarnv(1, seed, (size_t)ldab*n, AB);
-    //assert(retval == 0);
-#if 0
-    printf("[test_zlangb]: inspecting matrix AB:\n");
-    printf("m\tn\tlda\t\n");
-    printf("%d\t%d\t%d\t\n", m, n, ldab);
-    printf("AB\t");
-    for (int j=0; j<n; j++) printf("%d\t", j);
-    printf("\n");
-    for (int i=0; i<ldab; i++) {
-	printf("%d\t",i);
-	for (int j=0; j<n; j++) {
-	    if (AB[i+j*ldab]!=0) printf("%.2f\t", AB[i+j*ldab]);
-	    else printf("*\t");
-	}
-	printf("\n");
-    }
-#endif
+
     plasma_complex64_t *ABref = NULL;
     if (test) {
         ABref = (plasma_complex64_t*)malloc(
@@ -197,10 +164,6 @@ void test_zlangb(param_value_t param[], bool run)
             assert(0);
         }
 
-#if 0
-        printf("[test_zlangb]: kll=%d,kuu=%d, ldab=%d, ABref[ku,0]=%f\n", 
-               kll, kuu, ldab, *(double*)&ABref[kl]);
-#endif
         double valueRef =
             //LAPACKE_zlange(LAPACK_COL_MAJOR, lapack_const(norm),
             //               kl+ku+1, n, ABref+kl, ldab);
@@ -209,9 +172,7 @@ void test_zlangb(param_value_t param[], bool run)
 
         // Calculate relative error
         double error = fabs(value-valueRef);
-#if 0
-        printf("[test_zlangb]: value=%f,valueRef=%f\n", value, valueRef);
-#endif
+
         if (valueRef != 0)
             error /= valueRef;
         double tol = eps;
@@ -248,29 +209,3 @@ void test_zlangb(param_value_t param[], bool run)
 
 
 
-void test_lapack_zlangb(){
-    int kl=2, ku=1, n=6;
-    int ldab = kl+ku+1;
-    plasma_complex64_t *AB = (plasma_complex64_t*)malloc(ldab*n*sizeof(plasma_complex64_t));
-    int seed[] = {0,0,0,1};
-    int retval = LAPACKE_zlarnv(1, seed, (size_t)ldab*n, AB);
-    assert(retval == 0);
-    
-    printf("=================BEGIN=======================\n");
-    printf("===MATRIX AB====\n");
-    for (int i=0; i<ldab; i++) {
-        for (int j=0; j<n; j++) 
-            printf("%.3f\t", cabs(AB[i+j*ldab]));
-        printf("\n");
-    }
-    printf("====LAPACK_ZLANGB====\n");
-    double v, v2;
-    char c = 'M';
-    v2 = zlangb_(&c, &n, &kl, &ku, AB, &ldab, NULL);
-    v = zlange_(&c, &ldab, &n, AB, &ldab, NULL);
-    printf("v=%f, v2=%f\n", v, v2);
-    
-    
-    printf("=================END=======================\n");
-}
-    
