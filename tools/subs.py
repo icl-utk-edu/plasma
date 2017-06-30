@@ -234,6 +234,7 @@ lapack = [
     ('slamrg',               'dlamrg',               'slamrg',               'dlamrg'              ),
     ('slange',               'dlange',               'clange',               'zlange'              ),
     ('slange',               'dlange',               'slange',               'dlange'              ),
+    ('slangb',               'dlangb',               'clangb',               'zlangb'              ),
     ('slanst',               'dlanst',               'clanht',               'zlanht'              ),
     ('slansy',               'dlansy',               'clanhe',               'zlanhe'              ),
     ('slansy',               'dlansy',               'clansy',               'zlansy'              ),
