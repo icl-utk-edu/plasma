@@ -132,9 +132,6 @@ int plasma_zgeinv(int m, int n, plasma_complex64_t *pA, int lda, int *ipiv)
         // Call the tile async function.
         plasma_omp_zgeinv(A, ipiv, W, &sequence, &request);
 
-        // Call the tile async function.
-        plasma_omp_zgeswp(PlasmaColumnwise, A, ipiv, -1, &sequence, &request);
-
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(A, pA, lda, &sequence, &request);
     }
@@ -233,4 +230,7 @@ void plasma_omp_zgeinv(plasma_desc_t A, int *ipiv, plasma_desc_t W,
 
     // Compute product of inverse of the upper and lower triangles.
     plasma_pzgetri_aux(A, W, sequence, request);
+
+    // Apply pivot.
+    plasma_pzgeswp(PlasmaColumnwise, A, ipiv, -1, sequence, request);
 }
