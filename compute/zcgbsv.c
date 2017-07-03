@@ -125,7 +125,7 @@ int plasma_zcgbsv(int n, int kl, int ku, int nrhs,
         plasma_error("illegal value of nrhs");
         return -2;
     }
-    if (lda < imax(1, n)) {
+    if (ldab < imax(1, n)) {
         plasma_error("illegal value of lda");
         return -4;
     }
@@ -224,7 +224,7 @@ int plasma_zcgbsv(int n, int kl, int ku, int nrhs,
 
     // Allocate tiled workspace for Infinity norm calculations.
     // TODO: too much workspace.
-    size_t lwork = imax((size_t)A.nt*A.n+A.n, (size_t)X.mt*X.n+(size_t)R.mt*R.n);
+    size_t lwork = imax((size_t)AB.nt*AB.n+AB.n, (size_t)X.mt*X.n+(size_t)R.mt*R.n);
     double *work  = (double*)malloc((lwork)*sizeof(double));
     double *Rnorm = (double*)malloc(((size_t)R.n)*sizeof(double));
     double *Xnorm = (double*)malloc(((size_t)X.n)*sizeof(double));
@@ -262,7 +262,7 @@ int plasma_zcgbsv(int n, int kl, int ku, int nrhs,
     plasma_desc_destroy(&B);
     plasma_desc_destroy(&X);
     plasma_desc_destroy(&R);
-    plasma_desc_destroy(&As);
+    plasma_desc_destroy(&ABs);
     plasma_desc_destroy(&Xs);
     free(work);
     free(Rnorm);

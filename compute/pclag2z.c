@@ -31,17 +31,35 @@ void plasma_pclag2z(plasma_desc_t As, plasma_desc_t A,
     if (sequence->status != PlasmaSuccess)
         return;
 
-    for (int m = 0; m < As.mt; m++) {
-        int am  = plasma_tile_mview(As, m);
-        int lda = plasma_tile_mmain(As, m);
-        int ldb = plasma_tile_mmain(A,  m);
-        for (int n = 0; n < As.nt; n++) {
-            int an = plasma_tile_nview(As, n);
-            core_omp_clag2z(
-                am, an,
-                As(m, n), lda,
-                A(m, n),  ldb,
-                sequence, request);
-        }
+    if (A.type == PlasmaGeneral && As.type == PlasmaGeneral) {
+	for (int m = 0; m < As.mt; m++) {
+	    int am  = plasma_tile_mview(As, m);
+	    int lda = plasma_tile_mmain(As, m);
+	    int ldb = plasma_tile_mmain(A,  m);
+	    for (int n = 0; n < As.nt; n++) {
+		int an = plasma_tile_nview(As, n);
+		core_omp_clag2z(
+		    am, an,
+		    As(m, n), lda,
+		    A(m, n),  ldb,
+		    sequence, request);
+	    }
+	}
+    } else if (A.type == PlasmaGeneralBand &&
+	       As.type == PlasmaGeneralBand) {
+	for (int n = 0; n < A.nt; n++ ) {
+	    int nvan = plasma_tile_nview(A, n);
+	    int m_start = (imax(0, n*A.nb-A.ku)) / A.nb;
+	    int m_end = (imin(A.m-1, (n+1)*A.nb+A.kl-1)) / A.nb;
+	    for (int m = m_start; m <= m_end; m++) {
+		int ldam = plasma_tile_mmain_band(A, m, n);
+		int mvam = plasma_tile_mview(A, m);
+		core_omp_clag2z(
+		    mvam, nvan,
+		    As(m, n), ldam,
+		    A(m, n), ldam,
+		    sequence, request);
+	    }
+	}
     }
 }
