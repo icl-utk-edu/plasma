@@ -73,6 +73,7 @@ blas_mixed = [
     # ----- mixed "zc" routines
     ('dsposv',               'zcposv'              ),
     ('dsgesv',               'zcgesv'              ),
+    ('dsgbsv',               'zcgbsv'              ),
 
     # ----- regular routines
     ('daxpy',                'zaxpy'               ),
