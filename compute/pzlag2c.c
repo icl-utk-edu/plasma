@@ -16,6 +16,23 @@
 #include "plasma_internal_zc.h"
 #include "core_blas_zc.h"
 
+/******************************************************************************/
+static inline int imin(int a, int b)
+{
+    if (a < b)
+        return a;
+    else
+        return b;
+}
+
+/******************************************************************************/
+static inline int imax(int a, int b)
+{
+    if (a > b)
+        return a;
+    else
+        return b;
+}
 #define  A(m, n) (plasma_complex64_t*)plasma_tile_addr( A, m, n)
 #define As(m, n) (plasma_complex32_t*)plasma_tile_addr(As, m, n)
 

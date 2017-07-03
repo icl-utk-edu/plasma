@@ -401,8 +401,12 @@ subs = {
     # ----- PLASMA / MAGMA functions, alphabetic order
     ('ddesc2ge',             'zdesc2ge'            ),
     ('dge2desc',             'zge2desc'            ),
+    ('ddesc2pb',             'zdesc2pb'            ),
+    ('dpb2desc',             'zpb2desc'            ),
     ('sdesc2ge',             'cdesc2ge'            ),
+    ('sdesc2pb',             'cdesc2pb'            ),
     ('sge2desc',             'cge2desc'            ),
+    ('spb2desc',             'cpb2desc'            ),
 
     # ----- header files
     (r'_ds\.h\b',           r'_zc\.h\b'            ),

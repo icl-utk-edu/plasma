@@ -93,8 +93,9 @@ struct routines_t routines[] =
     { "", NULL },
     { "", NULL },
 
-    { "zcgbsv", test_zvgbsv },
-    { "dsgbsv", test_dsgbsv },
+    { "zcgbsv", test_zcgbsv },
+    /* { "dsgbsv", test_dsgbsv }, */
+    { "", NULL },
     { "", NULL },
     { "", NULL },
 

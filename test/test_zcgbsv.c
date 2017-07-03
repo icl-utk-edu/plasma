@@ -38,7 +38,7 @@
  * Sets flags in param indicating which parameters are used.
  * If run is true, also runs test and stores output parameters.
  ******************************************************************************/
-void test_zgbsv(param_value_t param[], bool run)
+void test_zcgbsv(param_value_t param[], bool run)
 {
     //================================================================
     // Mark which parameters are used.
@@ -163,7 +163,7 @@ void test_zgbsv(param_value_t param[], bool run)
     plasma_time_t start = omp_get_wtime();
     /* int plainfo = plasma_zgbsv(n, kl, ku, nrhs, AB, ldab, ipiv, X, ldx); */
     int plainfo = plasma_zcgbsv(n, kl, ku, nrhs, AB, ldab, ipiv,
-				B, ldb, X, ldX, &ITER);
+				B, ldb, X, ldx, &ITER);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 

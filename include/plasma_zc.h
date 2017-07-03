@@ -34,6 +34,11 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
                   plasma_complex64_t *pB, int ldb,
                   plasma_complex64_t *pX, int ldx, int *iter);
 
+int plasma_zcgbsv(int n, int kl, int ku, int nrhs,
+                  plasma_complex64_t *pAB, int ldab, int *ipiv,
+                  plasma_complex64_t *pB, int ldb,
+                  plasma_complex64_t *pX, int ldx, int *iter);
+
 int plasma_zlag2c(int m, int n,
                   plasma_complex64_t *pA,  int lda,
                   plasma_complex32_t *pAs, int ldas);
@@ -58,6 +63,13 @@ void plasma_omp_zcposv(plasma_enum_t uplo,
                        double *W,  double *Rnorm, double *Xnorm, int *iter,
                        plasma_sequence_t *sequence,
                        plasma_request_t  *request);
+
+void plasma_omp_zcgbsv(plasma_desc_t A,  int *ipiv,
+                       plasma_desc_t B,  plasma_desc_t X,
+                       plasma_desc_t As, plasma_desc_t Xs, plasma_desc_t R,
+                       double *work, double *Rnorm, double *Xnorm, int *iter,
+                       plasma_sequence_t *sequence,
+                       plasma_request_t  *request);  
 
 void plasma_omp_zlag2c(plasma_desc_t A, plasma_desc_t As,
                        plasma_sequence_t *sequence, plasma_request_t *request);

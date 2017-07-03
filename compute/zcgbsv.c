@@ -249,7 +249,7 @@ int plasma_zcgbsv(int n, int kl, int ku, int nrhs,
         plasma_omp_zge2desc(pB, ldb, B, &sequence, &request);
 
         // Call tile async function.
-        plasma_omp_zcgesv(AB, ipiv, B, X, ABs, Xs, R, work, Rnorm, Xnorm, iter,
+        plasma_omp_zcgbsv(AB, ipiv, B, X, ABs, Xs, R, work, Rnorm, Xnorm, iter,
                           &sequence, &request);
 
         // Translate back to LAPACK layout.
@@ -258,7 +258,7 @@ int plasma_zcgbsv(int n, int kl, int ku, int nrhs,
     // implicit synchronization
 
     // Free matrices in tile layout.
-    plasma_desc_destroy(&A);
+    plasma_desc_destroy(&AB);
     plasma_desc_destroy(&B);
     plasma_desc_destroy(&X);
     plasma_desc_destroy(&R);
@@ -345,7 +345,7 @@ int plasma_zcgbsv(int n, int kl, int ku, int nrhs,
  * @sa plasma_omp_zgesv
  *
  ******************************************************************************/
-void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
+void plasma_omp_zcgbsv(plasma_desc_t A,  int *ipiv,
                        plasma_desc_t B,  plasma_desc_t X,
                        plasma_desc_t As, plasma_desc_t Xs, plasma_desc_t R,
                        double *work, double *Rnorm, double *Xnorm, int *iter,
@@ -413,6 +413,7 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
         return;
 
     // workspaces for dzamax
+    // TODO: workspace adjust for band
     double *workX = work;
     double *workR = &work[X.mt*X.n];
 
@@ -426,7 +427,6 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
     plasma_pzlag2c(B, Xs, sequence, request); 
 
     // Convert A from double to single precision, store result in As.
-    // TODO: augment plasma_pzlag2c to handle band 
     plasma_pzlag2c(A, As, sequence, request);
 
     // Compute the LU factorization of As.
@@ -438,13 +438,13 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
     plasma_pcgeswp(PlasmaRowwise, Xs, ipiv, 1, sequence, request);
 
     plasma_pctbsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
-                  1.0, As, Xs, ipiv|NULL, sequence, request);
+                  1.0, As, Xs, NULL, sequence, request);
 
     plasma_pctbsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans, PlasmaNonUnit,
-                  1.0, As, Xs, ipiv|NULL, sequence, request);
+                  1.0, As, Xs, NULL, sequence, request);
 
     // Convert Xs to double precision
-    // TODO augment plasm_pclag2z to handle band.
+
     plasma_pclag2z(Xs, X, sequence, request);
 
     // Compute R = B - A * X.
@@ -483,10 +483,10 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
 
 	// TODO: ipiv needed? seems X already permutated
         plasma_pctbsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
-                      1.0, As, Xs, ipiv|NULL, sequence, request);
+                      1.0, As, Xs, NULL, sequence, request);
 
         plasma_pctbsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans, PlasmaNonUnit,
-                      1.0, As, Xs, ipiv|NULL, sequence, request);
+                      1.0, As, Xs, NULL, sequence, request);
 
         // Convert Xs back to double precision and update the current iterate.
         plasma_pclag2z(Xs, R, sequence, request);
