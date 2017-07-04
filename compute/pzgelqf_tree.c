@@ -38,7 +38,8 @@ void plasma_pzgelqf_tree(plasma_desc_t A, plasma_desc_t T,
     int *operations = NULL;
     int num_operations;
     // Transpose m and n to reuse the QR tree.
-    plasma_tree_operations(A.nt, A.mt, &operations, &num_operations);
+    plasma_tree_operations(A.nt, A.mt, &operations, &num_operations,
+                           sequence, request);
 
     // Set inner blocking from the T tile row-dimension.
     int ib = T.mb;

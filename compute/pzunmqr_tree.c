@@ -40,7 +40,8 @@ void plasma_pzunmqr_tree(plasma_enum_t side, plasma_enum_t trans,
     // Precompute order of QR operations.
     int *operations = NULL;
     int num_operations;
-    plasma_tree_operations(A.mt, A.nt, &operations, &num_operations);
+    plasma_tree_operations(A.mt, A.nt, &operations, &num_operations,
+                           sequence, request);
 
     // Set inner blocking from the T tile row-dimension.
     int ib = T.mb;
