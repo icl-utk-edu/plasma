@@ -195,18 +195,18 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
 
     // pivoting to the left
     for (int k = 0; k < minmtnt-1; k++) {
-        plasma_complex64_t *a00, *a20;
-        a00 = A(k, k);
+        plasma_complex64_t *a10, *a20;
+        a10 = A(k+1, k);
         a20 = A(A.mt-1, k);
 
-        int ma00k = (A.mt-k-1)*A.mb;
+        int ma10k = (A.mt-k-2)*A.mb;
         int na00k = plasma_tile_nmain(A, k);
         int lda20 = plasma_tile_mmain(A, A.mt-1);
 
         int nvak = plasma_tile_nview(A, k);
 
         #pragma omp task depend(in:ipiv[0:imin(A.m,A.n)]) \
-                         depend(inout:a00[0:ma00k*na00k]) \
+                         depend(inout:a10[0:ma10k*na00k]) \
                          depend(inout:a20[0:lda20*nvak])
         {
             if (sequence->status == PlasmaSuccess) {
@@ -219,9 +219,9 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
         }
 
         // Multidependency of individual tiles on the whole panel.
-        for (int m = k+1; m < A.mt-1; m++) {
+        for (int m = k+2; m < A.mt-1; m++) {
             plasma_complex64_t *amk = A(m, k);
-            #pragma omp task depend (in:a00[0]) \
+            #pragma omp task depend (in:a10[0]) \
                              depend (inout:amk[0])
             {
                 // Do some funny work here. It appears so that the compiler

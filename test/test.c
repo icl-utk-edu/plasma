@@ -203,6 +203,11 @@ struct routines_t routines[] =
     { "cpbtrf", test_cpbtrf },
     { "spbtrf", test_spbtrf },
 
+    { "zlangb", test_zlangb },
+    { "dlangb", test_dlangb },
+    { "clangb", test_clangb },
+    { "slangb", test_slangb },
+    
     { "zposv", test_zposv },
     { "dposv", test_dposv },
     { "cposv", test_cposv },
