@@ -165,11 +165,14 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
 		    if (transb == PlasmaNoTrans) {
 			int k_start = (imax(0, m*A.mb-A.kl)) / A.nb;
 			int k_end = (imin(A.n-1, (m+1)*A.mb+A.ku-1)) / A.nb;
+			/* printf("[%s]: m=%d\tn=%d\tk_s=%d\tk_e=%d\n", */
+			/*        __FILE__, m, n, k_start, k_end); */
 			for (int k = k_start; k <= k_end; k++) {
 			    int ldam = plasma_tile_mmain_band(A, m, k);
 			    int nvak = plasma_tile_nview(A, k);
 			    int ldbk = plasma_tile_mmain(B, k);
 			    plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
+			    
 			    core_omp_zgemm(
 				transa, transb,
 				mvcm, nvcn, nvak,

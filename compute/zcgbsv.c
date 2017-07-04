@@ -125,7 +125,7 @@ int plasma_zcgbsv(int n, int kl, int ku, int nrhs,
         plasma_error("illegal value of nrhs");
         return -2;
     }
-    if (ldab < imax(1, n)) {
+    if (ldab < imax(1, 1+kl+ku)) {
         plasma_error("illegal value of lda");
         return -4;
     }
@@ -212,6 +212,7 @@ int plasma_zcgbsv(int n, int kl, int ku, int nrhs,
     }
     retval = plasma_desc_general_create(PlasmaComplexFloat, nb, nb,
                                         X.m, X.n, 0, 0, X.m, X.n, &Xs);
+    printf("desc creat: Xs->matrix=%p\n", Xs.matrix);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         plasma_desc_destroy(&AB);
@@ -223,9 +224,9 @@ int plasma_zcgbsv(int n, int kl, int ku, int nrhs,
     }
 
     // Allocate tiled workspace for Infinity norm calculations.
-    // TODO: too much workspace.
+    // TODO: too much space? Initialize to zero?
     size_t lwork = imax((size_t)AB.nt*AB.n+AB.n, (size_t)X.mt*X.n+(size_t)R.mt*R.n);
-    double *work  = (double*)malloc((lwork)*sizeof(double));
+    double *work  = (double*)calloc((lwork),sizeof(double));
     double *Rnorm = (double*)malloc(((size_t)R.n)*sizeof(double));
     double *Xnorm = (double*)malloc(((size_t)X.n)*sizeof(double));
 
@@ -247,29 +248,41 @@ int plasma_zcgbsv(int n, int kl, int ku, int nrhs,
         // Translate matrices to tile layout.
         plasma_omp_zpb2desc(pAB, ldab, AB, &sequence, &request);
         plasma_omp_zge2desc(pB, ldb, B, &sequence, &request);
-
+	#pragma omp taskwait
+	printf("zcgbsv begins...status %d\n", sequence.status);
         // Call tile async function.
         plasma_omp_zcgbsv(AB, ipiv, B, X, ABs, Xs, R, work, Rnorm, Xnorm, iter,
                           &sequence, &request);
-
+	#pragma omp taskwait
+	printf("zcgbsv done...status %d\n", sequence.status);
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(X, pX, ldx, &sequence, &request);
+	#pragma omp taskwait
+	printf("zdesc2ge done...status %d\n", sequence.status);
     }
     // implicit synchronization
 
     // Free matrices in tile layout.
-    plasma_desc_destroy(&AB);
-    plasma_desc_destroy(&B);
-    plasma_desc_destroy(&X);
-    plasma_desc_destroy(&R);
-    plasma_desc_destroy(&ABs);
-    plasma_desc_destroy(&Xs);
-    free(work);
+    /* plasma_desc_destroy(&AB); */
+    printf("1\n");
+    /* plasma_desc_destroy(&B); */
+        printf("2\n");
+    /* plasma_desc_destroy(&X); */
+        printf("3\n");
+    /* plasma_desc_destroy(&R); */
+        printf("4\n");
+    /* plasma_desc_destroy(&ABs); */
+        printf("5\n");
+	printf("desc destroy: Xs->matrix=%p\n", Xs.matrix);
+    /* plasma_desc_destroy(&Xs); */
+        printf("6\n");
+    /* free(work); */
     free(Rnorm);
     free(Xnorm);
 
     // Return status.
     int status = sequence.status;
+    printf("status=%d\n", status);
     return status;
 }
 
@@ -422,7 +435,7 @@ void plasma_omp_zcgbsv(plasma_desc_t A,  int *ipiv,
     double eps = LAPACKE_dlamch_work('E');
     double Anorm;
     plasma_pzlangb(PlasmaInfNorm, A, work, &Anorm, sequence, request);
-
+#pragma omp taskwait
     // Convert B from double to single precision, store result in Xs.
     plasma_pzlag2c(B, Xs, sequence, request); 
 
@@ -433,36 +446,49 @@ void plasma_omp_zcgbsv(plasma_desc_t A,  int *ipiv,
     //#pragma omp taskwait
     plasma_pcgbtrf(As, ipiv, sequence, request);
     //#pragma omp taskwait
-
+/* #pragma omp taskwait */
+/*     printf("plasma_pcgbtrf done! status %d\n", sequence->status); */
     // Solve the system As * Xs = Bs.
-    plasma_pcgeswp(PlasmaRowwise, Xs, ipiv, 1, sequence, request);
-
+    //plasma_pcgeswp(PlasmaRowwise, Xs, ipiv, 1, sequence, request);
+    /* #pragma omp taskwait */
+    /* printf("plasma_pcgeswp done! status %d\n", sequence->status); */
     plasma_pctbsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
-                  1.0, As, Xs, NULL, sequence, request);
-
+                  1.0, As, Xs, ipiv, sequence, request);
+    /* #pragma omp taskwait */
+    /* printf("plasma_pctbsm done! status %d\n", sequence->status); */
     plasma_pctbsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans, PlasmaNonUnit,
-                  1.0, As, Xs, NULL, sequence, request);
-
+                  1.0, As, Xs, ipiv, sequence, request);
+    /* #pragma omp taskwait */
+    /* printf("plasma_pctbsm 2nd done! status %d\n", sequence->status); */
     // Convert Xs to double precision
 
     plasma_pclag2z(Xs, X, sequence, request);
-
+    /* #pragma omp taskwait */
+    /* printf("plasma_pclag2z done!\n"); */
     // Compute R = B - A * X.
     // TODO: augment plasma_pzgemm to handle band (or zgbmm??)
     plasma_pzlacpy(PlasmaGeneral, PlasmaNoTrans, B, R, sequence, request);
     plasma_pzgemm(PlasmaNoTrans, PlasmaNoTrans,
                   zmone, A, X, zone, R, sequence, request);
-
+    /* #pragma omp taskwait */
+    /* printf("plasma_pzgemm done!\n"); */
     // Check whether the nrhs normwise backward error satisfies the
     // stopping criterion. If yes, set iter=0 and return.
     plasma_pdzamax(PlasmaColumnwise, X, workX, Xnorm, sequence, request);
     plasma_pdzamax(PlasmaColumnwise, R, workR, Rnorm, sequence, request);
+    /* printf("plasma_pdzamax done!\n"); */
     #pragma omp taskwait
     {
         cte = Anorm * eps * sqrt((double)A.n) * bwdmax;
+	/* printf("Anorm=%.2g\tCTE=%.2g\n", Anorm, cte); */
+	/* for (int i=0; i<R.n; i++) { */
+	/*     printf("%.2g\t", Rnorm[i]); */
+	/* } */
+	printf("\n");
         int flag = 1;
         for (int n = 0; n < R.n && flag == 1; n++) {
             if (Rnorm[n] > Xnorm[n] * cte) {
+		printf("Rnorm[%d]=%.2g\n",n, Rnorm[n]);
                 flag = 0;
             }
         }
@@ -471,6 +497,8 @@ void plasma_omp_zcgbsv(plasma_desc_t A,  int *ipiv,
             return;
         }
     }
+    /* #pragma omp taskwait */
+    /* printf("Factorization done! status %d\n", sequence->status); */
 
     // iterative refinement
     for (int iiter = 0; iiter < itermax; iiter++) {
@@ -479,14 +507,14 @@ void plasma_omp_zcgbsv(plasma_desc_t A,  int *ipiv,
 
         // Solve the system As * Xs = Rs.
         //#pragma omp taskwait
-        plasma_pcgeswp(PlasmaRowwise, Xs, ipiv, 1, sequence, request);
+        /* plasma_pcgeswp(PlasmaRowwise, Xs, ipiv, 1, sequence, request); */
 
 	// TODO: ipiv needed? seems X already permutated
         plasma_pctbsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
-                      1.0, As, Xs, NULL, sequence, request);
+                      1.0, As, Xs, ipiv, sequence, request);
 
         plasma_pctbsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans, PlasmaNonUnit,
-                      1.0, As, Xs, NULL, sequence, request);
+                      1.0, As, Xs, ipiv, sequence, request);
 
         // Convert Xs back to double precision and update the current iterate.
         plasma_pclag2z(Xs, R, sequence, request);
@@ -523,21 +551,23 @@ void plasma_omp_zcgbsv(plasma_desc_t A,  int *ipiv,
     // routine.
     *iter = -itermax - 1;
 
+
 //#if !defined(PLASMA_ZCGESV_WORKAROUND)
     // Compute LU factorization of A.
     //#pragma omp taskwait
-    plasma_pzgetrf(A, ipiv, sequence, request);
+    plasma_pzgbtrf(A, ipiv, sequence, request);
 
     // Solve the system A * X = B.
     plasma_pzlacpy(PlasmaGeneral, PlasmaNoTrans, B, X, sequence, request);
 
     //#pragma omp taskwait
-    plasma_pzgeswp(PlasmaRowwise, X, ipiv, 1, sequence, request);
+    /* plasma_pzgeswp(PlasmaRowwise, X, ipiv, 1, sequence, request); */
 
-    plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
-                  1.0, A, X, sequence, request);
+    plasma_pztbsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
+	          1.0, A, X, ipiv, sequence, request);
 
-    plasma_pztrsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans, PlasmaNonUnit,
-                  1.0, A, X, sequence, request);
-//#endif
+    plasma_pztbsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans, PlasmaNonUnit,
+	          1.0, A, X, ipiv, sequence, request);
+
+
 }
