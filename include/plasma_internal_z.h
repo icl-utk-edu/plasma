@@ -111,6 +111,10 @@ void plasma_pzlacpy(plasma_enum_t uplo, plasma_enum_t transa,
                     plasma_desc_t A, plasma_desc_t B,
                     plasma_sequence_t *sequence, plasma_request_t *request);
 
+void plasma_pzlangb(plasma_enum_t norm,
+                    plasma_desc_t A, double *work, double *value,
+                    plasma_sequence_t *sequence, plasma_request_t *request);
+
 void plasma_pzlange(plasma_enum_t norm,
                     plasma_desc_t A, double *work, double *value,
                     plasma_sequence_t *sequence, plasma_request_t *request);
