@@ -106,7 +106,11 @@ Work on PLASMA was also partially funded by NSF grants:
 Currently, PLASMA is being developed in collaboration with European Commission funded [Horizon 2020](https://ec.europa.eu/programmes/horizon2020/) projects:
 
 * [NLAFET: Parallel Numerical Linear Algebra for Future Extreme Scale Systems](http://www.nlafet.eu), Grant Agreement no. 671633,
-* [INTERTWinE: Programming Model INTERoperability ToWards Exascale](http://www.intertwine-project.eu), Grant Agreement no. 671602.
+* [INTERTWinE: Programming Model INTERoperability ToWards Exascale](http://www.intertwine-project.eu), Grant Agreement no. 671602,
+
+and an [EPSRC](https://www.epsrc.ac.uk/) funded project
+
+* [SERT: Scale-free, Energy-aware, Resilient and Transparent Adaptation of CSE Applications to Mega-core Systems](http://gow.epsrc.ac.uk/NGBOViewGrant.aspx?GrantRef=EP/M01147X/1), EPSRC Reference: EP/M01147X/1.
 
 Additional funding was provided by the following companies:
 
