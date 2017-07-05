@@ -164,7 +164,6 @@ void test_zcgbsv(param_value_t param[], bool run)
     /* int plainfo = plasma_zgbsv(n, kl, ku, nrhs, AB, ldab, ipiv, X, ldx); */
     int plainfo = plasma_zcgbsv(n, kl, ku, nrhs, AB, ldab, ipiv,
 				B, ldb, X, ldx, &ITER);
-    printf("[%s]:plainfo=%d\n", __FILE__, plainfo);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 

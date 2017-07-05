@@ -210,9 +210,9 @@ int plasma_zcgbsv(int n, int kl, int ku, int nrhs,
         plasma_desc_destroy(&R);
         return retval;
     }
+
     retval = plasma_desc_general_create(PlasmaComplexFloat, nb, nb,
                                         X.m, X.n, 0, 0, X.m, X.n, &Xs);
-    printf("desc creat: Xs->matrix=%p\n", Xs.matrix);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         plasma_desc_destroy(&AB);
@@ -223,9 +223,11 @@ int plasma_zcgbsv(int n, int kl, int ku, int nrhs,
         return retval;
     }
 
+
+
     // Allocate tiled workspace for Infinity norm calculations.
-    // TODO: too much space? Initialize to zero?
-    size_t lwork = imax((size_t)AB.nt*AB.n+AB.n, (size_t)X.mt*X.n+(size_t)R.mt*R.n);
+    size_t lwork = imax(((size_t)AB.nt*AB.mt*AB.mb+AB.mb*AB.mt),
+			(size_t)X.mt*X.n+(size_t)R.mt*R.n);
     double *work  = (double*)calloc((lwork),sizeof(double));
     double *Rnorm = (double*)malloc(((size_t)R.n)*sizeof(double));
     double *Xnorm = (double*)malloc(((size_t)X.n)*sizeof(double));
@@ -248,41 +250,30 @@ int plasma_zcgbsv(int n, int kl, int ku, int nrhs,
         // Translate matrices to tile layout.
         plasma_omp_zpb2desc(pAB, ldab, AB, &sequence, &request);
         plasma_omp_zge2desc(pB, ldb, B, &sequence, &request);
-	#pragma omp taskwait
-	printf("zcgbsv begins...status %d\n", sequence.status);
+
         // Call tile async function.
         plasma_omp_zcgbsv(AB, ipiv, B, X, ABs, Xs, R, work, Rnorm, Xnorm, iter,
                           &sequence, &request);
-	#pragma omp taskwait
-	printf("zcgbsv done...status %d\n", sequence.status);
+
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(X, pX, ldx, &sequence, &request);
-	#pragma omp taskwait
-	printf("zdesc2ge done...status %d\n", sequence.status);
     }
     // implicit synchronization
 
     // Free matrices in tile layout.
-    /* plasma_desc_destroy(&AB); */
-    printf("1\n");
-    /* plasma_desc_destroy(&B); */
-        printf("2\n");
-    /* plasma_desc_destroy(&X); */
-        printf("3\n");
-    /* plasma_desc_destroy(&R); */
-        printf("4\n");
-    /* plasma_desc_destroy(&ABs); */
-        printf("5\n");
-	printf("desc destroy: Xs->matrix=%p\n", Xs.matrix);
-    /* plasma_desc_destroy(&Xs); */
-        printf("6\n");
-    /* free(work); */
+    plasma_desc_destroy(&AB);
+    plasma_desc_destroy(&B);
+    plasma_desc_destroy(&X);
+    plasma_desc_destroy(&R);
+    plasma_desc_destroy(&ABs);
+    plasma_desc_destroy(&Xs);
+
+    free(work);
     free(Rnorm);
     free(Xnorm);
 
     // Return status.
     int status = sequence.status;
-    printf("status=%d\n", status);
     return status;
 }
 
@@ -435,7 +426,7 @@ void plasma_omp_zcgbsv(plasma_desc_t A,  int *ipiv,
     double eps = LAPACKE_dlamch_work('E');
     double Anorm;
     plasma_pzlangb(PlasmaInfNorm, A, work, &Anorm, sequence, request);
-#pragma omp taskwait
+
     // Convert B from double to single precision, store result in Xs.
     plasma_pzlag2c(B, Xs, sequence, request); 
 
@@ -480,15 +471,9 @@ void plasma_omp_zcgbsv(plasma_desc_t A,  int *ipiv,
     #pragma omp taskwait
     {
         cte = Anorm * eps * sqrt((double)A.n) * bwdmax;
-	/* printf("Anorm=%.2g\tCTE=%.2g\n", Anorm, cte); */
-	/* for (int i=0; i<R.n; i++) { */
-	/*     printf("%.2g\t", Rnorm[i]); */
-	/* } */
-	printf("\n");
         int flag = 1;
         for (int n = 0; n < R.n && flag == 1; n++) {
             if (Rnorm[n] > Xnorm[n] * cte) {
-		printf("Rnorm[%d]=%.2g\n",n, Rnorm[n]);
                 flag = 0;
             }
         }
