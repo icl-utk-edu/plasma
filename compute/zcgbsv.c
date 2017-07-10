@@ -24,7 +24,7 @@
 
 /***************************************************************************//**
  * TODO: adjust the documents for band matrix A.
- * @ingroup plasma_gesv
+ * @ingroup plasma_gbsv
  *
  *  Computes the solution to a system of linear equations A * X = B, where A is
  *  an n-by-n matrix and X and B are n-by-nrhs matrices.
@@ -60,16 +60,21 @@
  *          The number of linear equations, i.e., the order of the matrix A.
  *          n >= 0.
  *
+ * @param[in] kl
+ *          The number of subdiagonals within the band of A. kl >= 0.
+ *
+ * @param[in] ku
+ *          The number of superdiagonals within the band of A. ku >= 0.
+
  * @param[in] nrhs
  *          The number of right hand sides, i.e., the number of columns of the
  *          matrix B. nrhs >= 0.
  *
- * @param[in,out] pA
- *          The n-by-n matrix A.
- *          On exit, contains the LU factors of A.
+ * @param[in] pAB
+ *          The band matrix AB in LAPACK band matrix format.
  *
- * @param[in] lda
- *          The leading dimension of the array A. lda >= max(1,n).
+ * @param[in] ldab
+ *          The leading dimension of the array AB. 
  *
  * @param[out] ipiv
  *          The pivot indices; for 1 <= i <= min(m,n), row i of the
@@ -99,9 +104,9 @@
  *
  *******************************************************************************
  *
- * @sa plasma_omp_zcgesv
- * @sa plasma_dsgesv
- * @sa plasma_zgesv
+ * @sa plasma_omp_zcgbsv
+ * @sa plasma_dsgbsv
+ * @sa plasma_zgbsv
  *
  ******************************************************************************/
 int plasma_zcgbsv(int n, int kl, int ku, int nrhs,
@@ -163,8 +168,6 @@ int plasma_zcgbsv(int n, int kl, int ku, int nrhs,
                                // this could fill the last tile of the panel,
                                // and we need extra NB space on the bottom
     int retval;
-    /* retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb, */
-    /*                                     n, n, 0, 0, n, n, &A); */
     retval = plasma_desc_general_band_create(PlasmaComplexDouble, PlasmaGeneral,
 					     nb, nb, lm, n, 0, 0, n, n, kl, ku, &AB);
     if (retval != PlasmaSuccess) {
@@ -198,8 +201,7 @@ int plasma_zcgbsv(int n, int kl, int ku, int nrhs,
         plasma_desc_destroy(&X);
         return retval;
     }
-    /* retval = plasma_desc_general_create(PlasmaComplexFloat, nb, nb, */
-    /*                                     A.m, A.n, 0, 0, A.m, A.n, &As); */
+    
     retval = plasma_desc_general_band_create(PlasmaComplexFloat, PlasmaGeneral,
 					     nb, nb, lm, n, 0, 0, n, n, kl, ku, &ABs);
     if (retval != PlasmaSuccess) {
@@ -278,15 +280,13 @@ int plasma_zcgbsv(int n, int kl, int ku, int nrhs,
 }
 
 /***************************************************************************//**
- * TODO: adjust documentation for band A.
- * @ingroup plasma_gesv
+ * @ingroup plasma_gbsv
  *
- *  Solves a general linear system of equations using iterative refinement
- *  with the LU factor computed using plasma_cgetrf.
- *  Non-blocking tile version of plasma_zcgesv().
- *  Operates on matrices stored by tiles.
- *  All matrices are passed through descriptors.
- *  All dimensions are taken from the descriptors.
+ *  Solves a general band linear system of equations using iterative
+ *  refinement with the LU factor computed using plasma_cgbtrf.
+ *  Non-blocking tile version of plasma_zcgbsv().  Operates on
+ *  matrices stored by tiles.  All matrices are passed through
+ *  descriptors.  All dimensions are taken from the descriptors.
  *  Allows for pipelining of operations at runtime.
  *
  *******************************************************************************
@@ -344,9 +344,9 @@ int plasma_zcgbsv(int n, int kl, int ku, int nrhs,
  *
  *******************************************************************************
  *
- * @sa plasma_zcgesv
- * @sa plasma_omp_dsgesv
- * @sa plasma_omp_zgesv
+ * @sa plasma_zcgbsv
+ * @sa plasma_omp_dsgbsv
+ * @sa plasma_omp_zgbsv
  *
  ******************************************************************************/
 void plasma_omp_zcgbsv(plasma_desc_t A,  int *ipiv,
@@ -417,7 +417,6 @@ void plasma_omp_zcgbsv(plasma_desc_t A,  int *ipiv,
         return;
 
     // workspaces for dzamax
-    // TODO: workspace adjust for band
     double *workX = work;
     double *workR = &work[X.mt*X.n];
 
@@ -434,40 +433,26 @@ void plasma_omp_zcgbsv(plasma_desc_t A,  int *ipiv,
     plasma_pzlag2c(A, As, sequence, request);
 
     // Compute the LU factorization of As.
-    //#pragma omp taskwait
+
     plasma_pcgbtrf(As, ipiv, sequence, request);
-    //#pragma omp taskwait
-/* #pragma omp taskwait */
-/*     printf("plasma_pcgbtrf done! status %d\n", sequence->status); */
     // Solve the system As * Xs = Bs.
-    //plasma_pcgeswp(PlasmaRowwise, Xs, ipiv, 1, sequence, request);
-    /* #pragma omp taskwait */
-    /* printf("plasma_pcgeswp done! status %d\n", sequence->status); */
     plasma_pctbsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
                   1.0, As, Xs, ipiv, sequence, request);
-    /* #pragma omp taskwait */
-    /* printf("plasma_pctbsm done! status %d\n", sequence->status); */
     plasma_pctbsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans, PlasmaNonUnit,
                   1.0, As, Xs, ipiv, sequence, request);
-    /* #pragma omp taskwait */
-    /* printf("plasma_pctbsm 2nd done! status %d\n", sequence->status); */
     // Convert Xs to double precision
-
     plasma_pclag2z(Xs, X, sequence, request);
-    /* #pragma omp taskwait */
-    /* printf("plasma_pclag2z done!\n"); */
     // Compute R = B - A * X.
-    // TODO: augment plasma_pzgemm to handle band (or zgbmm??)
+
     plasma_pzlacpy(PlasmaGeneral, PlasmaNoTrans, B, R, sequence, request);
     plasma_pzgemm(PlasmaNoTrans, PlasmaNoTrans,
                   zmone, A, X, zone, R, sequence, request);
-    /* #pragma omp taskwait */
-    /* printf("plasma_pzgemm done!\n"); */
+
     // Check whether the nrhs normwise backward error satisfies the
     // stopping criterion. If yes, set iter=0 and return.
     plasma_pdzamax(PlasmaColumnwise, X, workX, Xnorm, sequence, request);
     plasma_pdzamax(PlasmaColumnwise, R, workR, Rnorm, sequence, request);
-    /* printf("plasma_pdzamax done!\n"); */
+
     #pragma omp taskwait
     {
         cte = Anorm * eps * sqrt((double)A.n) * bwdmax;
@@ -482,8 +467,6 @@ void plasma_omp_zcgbsv(plasma_desc_t A,  int *ipiv,
             return;
         }
     }
-    /* #pragma omp taskwait */
-    /* printf("Factorization done! status %d\n", sequence->status); */
 
     // iterative refinement
     for (int iiter = 0; iiter < itermax; iiter++) {
@@ -491,10 +474,6 @@ void plasma_omp_zcgbsv(plasma_desc_t A,  int *ipiv,
         plasma_pzlag2c(R, Xs, sequence, request);
 
         // Solve the system As * Xs = Rs.
-        //#pragma omp taskwait
-        /* plasma_pcgeswp(PlasmaRowwise, Xs, ipiv, 1, sequence, request); */
-
-	// TODO: ipiv needed? seems X already permutated
         plasma_pctbsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
                       1.0, As, Xs, ipiv, sequence, request);
 
@@ -506,7 +485,6 @@ void plasma_omp_zcgbsv(plasma_desc_t A,  int *ipiv,
         plasma_pzgeadd(PlasmaNoTrans, zone, R, zone, X, sequence, request);
 
         // Compute R = B - A * X.
-	// TODO: gbmm??
         plasma_pzlacpy(PlasmaGeneral, PlasmaNoTrans, B, R, sequence, request);
         plasma_pzgemm(PlasmaNoTrans, PlasmaNoTrans, zmone, A, X, zone, R,
                       sequence, request);
