@@ -6,7 +6,7 @@
  *  University of Tennessee, US,
  *  University of Manchester, UK.
  *
- * @precisions normal z -> s d c
+ * @precisions mixed zc -> ds
  *
  **/
 #include "test.h"

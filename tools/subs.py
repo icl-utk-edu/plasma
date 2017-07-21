@@ -118,6 +118,8 @@ blas_mixed = [
     ('strmm',                'ctrmm'               ),
     ('strsm',                'ctrsm'               ),
     ('strsv',                'ctrsv'               ),
+    ('stbsm',                'ctbsm'               ),
+    ('sgbtrf',               'cgbtrf'              ),
 ]
 
 
