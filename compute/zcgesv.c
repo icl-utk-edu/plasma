@@ -3,7 +3,7 @@
  * @file
  *
  *  PLASMA is a software package provided by:
- *  University of Tennessee, US,
+ *  University of Tennessee,  US,
  *  University of Manchester, UK.
  *
  * @precisions mixed zc -> ds
@@ -21,6 +21,7 @@
 
 #include <math.h>
 #include <omp.h>
+#include <stdbool.h>
 
 /***************************************************************************//**
  *
@@ -43,8 +44,7 @@
  *  iterative refinement.
  *
  *  The iterative refinement process is stopped if iter > itermax or
- *  for all the RHS we have: Rnorm < sqrt(n)*Xnorm*Anorm*eps*BWDmax
- *  where:
+ *  for all the RHS we have: Rnorm < sqrt(n)*Xnorm*Anorm*eps, where:
  *
  *  - iter is the number of the current iteration in the iterative refinement
  *     process
@@ -52,7 +52,7 @@
  *  - Xnorm is the Infinity-norm of the solution
  *  - Anorm is the Infinity-operator-norm of the matrix A
  *  - eps is the machine epsilon returned by DLAMCH('Epsilon').
- *  The values itermax and BWDmax are fixed to 30 and 1.0D+00 respectively.
+ *  The values itermax is fixed to 30.
  *
  *******************************************************************************
  *
@@ -260,6 +260,25 @@ int plasma_zcgesv(int n, int nrhs,
     return status;
 }
 
+
+// Checks, that convergence criterion is true for all columns of R and X
+static bool conv(double *Rnorm, double *Xnorm, int n, double cte) {
+
+    bool value = true;
+
+    for (int i = 0; i < n; i++) {
+
+        if (Rnorm[i] > Xnorm[i] * cte) {
+
+            value = false;
+            break;
+        }
+    }
+
+    return value;
+}
+
+
 /***************************************************************************//**
  *
  * @ingroup plasma_gesv
@@ -339,8 +358,7 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
                        plasma_sequence_t *sequence,
                        plasma_request_t  *request)
 {
-    const int    itermax = 30;
-    const double bwdmax  = 1.0;
+    const int itermax = 30;
     const plasma_complex64_t zmone = -1.0;
     const plasma_complex64_t zone  =  1.0;
     *iter = 0;
@@ -441,23 +459,20 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
     // stopping criterion. If yes, set iter=0 and return.
     plasma_pdzamax(PlasmaColumnwise, X, workX, Xnorm, sequence, request);
     plasma_pdzamax(PlasmaColumnwise, R, workR, Rnorm, sequence, request);
+
     #pragma omp taskwait
     {
-        cte = Anorm * eps * sqrt((double)A.n) * bwdmax;
-        int flag = 1;
-        for (int n = 0; n < R.n && flag == 1; n++) {
-            if (Rnorm[n] > Xnorm[n] * cte) {
-                flag = 0;
-            }
-        }
-        if (flag == 1) {
-            *iter = 0;
+        cte = Anorm * eps * sqrt((double)A.n);
+
+        if (conv(Rnorm, Xnorm, R.n, cte)) {
+           *iter = 0;
             return;
         }
     }
 
     // iterative refinement
     for (int iiter = 0; iiter < itermax; iiter++) {
+
         // Convert R from double to single precision, store result in Xs.
         plasma_pzlag2c(R, Xs, sequence, request);
 
@@ -484,16 +499,11 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
         // stopping criterion. If yes, set iter = iiter > 0 and return.
         plasma_pdzamax(PlasmaColumnwise, X, workX, Xnorm, sequence, request);
         plasma_pdzamax(PlasmaColumnwise, R, workR, Rnorm, sequence, request);
+
         #pragma omp taskwait
         {
-            int flag = 1;
-            for (int n = 0; n < R.n && flag == 1; n++) {
-                if (Rnorm[n] > Xnorm[n] * cte) {
-                    flag = 0;
-                }
-            }
-            if (flag == 1) {
-                *iter = iiter+1;
+            if (conv(Rnorm, Xnorm, R.n, cte)) {
+               *iter = iiter+1;
                 return;
             }
         }
