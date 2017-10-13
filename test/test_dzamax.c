@@ -96,8 +96,11 @@ void test_dzamax(param_value_t param[], bool run)
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
+    // flops count each comparison as an addition
+    plasma_enum_t norm =
+        (colrow == PlasmaColumnwise ? PlasmaOneNorm : PlasmaInfNorm);
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = flops_zlange(m, n, colrow) / time / 1e9;
+    param[PARAM_GFLOPS].d = flops_zlange(m, n, norm) / time / 1e9;
 
     //================================================================
     // Test results by comparing to a reference implementation.
