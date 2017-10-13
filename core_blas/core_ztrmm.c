@@ -119,7 +119,7 @@ void core_omp_ztrmm(
     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     int ak;
-    if (side == PlasmaLower)
+    if (side == PlasmaLeft)
         ak = m;
     else
         ak = n;
