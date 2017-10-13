@@ -62,7 +62,7 @@ void core_zlange(plasma_enum_t norm, int m, int n,
 }
 
 /******************************************************************************/
-void core_omp_zlange(int norm, int m, int n,
+void core_omp_zlange(plasma_enum_t norm, int m, int n,
                      const plasma_complex64_t *A, int lda,
                      double *work, double *value,
                      plasma_sequence_t *sequence, plasma_request_t *request)
@@ -76,7 +76,7 @@ void core_omp_zlange(int norm, int m, int n,
 }
 
 /******************************************************************************/
-void core_omp_zlange_aux(int norm, int m, int n,
+void core_omp_zlange_aux(plasma_enum_t norm, int m, int n,
                          const plasma_complex64_t *A, int lda,
                          double *value,
                          plasma_sequence_t *sequence, plasma_request_t *request)
