@@ -26,9 +26,7 @@
 #include <omp.h>
 
 #define COMPLEX
-double zlangb_(char *, int *, int *, int *, plasma_complex64_t *, int *, double *);
- //   double value = plasma_zlangb(norm, m, n, kl, ku,  AB, ldab);
-double plasma_zlangb(plasma_enum_t, int, int, int, int, plasma_complex64_t *, int);
+
 /***************************************************************************//**
  *
  * @brief Tests ZLANGB.
@@ -128,7 +126,7 @@ void test_zlangb(param_value_t param[], bool run)
 
         memcpy(ABref, AB, (size_t)ldab*n*sizeof(plasma_complex64_t));
     }
-    
+
     //================================================================
     // Run and time PLASMA.
     //================================================================
@@ -144,31 +142,13 @@ void test_zlangb(param_value_t param[], bool run)
     // Test results by comparing to a reference implementation.
     //================================================================
     if (test) {
-        char *cnorm;
-	double *workspace=NULL;
-        switch (norm) {
-        case PlasmaMaxNorm:
-            cnorm = "m";
-            break;
-        case PlasmaOneNorm:
-            cnorm = "1";
-            break;
-	case PlasmaInfNorm:
-	    cnorm = "i";
-	    workspace = (double*) malloc(n*sizeof(double));
-	    break;
-	case PlasmaFrobeniusNorm:
-	    cnorm = "f";
-	    break;
-        default:
-            assert(0);
-        }
+        int lwork = (norm == PlasmaInfNorm ? n : 1);
+        double *work = (double*) malloc(n*sizeof(double));
+        assert(work != NULL);
+        char normc = lapack_const(norm);
 
         double valueRef =
-            //LAPACKE_zlange(LAPACK_COL_MAJOR, lapack_const(norm),
-            //               kl+ku+1, n, ABref+kl, ldab);
-            //zlange_(cnorm, &kuu, &n, ABref+kl, &ldab, NULL);
-            zlangb_(cnorm, &n,&kl, &ku, ABref+kl, &ldab, workspace);
+            LAPACK_zlangb(&normc, &n, &kl, &ku, ABref+kl, &ldab, work);
 
         // Calculate relative error
         double error = fabs(value-valueRef);
@@ -196,6 +176,8 @@ void test_zlangb(param_value_t param[], bool run)
         error /= normalize;
         param[PARAM_ERROR].d   = error;
         param[PARAM_SUCCESS].i = error < tol;
+
+        free(work);
     }
 
     //================================================================

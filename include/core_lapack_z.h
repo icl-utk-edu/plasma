@@ -45,6 +45,16 @@ void LAPACK_zlassq(const int *n, const plasma_complex64_t *x, const int *incx,
                    double *scale, double *sumsq);
 #endif
 
+// LAPACKE_zlangb not available yet
+#ifndef LAPACK_zlangb
+#define LAPACK_zlangb LAPACK_GLOBAL(zlangb, ZLANGB)
+double LAPACK_zlangb(const char *norm,
+                     const int *n, const int *kl, const int *ku,
+                     const plasma_complex64_t *A, const int *lda,
+                     double *work);
+
+#endif
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif
