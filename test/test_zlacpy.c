@@ -105,8 +105,8 @@ void test_zlacpy(param_value_t param[], bool run)
             break;
     }
     // Zero out B
-    int Bm = (transa == PlasmaGeneral ? m : n);
-    int Bn = (transa == PlasmaGeneral ? n : m);
+    int Bm = (transa == PlasmaNoTrans ? m : n);
+    int Bn = (transa == PlasmaNoTrans ? n : m);
     LAPACKE_zlaset_work(
         mtrxLayout, 'G', Bm, Bn, 0.0, 0.0, B, ldb);
 
