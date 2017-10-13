@@ -68,7 +68,7 @@ void plasma_tuning_finalize(lua_State *L)
 
 /******************************************************************************/
 static void plasma_tune(lua_State *L, plasma_enum_t dtyp,
-                       char *func_name, int *out, int count, ...)
+                        const char *func_name, int *out, int count, ...)
 {
     int retval;
     retval = lua_getglobal(L, func_name);
@@ -76,7 +76,7 @@ static void plasma_tune(lua_State *L, plasma_enum_t dtyp,
         plasma_error("lua_getglobal() failed");
         return;
     }
-    switch (dtyp){
+    switch (dtyp) {
         case PlasmaComplexDouble: lua_pushstring(L, "Z"); break;
         case PlasmaComplexFloat:  lua_pushstring(L, "C"); break;
         case PlasmaRealDouble:    lua_pushstring(L, "D"); break;
@@ -319,7 +319,7 @@ void plasma_tune_syr2k(plasma_context_t *plasma, plasma_enum_t dtyp,
 }
 /******************************************************************************/
 void plasma_tune_syrk(plasma_context_t *plasma, plasma_enum_t dtyp,
-		              int n, int k)
+                      int n, int k)
 {
     if (plasma->L == NULL)
         return;
@@ -328,7 +328,7 @@ void plasma_tune_syrk(plasma_context_t *plasma, plasma_enum_t dtyp,
 }
 /******************************************************************************/
 void plasma_tune_tradd(plasma_context_t *plasma, plasma_enum_t dtyp,
-		               int m, int n)
+                       int m, int n)
 {
     if (plasma->L == NULL)
         return;
@@ -355,7 +355,7 @@ void plasma_tune_trsm(plasma_context_t *plasma, plasma_enum_t dtyp,
 }
 /******************************************************************************/
 void plasma_tune_trtri(plasma_context_t *plasma, plasma_enum_t dtyp,
-   		               int n)
+                       int n)
 {
     if (plasma->L == NULL)
         return;
