@@ -158,7 +158,7 @@ int plasma_zgels(plasma_enum_t trans,
     // Set tiling parameters.
     int ib = plasma->ib;
     int nb = plasma->nb;
-    int householder_mode = plasma->householder_mode;
+    plasma_enum_t householder_mode = plasma->householder_mode;
 
     // Create tile matrices.
     plasma_desc_t A;

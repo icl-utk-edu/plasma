@@ -106,7 +106,7 @@ int plasma_zgeqrf(int m, int n,
     // Set tiling parameters.
     int ib = plasma->ib;
     int nb = plasma->nb;
-    int householder_mode = plasma->householder_mode;
+    plasma_enum_t householder_mode = plasma->householder_mode;
 
     // Create tile matrix.
     plasma_desc_t A;
