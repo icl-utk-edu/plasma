@@ -44,6 +44,8 @@ void test_zlaset(param_value_t param[], bool run)
     param[PARAM_DIM    ].used = PARAM_USE_M | PARAM_USE_N;
     param[PARAM_PADA   ].used = true;
     param[PARAM_NB     ].used = true;
+    param[PARAM_ALPHA  ].used = true;
+    param[PARAM_BETA   ].used = true;
     if (! run)
         return;
 
@@ -90,8 +92,13 @@ void test_zlaset(param_value_t param[], bool run)
     //================================================================
     // Run and time PLASMA
     //================================================================
-    plasma_complex64_t alpha = 1.234+5.678*I;
-    plasma_complex64_t beta = 2.345+6.789*I;
+#ifdef COMPLEX
+    plasma_complex64_t alpha = param[PARAM_ALPHA].z;
+    plasma_complex64_t beta  = param[PARAM_BETA].z;
+#else
+    double alpha = creal(param[PARAM_ALPHA].z);
+    double beta  = creal(param[PARAM_BETA].z);
+#endif
 
     plasma_time_t start = omp_get_wtime();
     retval = plasma_zlaset(uplo, m, n, alpha, beta, A, lda);
