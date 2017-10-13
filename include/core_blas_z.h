@@ -151,7 +151,7 @@ int core_zlauum(plasma_enum_t uplo,
                 int n,
                 plasma_complex64_t *A, int lda);
 
-int core_zpamm(int op, plasma_enum_t side, plasma_enum_t storev,
+int core_zpamm(plasma_enum_t op, plasma_enum_t side, plasma_enum_t storev,
                int m, int n, int k, int l,
                const plasma_complex64_t *A1, int lda1,
                      plasma_complex64_t *A2, int lda2,

@@ -255,14 +255,14 @@ int core_zpamm(plasma_enum_t op, plasma_enum_t side, plasma_enum_t storev,
     //        -------------------------------------
 
     plasma_enum_t uplo;
-    int trans;
+    plasma_enum_t trans;
     int vi2, vi3;
 
     //===================
     // PlasmaColumnwise
     //===================
     if (storev == PlasmaColumnwise) {
-        uplo = CblasUpper;
+        uplo = PlasmaUpper;
         if (side == PlasmaLeft) {
             trans = op == PlasmaA2 ? PlasmaNoTrans : Plasma_ConjTrans;
             vi2 = trans == PlasmaNoTrans ? m - l : k - l;
@@ -277,7 +277,7 @@ int core_zpamm(plasma_enum_t op, plasma_enum_t side, plasma_enum_t storev,
     // PlasmaRowwise
     //================
     else {
-        uplo = CblasLower;
+        uplo = PlasmaLower;
         if (side == PlasmaLeft) {
             trans = op == PlasmaW ? PlasmaNoTrans : Plasma_ConjTrans;
             vi2 = trans == PlasmaNoTrans ? k - l : m - l;
@@ -327,8 +327,8 @@ static inline int core_zpamm_w(
     // PlasmaLeft
     //=============
     if (side == PlasmaLeft) {
-        if ((trans == Plasma_ConjTrans && uplo == CblasUpper) ||
-            (trans == PlasmaNoTrans && uplo == CblasLower)) {
+        if ((trans == Plasma_ConjTrans && uplo == PlasmaUpper) ||
+            (trans == PlasmaNoTrans && uplo == PlasmaLower)) {
             // W = A1 + V^H * A2
 
             // W = A2_2
@@ -386,8 +386,8 @@ static inline int core_zpamm_w(
     // PlasmaRight
     //==============
     else {
-        if ((trans == Plasma_ConjTrans && uplo == CblasUpper) ||
-            (trans == PlasmaNoTrans && uplo == CblasLower)) {
+        if ((trans == Plasma_ConjTrans && uplo == PlasmaUpper) ||
+            (trans == PlasmaNoTrans && uplo == PlasmaLower)) {
             coreblas_error(
                 "Right Upper/[Conj]Trans & Lower/NoTrans not implemented");
             return PlasmaErrorNotSupported;
@@ -460,8 +460,8 @@ static inline int core_zpamm_a2(
     // PlasmaLeft
     //=============
     if (side == PlasmaLeft) {
-        if ((trans == Plasma_ConjTrans && uplo == CblasUpper) ||
-            (trans == PlasmaNoTrans && uplo == CblasLower)) {
+        if ((trans == Plasma_ConjTrans && uplo == PlasmaUpper) ||
+            (trans == PlasmaNoTrans && uplo == PlasmaLower)) {
             coreblas_error(
                 "Left Upper/[Conj]Trans & Lower/NoTrans not implemented");
             return PlasmaErrorNotSupported;
@@ -509,8 +509,8 @@ static inline int core_zpamm_a2(
     // PlasmaRight
     //==============
     else {
-        if ((trans == Plasma_ConjTrans && uplo == CblasUpper) ||
-            (trans == PlasmaNoTrans && uplo == CblasLower)) {
+        if ((trans == Plasma_ConjTrans && uplo == PlasmaUpper) ||
+            (trans == PlasmaNoTrans && uplo == PlasmaLower)) {
             // A2 = A2 - W * V^H
 
             // A2 = A2 - W_2 * V_3^H

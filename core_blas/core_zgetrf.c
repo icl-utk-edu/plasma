@@ -175,8 +175,8 @@ void core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
             // trsm
             plasma_complex64_t zone = 1.0;
             cblas_ztrsm(CblasColMajor,
-                        PlasmaLeft, PlasmaLower,
-                        PlasmaNoTrans, PlasmaUnit,
+                        CblasLeft, CblasLower,
+                        CblasNoTrans, CblasUnit,
                         kb,
                         nva0-k-kb,
                         CBLAS_SADDR(zone), &a0[k+k*lda0], lda0,
