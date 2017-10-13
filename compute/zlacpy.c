@@ -107,7 +107,7 @@ int plasma_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
         plasma_error("illegal value of lda");
         return -6;
     }
-    if (ldb < imax(1, (transa == PlasmaGeneral ? m : n))) {
+    if (ldb < imax(1, (transa == PlasmaNoTrans ? m : n))) {
         plasma_error("illegal value of ldb");
         return -8;
     }
