@@ -129,7 +129,7 @@ double plasma_zlangb(plasma_enum_t norm,
     plasma_desc_t AB;
     int tku = (ku+kl+nb-1)/nb; // number of tiles in upper band (not including diagonal)
     int tkl = (kl+nb-1)/nb;    // number of tiles in lower band (not including diagonal)
-    int lm = (tku+tkl+1)*nb;   
+    int lm = (tku+tkl+1)*nb;
     int retval;
     retval = plasma_desc_general_band_create(PlasmaComplexDouble, PlasmaGeneral,
                                              nb, nb, lm, n, 0, 0, m, n, kl, ku, &AB);
@@ -148,17 +148,17 @@ double plasma_zlangb(plasma_enum_t norm,
     case PlasmaOneNorm:
         work = (double*)calloc(((size_t)AB.n*(tku+tkl+1)+AB.n), sizeof(double)); //TODO: too much space.
         break;
-        
+
     case PlasmaInfNorm:
         work = (double*)calloc(((size_t)AB.nt*AB.mt*AB.mb+AB.mb*AB.mt),sizeof(double));
         break;
-	
+
     case PlasmaFrobeniusNorm:
-        work = (double*)calloc((size_t)2*(tku+tkl+1)*AB.nt, sizeof(double)); 
+        work = (double*)calloc((size_t)2*(tku+tkl+1)*AB.nt, sizeof(double));
         break;
-	
+
     default:
-        assert(0); 
+        assert(0);
     }
     if (work == NULL) {
         plasma_error("malloc() failed");

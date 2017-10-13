@@ -129,15 +129,15 @@ static inline void *plasma_tile_addr_triangle(plasma_desc_t A, int m, int n)
         if (nn < ln1) {
             if (A.type == PlasmaUpper) {
                 offset = A.mb*A.nb*(mm + (nn * (nn + 1))/2);
-            } 
+            }
             else {
                 offset = A.mb*A.nb*((mm - nn) + (nn * (2*lm1 - (nn-1)))/2);
             }
-        } 
+        }
         else {
             offset = A.A12 + ((size_t)A.mb * (A.gn%A.nb) * mm);
         }
-    } 
+    }
     else {
         if (nn < ln1) {
             offset = A.A21 + ((size_t)A.nb * (A.gm%A.mb) * nn);

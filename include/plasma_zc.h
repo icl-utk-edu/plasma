@@ -69,7 +69,7 @@ void plasma_omp_zcgbsv(plasma_desc_t A,  int *ipiv,
                        plasma_desc_t As, plasma_desc_t Xs, plasma_desc_t R,
                        double *work, double *Rnorm, double *Xnorm, int *iter,
                        plasma_sequence_t *sequence,
-                       plasma_request_t  *request);  
+                       plasma_request_t  *request);
 
 void plasma_omp_zlag2c(plasma_desc_t A, plasma_desc_t As,
                        plasma_sequence_t *sequence, plasma_request_t *request);

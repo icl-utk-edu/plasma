@@ -98,7 +98,7 @@ void plasma_tree_operations(int mt, int nt,
                                 sequence, request);
             break;
         case PlasmaTreeBinary:
-            // PLASMA-Tree from PLASMA 2.8.0. 
+            // PLASMA-Tree from PLASMA 2.8.0.
             // Binary tree of flat trees of constant size.
             plasma_tree_binary(mt, nt, operations, num_operations,
                                sequence, request);
@@ -315,7 +315,7 @@ void plasma_tree_binary(int mt, int nt,
 
 /***************************************************************************//**
  *  Parallel tile QR factorization inspired by the AUTO algorithm from
- *  M. Faverge, J. Langou, Y. Robert, and J. Dongarra. 
+ *  M. Faverge, J. Langou, Y. Robert, and J. Dongarra.
  *  Bidiagonalization with Parallel Tiled Algorithms. (2016). arXiv:1611.06892
  *  http://arxiv.org/abs/1611.06892
  * @see plasma_omp_zgeqrf

@@ -91,10 +91,10 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
 
             if (sequence->status == PlasmaSuccess) {
                 // If nesting would not be expensive on architectures such as
-                // KNL, this would resolve the issue with deadlocks caused by 
+                // KNL, this would resolve the issue with deadlocks caused by
                 // tasks expected to run are in fact not launched.
-                //#pragma omp parallel for shared(barrier) 
-                //                         schedule(dynamic,1) 
+                //#pragma omp parallel for shared(barrier)
+                //                         schedule(dynamic,1)
                 //                         num_threads(num_panel_threads)
                 #pragma omp taskloop untied shared(barrier) \
                                      num_tasks(num_panel_threads) \
@@ -124,7 +124,7 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
             for (int i = k*A.mb+1; i <= imin(A.m, k*A.mb+nvak); i++)
                 ipiv[i-1] += k*A.mb;
         }
-        
+
         // update
         for (int n = k+1; n < A.nt; n++) {
             plasma_complex64_t *a01, *a11, *a21;
@@ -182,7 +182,7 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
     }
 
     // Multidependency of the whole ipiv on the individual chunks
-    // corresponding to tiles. 
+    // corresponding to tiles.
     for (int m = 0; m < minmtnt; m++) {
         // insert dummy task
         #pragma omp task depend (in:ipiv[m*A.mb]) \

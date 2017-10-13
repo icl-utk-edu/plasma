@@ -150,9 +150,9 @@ int plasma_zgels(plasma_enum_t trans,
     // Tune parameters.
     if (plasma->tuning) {
         if (m < n)
-	        plasma_tune_gelqf(plasma, PlasmaComplexDouble, m, n);
+            plasma_tune_gelqf(plasma, PlasmaComplexDouble, m, n);
         else
-	        plasma_tune_geqrf(plasma, PlasmaComplexDouble, m, n);
+            plasma_tune_geqrf(plasma, PlasmaComplexDouble, m, n);
     }
 
     // Set tiling parameters.

@@ -163,7 +163,7 @@ void test_zcgbsv(param_value_t param[], bool run)
     plasma_time_t start = omp_get_wtime();
     /* int plainfo = plasma_zgbsv(n, kl, ku, nrhs, AB, ldab, ipiv, X, ldx); */
     int plainfo = plasma_zcgbsv(n, kl, ku, nrhs, AB, ldab, ipiv,
-				B, ldb, X, ldx, &ITER);
+                                B, ldb, X, ldx, &ITER);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
@@ -204,9 +204,9 @@ void test_zcgbsv(param_value_t param[], bool run)
             free(work);
         }
         else {
-	    printf("plainfo=%d\n", plainfo);
-	    assert(0); // not sure what to do; there is no LAPACK counterpart
-	    int lapinfo = LAPACKE_zgbsv(
+            printf("plainfo=%d\n", plainfo);
+            assert(0); // not sure what to do; there is no LAPACK counterpart
+            int lapinfo = LAPACKE_zgbsv(
                               LAPACK_COL_MAJOR,
                               n, kl, ku, nrhs, ABref, ldab, ipiv, X, ldx);
             if (plainfo == lapinfo) {

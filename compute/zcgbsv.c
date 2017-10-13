@@ -74,7 +74,7 @@
  *          The band matrix AB in LAPACK band matrix format.
  *
  * @param[in] ldab
- *          The leading dimension of the array AB. 
+ *          The leading dimension of the array AB.
  *
  * @param[out] ipiv
  *          The pivot indices; for 1 <= i <= min(m,n), row i of the
@@ -169,7 +169,7 @@ int plasma_zcgbsv(int n, int kl, int ku, int nrhs,
                                // and we need extra NB space on the bottom
     int retval;
     retval = plasma_desc_general_band_create(PlasmaComplexDouble, PlasmaGeneral,
-					     nb, nb, lm, n, 0, 0, n, n, kl, ku, &AB);
+                                             nb, nb, lm, n, 0, 0, n, n, kl, ku, &AB);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
@@ -201,9 +201,9 @@ int plasma_zcgbsv(int n, int kl, int ku, int nrhs,
         plasma_desc_destroy(&X);
         return retval;
     }
-    
+
     retval = plasma_desc_general_band_create(PlasmaComplexFloat, PlasmaGeneral,
-					     nb, nb, lm, n, 0, 0, n, n, kl, ku, &ABs);
+                                             nb, nb, lm, n, 0, 0, n, n, kl, ku, &ABs);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         plasma_desc_destroy(&AB);
@@ -229,7 +229,7 @@ int plasma_zcgbsv(int n, int kl, int ku, int nrhs,
 
     // Allocate tiled workspace for Infinity norm calculations.
     size_t lwork = imax(((size_t)AB.nt*AB.mt*AB.mb+AB.mb*AB.mt),
-			(size_t)X.mt*X.n+(size_t)R.mt*R.n);
+                        (size_t)X.mt*X.n+(size_t)R.mt*R.n);
     double *work  = (double*)calloc((lwork),sizeof(double));
     double *Rnorm = (double*)malloc(((size_t)R.n)*sizeof(double));
     double *Xnorm = (double*)malloc(((size_t)X.n)*sizeof(double));
@@ -427,7 +427,7 @@ void plasma_omp_zcgbsv(plasma_desc_t A,  int *ipiv,
     plasma_pzlangb(PlasmaInfNorm, A, work, &Anorm, sequence, request);
 
     // Convert B from double to single precision, store result in Xs.
-    plasma_pzlag2c(B, Xs, sequence, request); 
+    plasma_pzlag2c(B, Xs, sequence, request);
 
     // Convert A from double to single precision, store result in As.
     plasma_pzlag2c(A, As, sequence, request);
@@ -527,10 +527,8 @@ void plasma_omp_zcgbsv(plasma_desc_t A,  int *ipiv,
     /* plasma_pzgeswp(PlasmaRowwise, X, ipiv, 1, sequence, request); */
 
     plasma_pztbsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
-	          1.0, A, X, ipiv, sequence, request);
+                  1.0, A, X, ipiv, sequence, request);
 
     plasma_pztbsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans, PlasmaNonUnit,
-	          1.0, A, X, ipiv, sequence, request);
-
-
+                  1.0, A, X, ipiv, sequence, request);
 }

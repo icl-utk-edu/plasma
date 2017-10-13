@@ -23,9 +23,10 @@ void core_zgessq(int m, int n,
                  double *scale, double *sumsq)
 {
     int ione = 1;
-    for (int j = 0; j < n; j++)
+    for (int j = 0; j < n; j++) {
         // TODO: Inline this operation.
         LAPACK_zlassq(&m, &A[j*lda], &ione, scale, sumsq);
+    }
 }
 
 /******************************************************************************/

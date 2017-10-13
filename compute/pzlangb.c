@@ -37,27 +37,27 @@ void plasma_pzlangb(plasma_enum_t norm,
     int wcnt = 0;
     int ldwork, klt, kut;
     double *workspace, *scale, *sumsq;
-    
+
     switch (norm) {
-    
+
     //================
     // PlasmaMaxNorm
     //================
     case PlasmaMaxNorm:
-	wcnt = 0;
+        wcnt = 0;
         for (int n = 0; n < A.nt; n++ ) {
             int nvan = plasma_tile_nview(A, n);
-	    int m_start = (imax(0, n*A.nb-A.ku)) / A.nb;
-	    int m_end = (imin(A.m-1, (n+1)*A.nb+A.kl-1)) / A.nb;
+            int m_start = (imax(0, n*A.nb-A.ku)) / A.nb;
+            int m_end = (imin(A.m-1, (n+1)*A.nb+A.kl-1)) / A.nb;
             for (int m = m_start; m <= m_end; m++ ) {
                 int ldam = plasma_tile_mmain_band(A, m, n);
                 int mvam = plasma_tile_mview(A, m);
                 core_omp_zlange(PlasmaMaxNorm,
                                 mvam, nvan,
-                                A(m, n), ldam, 
+                                A(m, n), ldam,
                                 &stub, &work[wcnt],
                                 sequence, request);
-		wcnt++;
+                wcnt++;
             }
         }
 
@@ -75,85 +75,85 @@ void plasma_pzlangb(plasma_enum_t norm,
       // # of tiles in upper band (not including diagonal)
       kut  = (A.ku+A.nb-1)/A.nb;
       // # of tiles in lower band (not including diagonal)
-      klt  = (A.kl+A.nb-1)/A.nb;    
+      klt  = (A.kl+A.nb-1)/A.nb;
       ldwork = kut+klt+1;
       for (int n = 0; n < A.nt; n++ ) {
             int nvan = plasma_tile_nview(A, n);
-	    int m_start = (imax(0, n*A.nb-A.ku)) / A.nb;
-	    int m_end = (imin(A.m-1, (n+1)*A.nb+A.kl-1)) / A.nb;
+            int m_start = (imax(0, n*A.nb-A.ku)) / A.nb;
+            int m_end = (imin(A.m-1, (n+1)*A.nb+A.kl-1)) / A.nb;
             for (int m = m_start; m <= m_end; m++ ) {
                 int ldam = plasma_tile_mmain_band(A, m, n);
                 int mvam = plasma_tile_mview(A, m);
                 core_omp_zlange_aux(PlasmaOneNorm,
-				    mvam, nvan,
-				    A(m,n), ldam,
-				    &work[(m-m_start)*A.n+n*A.nb],
-				    sequence, request);
+                                    mvam, nvan,
+                                    A(m,n), ldam,
+                                    &work[(m-m_start)*A.n+n*A.nb],
+                                    sequence, request);
             }
         }
         #pragma omp taskwait
-	workspace = &work[A.n*ldwork];
-	core_omp_dlange(PlasmaInfNorm,
-			A.n, ldwork,
-			work, A.n,
-			workspace, value,
-			sequence, request);
+        workspace = &work[A.n*ldwork];
+        core_omp_dlange(PlasmaInfNorm,
+                        A.n, ldwork,
+                        work, A.n,
+                        workspace, value,
+                        sequence, request);
         break;
     //================
     // PlasmaInfNorm
     //================
     case PlasmaInfNorm:
-      ldwork = A.mb*A.mt; 
+      ldwork = A.mb*A.mt;
       for (int n = 0; n < A.nt; n++ ) {
             int nvan = plasma_tile_nview(A, n);
-	    int m_start = (imax(0, n*A.nb-A.ku)) / A.nb;
-	    int m_end = (imin(A.m-1, (n+1)*A.nb+A.kl-1)) / A.nb;
+            int m_start = (imax(0, n*A.nb-A.ku)) / A.nb;
+            int m_end = (imin(A.m-1, (n+1)*A.nb+A.kl-1)) / A.nb;
             for (int m = m_start; m <= m_end; m++ ) {
                 int ldam = plasma_tile_mmain_band(A, m, n);
                 int mvam = plasma_tile_mview(A, m);
                 core_omp_zlange_aux(PlasmaInfNorm,
-				    mvam, nvan,
-				    A(m,n), ldam,
-				    &work[m*A.mb+n*ldwork],
-				    sequence, request);
+                                    mvam, nvan,
+                                    A(m,n), ldam,
+                                    &work[m*A.mb+n*ldwork],
+                                    sequence, request);
             }
         }
         #pragma omp taskwait
-	/* nwork = A.nt; */
-	workspace = &work[ldwork*A.nt];
-	core_omp_dlange(PlasmaInfNorm,
-			ldwork, A.nt,
-			work, ldwork,
-			workspace, value,
-			sequence, request);
+        /* nwork = A.nt; */
+        workspace = &work[ldwork*A.nt];
+        core_omp_dlange(PlasmaInfNorm,
+                        ldwork, A.nt,
+                        work, ldwork,
+                        workspace, value,
+                        sequence, request);
         break;
     //======================
     // PlasmaFrobeniusNorm
-    //======================	
+    //======================
     case PlasmaFrobeniusNorm:
-	kut  = (A.ku+A.nb-1)/A.nb; // # of tiles in upper band (not including diagonal)
-	klt  = (A.kl+A.nb-1)/A.nb;    // # of tiles in lower band (not including diagonal)
-	ldwork = kut+klt+1;
-	scale = work;
-	sumsq = &work[ldwork*A.nt];
+        kut  = (A.ku+A.nb-1)/A.nb; // # of tiles in upper band (not including diagonal)
+        klt  = (A.kl+A.nb-1)/A.nb;    // # of tiles in lower band (not including diagonal)
+        ldwork = kut+klt+1;
+        scale = work;
+        sumsq = &work[ldwork*A.nt];
         for (int n = 0; n < A.nt; n++ ) {
             int nvan = plasma_tile_nview(A, n);
-	    int m_start = (imax(0, n*A.nb-A.ku)) / A.nb;
-	    int m_end = (imin(A.m-1, (n+1)*A.nb+A.kl-1)) / A.nb;
+            int m_start = (imax(0, n*A.nb-A.ku)) / A.nb;
+            int m_end = (imin(A.m-1, (n+1)*A.nb+A.kl-1)) / A.nb;
 
             for (int m = m_start; m <= m_end; m++ ) {
                 int ldam = plasma_tile_mmain_band(A, m, n);
                 int mvam = plasma_tile_mview(A, m);
                 core_omp_zgessq(mvam, nvan,
-				A(m,n), ldam,
-				&scale[n*ldwork+m-m_start],
-				&sumsq[n*ldwork+m-m_start],
-				sequence, request);
+                                A(m,n), ldam,
+                                &scale[n*ldwork+m-m_start],
+                                &sumsq[n*ldwork+m-m_start],
+                                sequence, request);
             }
         }
         #pragma omp taskwait
-	core_omp_dgessq_aux(ldwork*A.nt, scale, sumsq,
-			    value, sequence, request);
+        core_omp_dgessq_aux(ldwork*A.nt, scale, sumsq,
+                            value, sequence, request);
         break;
     default:
         assert(0);

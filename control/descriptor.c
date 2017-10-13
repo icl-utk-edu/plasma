@@ -266,8 +266,8 @@ int plasma_desc_triangular_init(plasma_enum_t precision, plasma_enum_t uplo, voi
 /******************************************************************************/
 int plasma_desc_check(plasma_desc_t A)
 {
-    if (A.type == PlasmaGeneral || 
-        A.type == PlasmaUpper || 
+    if (A.type == PlasmaGeneral ||
+        A.type == PlasmaUpper ||
         A.type == PlasmaLower) {
         return plasma_desc_general_check(A);
     }
