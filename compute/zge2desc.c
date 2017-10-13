@@ -10,6 +10,7 @@
  *
  **/
 
+#include "plasma.h"
 #include "plasma_async.h"
 #include "plasma_context.h"
 #include "plasma_descriptor.h"
