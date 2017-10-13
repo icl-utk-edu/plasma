@@ -183,7 +183,8 @@ static inline int plasma_tile_mmain(plasma_desc_t A, int k)
 {
     if (A.type == PlasmaGeneralBand) {
         return A.mb;
-    } else {
+    }
+    else {
         if (A.i/A.mb+k < A.gm/A.mb)
             return A.mb;
         else

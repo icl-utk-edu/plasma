@@ -267,9 +267,7 @@ static bool conv(double *Rnorm, double *Xnorm, int n, double cte) {
     bool value = true;
 
     for (int i = 0; i < n; i++) {
-
         if (Rnorm[i] > Xnorm[i] * cte) {
-
             value = false;
             break;
         }
@@ -472,7 +470,6 @@ void plasma_omp_zcgesv(plasma_desc_t A,  int *ipiv,
 
     // iterative refinement
     for (int iiter = 0; iiter < itermax; iiter++) {
-
         // Convert R from double to single precision, store result in Xs.
         plasma_pzlag2c(R, Xs, sequence, request);
 

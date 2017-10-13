@@ -144,7 +144,7 @@ def preprocess_list(initial_list):
             isOpen   = False
             inStruct = False
             nopen = 0
-     
+
     # merge structs
     list2 = []
     merged_line = ""
@@ -252,12 +252,12 @@ def parse_structs(preprocessed_list):
         if (fun_parts[0].find("struct") > -1):
             args_string = fun_parts[1]
             parts = args_string.split("}")
-            args_string = parts[0].strip() 
+            args_string = parts[0].strip()
             args_string = re.sub(r"volatile", "", args_string)
             if (len(parts) > 1):
                 name_string = parts[1]
                 name_string = re.sub(r"(?m),", "", name_string)
-                name_string = name_string.strip() 
+                name_string = name_string.strip()
             else:
                 print("Error: Cannot detect name for ", proto)
                 name_string = "name_not_recognized"
@@ -271,7 +271,7 @@ def parse_structs(preprocessed_list):
 
             struct_list.append(params)
             derived_types.append(name_string)
-        
+
     # reorder the list so that only defined types are exported
     goAgain = True
     while (goAgain):
@@ -755,7 +755,7 @@ def main():
         # convert the string to a list of strings
         initial_list = clean_file.split("\n")
 
-        # process the list so that each enum, struct or function 
+        # process the list so that each enum, struct or function
         # are just one item
         nice_list = preprocess_list(initial_list)
 

@@ -113,7 +113,7 @@ double plasma_zlangb(plasma_enum_t norm,
     }
 
     if (ldab < imax(1, 1+kl+ku)) {
-        /* printf("%d\n", ldab); */
+        //printf("%d\n", ldab);
         plasma_error("illegal value of lda");
         return -7;
     }
@@ -195,9 +195,8 @@ double plasma_zlangb(plasma_enum_t norm,
     // Free matrix in tile layout.
     plasma_desc_destroy(&AB);
 
-
     // Return the norm.
-    /* printf("[plasma_zlangb]: value=%.3f\n", value); */
+    //printf("[plasma_zlangb]: value=%.3f\n", value);
     return value;
 }
 
@@ -297,5 +296,4 @@ void plasma_omp_zlangb(plasma_enum_t norm, plasma_desc_t AB,
 
     // Call the parallel function.
     plasma_pzlangb(norm, AB, work, value, sequence, request);
-
 }

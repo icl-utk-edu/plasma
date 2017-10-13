@@ -37,7 +37,6 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
     int minmtnt = imin(A.mt, A.nt);
 
     for (int k = 0; k < minmtnt; k++) {
-
         plasma_complex64_t *a00, *a20;
         a00 = A(k, k);
         a20 = A(A.mt-1, k);

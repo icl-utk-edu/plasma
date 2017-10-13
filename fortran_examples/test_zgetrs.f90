@@ -174,7 +174,7 @@ contains
 
         if (code /= PlasmaSuccess) then
             write(*,'(a, i2, a, a)') "Error ", code, "in a call to ", &
-                trim(routine_name) 
+                trim(routine_name)
         end if
     end subroutine
 

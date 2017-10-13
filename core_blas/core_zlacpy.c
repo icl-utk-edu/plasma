@@ -69,8 +69,9 @@ void core_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
                             m, n,
                             A, lda,
                             B, ldb);
-    } else if (transa == PlasmaTrans) {
-        switch(uplo) {
+    }
+    else if (transa == PlasmaTrans) {
+        switch (uplo) {
         case PlasmaUpper:
             for (int i = 0; i < imin(m, n); i++)
                 for (int j = i; j < n; j++)
@@ -87,8 +88,9 @@ void core_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
                     B[j + i*ldb] = A[i + j*lda];
             break;
         }
-    } else {
-        switch(uplo) {
+    }
+    else {
+        switch (uplo) {
         case PlasmaUpper:
             for (int i = 0; i < imin(m, n); i++)
                 for (int j = 0; j < m; j++)

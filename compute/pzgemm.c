@@ -135,8 +135,8 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                 }
             }
         }
-    } else if (A.type == PlasmaGeneralBand) {
-
+    }
+    else if (A.type == PlasmaGeneralBand) {
         for (int m = 0; m < C.mt; m++) {
             int mvcm = plasma_tile_mview(C, m);
             int ldcm = plasma_tile_mmain(C, m);
@@ -158,15 +158,14 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                         sequence, request);
                 }
                 else if (transa == PlasmaNoTrans) {
-
                     //================================
                     // PlasmaNoTrans / PlasmaNoTrans
                     //================================
                     if (transb == PlasmaNoTrans) {
                         int k_start = (imax(0, m*A.mb-A.kl)) / A.nb;
                         int k_end = (imin(A.n-1, (m+1)*A.mb+A.ku-1)) / A.nb;
-                        /* printf("[%s]: m=%d\tn=%d\tk_s=%d\tk_e=%d\n", */
-                        /*        __FILE__, m, n, k_start, k_end); */
+                        //printf("[%s]: m=%d\tn=%d\tk_s=%d\tk_e=%d\n",
+                        //       __FILE__, m, n, k_start, k_end);
                         for (int k = k_start; k <= k_end; k++) {
                             int ldam = plasma_tile_mmain_band(A, m, k);
                             int nvak = plasma_tile_nview(A, k);

@@ -133,7 +133,7 @@ void plasma_pzgbtrf(plasma_desc_t A, int *ipiv,
                                     A(k, n), plasma_tile_mmain_band(A, k, n));
 
                     // gemm
-                    for (int m = imax(k+1,n-A.kut); m < imin(k+A.klt, A.mt); m++) {
+                    for (int m = imax(k+1, n-A.kut); m < imin(k+A.klt, A.mt); m++) {
                         int mvam = plasma_tile_mview(A, m);
 
                         #pragma omp task priority(n == k+1)

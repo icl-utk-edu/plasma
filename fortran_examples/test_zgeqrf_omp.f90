@@ -83,11 +83,11 @@ program test_zgeqrf_omp
     ib   = 64   ! inner blocking size within a tile
 
     ! Should tree reduction be used? This is good for tall and skinny matrices.
-    tree_householder = .true. 
+    tree_householder = .true.
 
     ! Should tuning be used?
     ! If it is on, the tests below reset the nb and ib values and then fail.
-    use_tuning = .false. 
+    use_tuning = .false.
 
     ! tolerance for the correctness check
     tol = 50.0 * dlamch('E')
@@ -317,7 +317,7 @@ contains
 
         if (code /= PlasmaSuccess) then
             write(*,'(a, i2, a, a)') "Error ", code, "in a call to ", &
-                trim(routine_name) 
+                trim(routine_name)
         end if
     end subroutine
 

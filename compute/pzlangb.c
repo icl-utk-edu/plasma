@@ -39,7 +39,6 @@ void plasma_pzlangb(plasma_enum_t norm,
     double *workspace, *scale, *sumsq;
 
     switch (norm) {
-
     //================
     // PlasmaMaxNorm
     //================
@@ -72,12 +71,12 @@ void plasma_pzlangb(plasma_enum_t norm,
     // PlasmaOneNorm
     //================
     case PlasmaOneNorm:
-      // # of tiles in upper band (not including diagonal)
-      kut  = (A.ku+A.nb-1)/A.nb;
-      // # of tiles in lower band (not including diagonal)
-      klt  = (A.kl+A.nb-1)/A.nb;
-      ldwork = kut+klt+1;
-      for (int n = 0; n < A.nt; n++ ) {
+        // # of tiles in upper band (not including diagonal)
+        kut  = (A.ku+A.nb-1)/A.nb;
+        // # of tiles in lower band (not including diagonal)
+        klt  = (A.kl+A.nb-1)/A.nb;
+        ldwork = kut+klt+1;
+        for (int n = 0; n < A.nt; n++ ) {
             int nvan = plasma_tile_nview(A, n);
             int m_start = (imax(0, n*A.nb-A.ku)) / A.nb;
             int m_end = (imin(A.m-1, (n+1)*A.nb+A.kl-1)) / A.nb;
@@ -103,8 +102,8 @@ void plasma_pzlangb(plasma_enum_t norm,
     // PlasmaInfNorm
     //================
     case PlasmaInfNorm:
-      ldwork = A.mb*A.mt;
-      for (int n = 0; n < A.nt; n++ ) {
+        ldwork = A.mb*A.mt;
+        for (int n = 0; n < A.nt; n++ ) {
             int nvan = plasma_tile_nview(A, n);
             int m_start = (imax(0, n*A.nb-A.ku)) / A.nb;
             int m_end = (imin(A.m-1, (n+1)*A.nb+A.kl-1)) / A.nb;
@@ -119,7 +118,7 @@ void plasma_pzlangb(plasma_enum_t norm,
             }
         }
         #pragma omp taskwait
-        /* nwork = A.nt; */
+        //nwork = A.nt;
         workspace = &work[ldwork*A.nt];
         core_omp_dlange(PlasmaInfNorm,
                         ldwork, A.nt,

@@ -46,8 +46,9 @@ void plasma_pclag2z(plasma_desc_t As, plasma_desc_t A,
                     sequence, request);
             }
         }
-    } else if (A.type == PlasmaGeneralBand &&
-               As.type == PlasmaGeneralBand) {
+    }
+    else if (A.type == PlasmaGeneralBand &&
+             As.type == PlasmaGeneralBand) {
         for (int n = 0; n < A.nt; n++ ) {
             int nvan = plasma_tile_nview(A, n);
             int m_start = (imax(0, n*A.nb-A.ku)) / A.nb;

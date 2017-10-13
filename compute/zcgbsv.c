@@ -524,7 +524,7 @@ void plasma_omp_zcgbsv(plasma_desc_t A,  int *ipiv,
     plasma_pzlacpy(PlasmaGeneral, PlasmaNoTrans, B, X, sequence, request);
 
     //#pragma omp taskwait
-    /* plasma_pzgeswp(PlasmaRowwise, X, ipiv, 1, sequence, request); */
+    //plasma_pzgeswp(PlasmaRowwise, X, ipiv, 1, sequence, request);
 
     plasma_pztbsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
                   1.0, A, X, ipiv, sequence, request);

@@ -161,7 +161,7 @@ void test_zcgbsv(param_value_t param[], bool run)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    /* int plainfo = plasma_zgbsv(n, kl, ku, nrhs, AB, ldab, ipiv, X, ldx); */
+    //int plainfo = plasma_zgbsv(n, kl, ku, nrhs, AB, ldab, ipiv, X, ldx);
     int plainfo = plasma_zcgbsv(n, kl, ku, nrhs, AB, ldab, ipiv,
                                 B, ldb, X, ldx, &ITER);
     plasma_time_t stop = omp_get_wtime();

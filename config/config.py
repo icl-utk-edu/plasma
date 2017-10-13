@@ -1086,7 +1086,7 @@ def blas_return_float( required=True ):
 			raise e
 	finally:
 		pop_lang()
-# end   
+# end
 
 
 # ------------------------------------------------------------------------------
@@ -1658,9 +1658,9 @@ fortran_mangling = r'''
 
 #if defined( LOWERCASE )
     #define FORTRAN_NAME( lower, UPPER ) lower
-#elif defined( UPPERCASE )       
+#elif defined( UPPERCASE )
     #define FORTRAN_NAME( lower, UPPER ) UPPER
-#else                            
+#else
     #define FORTRAN_NAME( lower, UPPER ) lower ## _
 #endif
 
@@ -1932,7 +1932,7 @@ program main
             !$omp end task
         end do
         !$omp end parallel
-        
+
         !! verify that updates worked
         do i = 1, n
             expect = last + i
@@ -1944,7 +1944,7 @@ program main
     end do
     print '(a)', 'openmp task depend seems ok'
 end program
-    
+
 subroutine task( n, x, id )
     integer :: n, x(n), id
     integer :: i
@@ -1961,7 +1961,7 @@ end subroutine task
           integer n, last
           parameter (n = 1000, last = 1000)
           integer x(n), iter, i, expect
-          
+
           do iter = 1, 100
 !!            inserts last/10 tasks that update x
 !$omp         parallel
@@ -1971,7 +1971,7 @@ end subroutine task
 !$omp             end task
               end do
 !$omp         end parallel
-              
+
 !!            verify that updates worked
               do i = 1, n
                   expect = last + i
@@ -1985,7 +1985,7 @@ end subroutine task
           end do
           print '(a)', 'openmp task depend seems ok'
       end program
-    
+
       subroutine task( n, x, id )
           integer n, x(n), id
           integer i
@@ -2036,7 +2036,7 @@ program main
     implicit none
     integer, parameter :: n = 1000
     integer :: x(n), i, expect
-    
+
     !$omp parallel
         !! todo: verify priority syntax
         !$omp task depend(inout:x(1:n)), priority(1)
@@ -2047,7 +2047,7 @@ program main
         call task( n, x, 100 );
         !$omp end task
     !$omp end parallel
-    
+
     do i = 1, n
         expect = 100 + i
         if (x(i) .ne. expect) then
@@ -2075,22 +2075,22 @@ end subroutine
           integer n
           parameter (n = 1000)
           integer x(n), i, expect
-          
+
 !$omp     parallel
 !!        todo: verify priority syntax
 !$omp         task depend(inout:x(1:n)), priority(1)
               call task( n, x, 0 );
 !$omp         end task
-      
+
 !$omp         task depend(inout:x(1:n)), priority(2)
               call task( n, x, 100 );
 !$omp         end task
 !$omp     end parallel
-          
+
           do i = 1, n
               expect = 100 + i
               if (x(i) .ne. expect) then
-                  print '(a,i4,a,i4,a,i4)', 
+                  print '(a,i4,a,i4,a,i4)',
      c                  'openmp task priority failed, x(',
      c                  i, ') = ', x(i), ', expected ', expect
                   stop 1
@@ -2098,7 +2098,7 @@ end subroutine
           end do
           print '(a)', 'openmp task priority ok'
       end program
-      
+
       subroutine task( n, x, id )
           integer n, x(n), id
           integer i

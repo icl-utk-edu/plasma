@@ -32,11 +32,11 @@ CFLAGS   += -DHAVE_MKL
 lua_platform = linux
 
 # --------------------
-# PLASMA is a library in C, but can be also used from Fortran. 
+# PLASMA is a library in C, but can be also used from Fortran.
 # In this case, Fortran interface needs to be build.
-# 0 = no  - Fortran codes will not be touched, the FC and FCFLAGS variables 
+# 0 = no  - Fortran codes will not be touched, the FC and FCFLAGS variables
 #           will not be referenced
-# 1 = yes - Fortran interface will be compiled and included into the library 
+# 1 = yes - Fortran interface will be compiled and included into the library
 
 fortran ?= 1
 

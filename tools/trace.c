@@ -50,7 +50,7 @@ static struct {
     const char *color;
     int value;
 } Color[] = {
-    /* Pink colors */                   /* Cyan colors */
+    /* Pink colors */                     /* Cyan colors */
     {"Pink",                 0xFFC0CB},   {"Aqua",            0x00FFFF},
     {"LightPink",            0xFFB6C1},   {"Cyan",            0x00FFFF},
     {"HotPink",              0xFF69B4},   {"LightCyan",       0xE0FFFF},
@@ -134,8 +134,8 @@ static struct {
 };
 
 static int Trace = 1;
-void trace_off() {Trace = 0;}
-void trace_on()  {Trace = 1;}
+void trace_off() { Trace = 0; }
+void trace_on()  { Trace = 1; }
 
 #define IMAGE_WIDTH 2390
 #define IMAGE_HEIGHT 1000

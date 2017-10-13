@@ -20,7 +20,7 @@
  * @ingroup core_geadd
  *
  *  Performs an addition of two general matrices similarly to the
- * 'pzgeadd()' function from the PBLAS library:
+ *  pzgeadd() function from the PBLAS library:
  *
  *    \f[ B = \alpha * op( A ) + \beta * B, \f]
  *

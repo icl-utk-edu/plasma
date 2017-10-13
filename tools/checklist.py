@@ -297,7 +297,7 @@ def main():
         p = os.popen("hg st -a -c -m")
         for line in p:
             fname = re.sub( r'^[MAC] ', '', line.strip() )
-            if (not re.search( 'checklist.sh|checklist.py|files.txt', fname )):
+            if (not re.search( 'checklist.sh|checklist.py|files.txt|\.gz', fname )):
                 files.append( fname )
         # end
     # end

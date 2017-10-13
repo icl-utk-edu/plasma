@@ -33,6 +33,7 @@ static inline int imax(int a, int b)
     else
         return b;
 }
+
 #define  A(m, n) (plasma_complex64_t*)plasma_tile_addr( A, m, n)
 #define As(m, n) (plasma_complex32_t*)plasma_tile_addr(As, m, n)
 
@@ -63,8 +64,9 @@ void plasma_pzlag2c(plasma_desc_t A, plasma_desc_t As,
                     sequence, request);
             }
         }
-    } else if (A.type == PlasmaGeneralBand &&
-               As.type == PlasmaGeneralBand) {
+    }
+    else if (A.type == PlasmaGeneralBand &&
+             As.type == PlasmaGeneralBand) {
         for (int n = 0; n < A.nt; n++ ) {
             int nvan = plasma_tile_nview(A, n);
             int m_start = (imax(0, n*A.nb-A.ku)) / A.nb;

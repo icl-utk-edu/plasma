@@ -89,9 +89,9 @@ endif
 makefiles_gen := \
 	Makefile.plasma.gen   \
 	Makefile.coreblas.gen \
-	Makefile.test.gen     
+	Makefile.test.gen
 ifeq ($(fortran), 1)
-	makefiles_gen += Makefile.fortran_examples.gen 
+	makefiles_gen += Makefile.fortran_examples.gen
 endif
 
 -include $(makefiles_gen)

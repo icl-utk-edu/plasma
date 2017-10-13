@@ -94,7 +94,7 @@ struct routines_t routines[] =
     { "", NULL },
 
     { "zcgbsv", test_zcgbsv },
-    /* { "dsgbsv", test_dsgbsv }, */
+    //{ "dsgbsv", test_dsgbsv },
     { "", NULL },
     { "", NULL },
     { "", NULL },
@@ -548,7 +548,7 @@ void print_routine_usage(const char *name, param_value_t pval[])
             default:
                 print_usage(i);
                 break;
-}
+            }
         }
     }
 }
@@ -1332,14 +1332,14 @@ void param_add(param_t *param)
 {
     param->val[param->num].used = false;
     if (param->is_list) {
-    param->num++;
-    if (param->num == param->size) {
-        param->size *= 2;
-        param->val = (param_value_t*) realloc(
-            param->val, param->size*sizeof(param_value_t));
-        assert(param->val != NULL);
+        param->num++;
+        if (param->num == param->size) {
+            param->size *= 2;
+            param->val = (param_value_t*) realloc(
+                param->val, param->size*sizeof(param_value_t));
+            assert(param->val != NULL);
+        }
     }
-}
 }
 
 /***************************************************************************//**

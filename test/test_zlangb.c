@@ -183,11 +183,10 @@ void test_zlangb(param_value_t param[], bool run)
     //================================================================
     // Free arrays.
     //================================================================
-    free(A);free(AB);
+    free(A);
+    free(AB);
     if (test) {
-        free(Aref);free(ABref);
+        free(Aref);
+        free(ABref);
     }
 }
-
-
-

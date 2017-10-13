@@ -20,7 +20,7 @@
  * @ingroup core_tradd
  *
  *  Performs an addition of two trapezoidal matrices similarly to the
- * 'pztradd()' function from the PBLAS library:
+ *  pztradd() function from the PBLAS library:
  *
  *    \f[ B = \alpha * op( A ) + \beta * B, \f]
  *

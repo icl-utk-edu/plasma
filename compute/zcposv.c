@@ -272,14 +272,12 @@ int plasma_zcposv(plasma_enum_t uplo, int n, int nrhs,
 
 
 // Checks, that convergence criterion is true for all columns of R and X
-static bool conv(double *Rnorm, double *Xnorm, int n, double cte) {
-
+static bool conv(double *Rnorm, double *Xnorm, int n, double cte)
+{
     bool value = true;
 
     for (int i = 0; i < n; i++) {
-
         if (Rnorm[i] > Xnorm[i] * cte) {
-
             value = false;
             break;
         }
@@ -485,7 +483,6 @@ void plasma_omp_zcposv(plasma_enum_t uplo,
 
     // iterative refinement
     for (int iiter = 0; iiter < itermax; iiter++) {
-
         // Convert R from double to single precision, store result in Xs.
         plasma_pzlag2c(R, Xs, sequence, request);
 

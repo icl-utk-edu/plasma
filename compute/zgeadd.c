@@ -24,7 +24,7 @@
  * @ingroup plasma_geadd
  *
  *  Performs an addition of two general rectangular matrices similarly to the
- *  'pztradd()' function from the PBLAS library:
+ *  pzgeadd() function from the PBLAS library:
  *
  *    \f[ B = \alpha * op( A ) + \beta * B, \f]
  *
@@ -215,7 +215,7 @@ int plasma_zgeadd(plasma_enum_t transa,
  * @ingroup plasma_geadd
  *
  *  Performs an addition of two general rectangular matrices similarly to the
- *  'pztradd()' function from the PBLAS library. Non-blocking tile version of
+ *  pzgeadd() function from the PBLAS library. Non-blocking tile version of
  *  plasma_zgeadd(). May return before the computation is finished. Operates on
  *  matrices stored by tiles. All matrices are passed through descriptors. All
  *  dimensions are taken from the descriptors. Allows for pipelining of

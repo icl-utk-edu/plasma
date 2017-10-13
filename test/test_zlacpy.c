@@ -141,16 +141,18 @@ void test_zlacpy(param_value_t param[], bool run)
 
         // Calculate difference op(A)-B
         if (transa == PlasmaTrans) {
-            for (int i=0; i<m; i++)
-                for (int j=0; j<n; j++)
+            for (int i=0; i < m; i++)
+                for (int j=0; j < n; j++)
                     B[j + i*ldb] -= A[i + j*lda];
-        } else if (transa == PlasmaConjTrans) {
-            for (int i=0; i<m; i++)
-                for (int j=0; j<n; j++)
+        }
+        else if (transa == PlasmaConjTrans) {
+            for (int i=0; i < m; i++)
+                for (int j=0; j < n; j++)
                     B[j + i*ldb] -= conj(A[i + j*lda]);
-        } else {
-            for (int i=0; i<m; i++)
-                for (int j=0; j<n; j++)
+        }
+        else {
+            for (int i=0; i < m; i++)
+                for (int j=0; j < n; j++)
                     B[i + j*ldb] -= A[i + j*lda];
         }
         if (retval != PlasmaSuccess) {

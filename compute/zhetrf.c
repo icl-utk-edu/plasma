@@ -65,7 +65,7 @@
  *          The leading dimension of the array T.
  *
  * @param[out] ipiv
- *          The pivot indices used by the Aasen's algorithm; for 1 <= i <= min(m,n),
+ *          The pivot indices used by Aasen's algorithm; for 1 <= i <= min(m,n),
  *          row and column i of the matrix was interchanged with row and column ipiv(i).
  *
  * @param[out] ipiv2

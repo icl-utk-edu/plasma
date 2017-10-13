@@ -116,27 +116,27 @@
         !  print frmt, Aref(i,:)
         !end do
         !print *, ""
-  
+
         ! Calculate difference A := -1*Aref+A, A := A-Aref
         ! A = A-Aref
         call zaxpy(lda*n, zmone, Aref, 1, A, 1)
-  
+
         !print *, "A := A-Aref"
         !do i = 1, n
         !  print frmt, Aref(i,:)
         !end do
         !print *, ""
-  
+
         ! Calculate norms |Aref^{-1}|_F, |A^{-1} - Aref^{-1}|_F,
         Anorm = zlanhe('F', uploLapack, n, Aref, lda, work)
         print *, "|Aref^{-1}|_F:", Anorm
-  
+
         error = zlange('F', n, n, A, lda, work)
         print *, "|A^{-1} - Aref^{-1}|_F:", error
-  
+
         ! Calculate error |A^{-1} - Aref^{-1}|_F / |Aref^{-1}|_F
         error = error/Anorm
-  
+
         if (error < tol)  success = .true.
 
       else
