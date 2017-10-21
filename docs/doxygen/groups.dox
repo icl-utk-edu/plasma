@@ -205,9 +205,9 @@
         @defgroup plasma_nrm2       nrm2:  Vector 2 norm
         @brief    \f$ ||x||_2 \f$
 
-        @defgroup plasma_rot        rot:   Apply Given's rotation
+        @defgroup plasma_rot        rot:   Apply Givens rotation
 
-        @defgroup plasma_rotg       rotg:  Generate Given's rotation
+        @defgroup plasma_rotg       rotg:  Generate Givens rotation
 
         @defgroup plasma_scal       scal:  Scale vector
         @brief    \f$ x = \alpha x \f$
@@ -373,9 +373,9 @@
         @defgroup core_nrm2         nrm2:  Vector 2 norm
         @brief    \f$ ||x||_2 \f$
 
-        @defgroup core_rot          rot:   Apply Given's rotation
+        @defgroup core_rot          rot:   Apply Givens rotation
 
-        @defgroup core_rotg         rotg:  Generate Given's rotation
+        @defgroup core_rotg         rotg:  Generate Givens rotation
 
         @defgroup core_scal         scal:  Scale vector
         @brief    \f$ x = \alpha x \f$
