@@ -111,21 +111,17 @@ void core_ztrmm(
 
 /******************************************************************************/
 void core_omp_ztrmm(
-    plasma_enum_t side, plasma_enum_t uplo,
+    plasma_enum_t side,   plasma_enum_t uplo,
     plasma_enum_t transa, plasma_enum_t diag,
     int m, int n,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                                     plasma_complex64_t *B, int ldb,
     plasma_sequence_t *sequence, plasma_request_t *request)
 {
-    int ak;
-    if (side == PlasmaLeft)
-        ak = m;
-    else
-        ak = n;
+    int k = (side == PlasmaLeft) ? m : n;
 
-    #pragma omp task depend(in:A[0:lda*ak]) \
-                     depend(inout:B[0:ldb*m])
+    #pragma omp task depend(in:A[0:lda*k]) \
+                     depend(inout:B[0:ldb*n])
     {
         if (sequence->status == PlasmaSuccess)
             core_ztrmm(side, uplo,

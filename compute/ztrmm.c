@@ -150,13 +150,9 @@ int plasma_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
         return -6;
     }
 
-    int na;
-    if (side == PlasmaLeft)
-        na = m;
-    else
-        na = n;
+    int k = (side == PlasmaLeft) ? m : n;
 
-    if (lda < imax(1, na)) {
+    if (lda < imax(1, k)) {
         plasma_error("illegal value of lda");
         return -8;
     }
@@ -180,14 +176,14 @@ int plasma_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
     plasma_desc_t A;
     plasma_desc_t B;
     int retval;
-    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        na, na, 0, 0, na, na, &A);
+    retval = plasma_desc_triangular_create(PlasmaComplexDouble, uplo, nb, nb,
+                                           k, k, 0, 0, k, k, &A);
     if (retval != PlasmaSuccess) {
-        plasma_error("plasma_desc_general_create() failed");
+        plasma_error("plasma_desc_triangular_create() failed");
         return retval;
     }
     retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        m,  n,  0, 0, m,  n, &B);
+                                        m, n, 0, 0, m, n, &B);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         plasma_desc_destroy(&A);
@@ -207,7 +203,7 @@ int plasma_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
     #pragma omp master
     {
         // Translate matrices to tile layout.
-        plasma_omp_zge2desc(pA, lda, A, &sequence, &request);
+        plasma_omp_ztr2desc(pA, lda, A, &sequence, &request);
         plasma_omp_zge2desc(pB, ldb, B, &sequence, &request);
 
         // Call tile async interface.
@@ -226,8 +222,7 @@ int plasma_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
     plasma_desc_destroy(&B);
 
     // Return status.
-    int status = sequence.status;
-    return status;
+    return sequence.status;
 }
 
 /***************************************************************************//**
@@ -355,8 +350,14 @@ void plasma_omp_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
     }
 
     // quick return
-    if (A.m == 0 || A.n == 0 || alpha == 0.0 || B.m == 0 || B.n == 0)
+    if (A.m == 0 || A.n == 0 || B.m == 0 || B.n == 0)
         return;
+
+    if (alpha == 0.0) {
+        plasma_complex64_t zzero = 0.0;
+        plasma_pzlaset(PlasmaGeneral, zzero, zzero, B, sequence, request);
+        return;
+    }
 
     // Call parallel function.
     plasma_pztrmm(side, uplo, transa, diag, alpha,
