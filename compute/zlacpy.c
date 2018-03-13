@@ -33,6 +33,11 @@
  *            - PlasmaUpper:   Upper triangular part of A
  *            - PlasmaLower:   Lower triangular part of A
  *
+ * @param[in] transa
+ *          - PlasmaNoTrans:   A is not transposed,
+ *          - PlasmaTrans:     A is transposed,
+ *          - PlasmaConjTrans: A is conjugate transposed.
+ *
  * @param[in] m
  *          The number of rows of the matrix A. m >= 0.
  *
