@@ -93,7 +93,7 @@ void core_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
         switch (uplo) {
         case PlasmaUpper:
             for (int i = 0; i < imin(m, n); i++)
-                for (int j = 0; j < m; j++)
+                for (int j = i; j < n; j++)
                     B[j + i*ldb] = conj(A[i + j*lda]);
             break;
         case PlasmaLower:
