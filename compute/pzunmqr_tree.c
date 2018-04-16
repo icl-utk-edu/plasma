@@ -62,7 +62,7 @@ void plasma_pzunmqr_tree(plasma_enum_t side, plasma_enum_t trans,
 
             int j, k, kpiv;
             plasma_enum_t kernel;
-            plasma_tree_get_operation(operations,ind_operation,
+            plasma_tree_get_operation(operations, ind_operation,
                                       &kernel, &j, &k, &kpiv);
 
             int nvaj = plasma_tile_nview(A, j);
@@ -147,7 +147,7 @@ void plasma_pzunmqr_tree(plasma_enum_t side, plasma_enum_t trans,
 
             int j, k, kpiv;
             plasma_enum_t kernel;
-            plasma_tree_get_operation(operations,ind_operation,
+            plasma_tree_get_operation(operations, ind_operation,
                                       &kernel, &j, &k, &kpiv);
 
             int nvbk = plasma_tile_nview(B, k);
@@ -181,7 +181,7 @@ void plasma_pzunmqr_tree(plasma_enum_t side, plasma_enum_t trans,
 
                     core_omp_zttmqr(
                         side, trans,
-                        mvbm, nvbkpiv, mvbm, nvbk, imin(mvakpiv+mvak,nvaj), ib,
+                        mvbm, nvbkpiv, mvbm, nvbk, imin(mvakpiv+mvak, nvaj), ib,
                         B(m, kpiv), ldbm,
                         B(m, k),    ldbm,
                         A(k,  j), ldak,
@@ -200,7 +200,7 @@ void plasma_pzunmqr_tree(plasma_enum_t side, plasma_enum_t trans,
 
                     core_omp_ztsmqr(
                         side, trans,
-                        mvbm, nvbkpiv, mvbm, nvbk, imin(mvakpiv+mvak,nvaj), ib,
+                        mvbm, nvbkpiv, mvbm, nvbk, imin(mvakpiv+mvak, nvaj), ib,
                         B(m, kpiv), ldbm,
                         B(m, k),    ldbm,
                         A(k,  j), ldak,

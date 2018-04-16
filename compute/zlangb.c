@@ -150,7 +150,7 @@ double plasma_zlangb(plasma_enum_t norm,
         break;
 
     case PlasmaInfNorm:
-        work = (double*)calloc(((size_t)AB.nt*AB.mt*AB.mb+AB.mb*AB.mt),sizeof(double));
+        work = (double*)calloc(((size_t)AB.nt*AB.mt*AB.mb+AB.mb*AB.mt), sizeof(double));
         break;
 
     case PlasmaFrobeniusNorm:

@@ -64,7 +64,7 @@ void plasma_pzunmlq_tree(plasma_enum_t side, plasma_enum_t trans,
 
             int j, k, kpiv;
             plasma_enum_t kernel;
-            plasma_tree_get_operation(operations,ind_operation,
+            plasma_tree_get_operation(operations, ind_operation,
                                       &kernel, &j, &k, &kpiv);
 
             int mvaj = plasma_tile_mview(A, j);
@@ -153,7 +153,7 @@ void plasma_pzunmlq_tree(plasma_enum_t side, plasma_enum_t trans,
 
             int j, k, kpiv;
             plasma_enum_t kernel;
-            plasma_tree_get_operation(operations,ind_operation,
+            plasma_tree_get_operation(operations, ind_operation,
                                       &kernel, &j, &k, &kpiv);
 
             int mvaj = plasma_tile_mview(A, j);
