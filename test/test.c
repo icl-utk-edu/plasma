@@ -1085,8 +1085,8 @@ int scan_drange(const char **strp, double *start, double *end, double *step)
  * @brief Scans a list of integers or ranges (start:end:step).
  *        Adds the value(s) to a parameter iterator.
  *
- * @param[in]    str   - string containin an integer
- * @param[inout] param - parameter iterator
+ * @param[in]     str   - string containin an integer
+ * @param[in,out] param - parameter iterator
  *
  * @retval 1 - failure
  * @retval 0 - success
@@ -1227,8 +1227,8 @@ int param_scan_int3(const char *str, param_t *param, bool outer)
  * @brief Scans a list of characters.
  *        Adds the value(s) to a parameter iterator.
  *
- * @param[in]    str   - string containing a single character
- * @param[inout] param - parameter iterator
+ * @param[in]     str   - string containing a single character
+ * @param[in,out] param - parameter iterator
  *
  * @retval 1 - failure
  * @retval 0 - success
@@ -1254,8 +1254,8 @@ int param_scan_char(const char *str, param_t *param)
  * @brief Scans a list of double precision numbers or ranges (start:end:step).
  *        Adds the value(s) to a parameter iterator.
  *
- * @param[in]    str   - string containing a double precision number
- * @param[inout] param - parameter iterator
+ * @param[in]     str   - string containing a double precision number
+ * @param[in,out] param - parameter iterator
  *
  * @retval 1 - failure
  * @retval 0 - success
@@ -1287,8 +1287,8 @@ int param_scan_double(const char *str, param_t *param)
  * @brief Scans a list of complex numbers in format: 1.23 or 1.23+2.45i.
  *        Adds the value to a parameter iterator. No ranges.
  *
- * @param[in]    str   - string containing a double precision number
- * @param[inout] param - parameter iterator
+ * @param[in]     str   - string containing a double precision number
+ * @param[in,out] param - parameter iterator
  *
  * @retval 1 - failure
  * @retval 0 - success
@@ -1325,7 +1325,7 @@ int param_scan_complex(const char *str, param_t *param)
  *        iterator, dynamically growing its storage as needed.
  *        Also clears parameter's used flag.
  *
- * @param[inout] param - parameter iterator
+ * @param[in,out] param - parameter iterator
  *
  ******************************************************************************/
 void param_add(param_t *param)
@@ -1360,8 +1360,8 @@ void param_add_int(int ival, param_t *param)
  *
  * @brief Adds an integer to a parameter iterator.
  *
- * @param[in]    ival  - integer
- * @param[inout] param - parameter iterator
+ * @param[in]     ival  - integer
+ * @param[in,out] param - parameter iterator
  *
  ******************************************************************************/
 void param_add_int3(int3_t ival, param_t *param)
@@ -1374,8 +1374,8 @@ void param_add_int3(int3_t ival, param_t *param)
  *
  * @brief Adds a character to a parameter iterator.
  *
- * @param[in]    cval  - character
- * @param[inout] param - parameter iterator
+ * @param[in]     cval  - character
+ * @param[in,out] param - parameter iterator
  *
  ******************************************************************************/
 void param_add_char(char cval, param_t *param)
@@ -1388,8 +1388,8 @@ void param_add_char(char cval, param_t *param)
  *
  * @brief Adds a double precision number to a parameter iterator.
  *
- * @param[in]    dval  - double precision value
- * @param[inout] param - parameter iterator
+ * @param[in]     dval  - double precision value
+ * @param[in,out] param - parameter iterator
  *
  ******************************************************************************/
 void param_add_double(double dval, param_t *param)
@@ -1402,8 +1402,8 @@ void param_add_double(double dval, param_t *param)
  *
  * @brief Adds a complex number to a parameter iterator.
  *
- * @param[in]    zval  - complex value
- * @param[inout] param - parameter iterator
+ * @param[in]     zval  - complex value
+ * @param[in,out] param - parameter iterator
  *
  ******************************************************************************/
 void param_add_complex(plasma_complex64_t zval, param_t *param)
@@ -1419,7 +1419,7 @@ void param_add_complex(plasma_complex64_t zval, param_t *param)
  *        Advances all iterators at the same time.
  *        Iterators that exhausted their range return the last value.
  *
- * @param[inout] param - array of parameter iterators
+ * @param[in,out] param - array of parameter iterators
  *
  * @retval 1 - more iterations
  * @retval 0 - no more iterations
@@ -1443,7 +1443,7 @@ int param_step_inner(param_t param[])
  *        (outer product evaluation).
  *        Advances one iterator at a time.
  *
- * @param[inout] param - array of parameter iterators
+ * @param[in,out] param - array of parameter iterators
  *
  * @retval 1 - more iterations
  * @retval 0 - no more iterations
