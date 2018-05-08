@@ -70,7 +70,7 @@ return_variables_dict = {
 
 # name arrays which will be translated to assumed-size arrays, e.g. pA(*)
 arrays_names_2D = ["pA", "pB", "pC", "pAB", "pQ", "pX", "pAs"]
-arrays_names_1D = ["ipiv", "values", "work"]
+arrays_names_1D = ["ipiv", "values", "work", "W"]
 
 # exclude inline functions from the interface
 exclude_list = ["inline"]
@@ -308,8 +308,12 @@ def parse_structs(preprocessed_list):
                             struct_list[index] = struct_list[istruct]
                             struct_list[istruct] = tmp
                             goAgain = True
+                            break
                         else:
                             print("Error: Cannot find a derived type " + type_name + " in imported structs.")
+
+            if (goAgain):
+                break
 
     return struct_list
 
@@ -325,7 +329,7 @@ def parse_prototypes(preprocessed_list):
 
         # extract the part of the function from the prototype
         fun_parts = proto.split("(")
-        fun_def  = str.strip(fun_parts[0])
+        fun_def   = str.strip(fun_parts[0])
 
         exclude_this_function = False
         for exclude in exclude_list:
@@ -336,7 +340,7 @@ def parse_prototypes(preprocessed_list):
             continue
 
         # clean keywords
-        fun_def = fun_def.replace("static", "")
+        fun_def = fun_def.replace("^static\s", "")
 
         # extract arguments from the prototype and make a list from them
         if (len(fun_parts) > 1):
