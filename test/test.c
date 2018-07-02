@@ -748,6 +748,7 @@ void param_init(param_t param[])
         param[i].val =
             (param_value_t*)malloc(InitValArraySize*sizeof(param_value_t));
         assert(param[i].val != NULL);
+        param[i].val->used = false;
         param[i].size = InitValArraySize;
     }
 }
