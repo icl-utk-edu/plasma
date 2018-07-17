@@ -23,25 +23,25 @@ extern "C" {
 #ifndef LAPACK_zlantr
 #define LAPACK_zlantr LAPACK_GLOBAL(zlantr, ZLANTR)
 double LAPACK_zlantr(const char *norm, const char *uplo, const char *diag,
-                     const int *m, const int *n,
-                     const plasma_complex64_t *A, const int *lda,
+                     const lapack_int *m, const lapack_int *n,
+                     const plasma_complex64_t *A, const lapack_int *lda,
                      double *work);
 #endif
 
 // LAPACKE_zlascl not available in LAPACKE < 3.6.0
 #ifndef LAPACK_zlascl
 #define LAPACK_zlascl LAPACK_GLOBAL(zlascl, ZLASCL)
-void LAPACK_zlascl(const char *type, const int *kl, const int *ku,
+void LAPACK_zlascl(const char *type, const lapack_int *kl, const lapack_int *ku,
                    const double *cfrom, const double *cto,
-                   const int *m, const int *n,
-                   plasma_complex64_t *A, const int *lda,
-                   int *info);
+                   const lapack_int *m, const lapack_int *n,
+                   plasma_complex64_t *A, const lapack_int *lda,
+                   lapack_int *info);
 #endif
 
 // LAPACKE_zlassq not available yet
 #ifndef LAPACK_zlassq
 #define LAPACK_zlassq LAPACK_GLOBAL(zlassq, ZLASSQ)
-void LAPACK_zlassq(const int *n, const plasma_complex64_t *x, const int *incx,
+void LAPACK_zlassq(const lapack_int *n, const plasma_complex64_t *x, const lapack_int *incx,
                    double *scale, double *sumsq);
 #endif
 
@@ -49,8 +49,8 @@ void LAPACK_zlassq(const int *n, const plasma_complex64_t *x, const int *incx,
 #ifndef LAPACK_zlangb
 #define LAPACK_zlangb LAPACK_GLOBAL(zlangb, ZLANGB)
 double LAPACK_zlangb(const char *norm,
-                     const int *n, const int *kl, const int *ku,
-                     const plasma_complex64_t *A, const int *lda,
+                     const lapack_int *n, const lapack_int *kl, const lapack_int *ku,
+                     const plasma_complex64_t *A, const lapack_int *lda,
                      double *work);
 
 #endif

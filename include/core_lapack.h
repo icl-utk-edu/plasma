@@ -47,6 +47,10 @@
     #endif
 #endif
 
+#ifndef lapack_int
+#define lapack_int int
+#endif
+
 #include "core_lapack_s.h"
 #include "core_lapack_d.h"
 #include "core_lapack_c.h"
