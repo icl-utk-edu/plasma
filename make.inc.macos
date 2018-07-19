@@ -1,53 +1,34 @@
-# PLASMA example make.inc, using Intel MKL and gcc
+# PLASMA make.inc template, processed by configure.py
 #
 # PLASMA is a software package provided by:
 # University of Tennessee, US,
 # University of Manchester, UK.
 
-# --------------------
-# programs
+# ------------------------------------------------------------------------------
+# programs and flags
 
-CC        = gcc
-FC        = gfortran
-AR        = ar
-RANLIB    = ranlib
-
-
-# --------------------
-# flags
+CC       = gcc
+FC       = gfortran
+RANLIB   = ranlib
+AR       = ar
 
 # Use -fPIC to make shared (.so) and static (.a) libraries;
 # can be commented out if making only static libraries.
-FPIC      = -fPIC
+FPIC     = -fPIC
 
-CFLAGS    = -fopenmp $(FPIC) -O3 -std=c99   -Wall -pedantic -Wshadow -Wno-unused-function
-FCFLAGS   = -fopenmp $(FPIC) -O2 -std=f2008 -Wall
-LDFLAGS   = -fopenmp $(FPIC)
+CFLAGS   = ${FPIC} -std=c99 -I${MKLROOT}/include -fopenmp -DHAVE_OPENMP_DEPEND -DHAVE_OPENMP_PRIORITY -DHAVE_OPENMP_DEPEND -DHAVE_OPENMP_PRIORITY -DHAVE_MKL -DBLAS_RETURN_COMPLEX_AS_ARGUMENT -DHAVE_LAPACKE_DLASCL -DHAVE_LAPACKE_DLANTR
+FCFLAGS  = ${FPIC} -std=f2008 -fopenmp
+LDFLAGS  = ${FPIC} -L${MKLROOT}/lib -fopenmp
+LIBS     = -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lm
+
+# Enable or disable compiling Fortran 2008 interfaces into PLASMA library
+# 0 - disabled
+# 1 - enabled; build Fortran interfaces and examples
+fortran ?= 0
+
+# where to install PLASMA
+prefix ?= /usr/local/plasma
 
 # one of: aix bsd c89 freebsd generic linux macosx mingw posix solaris
 # usually generic is fine
-lua_platform = macosx
-
-
-# --------------------
-# libraries
-
-# ----- with MKL
-# This assumes $MKLROOT is set in your environment.
-# Add these to your .cshrc or .bashrc, adjusting for where MKL is installed:
-# in .cshrc:   source /opt/intel/bin/compilervars.csh intel64
-# in .bashrc:  source /opt/intel/bin/compilervars.sh  intel64
-# Currently, MKL on MacOS has only Intel threads, which may not work with gcc,
-# so use sequential.
-CFLAGS   += -DHAVE_MKL
-
-LIBS      = -L$(MKLROOT)/lib -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lm
-
-INC       = -I$(MKLROOT)/include
-
-
-# ----- with MacOS Accelerate (Veclib)
-# do not use Netlib LAPACK with Accelerate; zdotc crashes.
-#LIBS      = -L$(LAPACKDIR) -llapacke -framework Accelerate
-
-#INC       = -I$(LAPACKDIR)/LAPACKE/include -I$(CBLASDIR)
+lua_platform ?= generic
