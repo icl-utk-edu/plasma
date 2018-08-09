@@ -1160,7 +1160,7 @@ def lapacke_dlantr( required=True ):
 
 # ------------------------------------------------------------------------------
 def lapacke_dlassq( required=True ):
-	print_dots( 'LAPACKE_dlassq exists (LAPACK >= ???)' )
+	print_dots( 'LAPACKE_dlassq exists (LAPACK >= 3.8.0)' )
 	push_lang('C')
 	src = 'lapacke_dlassq.c'
 	try:
