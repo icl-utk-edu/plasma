@@ -911,6 +911,17 @@ def cblas( required=True ):
 		{'LIBS': '-lcblas'},
 	]
 	
+	# MacOS Accelerate has cblas.h header buried in Frameworks
+	if ('-framework Accelerate' in env['LIBS']):
+		try:
+			(stdout, stderr) = run(
+				'find /System/Library/Frameworks/Accelerate.framework -name cblas.h')
+			(path, fname) = os.path.split( stdout )
+			tests.append( {'CFLAGS':  '-I'+path} )
+		except Error:
+			pass
+	# end
+	
 	# add lapack directory
 	(inc, libdir) = get_inc_lib( ['LAPACK', 'LAPACKDIR', 'LAPACK_DIR'] )
 	if (inc or libdir):
@@ -929,17 +940,6 @@ def cblas( required=True ):
 			'LDFLAGS': libdir,
 			'LIBS':    '-lcblas',
 		})
-	# end
-	
-	# MacOS has cblas.h header buried in Frameworks
-	if (sys.platform == 'darwin'):
-		try:
-			(stdout, stderr) = run(
-				'find /System/Library/Frameworks/Accelerate.framework -name cblas.h')
-			(path, fname) = os.path.split( stdout )
-			tests.append( {'CFLAGS':  '-I'+path} )
-		except Error:
-			pass
 	# end
 	
 	found = False
