@@ -965,6 +965,35 @@ def cblas( required=True ):
 
 
 # ------------------------------------------------------------------------------
+def cblas_enum( required=True ):
+	print_dots( 'CBLAS needs typedef enum' )
+	src = 'cblas_enum.c'
+	
+	push_lang('C')
+	try:
+		try_compile_run( src )
+		print( 'no' )
+		return
+	except Exception, e:
+		pass
+	finally:
+		pop_lang()
+	
+	push_lang('C')
+	try:
+		env.append( 'DEFS', '-DCBLAS_ADD_TYPEDEF' )
+		try_compile_run( src )
+		print( 'yes' )
+	except Exception, e:
+		print_error( 'unknown' )
+		if (required):
+			raise e
+	finally:
+		pop_lang()
+# end
+
+
+# ------------------------------------------------------------------------------
 def lapack( required=True ):
 	print_header( 'Detecting LAPACK library' )
 	push_lang('C')
@@ -2190,6 +2219,28 @@ int main( int argc, char** argv )
         }
     }
     printf( "cblas_sgemm ok\n" );
+    return 0;
+}
+''',
+
+# ------------------------------------------------------------------------------
+'cblas_enum.c': r'''
+#include <stdio.h>
+
+#ifdef HAVE_MKL
+    #include <mkl_cblas.h>
+#else
+    #include <cblas.h>
+#endif
+
+#ifdef CBLAS_ADD_TYPEDEF
+typedef enum CBLAS_TRANSPOSE CBLAS_TRANSPOSE;
+#endif
+
+int main( int argc, char** argv )
+{
+    CBLAS_TRANSPOSE trans;
+    printf( "CBLAS_TRANSPOSE ok\n" );
     return 0;
 }
 ''',

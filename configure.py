@@ -70,6 +70,7 @@ try:
 	config.blas_return_complex( required=False )
 	
 	config.cblas()
+	config.cblas_enum()
 	config.lapack()
 	
 	#config.set_verbose()
