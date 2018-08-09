@@ -413,9 +413,12 @@ def prog_fortran( extra=[], default=fortran_compilers, required=True ):
 			openmp()
 			choices.append( env.top() )  # passed required features
 			
-			print_subhead( '    Optional features:' )
-			openmp_depend(   required=False )
-			openmp_priority( required=False )
+			# already checked for C compiler; checking again makes duplicate
+			# flags in @DEFS@
+			#print_subhead( '    Optional features:' )
+			#openmp_depend(   required=False )
+			#openmp_priority( required=False )
+			
 			#for flag in ('-O2', '-Wall', '-Wshadow', '-Wno-unused-function', '-pedantic'):
 			#	compiler_flag( flag, required=False )
 		except Error, e:
