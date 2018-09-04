@@ -9,10 +9,11 @@
  * @precisions normal z -> s d c
  *
  **/
+
 #include "test.h"
 #include "flops.h"
-#include "core_lapack.h"
 #include "plasma.h"
+#include "core_lapack.h"
 
 #include <assert.h>
 #include <stddef.h>

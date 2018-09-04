@@ -10,10 +10,10 @@
  *
  **/
 
+#include "plasma.h"
 #include "core_blas.h"
 #include "core_lapack.h"
 #include "flops.h"
-#include "plasma.h"
 #include "test.h"
 
 #include <assert.h>
