@@ -1,0 +1,13 @@
+/* PLASMA configuration options */
+
+#cmakedefine HAVE_MKL
+
+#cmakedefine HAVE_ESSL
+
+#cmakedefine PLASMA_WITH_ESSL
+
+#cmakedefine CBLAS_ADD_TYPEDEF
+
+#cmakedefine PLASMA_WITH_MKL
+
+#cmakedefine PLASMA_USE_LUA
