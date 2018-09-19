@@ -19,8 +19,95 @@
 #include <stdarg.h>
 #include <omp.h>
 
+#if ! defined(PLASMA_USE_LUA)
+
+/* This is a set of static visibility stubs for Lua functions used in tuning. */
+
+struct lua_State_s {int i;};
+typedef struct lua_State_s lua_State;
+
+static
+lua_State*
+luaL_newstate(void) {
+  return (lua_State*)malloc(sizeof(lua_State));
+}
+
+static
+void
+lua_close(lua_State* L) {
+  if (L) free(L);
+}
+
+static
+int luaL_openlibs(lua_State* L) {if (L) L;}
+
+static
+int
+luaL_dofile(lua_State* L, const char *config_filename) {
+  if (L && config_filename)
+    return 0;
+  else
+    return 0;
+}
+
+#define LUA_TFUNCTION 1313
+#define LUA_OK 0
+
+static
+int
+lua_getglobal(lua_State* L, const char *func_name) {
+  if (L && func_name)
+    return LUA_TFUNCTION;
+
+  return 0;
+}
+
+static
+int
+lua_pushstring(lua_State* L, const char *s) {
+  if (L && s) return 0;
+  return -1;
+}
+
+static
+int
+lua_pushinteger(lua_State* L, int i) {
+  if (L) return 0;
+  return i ? -2 : -1;
+}
+
+static
+int
+lua_pcall(lua_State* L, int c, int d, int e) {
+  if (L)
+    return 0;
+  return -1;
+}
+
+static
+int
+lua_tonumber(lua_State* L, int c) {
+  if (L)
+    return 0;
+  return -1;
+}
+
+static
+int
+lua_pop(lua_State* L, int c) {
+  if (L)
+    return 0;
+  return -1;
+}
+#endif
+
 /******************************************************************************/
-lua_State *plasma_tuning_init()
+#if defined(PLASMA_USE_LUA)
+lua_State
+#else
+void
+#endif
+*plasma_tuning_init()
 {
     // Initiaize Lua.
     lua_State *L = luaL_newstate();
@@ -60,7 +147,13 @@ lua_State *plasma_tuning_init()
 }
 
 /******************************************************************************/
-void plasma_tuning_finalize(lua_State *L)
+void plasma_tuning_finalize(
+#if defined(PLASMA_USE_LUA)
+lua_State
+#else
+void
+#endif
+    *L)
 {
     if (L != NULL)
         lua_close(L);
@@ -102,7 +195,11 @@ static void plasma_tune(lua_State *L, plasma_enum_t dtyp,
         plasma_error("lua_tonumber() failed");
         return;
     }
+#if defined(PLASMA_USE_LUA)
     *out = retval;
+#else
+    *out = 100; /* always use block size 100 without Lua */
+#endif
     lua_pop(L, 1);
 }
 
