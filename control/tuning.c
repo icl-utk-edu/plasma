@@ -19,96 +19,16 @@
 #include <stdarg.h>
 #include <omp.h>
 
-#if ! defined(PLASMA_USE_LUA)
-
-/* This is a set of static visibility stubs for Lua functions used in tuning. */
-
-struct lua_State_s {int i;};
-typedef struct lua_State_s lua_State;
-
-static
-lua_State*
-luaL_newstate(void) {
-  return (lua_State*)malloc(sizeof(lua_State));
-}
-
-static
-void
-lua_close(lua_State* L) {
-  if (L) free(L);
-}
-
-static
-int luaL_openlibs(lua_State* L) {if (L) L;}
-
-static
-int
-luaL_dofile(lua_State* L, const char *config_filename) {
-  if (L && config_filename)
-    return 0;
-  else
-    return 0;
-}
-
-#define LUA_TFUNCTION 1313
-#define LUA_OK 0
-
-static
-int
-lua_getglobal(lua_State* L, const char *func_name) {
-  if (L && func_name)
-    return LUA_TFUNCTION;
-
-  return 0;
-}
-
-static
-int
-lua_pushstring(lua_State* L, const char *s) {
-  if (L && s) return 0;
-  return -1;
-}
-
-static
-int
-lua_pushinteger(lua_State* L, int i) {
-  if (L) return 0;
-  return i ? -2 : -1;
-}
-
-static
-int
-lua_pcall(lua_State* L, int c, int d, int e) {
-  if (L)
-    return 0;
-  return -1;
-}
-
-static
-int
-lua_tonumber(lua_State* L, int c) {
-  if (L)
-    return 0;
-  return -1;
-}
-
-static
-int
-lua_pop(lua_State* L, int c) {
-  if (L)
-    return 0;
-  return -1;
-}
-#endif
+#if defined(PLASMA_USE_LUA)
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
 
 /******************************************************************************/
-#if defined(PLASMA_USE_LUA)
-lua_State
-#else
 void
-#endif
-*plasma_tuning_init()
+plasma_tuning_init(plasma_context_t *plasma)
 {
+    lua_State *L = (lua_State *)plasma->L;
     // Initiaize Lua.
     lua_State *L = luaL_newstate();
     if (L == NULL) {
@@ -147,22 +67,18 @@ void
 }
 
 /******************************************************************************/
-void plasma_tuning_finalize(
-#if defined(PLASMA_USE_LUA)
-lua_State
-#else
-void
-#endif
-    *L)
+void plasma_tuning_finalize(plasma_context_t *plasma)
 {
+    lua_State *L = (lua_State *)plasma->L;
     if (L != NULL)
         lua_close(L);
 }
 
 /******************************************************************************/
-static void plasma_tune(lua_State *L, plasma_enum_t dtyp,
+static void plasma_tune(plasma_context_t *plasma, plasma_enum_t dtyp,
                         const char *func_name, int *out, int count, ...)
 {
+    lua_State *L = (lua_State *)plasma->L;
     int retval;
     retval = lua_getglobal(L, func_name);
     if (retval != LUA_TFUNCTION) {
@@ -195,13 +111,36 @@ static void plasma_tune(lua_State *L, plasma_enum_t dtyp,
         plasma_error("lua_tonumber() failed");
         return;
     }
-#if defined(PLASMA_USE_LUA)
     *out = retval;
-#else
-    *out = 100; /* always use block size 100 without Lua */
-#endif
     lua_pop(L, 1);
 }
+
+#else
+void
+plasma_tuning_init(plasma_context_t *plasma)
+{
+    if (plasma) return;
+}
+
+void plasma_tuning_finalize(plasma_context_t *plasma)
+{
+    if (plasma) return;
+}
+
+
+static void plasma_tune(plasma_context_t *plasma, plasma_enum_t dtyp,
+                        const char *func_name, int *out, int count, ...)
+{
+    va_list ap;
+    va_start(ap, count);
+    /* drain variable arguments to prevent stack leaks */
+    for (int i = 0; i < count; i++)
+        va_arg(ap, int);
+    va_end(ap);
+
+    *out = 100; /* always use block size 100 when Lua is missing */
+}
+#endif
 
 /******************************************************************************/
 void plasma_tune_gbtrf(plasma_context_t *plasma, plasma_enum_t dtyp,

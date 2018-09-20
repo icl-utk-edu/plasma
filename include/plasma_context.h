@@ -14,11 +14,6 @@
 #include "plasma_barrier.h"
 
 #include <pthread.h>
-#if defined(PLASMA_USE_LUA)
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
-#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,11 +29,7 @@ typedef struct {
     int max_panel_threads;          ///< max threads for panel factorization
     plasma_barrier_t barrier;       ///< thread barrier for multithreaded tasks
     plasma_enum_t householder_mode; ///< PlasmaHouseholderMode
-#if defined(PLASMA_USE_LUA)
-    lua_State *L;                   ///< Lua state
-#else
-    void *L; ///< Unusued pointer for when Lua is missing
-#endif
+    void *L;                        ///< Lua state pointer; unusued when Lua is missing
 } plasma_context_t;
 
 typedef struct {

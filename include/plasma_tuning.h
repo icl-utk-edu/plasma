@@ -12,30 +12,13 @@
 
 #include "plasma_context.h"
 
-#if defined(PLASMA_USE_LUA)
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /******************************************************************************/
-#if defined(PLASMA_USE_LUA)
-lua_State
-#else
-void
-#endif
-  *plasma_tuning_init();
-void plasma_tuning_finalize(
-#if defined(PLASMA_USE_LUA)
-    lua_State
-#else
-void
-#endif
-    *L);
+void plasma_tuning_init(plasma_context_t *plasma);
+void plasma_tuning_finalize(plasma_context_t *plasma);
 
 void plasma_tune_gbtrf(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int n, int bw);

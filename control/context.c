@@ -239,13 +239,11 @@ void plasma_context_init(plasma_context_t *context)
     context->max_panel_threads = 1;
     context->householder_mode = PlasmaFlatHouseholder;
 
-    // Initialize config.
-    context->L = plasma_tuning_init();
+    plasma_tuning_init(context);
 }
 
 /******************************************************************************/
 void plasma_context_finalize(plasma_context_t *context)
 {
-    // Finalize config.
-    plasma_tuning_finalize(context->L);
+    plasma_tuning_finalize(context);
 }
