@@ -28,7 +28,6 @@ if ( PYTHONINTERP_FOUND )
     endforeach()
   endforeach()
 
-  
   foreach (filename zcposv zcgesv zcgbsv clag2z zlag2c pclag2z pzlag2c)
     foreach (precision_letter ds)
       execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/codegen.py -p ${precision_letter} ${CMAKE_CURRENT_SOURCE_DIR}/compute/${filename}.c)
@@ -56,24 +55,33 @@ use_c99()
 # use standard module to find LAPACK
 include( FindBLAS ) # use BLA_VENDOR (by default "All") "Intel" "Intel10_32" "Intel10_64lp" "Intel10_64p_seq" "IBMESSL" "Generic"
 
-# use standard module to find LAPACK
+# use standard module to find LAPACK (this seems to call FindBLAS)
 include( FindLAPACK )
 
-message( STATUS "BLAS(${BLAS_FOUND})") # vendor ${BLA_VENDOR}, linker flags `${BLA_LINKER_FLAGS}'" )
-message( STATUS "LAPACK(${LAPACK_FOUND})") # libraries: ${LAPACK_LIBRARIES}" )
+message( STATUS "BLAS(${BLAS_FOUND})" )  # linker flags `${BLA_LINKER_FLAGS}'" )
+message( STATUS "LAPACK(${LAPACK_FOUND})" )  # libraries: ${LAPACK_LIBRARIES}" )
 
 include( Modules/FindCBLAS.cmake )
 
 if (BLAS_FOUND)
-  if ( BLA_VENDOR STREQUAL "Intel" OR BLA_VENDOR STREQUAL "Intel10_32" OR BLA_VENDOR STREQUAL "Intel10_64lp" OR BLA_VENDOR STREQUAL "Intel10_64p_seq" )
+  # BLA_VENDOR is the input variable to allow only checks for specific vendor BLAS
+  #if ( BLA_VENDOR STREQUAL "Intel" OR BLA_VENDOR STREQUAL "Intel10_32" OR BLA_VENDOR STREQUAL "Intel10_64lp" OR BLA_VENDOR STREQUAL "Intel10_64p_seq" )
+  #
+  if ( BLAS_LIBRARIES MATCHES mkl_core )
+
+    message( STATUS "Found Intel MKL" )
+    add_definitions( -DPLASMA_WITH_MKL ) # this is command line only
     set( HAVE_MKL 1 )
 
-  elseif ( BLA_VENDOR STREQUAL "IBMESSL" )
+  elseif ( BLAS_LIBRARIES MATCHES essl )
+    message( STATUS "Found IBM ESSL" )
+
     set( HAVE_ESSL 1 )
     set( PLASMA_WITH_ESSL 1 )
 
-  elseif ( BLA_VENDOR STREQUAL "Generic" )
-
+  else ()
+    message( STATUS "Found Generic BLAS" )
+    message( STATUS "vendor ${BLA_VENDOR}, linker flags `${BLA_LINKER_FLAGS}'" )
   endif ()
 
 endif (BLAS_FOUND)
@@ -83,8 +91,8 @@ include( FindLua )
 
 if ( LUA_FOUND )
   include_directories( ${LUA_INCLUDE_DIR} )
-  # add_definitions( -DPLASMA_USE_LUA ) # this is command line only.c
-  set( PLASMA_USE_LUA 1 )
+  add_definitions( -DPLASMA_USE_LUA ) # this is command line only
+  set( PLASMA_USE_LUA 1 ) # this will be substituted in the config file
 endif ( LUA_FOUND )
 
 # use standard module to find OpenMP
@@ -371,7 +379,3 @@ target_include_directories(plasmatest PUBLIC
 )
 
 configure_file( include/plasma_config.hin ${CMAKE_CURRENT_SOURCE_DIR}/include/plasma_config.h @ONLY NEWLINE_STYLE LF )
-
-
-
-
