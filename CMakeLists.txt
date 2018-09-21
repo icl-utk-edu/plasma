@@ -79,6 +79,12 @@ if (BLAS_FOUND)
     set( HAVE_ESSL 1 )
     set( PLASMA_WITH_ESSL 1 )
 
+  elseif ( BLAS_LIBRARIES MATCHES openblas )
+    message( STATUS "Found OpenBLAS" )
+
+    add_definitions( -DPLASMA_WITH_OPENBLAS ) # this is command line only
+    set( PLASMA_WITH_OPENBLAS 1 )
+
   else ()
     message( STATUS "Found Generic BLAS" )
     message( STATUS "vendor ${BLA_VENDOR}, linker flags `${BLA_LINKER_FLAGS}'" )
