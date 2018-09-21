@@ -377,7 +377,14 @@ test/test_ztrtri.c test/test_dtrtri.c test/test_ctrtri.c test/test_strtri.c
 test/test_zunmlq.c test/test_dormlq.c test/test_cunmlq.c test/test_sormlq.c
 test/test_zunmqr.c test/test_dormqr.c test/test_cunmqr.c test/test_sormqr.c)
 
-target_link_libraries( plasmatest plasma plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} )
+find_library(MATH_LIBRARY m)
+if( MATH_LIBRARY )
+  # OpenBLAS needs to link C math library (usually -lm) but MKL doesn't
+  target_link_libraries( plasmatest plasma plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${MATH_LIBRARY} )
+else( MATH_LIBRARY )
+  target_link_libraries( plasmatest plasma plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} )
+endif( MATH_LIBRARY )
+
 
 target_include_directories(plasmatest PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
