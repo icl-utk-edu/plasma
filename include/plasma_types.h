@@ -30,7 +30,11 @@ extern "C" {
  *
  **/
 #ifndef CBLAS_SADDR
+#if defined(PLASMA_WITH_OPENBLAS)
+#define CBLAS_SADDR(var) ((void*)&(var))
+#else
 #define CBLAS_SADDR(var) &(var)
+#endif
 #endif
 
 /******************************************************************************/
