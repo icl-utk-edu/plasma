@@ -415,10 +415,10 @@ def iso_c_wrapper_type(arg):
     else:
         f_type = types_dict[arg[0]]
 
-    if (is_pointer):
-        f_intent = ", intent(inout)"
-    else:
-        f_intent = ", intent(in)"
+    #if (is_pointer):
+    #    f_intent = ", intent(inout)"
+    #else:
+    #    f_intent = ", intent(in)"
 
     if (is_pointer):
         if (arg[1] == "*"):
@@ -438,7 +438,8 @@ def iso_c_wrapper_type(arg):
     else:
         f_array = ""
 
-    f_line = f_type + f_intent + f_target + " :: " + f_name + f_array
+    #f_line = f_type + f_intent + f_target + " :: " + f_name + f_array
+    f_line = f_type + f_target + " :: " + f_name + f_array
 
     return f_line
 
@@ -643,7 +644,9 @@ def fortran_wrapper(function):
         else:
             f_target = ""
 
-        f_wrapper += indent + tab + types_dict[return_type] + ", intent(out)" + f_target + " :: " + return_var + "\n"
+        # do not export intents
+        #f_wrapper += indent + tab + types_dict[return_type] + ", intent(out)" + f_target + " :: " + return_var + "\n"
+        f_wrapper += indent + tab + types_dict[return_type] + f_target + " :: " + return_var + "\n"
 
     f_wrapper += "\n"
 
