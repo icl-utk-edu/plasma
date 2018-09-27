@@ -12,6 +12,14 @@
 
 #include <complex.h>
 
+/*
+ * RELEASE is a, b, c, f (alpha, beta, candidate, and final).
+ * */
+#define PLASMA_VERSION_MAJOR   18
+#define PLASMA_VERSION_MINOR   9
+#define PLASMA_VERSION_MICRO   0
+#define PLASMA_VERSION_RELEASE 'f'
+
 #ifdef __cplusplus
 extern "C" {
 #endif
