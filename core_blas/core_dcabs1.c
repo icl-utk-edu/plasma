@@ -10,7 +10,7 @@
  *
  **/
 
-#include "core_blas.h"
+#include <plasma_core_blas.h>
 
 #include <math.h>
 

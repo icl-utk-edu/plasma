@@ -16,7 +16,7 @@
 #include "plasma_internal.h"
 #include "plasma_types.h"
 #include "plasma_workspace.h"
-#include "core_blas.h"
+#include <plasma_core_blas.h>
 
 #define offset \
     (A.uplo == PlasmaUpper ? A.ku : (A.uplo == PlasmaLower ? 0 : A.ku+A.kl))

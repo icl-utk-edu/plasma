@@ -9,8 +9,8 @@
  * @precisions normal z -> s d c
  *
  **/
-#ifndef ICL_PLASMA_INTERNAL_Z_H
-#define ICL_PLASMA_INTERNAL_Z_H
+#ifndef PLASMA_INTERNAL_Z_H
+#define PLASMA_INTERNAL_Z_H
 
 #include "plasma_async.h"
 #include "plasma_descriptor.h"
@@ -257,4 +257,4 @@ void plasma_pzunmqr_tree(plasma_enum_t side, plasma_enum_t trans,
 }  // extern "C"
 #endif
 
-#endif // ICL_PLASMA_INTERNAL_Z_H
+#endif // PLASMA_INTERNAL_Z_H

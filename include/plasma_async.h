@@ -7,8 +7,8 @@
  *  University of Manchester, UK.
  *
  **/
-#ifndef ICL_PLASMA_ASYNC_H
-#define ICL_PLASMA_ASYNC_H
+#ifndef PLASMA_ASYNC_H
+#define PLASMA_ASYNC_H
 
 #include "plasma_types.h"
 
@@ -39,4 +39,4 @@ int plasma_sequence_init(plasma_sequence_t *sequence);
 }  // extern "C"
 #endif
 
-#endif // ICL_PLASMA_ASYNC_H
+#endif // PLASMA_ASYNC_H

@@ -7,8 +7,8 @@
  *  University of Manchester, UK.
  **/
 
-#ifndef ICL_PLASMA_TREE_H
-#define ICL_PLASMA_TREE_H
+#ifndef PLASMA_TREE_H
+#define PLASMA_TREE_H
 
 enum {
     PlasmaGeKernel = 1,
@@ -69,4 +69,4 @@ void plasma_tree_operations(int mt, int nt,
                             plasma_sequence_t *sequence,
                             plasma_request_t *request);
 
-#endif // ICL_PLASMA_TREE_H
+#endif // PLASMA_TREE_H

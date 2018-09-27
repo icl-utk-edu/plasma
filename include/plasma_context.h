@@ -7,8 +7,8 @@
  *  University of Manchester, UK.
  *
  **/
-#ifndef ICL_PLASMA_CONTEXT_H
-#define ICL_PLASMA_CONTEXT_H
+#ifndef PLASMA_CONTEXT_H
+#define PLASMA_CONTEXT_H
 
 #include "plasma_types.h"
 #include "plasma_barrier.h"
@@ -53,4 +53,4 @@ void plasma_context_finalize(plasma_context_t *context);
 }  // extern "C"
 #endif
 
-#endif // ICL_PLASMA_CONTEXT_H
+#endif // PLASMA_CONTEXT_H

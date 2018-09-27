@@ -7,8 +7,8 @@
  *  University of Manchester, UK.
  *
  **/
-#ifndef ICL_CORE_LAPACK_H
-#define ICL_CORE_LAPACK_H
+#ifndef PLASMA_CORE_LAPACK_H
+#define PLASMA_CORE_LAPACK_H
 
 #if defined(HAVE_MKL) || defined(PLASMA_WITH_MKL)
     #define MKL_Complex16 double _Complex
@@ -57,4 +57,4 @@
 #include "core_lapack_c.h"
 #include "core_lapack_z.h"
 
-#endif // ICL_CORE_LAPACK_H
+#endif // PLASMA_CORE_LAPACK_H

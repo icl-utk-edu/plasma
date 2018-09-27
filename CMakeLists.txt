@@ -12,13 +12,13 @@ if ( PYTHONINTERP_FOUND )
 
   message( STATUS "Generating PLASMA compute files..." )
 
-  foreach (filename plasma_z plasma_internal_z core_lapack_z core_blas_z)
+  foreach (filename plasma_z plasma_internal_z core_lapack_z plasma_core_blas_z)
     foreach (precision_letter s d c)
       execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/codegen.py -p ${precision_letter} ${CMAKE_CURRENT_SOURCE_DIR}/include/${filename}.h)
     endforeach()
   endforeach()
 
-  foreach (filename include/plasma_zc.h include/plasma_internal_zc.h include/core_blas_zc.h test/test_zc.h)
+  foreach (filename include/plasma_zc.h include/plasma_internal_zc.h include/plasma_core_blas_zc.h test/test_zc.h)
     execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/codegen.py -p ds ${CMAKE_CURRENT_SOURCE_DIR}/${filename})
   endforeach()
 
@@ -252,7 +252,7 @@ if ( PYTHONINTERP_FOUND )
   endforeach()
 endif ( PYTHONINTERP_FOUND )
 
-add_library(plasma_core_blas SHARED include/core_blas.h
+add_library(plasma_core_blas SHARED include/plasma_core_blas.h
 core_blas/core_clag2z.c core_blas/core_dcabs1.c core_blas/core_scabs1.c core_blas/core_dzamax.c core_blas/core_zgeadd.c core_blas/core_zgelqt.c
 core_blas/core_zgemm.c core_blas/core_zgeqrt.c core_blas/core_zgessq.c core_blas/core_zgeswp.c core_blas/core_zgetrf.c
 core_blas/core_zhegst.c core_blas/core_zhemm.c core_blas/core_zher2k.c core_blas/core_zherk.c core_blas/core_zhessq.c
@@ -392,3 +392,7 @@ target_include_directories(plasmatest PUBLIC
 )
 
 configure_file( include/plasma_config.hin ${CMAKE_CURRENT_SOURCE_DIR}/include/plasma_config.h @ONLY NEWLINE_STYLE LF )
+
+install(TARGETS plasma plasma_core_blas LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+file( GLOB plasma_headers include/plasma*.h)
+install(FILES ${plasma_headers} DESTINATION include)

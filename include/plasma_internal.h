@@ -7,8 +7,8 @@
  *  University of Manchester, UK.
  *
  **/
-#ifndef ICL_PLASMA_INTERNAL_H
-#define ICL_PLASMA_INTERNAL_H
+#ifndef PLASMA_INTERNAL_H
+#define PLASMA_INTERNAL_H
 
 #if ((__GNUC__ == 6) && (__GNUC_MINOR__ < 1)) || (__GNUC__ < 6)
   #define priority(p)
@@ -50,4 +50,4 @@ static inline int imax(int a, int b)
 #include "plasma_internal_z.h"
 #include "plasma_internal_zc.h"
 
-#endif // ICL_PLASMA_INTERNAL_H
+#endif // PLASMA_INTERNAL_H

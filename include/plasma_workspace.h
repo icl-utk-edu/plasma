@@ -7,8 +7,8 @@
  *  University of Manchester, UK.
  *
  **/
-#ifndef ICL_PLASMA_WORKSPACE_H
-#define ICL_PLASMA_WORKSPACE_H
+#ifndef PLASMA_WORKSPACE_H
+#define PLASMA_WORKSPACE_H
 
 #include "plasma_types.h"
 
@@ -36,4 +36,4 @@ int plasma_workspace_destroy(plasma_workspace_t *workspace);
 }  // extern "C"
 #endif
 
-#endif // ICL_PLASMA_WORKSPACE_H
+#endif // PLASMA_WORKSPACE_H

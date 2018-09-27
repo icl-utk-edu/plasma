@@ -7,8 +7,8 @@
  *  University of Manchester, UK.
  *
  **/
-#ifndef ICL_PLASMA_H
-#define ICL_PLASMA_H
+#ifndef PLASMA_H
+#define PLASMA_H
 
 #include "plasma_async.h"
 #include "plasma_descriptor.h"
@@ -22,4 +22,4 @@
 #include "plasma_z.h"
 #include "plasma_zc.h"
 
-#endif // ICL_PLASMA_H
+#endif // PLASMA_H

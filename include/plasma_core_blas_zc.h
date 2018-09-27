@@ -9,8 +9,8 @@
  * @precisions mixed zc -> ds
  *
  **/
-#ifndef ICL_CORE_BLAS_ZC_H
-#define ICL_CORE_BLAS_ZC_H
+#ifndef PLASMA_CORE_BLAS_ZC_H
+#define PLASMA_CORE_BLAS_ZC_H
 
 #include "plasma_async.h"
 #include "plasma_types.h"
@@ -44,4 +44,4 @@ void core_omp_clag2z(int m, int n,
 }  // extern "C"
 #endif
 
-#endif // ICL_CORE_BLAS_ZC_H
+#endif // PLASMA_CORE_BLAS_ZC_H

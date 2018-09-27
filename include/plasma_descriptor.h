@@ -7,8 +7,8 @@
  *  University of Manchester, UK.
  *
  **/
-#ifndef ICL_PLASMA_DESCRIPTOR_H
-#define ICL_PLASMA_DESCRIPTOR_H
+#ifndef PLASMA_DESCRIPTOR_H
+#define PLASMA_DESCRIPTOR_H
 
 #include "plasma_types.h"
 #include "plasma_error.h"
@@ -287,4 +287,4 @@ int plasma_descT_create(plasma_desc_t A, int ib, plasma_enum_t householder_mode,
 }  // extern "C"
 #endif
 
-#endif // ICL_PLASMA_DESCRIPTOR_H
+#endif // PLASMA_DESCRIPTOR_H

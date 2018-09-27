@@ -10,8 +10,8 @@
  *
  **/
 
-#ifndef ICL_CORE_LAPACK_Z_H
-#define ICL_CORE_LAPACK_Z_H
+#ifndef PLASMA_CORE_LAPACK_Z_H
+#define PLASMA_CORE_LAPACK_Z_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -59,4 +59,4 @@ double LAPACK_zlangb(const char *norm,
 }  // extern "C"
 #endif
 
-#endif // ICL_CORE_LAPACK_Z_H
+#endif // PLASMA_CORE_LAPACK_Z_H

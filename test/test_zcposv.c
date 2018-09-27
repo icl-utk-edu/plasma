@@ -11,7 +11,7 @@
  **/
 
 #include "plasma.h"
-#include "core_blas.h"
+#include <plasma_core_blas.h>
 #include "core_lapack.h"
 #include "flops.h"
 #include "test.h"

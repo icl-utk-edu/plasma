@@ -14,7 +14,7 @@
 #include "plasma_descriptor.h"
 #include "plasma_types.h"
 #include "plasma_internal.h"
-#include "core_blas_zc.h"
+#include <plasma_core_blas_zc.h>
 
 
 #define As(m, n) (plasma_complex32_t*)plasma_tile_addr(As, m, n)

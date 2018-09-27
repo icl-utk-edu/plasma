@@ -10,8 +10,8 @@
  * @precisions mixed zc -> ds
  *
  **/
-#ifndef ICL_PLASMA_ZC_H
-#define ICL_PLASMA_ZC_H
+#ifndef PLASMA_ZC_H
+#define PLASMA_ZC_H
 
 #include "plasma_async.h"
 #include "plasma_descriptor.h"
@@ -81,4 +81,4 @@ void plasma_omp_clag2z(plasma_desc_t As, plasma_desc_t A,
 }  // extern "C"
 #endif
 
-#endif // ICL_PLASMA_ZC_H
+#endif // PLASMA_ZC_H

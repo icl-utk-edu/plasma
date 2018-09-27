@@ -7,8 +7,8 @@
  *  University of Manchester, UK.
  *
  **/
-#ifndef ICL_PLASMA_ERROR_H
-#define ICL_PLASMA_ERROR_H
+#ifndef PLASMA_ERROR_H
+#define PLASMA_ERROR_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,4 +72,4 @@ static inline void plasma_fatal_error_func_line_file(
 }  // extern "C"
 #endif
 
-#endif // ICL_PLASMA_ERROR_H
+#endif // PLASMA_ERROR_H

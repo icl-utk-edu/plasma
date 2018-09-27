@@ -16,7 +16,7 @@
 #include "plasma_internal.h"
 #include "plasma_types.h"
 #include "plasma_workspace.h"
-#include "core_blas.h"
+#include <plasma_core_blas.h>
 
 /******************************************************************************/
 void plasma_pzge2desc(plasma_complex64_t *pA, int lda,

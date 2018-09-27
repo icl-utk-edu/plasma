@@ -7,8 +7,8 @@
  *  University of Manchester, UK.
  *
  **/
-#ifndef ICL_CORE_BLAS_H
-#define ICL_CORE_BLAS_H
+#ifndef PLASMA_CORE_BLAS_H
+#define PLASMA_CORE_BLAS_H
 
 #include <stdio.h>
 
@@ -111,11 +111,11 @@ static inline void coreblas_error_func_line_file(
 }  // extern "C"
 #endif
 
-#include "core_blas_s.h"
-#include "core_blas_d.h"
-#include "core_blas_ds.h"
-#include "core_blas_c.h"
-#include "core_blas_z.h"
-#include "core_blas_zc.h"
+#include "plasma_core_blas_s.h"
+#include "plasma_core_blas_d.h"
+#include "plasma_core_blas_ds.h"
+#include "plasma_core_blas_c.h"
+#include "plasma_core_blas_z.h"
+#include "plasma_core_blas_zc.h"
 
-#endif // ICL_CORE_BLAS_H
+#endif // PLASMA_CORE_BLAS_H

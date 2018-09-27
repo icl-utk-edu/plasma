@@ -7,8 +7,8 @@
  *  University of Manchester, UK.
  *
  **/
-#ifndef ICL_PLASMA_BARRIER_H
-#define ICL_PLASMA_BARRIER_H
+#ifndef PLASMA_BARRIER_H
+#define PLASMA_BARRIER_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,4 +28,4 @@ void plasma_barrier_wait(plasma_barrier_t *barrier, int size);
 }  // extern "C"
 #endif
 
-#endif // ICL_PLASMA_BARRIER_H
+#endif // PLASMA_BARRIER_H

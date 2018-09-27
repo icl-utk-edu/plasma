@@ -7,8 +7,8 @@
  *  University of Manchester, UK.
  *
  **/
-#ifndef ICL_PLASMA_TUNING_H
-#define ICL_PLASMA_TUNING_H
+#ifndef PLASMA_TUNING_H
+#define PLASMA_TUNING_H
 
 #include "plasma_context.h"
 
@@ -79,4 +79,4 @@ void plasma_tune_trtri(plasma_context_t *plasma, plasma_enum_t dtyp,
 }  // extern "C"
 #endif
 
-#endif // ICL_PLASMA_TUNING_H
+#endif // PLASMA_TUNING_H

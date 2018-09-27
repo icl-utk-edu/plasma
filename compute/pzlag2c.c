@@ -14,7 +14,7 @@
 #include "plasma_descriptor.h"
 #include "plasma_types.h"
 #include "plasma_internal_zc.h"
-#include "core_blas_zc.h"
+#include <plasma_core_blas_zc.h>
 
 /******************************************************************************/
 static inline int imin(int a, int b)

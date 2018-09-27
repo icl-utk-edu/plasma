@@ -12,7 +12,7 @@
 
 #include <math.h>
 
-#include "core_blas.h"
+#include <plasma_core_blas.h>
 #include "plasma_types.h"
 #include "core_lapack.h"
 

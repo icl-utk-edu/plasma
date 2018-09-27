@@ -17,7 +17,7 @@
 #include "plasma_types.h"
 #include "plasma_workspace.h"
 #include "plasma_tree.h"
-#include "core_blas.h"
+#include <plasma_core_blas.h>
 
 #define A(m, n) (plasma_complex64_t*)plasma_tile_addr(A, m, n)
 #define B(m, n) (plasma_complex64_t*)plasma_tile_addr(B, m, n)

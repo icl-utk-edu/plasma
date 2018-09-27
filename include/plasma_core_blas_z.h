@@ -9,8 +9,8 @@
  * @precisions normal z -> s d c
  *
  **/
-#ifndef ICL_CORE_BLAS_Z_H
-#define ICL_CORE_BLAS_Z_H
+#ifndef PLASMA_CORE_BLAS_Z_H
+#define PLASMA_CORE_BLAS_Z_H
 
 #include "plasma_async.h"
 #include "plasma_barrier.h"
@@ -626,4 +626,4 @@ void core_omp_zunmqr(plasma_enum_t side, plasma_enum_t trans,
 }  // extern "C"
 #endif
 
-#endif // ICL_CORE_BLAS_Z_H
+#endif // PLASMA_CORE_BLAS_Z_H
