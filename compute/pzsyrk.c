@@ -45,7 +45,7 @@ void plasma_pzsyrk(plasma_enum_t uplo, plasma_enum_t trans,
             for (int k = 0; k < A.nt; k++) {
                 int nvak = plasma_tile_nview(A, k);
                 plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
-                core_omp_zsyrk(
+                plasma_core_omp_zsyrk(
                     uplo, trans,
                     nvcn, nvak,
                     alpha, A(n, k), ldan,
@@ -63,7 +63,7 @@ void plasma_pzsyrk(plasma_enum_t uplo, plasma_enum_t trans,
                     for (int k = 0; k < A.nt; k++) {
                         int nvak = plasma_tile_nview(A, k);
                         plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
-                        core_omp_zgemm(
+                        plasma_core_omp_zgemm(
                             trans, PlasmaTrans,
                             mvcm, nvcn, nvak,
                             alpha, A(m, k), ldam,
@@ -83,7 +83,7 @@ void plasma_pzsyrk(plasma_enum_t uplo, plasma_enum_t trans,
                     for (int k = 0; k < A.nt; k++) {
                         int nvak = plasma_tile_nview(A, k);
                         plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
-                        core_omp_zgemm(
+                        plasma_core_omp_zgemm(
                             trans, PlasmaTrans,
                             nvcn, mvcm, nvak,
                             alpha, A(n, k), ldan,
@@ -102,7 +102,7 @@ void plasma_pzsyrk(plasma_enum_t uplo, plasma_enum_t trans,
                 int mvak = plasma_tile_mview(A, k);
                 int ldak = plasma_tile_mmain(A, k);
                 plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
-                core_omp_zsyrk(
+                plasma_core_omp_zsyrk(
                     uplo, trans,
                     nvcn, mvak,
                     alpha, A(k, n), ldak,
@@ -120,7 +120,7 @@ void plasma_pzsyrk(plasma_enum_t uplo, plasma_enum_t trans,
                         int mvak = plasma_tile_mview(A, k);
                         int ldak = plasma_tile_mmain(A, k);
                         plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
-                        core_omp_zgemm(
+                        plasma_core_omp_zgemm(
                             trans, PlasmaNoTrans,
                             mvcm, nvcn, mvak,
                             alpha, A(k, m), ldak,
@@ -140,7 +140,7 @@ void plasma_pzsyrk(plasma_enum_t uplo, plasma_enum_t trans,
                         int mvak = plasma_tile_mview(A, k);
                         int ldak = plasma_tile_mmain(A, k);
                         plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
-                        core_omp_zgemm(
+                        plasma_core_omp_zgemm(
                             trans, PlasmaNoTrans,
                             nvcn, mvcm, mvak,
                             alpha, A(k, n), ldak,

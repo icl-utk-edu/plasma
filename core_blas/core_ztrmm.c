@@ -93,7 +93,7 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-void core_ztrmm(
+void plasma_core_ztrmm(
     plasma_enum_t side, plasma_enum_t uplo,
     plasma_enum_t transa, plasma_enum_t diag,
     int m, int n,
@@ -110,7 +110,7 @@ void core_ztrmm(
 }
 
 /******************************************************************************/
-void core_omp_ztrmm(
+void plasma_core_omp_ztrmm(
     plasma_enum_t side,   plasma_enum_t uplo,
     plasma_enum_t transa, plasma_enum_t diag,
     int m, int n,
@@ -124,7 +124,7 @@ void core_omp_ztrmm(
                      depend(inout:B[0:ldb*n])
     {
         if (sequence->status == PlasmaSuccess)
-            core_ztrmm(side, uplo,
+            plasma_core_ztrmm(side, uplo,
                        transa, diag,
                        m, n,
                        alpha, A, lda,

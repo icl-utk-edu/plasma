@@ -25,7 +25,7 @@
 
 /******************************************************************************/
 __attribute__((weak))
-void core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
+void plasma_core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
                  volatile int *max_idx, volatile plasma_complex64_t *max_val,
                  volatile int *info, plasma_barrier_t *barrier)
 {
@@ -53,8 +53,8 @@ void core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
 
                 if (l == 0) {
                     for (int i = 1; i < mva0-j; i++)
-                        if (core_dcabs1(a0[j+i+j*lda0]) >
-                            core_dcabs1(max_val[rank])) {
+                        if (plasma_core_dcabs1(a0[j+i+j*lda0]) >
+                            plasma_core_dcabs1(max_val[rank])) {
 
                             max_val[rank] = a0[j+i+j*lda0];
                             max_idx[rank] = i;
@@ -62,8 +62,8 @@ void core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
                 }
                 else {
                     for (int i = 0; i < mval; i++)
-                        if (core_dcabs1(al[i+j*ldal]) >
-                            core_dcabs1(max_val[rank])) {
+                        if (plasma_core_dcabs1(al[i+j*ldal]) >
+                            plasma_core_dcabs1(max_val[rank])) {
 
                             max_val[rank] = al[i+j*ldal];
                             max_idx[rank] = A.mb*l+i-j;
@@ -76,8 +76,8 @@ void core_zgetrf(plasma_desc_t A, int *ipiv, int ib, int rank, int size,
             {
                 // max reduction
                 for (int i = 1; i < size; i++) {
-                    if (core_dcabs1(max_val[i]) >
-                        core_dcabs1(max_val[0])) {
+                    if (plasma_core_dcabs1(max_val[i]) >
+                        plasma_core_dcabs1(max_val[0])) {
                         max_val[0] = max_val[i];
                         max_idx[0] = max_idx[i];
                     }

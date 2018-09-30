@@ -18,7 +18,7 @@
 
 /******************************************************************************/
 __attribute__((weak))
-void core_zlansy(plasma_enum_t norm, plasma_enum_t uplo,
+void plasma_core_zlansy(plasma_enum_t norm, plasma_enum_t uplo,
                  int n,
                  const plasma_complex64_t *A, int lda,
                  double *work, double *value)
@@ -30,7 +30,7 @@ void core_zlansy(plasma_enum_t norm, plasma_enum_t uplo,
 }
 
 /******************************************************************************/
-void core_omp_zlansy(plasma_enum_t norm, plasma_enum_t uplo,
+void plasma_core_omp_zlansy(plasma_enum_t norm, plasma_enum_t uplo,
                      int n,
                      const plasma_complex64_t *A, int lda,
                      double *work, double *value,
@@ -40,12 +40,12 @@ void core_omp_zlansy(plasma_enum_t norm, plasma_enum_t uplo,
                      depend(out:value[0:1])
     {
         if (sequence->status == PlasmaSuccess)
-            core_zlansy(norm, uplo, n, A, lda, work, value);
+            plasma_core_zlansy(norm, uplo, n, A, lda, work, value);
     }
 }
 
 /******************************************************************************/
-void core_omp_zlansy_aux(plasma_enum_t norm, plasma_enum_t uplo,
+void plasma_core_omp_zlansy_aux(plasma_enum_t norm, plasma_enum_t uplo,
                          int n,
                          const plasma_complex64_t *A, int lda,
                          double *value,

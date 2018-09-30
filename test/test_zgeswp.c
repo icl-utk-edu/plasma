@@ -116,7 +116,7 @@ void test_zgeswp(param_value_t param[], bool run)
     param[PARAM_GFLOPS].d = 0.0;
 
     //================================================================
-    // Test results by comparing to result of core_zlacpy function
+    // Test results by comparing to result of plasma_core_zlacpy function
     //================================================================
     if (test) {
         if (colrow == PlasmaRowwise)

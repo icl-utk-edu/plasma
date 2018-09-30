@@ -38,7 +38,7 @@ void plasma_pzlascl(plasma_enum_t uplo,
             int ldam = plasma_tile_mmain(A, m);
             if (m < A.nt) {
                 int nvam = plasma_tile_nview(A, m);
-                core_omp_zlascl(
+                plasma_core_omp_zlascl(
                     PlasmaUpper,
                     cfrom, cto,
                     mvam, nvam,
@@ -47,7 +47,7 @@ void plasma_pzlascl(plasma_enum_t uplo,
             }
             for (int n = m+1; n < A.nt; n++) {
                 int nvan = plasma_tile_nview(A, n);
-                core_omp_zlascl(
+                plasma_core_omp_zlascl(
                     PlasmaGeneral,
                     cfrom, cto,
                     mvam, nvan,
@@ -65,7 +65,7 @@ void plasma_pzlascl(plasma_enum_t uplo,
             int ldam = plasma_tile_mmain(A, m);
             if (m < A.nt) {
                 int nvam = plasma_tile_nview(A, m);
-                core_omp_zlascl(
+                plasma_core_omp_zlascl(
                     PlasmaLower,
                     cfrom, cto,
                     mvam, nvam,
@@ -74,7 +74,7 @@ void plasma_pzlascl(plasma_enum_t uplo,
             }
             for (int n = 0; n < imin(m, A.nt); n++) {
                 int nvan = plasma_tile_nview(A, n);
-                core_omp_zlascl(
+                plasma_core_omp_zlascl(
                     PlasmaGeneral,
                     cfrom, cto,
                     mvam, nvan,
@@ -93,7 +93,7 @@ void plasma_pzlascl(plasma_enum_t uplo,
             int ldam = plasma_tile_mmain(A, m);
             for (int n = 0; n < A.nt; n++) {
                 int nvan = plasma_tile_nview(A, n);
-                core_omp_zlascl(
+                plasma_core_omp_zlascl(
                     PlasmaGeneral,
                     cfrom, cto,
                     mvam, nvan,

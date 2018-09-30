@@ -64,7 +64,7 @@ void plasma_pzunglq_tree(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
                 int mvqm = plasma_tile_mview(Q, m);
                 int ldqm = plasma_tile_mmain(Q, m);
 
-                core_omp_zunmlq(PlasmaRight, PlasmaNoTrans,
+                plasma_core_omp_zunmlq(PlasmaRight, PlasmaNoTrans,
                                 mvqm, nvqk,
                                 imin(mvaj, nvak), ib,
                                 A(j, k), ldaj,
@@ -83,7 +83,7 @@ void plasma_pzunglq_tree(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
                 int mvqm = plasma_tile_mview(Q, m);
                 int ldqm = plasma_tile_mmain(Q, m);
 
-                core_omp_zttmlq(
+                plasma_core_omp_zttmlq(
                     PlasmaRight, PlasmaNoTrans,
                     mvqm, nvqkpiv, mvqm, nvqk, imin(mvaj, nvakpiv+nvak), ib,
                     Q(m, kpiv), ldqm,
@@ -103,7 +103,7 @@ void plasma_pzunglq_tree(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
                 int mvqm = plasma_tile_mview(Q, m);
                 int ldqm = plasma_tile_mmain(Q, m);
 
-                core_omp_ztsmlq(
+                plasma_core_omp_ztsmlq(
                     PlasmaRight, PlasmaNoTrans,
                     mvqm, nvqkpiv, mvqm, nvqk, imin(mvaj, nvakpiv+nvak), ib,
                     Q(m, kpiv), ldqm,

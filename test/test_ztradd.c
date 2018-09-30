@@ -150,7 +150,7 @@ void test_ztradd(param_value_t param[], bool run)
     }
 
     //================================================================
-    // Test results by comparing to result of core_ztradd function
+    // Test results by comparing to result of plasma_core_ztradd function
     //================================================================
     if (test) {
         // Calculate relative error |B_ref - B|_F / |B_ref|_F < 3*eps

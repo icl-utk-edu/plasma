@@ -148,7 +148,7 @@ void test_zgeadd(param_value_t param[], bool run)
     }
 
     //==================================================================
-    // Test results by comparing to result of core_z{ge,tr}add function
+    // Test results by comparing to result of plasma_core_z{ge,tr}add function
     //==================================================================
     if (test) {
         // Calculate relative error |B_ref - B|_F / |B_ref|_F < 3*eps

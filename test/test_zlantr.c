@@ -118,7 +118,7 @@ void test_zlantr(param_value_t param[], bool run)
         // LAPACK_zlantr is a macro for correct name mangling (e.g.
         // adding _ at the end) of the Fortran symbol.
         // The macro is either defined in lapacke.h, or in the file
-        // core_lapack_z.h for the use with MKL.
+        // plasma_core_lapack_z.h for the use with MKL.
         char normc = lapack_const(norm);
         char uploc = lapack_const(uplo);
         char diagc = lapack_const(diag);

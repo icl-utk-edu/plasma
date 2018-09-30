@@ -43,7 +43,7 @@ void plasma_pzlauum(plasma_enum_t uplo, plasma_desc_t A,
                 int mvan = plasma_tile_mview(A, n);
                 int nvan = plasma_tile_nview(A, n);
                 int ldan = plasma_tile_mmain(A, n);
-                core_omp_zherk(
+                plasma_core_omp_zherk(
                     uplo, PlasmaConjTrans,
                     imin(mvan, nvan), imin(mvak, nvan),
                     1.0, A(k, n), ldak,
@@ -53,7 +53,7 @@ void plasma_pzlauum(plasma_enum_t uplo, plasma_desc_t A,
                 for (int m = n+1; m < k; m++) {
                     int mvam = plasma_tile_mview(A, m);
                     int ldam = plasma_tile_mmain(A, m);
-                    core_omp_zgemm(
+                    plasma_core_omp_zgemm(
                         PlasmaConjTrans, PlasmaNoTrans,
                         mvam, nvan, mvak,
                         1.0, A(k, m), ldak,
@@ -64,14 +64,14 @@ void plasma_pzlauum(plasma_enum_t uplo, plasma_desc_t A,
             }
             for (int n = 0; n < k; n++) {
                 int nvan = plasma_tile_nview(A, n);
-                core_omp_ztrmm(
+                plasma_core_omp_ztrmm(
                     PlasmaLeft, uplo, PlasmaConjTrans, PlasmaNonUnit,
                     mvak, nvan,
                     1.0, A(k, k), ldak,
                          A(k, n), ldak,
                     sequence, request);
             }
-            core_omp_zlauum(
+            plasma_core_omp_zlauum(
                 uplo, imin(mvak, nvak),
                 A(k, k), ldak,
                 sequence, request);
@@ -90,7 +90,7 @@ void plasma_pzlauum(plasma_enum_t uplo, plasma_desc_t A,
                 int mvam = plasma_tile_mview(A, m);
                 int nvam = plasma_tile_nview(A, m);
                 int ldam = plasma_tile_mmain(A, m);
-                core_omp_zherk(
+                plasma_core_omp_zherk(
                     uplo, PlasmaNoTrans,
                     imin(mvam, nvam), imin(mvam, nvak),
                     1.0, A(m, k), ldam,
@@ -100,7 +100,7 @@ void plasma_pzlauum(plasma_enum_t uplo, plasma_desc_t A,
                 for (int n = m+1; n < k; n++) {
                     int nvan = plasma_tile_nview(A, n);
                     int ldan = plasma_tile_mmain(A, n);
-                    core_omp_zgemm(
+                    plasma_core_omp_zgemm(
                         PlasmaNoTrans, PlasmaConjTrans,
                         mvam, nvan, nvak,
                         1.0, A(m, k), ldam,
@@ -112,14 +112,14 @@ void plasma_pzlauum(plasma_enum_t uplo, plasma_desc_t A,
             for (int m = 0; m < k; m++) {
                 int mvam = plasma_tile_mview(A, m);
                 int ldam = plasma_tile_mmain(A, m);
-                core_omp_ztrmm(
+                plasma_core_omp_ztrmm(
                     PlasmaRight, uplo, PlasmaConjTrans, PlasmaNonUnit,
                     mvam, nvak,
                     1.0, A(k, k), ldak,
                          A(m, k), ldam,
                     sequence, request);
             }
-            core_omp_zlauum(
+            plasma_core_omp_zlauum(
                 uplo, imin(mvak, nvak),
                 A(k, k), ldak,
                 sequence, request);

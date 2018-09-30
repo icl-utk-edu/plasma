@@ -48,7 +48,7 @@ void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
             for (int k = 0; k < A.nt; k++) {
                 int nvak = plasma_tile_nview(A, k);
                 plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
-                core_omp_zsyr2k(
+                plasma_core_omp_zsyr2k(
                     uplo, trans,
                     nvcn, nvak,
                     alpha, A(n, k), ldan,
@@ -67,14 +67,14 @@ void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
                     for (int k = 0; k < A.nt; k++) {
                         int nvak = plasma_tile_nview(A, k);
                         plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
-                        core_omp_zgemm(
+                        plasma_core_omp_zgemm(
                             trans, PlasmaTrans,
                             mvcm, nvcn, nvak,
                             alpha, A(m, k), ldam,
                                    B(n, k), ldbn,
                             zbeta, C(m, n), ldcm,
                             sequence, request);
-                        core_omp_zgemm(
+                        plasma_core_omp_zgemm(
                             trans, PlasmaTrans,
                             mvcm, nvcn, nvak,
                             alpha, B(m, k), ldam,
@@ -95,14 +95,14 @@ void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
                     for (int k = 0; k < A.nt; k++) {
                         int nvak = plasma_tile_nview(A, k);
                         plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
-                        core_omp_zgemm(
+                        plasma_core_omp_zgemm(
                             trans, PlasmaTrans,
                             nvcn, mvcm, nvak,
                             alpha, A(n, k), ldan,
                                    B(m, k), ldbm,
                             zbeta, C(n, m), ldcn,
                             sequence, request);
-                        core_omp_zgemm(
+                        plasma_core_omp_zgemm(
                             trans, PlasmaTrans,
                             nvcn, mvcm, nvak,
                             alpha, B(n, k), ldan,
@@ -122,7 +122,7 @@ void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
                 int ldak = plasma_tile_mmain(A, k);
                 int ldbk = plasma_tile_mmain(B, k);
                 plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
-                core_omp_zsyr2k(
+                plasma_core_omp_zsyr2k(
                     uplo, trans,
                     nvcn, mvak,
                     alpha, A(k, n), ldak,
@@ -142,14 +142,14 @@ void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
                         int ldak = plasma_tile_mmain(A, k);
                         int ldbk = plasma_tile_mmain(B, k);
                         plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
-                        core_omp_zgemm(
+                        plasma_core_omp_zgemm(
                             trans, PlasmaNoTrans,
                             mvcm, nvcn, mvak,
                             alpha, A(k, m), ldak,
                                    B(k, n), ldbk,
                             zbeta, C(m, n), ldcm,
                             sequence, request);
-                        core_omp_zgemm(
+                        plasma_core_omp_zgemm(
                             trans, PlasmaNoTrans,
                             mvcm, nvcn, mvak,
                             alpha, B(k, m), ldbk,
@@ -170,14 +170,14 @@ void plasma_pzsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
                         int ldak = plasma_tile_mmain(A, k);
                         int ldbk = plasma_tile_mmain(B, k);
                         plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
-                        core_omp_zgemm(
+                        plasma_core_omp_zgemm(
                             trans, PlasmaNoTrans,
                             nvcn, mvcm, mvak,
                             alpha, A(k, n), ldak,
                                    B(k, m), ldbk,
                             zbeta, C(n, m), ldcn,
                             sequence, request);
-                        core_omp_zgemm(
+                        plasma_core_omp_zgemm(
                             trans, PlasmaNoTrans,
                             nvcn, mvcm, mvak,
                             alpha, B(k, n), ldbk,

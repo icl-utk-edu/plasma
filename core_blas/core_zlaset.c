@@ -54,7 +54,7 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-void core_zlaset(plasma_enum_t uplo, int m, int n,
+void plasma_core_zlaset(plasma_enum_t uplo, int m, int n,
                  plasma_complex64_t alpha, plasma_complex64_t beta,
                  plasma_complex64_t *A, int lda)
 {
@@ -70,7 +70,7 @@ void core_zlaset(plasma_enum_t uplo, int m, int n,
 }
 
 /******************************************************************************/
-void core_omp_zlaset(plasma_enum_t uplo,
+void plasma_core_omp_zlaset(plasma_enum_t uplo,
                      int mb, int nb,
                      int i, int j,
                      int m, int n,
@@ -78,7 +78,7 @@ void core_omp_zlaset(plasma_enum_t uplo,
                      plasma_complex64_t *A)
 {
     #pragma omp task depend(out:A[0:mb*nb])
-    core_zlaset(uplo, m, n,
+    plasma_core_zlaset(uplo, m, n,
                 alpha, beta,
                 A+i+j*mb, mb);
 }

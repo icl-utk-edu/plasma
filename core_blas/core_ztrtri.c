@@ -56,7 +56,7 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-int core_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
+int plasma_core_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
                  int n,
                  plasma_complex64_t *A, int lda)
 {
@@ -66,7 +66,7 @@ int core_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
 }
 
 /******************************************************************************/
-void core_omp_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
+void plasma_core_omp_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
                      int n,
                      plasma_complex64_t *A, int lda,
                      int iinfo,
@@ -75,7 +75,7 @@ void core_omp_ztrtri(plasma_enum_t uplo, plasma_enum_t diag,
     #pragma omp task depend(inout:A[0:lda*n])
     {
         if (sequence->status == PlasmaSuccess) {
-            int info = core_ztrtri(uplo, diag,
+            int info = plasma_core_ztrtri(uplo, diag,
                                    n, A, lda);
             if (info != 0)
                 plasma_request_fail(sequence, request, iinfo+info);

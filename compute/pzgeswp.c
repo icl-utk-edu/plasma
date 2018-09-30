@@ -57,7 +57,7 @@ void plasma_pzgeswp(plasma_enum_t colrow,
             {
                 int nvan = plasma_tile_nview(A, n);
                 plasma_desc_t view = plasma_desc_view(A, 0, n*A.nb, A.m, nvan);
-                core_zgeswp(colrow, view, 1, A.m, ipiv, incx);
+                plasma_core_zgeswp(colrow, view, 1, A.m, ipiv, incx);
             }
 
             // Multidependency of individual tiles on the whole panel.
@@ -96,7 +96,7 @@ void plasma_pzgeswp(plasma_enum_t colrow,
             {
                 int mvam = plasma_tile_mview(A, m);
                 plasma_desc_t view = plasma_desc_view(A, m*A.mb, 0, mvam, A.n);
-                core_zgeswp(colrow, view, 1, A.n, ipiv, incx);
+                plasma_core_zgeswp(colrow, view, 1, A.n, ipiv, incx);
             }
 
             // Multidependency of individual tiles on the whole (row) panel.

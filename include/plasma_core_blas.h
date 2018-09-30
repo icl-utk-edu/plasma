@@ -96,10 +96,10 @@ static inline char lapack_const(int plasma_const) {
     return lapack_constants[plasma_const][0];
 }
 
-#define coreblas_error(msg) \
-        coreblas_error_func_line_file(__func__, __LINE__, __FILE__, msg)
+#define plasma_coreblas_error(msg) \
+        plasma_coreblas_error_func_line_file(__func__, __LINE__, __FILE__, msg)
 
-static inline void coreblas_error_func_line_file(
+static inline void plasma_coreblas_error_func_line_file(
     char const *func, int line, const char *file, const char *msg)
 {
     fprintf(stderr,

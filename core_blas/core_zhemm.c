@@ -78,7 +78,7 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-void core_zhemm(plasma_enum_t side, plasma_enum_t uplo,
+void plasma_core_zhemm(plasma_enum_t side, plasma_enum_t uplo,
                 int m, int n,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                                           const plasma_complex64_t *B, int ldb,
@@ -93,7 +93,7 @@ void core_zhemm(plasma_enum_t side, plasma_enum_t uplo,
 }
 
 /******************************************************************************/
-void core_omp_zhemm(
+void plasma_core_omp_zhemm(
     plasma_enum_t side, plasma_enum_t uplo,
     int m, int n,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
@@ -112,7 +112,7 @@ void core_omp_zhemm(
                      depend(inout:C[0:ldc*n])
     {
         if (sequence->status == PlasmaSuccess)
-            core_zhemm(side, uplo,
+            plasma_core_zhemm(side, uplo,
                        m, n,
                        alpha, A, lda,
                               B, ldb,

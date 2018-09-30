@@ -55,7 +55,7 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-int core_zlauum(plasma_enum_t uplo,
+int plasma_core_zlauum(plasma_enum_t uplo,
                 int n,
                 plasma_complex64_t *A, int lda)
 {
@@ -64,7 +64,7 @@ int core_zlauum(plasma_enum_t uplo,
 }
 
 /******************************************************************************/
-void core_omp_zlauum(plasma_enum_t uplo,
+void plasma_core_omp_zlauum(plasma_enum_t uplo,
                      int n,
                      plasma_complex64_t *A, int lda,
                      plasma_sequence_t *sequence, plasma_request_t *request)
@@ -72,9 +72,9 @@ void core_omp_zlauum(plasma_enum_t uplo,
     #pragma omp task depend(inout:A[0:lda*n])
     {
         if (sequence->status == PlasmaSuccess) {
-            int info = core_zlauum(uplo, n, A, lda);
+            int info = plasma_core_zlauum(uplo, n, A, lda);
             if (info != PlasmaSuccess) {
-                coreblas_error("core_zlauum() failed");
+                plasma_coreblas_error("core_zlauum() failed");
                 plasma_request_fail(sequence, request, PlasmaErrorInternal);
             }
         }

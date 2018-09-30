@@ -81,7 +81,7 @@ void plasma_pzgbtrf(plasma_desc_t A, int *ipiv,
                             A, (A.kut-1)*A.mb, k*A.nb, mak, nvak);
                         view.type = PlasmaGeneral;
 
-                        core_zgetrf(view, &ipiv[k*A.mb], ib,
+                        plasma_core_zgetrf(view, &ipiv[k*A.mb], ib,
                                     rank, num_panel_threads,
                                     max_idx, max_val, &info,
                                     &barrier);
@@ -122,11 +122,11 @@ void plasma_pzgbtrf(plasma_desc_t A, int *ipiv,
                                         (A.kut-1 + k-n)*A.mb, n*A.nb,
                                          mak, nvan);
                     view.type = PlasmaGeneral;
-                    core_zgeswp(
+                    plasma_core_zgeswp(
                         PlasmaRowwise, view, 1, k2-k1+1, &ipiv[k*A.mb], 1);
 
                     // trsm
-                    core_ztrsm(PlasmaLeft, PlasmaLower,
+                    plasma_core_ztrsm(PlasmaLeft, PlasmaLower,
                                PlasmaNoTrans, PlasmaUnit,
                                mvak, nvan,
                                1.0, A(k, k), ldak,
@@ -138,7 +138,7 @@ void plasma_pzgbtrf(plasma_desc_t A, int *ipiv,
 
                         #pragma omp task priority(n == k+1)
                         {
-                            core_zgemm(
+                            plasma_core_zgemm(
                                 PlasmaNoTrans, PlasmaNoTrans,
                                 mvam, nvan, A.nb,
                                 -1.0, A(m, k), plasma_tile_mmain_band(A, m, k),

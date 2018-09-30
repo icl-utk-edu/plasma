@@ -72,7 +72,7 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-int core_zgeadd(plasma_enum_t transa,
+int plasma_core_zgeadd(plasma_enum_t transa,
                 int m, int n,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                 plasma_complex64_t beta,        plasma_complex64_t *B, int ldb)
@@ -81,32 +81,32 @@ int core_zgeadd(plasma_enum_t transa,
     if ((transa != PlasmaNoTrans) &&
         (transa != PlasmaTrans)   &&
         (transa != PlasmaConjTrans)) {
-        coreblas_error("illegal value of transa");
+        plasma_coreblas_error("illegal value of transa");
         return -1;
     }
     if (m < 0) {
-        coreblas_error("illegal value of m");
+        plasma_coreblas_error("illegal value of m");
         return -2;
     }
     if (n < 0) {
-        coreblas_error("illegal value of n");
+        plasma_coreblas_error("illegal value of n");
         return -3;
     }
     if (A == NULL) {
-        coreblas_error("NULL A");
+        plasma_coreblas_error("NULL A");
         return -5;
     }
     if ((transa == PlasmaNoTrans && lda < imax(1, m) && (m > 0)) ||
         (transa != PlasmaNoTrans && lda < imax(1, n) && (n > 0))) {
-        coreblas_error("illegal value of lda");
+        plasma_coreblas_error("illegal value of lda");
         return -6;
     }
     if (B == NULL) {
-        coreblas_error("NULL B");
+        plasma_coreblas_error("NULL B");
         return -8;
     }
     if ((ldb < imax(1, m)) && (m > 0)) {
-        coreblas_error("illegal value of ldb");
+        plasma_coreblas_error("illegal value of ldb");
         return -9;
     }
 
@@ -137,7 +137,7 @@ int core_zgeadd(plasma_enum_t transa,
 }
 
 /******************************************************************************/
-void core_omp_zgeadd(
+void plasma_core_omp_zgeadd(
     plasma_enum_t transa,
     int m, int n,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
@@ -150,7 +150,7 @@ void core_omp_zgeadd(
                      depend(inout:B[0:ldb*n])
     {
         if (sequence->status == PlasmaSuccess) {
-            int retval = core_zgeadd(transa,
+            int retval = plasma_core_zgeadd(transa,
                                      m, n,
                                      alpha, A, lda,
                                      beta,  B, ldb);

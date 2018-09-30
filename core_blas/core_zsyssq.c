@@ -18,7 +18,7 @@
 
 /******************************************************************************/
 __attribute__((weak))
-void core_zsyssq(plasma_enum_t uplo,
+void plasma_core_zsyssq(plasma_enum_t uplo,
                  int n,
                  const plasma_complex64_t *A, int lda,
                  double *scale, double *sumsq)
@@ -53,7 +53,7 @@ void core_zsyssq(plasma_enum_t uplo,
 }
 
 /******************************************************************************/
-void core_omp_zsyssq(plasma_enum_t uplo,
+void plasma_core_omp_zsyssq(plasma_enum_t uplo,
                      int n,
                      const plasma_complex64_t *A, int lda,
                      double *scale, double *sumsq,
@@ -66,13 +66,13 @@ void core_omp_zsyssq(plasma_enum_t uplo,
         if (sequence->status == PlasmaSuccess) {
             *scale = 0.0;
             *sumsq = 1.0;
-            core_zsyssq(uplo, n, A, lda, scale, sumsq);
+            plasma_core_zsyssq(uplo, n, A, lda, scale, sumsq);
         }
     }
 }
 
 /******************************************************************************/
-void core_omp_zsyssq_aux(int m, int n,
+void plasma_core_omp_zsyssq_aux(int m, int n,
                          const double *scale, const double *sumsq,
                          double *value,
                          plasma_sequence_t *sequence, plasma_request_t *request)

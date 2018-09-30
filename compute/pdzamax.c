@@ -39,7 +39,7 @@ void plasma_pdzamax(plasma_enum_t colrow,
             int ldam = plasma_tile_mmain(A, m);
             for (int n = 0; n < A.nt; n++) {
                 int nvan = plasma_tile_nview(A, n);
-                core_omp_dzamax(PlasmaColumnwise,
+                plasma_core_omp_dzamax(PlasmaColumnwise,
                                 mvam, nvan,
                                 A(m, n), ldam,
                                 &work[A.n*m+n*A.nb],
@@ -47,7 +47,7 @@ void plasma_pdzamax(plasma_enum_t colrow,
             }
         }
         #pragma omp taskwait
-        core_omp_damax(PlasmaRowwise,
+        plasma_core_omp_damax(PlasmaRowwise,
                        A.n, A.mt,
                        work, A.n,
                        values,
@@ -62,7 +62,7 @@ void plasma_pdzamax(plasma_enum_t colrow,
             int ldam = plasma_tile_mmain(A, m);
             for (int n = 0; n < A.nt; n++) {
                 int nvan = plasma_tile_nview(A, n);
-                core_omp_dzamax(PlasmaRowwise,
+                plasma_core_omp_dzamax(PlasmaRowwise,
                                 mvam, nvan,
                                 A(m, n), ldam,
                                 &work[A.m*n+m*A.mb],
@@ -70,7 +70,7 @@ void plasma_pdzamax(plasma_enum_t colrow,
             }
         }
         #pragma omp taskwait
-        core_omp_damax(PlasmaRowwise,
+        plasma_core_omp_damax(PlasmaRowwise,
                        A.m, A.nt,
                        work, A.m,
                        values,

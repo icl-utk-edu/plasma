@@ -36,7 +36,7 @@
  *
  *    Q = H(k)^H . . . H(2)^H H(1)^H
  *
- *  as returned by core_zttlqt.
+ *  as returned by plasma_core_zttlqt.
  *
  *******************************************************************************
  *
@@ -84,7 +84,7 @@
  * @param[in] V
  *         The i-th row must contain the vector which defines the
  *         elementary reflector H(i), for i = 1,2,...,k, as returned by
- *         core_zttlqt in the first k rows of its array argument V.
+ *         plasma_core_zttlqt in the first k rows of its array argument V.
  *
  * @param[in] ldv
  *         The leading dimension of the array V. ldv >= max(1,k).
@@ -114,7 +114,7 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-int core_zttmlq(plasma_enum_t side, plasma_enum_t trans,
+int plasma_core_zttmlq(plasma_enum_t side, plasma_enum_t trans,
                 int m1, int n1, int m2, int n2, int k, int ib,
                       plasma_complex64_t *A1,   int lda1,
                       plasma_complex64_t *A2,   int lda2,
@@ -124,77 +124,77 @@ int core_zttmlq(plasma_enum_t side, plasma_enum_t trans,
 {
     // Check input arguments.
     if (side != PlasmaLeft && side != PlasmaRight) {
-        coreblas_error("illegal value of side");
+        plasma_coreblas_error("illegal value of side");
         return -1;
     }
     if (trans != PlasmaNoTrans && trans != Plasma_ConjTrans) {
-        coreblas_error("illegal value of trans");
+        plasma_coreblas_error("illegal value of trans");
         return -2;
     }
     if (m1 < 0) {
-        coreblas_error("illegal value of m1");
+        plasma_coreblas_error("illegal value of m1");
         return -3;
     }
     if (n1 < 0) {
-        coreblas_error("illegal value of n1");
+        plasma_coreblas_error("illegal value of n1");
         return -4;
     }
     if (m2 < 0 || (m2 != m1 && side == PlasmaRight)) {
-        coreblas_error("illegal value of m2");
+        plasma_coreblas_error("illegal value of m2");
         return -5;
     }
     if (n2 < 0 || (n2 != n1 && side == PlasmaLeft)) {
-        coreblas_error("illegal value of n2");
+        plasma_coreblas_error("illegal value of n2");
         return -6;
     }
     if (k < 0 ||
         (side == PlasmaLeft  && k > m1 ) ||
         (side == PlasmaRight && k > n1)) {
-        coreblas_error("illegal value of k");
+        plasma_coreblas_error("illegal value of k");
         return -7;
     }
     if (ib < 0) {
-        coreblas_error("illegal value of ib");
+        plasma_coreblas_error("illegal value of ib");
         return -8;
     }
     if (A1 == NULL) {
-        coreblas_error("NULL A1");
+        plasma_coreblas_error("NULL A1");
         return -9;
     }
     if (lda1 < imax(1, m1)) {
-        coreblas_error("illegal value of lda1");
+        plasma_coreblas_error("illegal value of lda1");
         return -10;
     }
     if (A2 == NULL) {
-        coreblas_error("NULL A2");
+        plasma_coreblas_error("NULL A2");
         return -11;
     }
     if (lda2 < imax(1, m2)) {
-        coreblas_error("illegal value of lda2");
+        plasma_coreblas_error("illegal value of lda2");
         return -12;
     }
     if (V == NULL) {
-        coreblas_error("NULL V");
+        plasma_coreblas_error("NULL V");
         return -13;
     }
     if (ldv < imax(1, k)) {
-        coreblas_error("illegal value of ldv");
+        plasma_coreblas_error("illegal value of ldv");
         return -14;
     }
     if (T == NULL) {
-        coreblas_error("NULL T");
+        plasma_coreblas_error("NULL T");
         return -15;
     }
     if (ldt < imax(1, ib)) {
-        coreblas_error("illegal value of ldt");
+        plasma_coreblas_error("illegal value of ldt");
         return -16;
     }
     if (work == NULL) {
-        coreblas_error("NULL work");
+        plasma_coreblas_error("NULL work");
         return -17;
     }
     if (ldwork < imax(1, side == PlasmaLeft ? ib : n1)) {
-        coreblas_error("illegal value of ldwork");
+        plasma_coreblas_error("illegal value of ldwork");
         return -18;
     }
 
@@ -242,7 +242,7 @@ int core_zttmlq(plasma_enum_t side, plasma_enum_t trans,
         }
 
         // Apply H or H^H.
-        core_zparfb(
+        plasma_core_zparfb(
             side, trans, PlasmaForward, PlasmaRowwise,
             mi, ni, mi2, ni2, kb, l,
             &A1[lda1*jc+ic], lda1,
@@ -256,7 +256,7 @@ int core_zttmlq(plasma_enum_t side, plasma_enum_t trans,
 }
 
 /******************************************************************************/
-void core_omp_zttmlq(plasma_enum_t side, plasma_enum_t trans,
+void plasma_core_omp_zttmlq(plasma_enum_t side, plasma_enum_t trans,
                      int m1, int n1, int m2, int n2, int k, int ib,
                            plasma_complex64_t *A1, int lda1,
                            plasma_complex64_t *A2, int lda2,
@@ -277,7 +277,7 @@ void core_omp_zttmlq(plasma_enum_t side, plasma_enum_t trans,
             int ldwork = side == PlasmaLeft ? ib : n1;  // TODO: double check
 
             // Call the kernel.
-            int info = core_zttmlq(side, trans,
+            int info = plasma_core_zttmlq(side, trans,
                                    m1, n1, m2, n2, k, ib,
                                    A1, lda1,
                                    A2, lda2,

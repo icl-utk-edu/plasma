@@ -123,7 +123,7 @@ void test_clag2z(param_value_t param[], bool run)
         retval = LAPACKE_clag2z_work(mtrxLayout, m, n, As, ldas, Aref, lda);
 
         if (retval != PlasmaSuccess) {
-            coreblas_error("LAPACKE_clag2z_work() failed");
+            plasma_coreblas_error("LAPACKE_clag2z_work() failed");
             param[PARAM_ERROR].d   = 1.0;
             param[PARAM_SUCCESS].i = false;
             return;

@@ -85,7 +85,7 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
             for (int m=1; m < k; m++) {
                 int mvam = plasma_tile_mview(A, m);
                 int ldtm = plasma_tile_mmain(W4, m);
-                core_omp_zgemm(
+                plasma_core_omp_zgemm(
                     PlasmaNoTrans, PlasmaConjTrans,
                     mvam, mvak, mvam,
                     1.0, T(m, m), ldtm,
@@ -93,7 +93,7 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                     0.0, H(m, k), A.mb,
                     sequence, request);
                 if (m > 1) {
-                    core_omp_zgemm(
+                    plasma_core_omp_zgemm(
                         PlasmaNoTrans, PlasmaConjTrans,
                         mvam, mvak, A.mb,
                         1.0, T(m, m-1), ldtm,
@@ -103,7 +103,7 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                 }
                 int mvamp1 = plasma_tile_mview(A, m+1);
                 int ldtmp1 = plasma_tile_mmain(W4, m+1);
-                core_omp_zgemm(
+                plasma_core_omp_zgemm(
                     PlasmaConjTrans, PlasmaConjTrans,
                     mvam, mvak, mvamp1,
                     1.0, T(m+1, m), ldtmp1,
@@ -125,7 +125,7 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                     else
                         beta = 1.0;
 
-                    core_omp_zgemm(
+                    plasma_core_omp_zgemm(
                         PlasmaNoTrans, PlasmaNoTrans,
                         mvak, mvak, mvam,
                         -1.0, L(k, m), ldak,
@@ -148,7 +148,7 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                         int m1 = base*bracket;
                         // second contender
                         int m2 = m1+base/2;
-                        core_omp_zgeadd(
+                        plasma_core_omp_zgeadd(
                             PlasmaNoTrans, mvak, mvak,
                             1.0, W3(m2), A.mb,
                             1.0, W3(m1), A.mb,
@@ -157,27 +157,27 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                     num_players = ceil( ((double)num_players)/2.0 );
                     base = 2*base;
                 }
-                core_omp_zlacpy(
+                plasma_core_omp_zlacpy(
                     PlasmaLower, PlasmaNoTrans,
                     mvak, mvak,
                     A(k, k), ldak,
                     T(k, k), ldtk,
                     sequence, request);
-                core_omp_zgeadd(
+                plasma_core_omp_zgeadd(
                     PlasmaNoTrans, mvak, mvak,
                     1.0, W3(0), A.mb,
                     1.0, T(k, k), ldtk,
                     sequence, request);
             }
             else { // k == 0 or 1
-                core_omp_zlacpy(
+                plasma_core_omp_zlacpy(
                     PlasmaLower, PlasmaNoTrans,
                     mvak, mvak,
                     A(k, k), ldak,
                     T(k, k), ldtk,
                     sequence, request);
                 // expanding to full matrix
-                core_omp_zlacpy(
+                plasma_core_omp_zlacpy(
                         PlasmaLower, PlasmaConjTrans,
                         mvak, mvak,
                         T(k, k), ldtk,
@@ -187,14 +187,14 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
 
             if (k > 0) {
                 if (k > 1) {
-                    core_omp_zgemm(
+                    plasma_core_omp_zgemm(
                         PlasmaNoTrans, PlasmaNoTrans,
                         mvak, A.mb, mvak,
                         1.0, L(k, k),   ldak,
                              T(k, k-1), ldtk,
                         0.0, W(0), A.mb,
                         sequence, request);
-                    core_omp_zgemm(
+                    plasma_core_omp_zgemm(
                         PlasmaNoTrans, PlasmaConjTrans,
                         mvak, mvak, A.mb,
                         -1.0, W(0), A.mb,
@@ -204,13 +204,13 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                 }
 
                 // - symmetrically solve with L(k,k) //
-                core_omp_zhegst(
+                plasma_core_omp_zhegst(
                     1, PlasmaLower, mvak,
                     T(k, k), ldtk,
                     L(k, k), ldak,
                     sequence, request);
                 // expand to full matrix
-                core_omp_zlacpy(
+                plasma_core_omp_zlacpy(
                         PlasmaLower, PlasmaConjTrans,
                         mvak, mvak,
                         T(k, k), ldtk,
@@ -221,7 +221,7 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
             // computing H(k, k) //
             beta = 0.0;
             if (k > 1) {
-                core_omp_zgemm(
+                plasma_core_omp_zgemm(
                     PlasmaNoTrans, PlasmaConjTrans,
                     mvak, mvak, A.nb,
                     1.0, T(k, k-1), ldtk,
@@ -236,7 +236,7 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                 int ldakp1 = plasma_tile_mmain(A, k+1);
                 if (k > 0) {
                     // finish computing H(k, k) //
-                    core_omp_zgemm(
+                    plasma_core_omp_zgemm(
                         PlasmaNoTrans, PlasmaConjTrans,
                         mvak, mvak, mvak,
                         1.0,  T(k, k), ldtk,
@@ -278,7 +278,7 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
 
                                     #pragma omp task
                                     {
-                                        core_zgemm(
+                                        plasma_core_zgemm(
                                             PlasmaNoTrans, PlasmaNoTrans,
                                             mvam, mvak, mvan,
                                             -1.0, L(m, n), ldam,
@@ -315,7 +315,7 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                                         int mvam = plasma_tile_mview(A, m);
                                         #pragma omp task
                                         {
-                                            core_zgeadd(
+                                            plasma_core_zgeadd(
                                                 PlasmaNoTrans, mvam, mvak,
                                                 1.0, W5((m-k-1)+m2*(A.mt-k-1)), A.mb,
                                                 1.0, W5((m-k-1)+m1*(A.mt-k-1)), A.mb);
@@ -352,7 +352,7 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                                     int ldam = plasma_tile_mmain(A, m);
                                     #pragma omp task
                                     {
-                                        core_zgeadd(
+                                        plasma_core_zgeadd(
                                             PlasmaNoTrans, mvam, mvak,
                                             1.0, W5(m-k-1), A.mb,
                                             1.0, A(m, k),   ldam);
@@ -396,7 +396,7 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                                     int ldam = plasma_tile_mmain(A, m);
                                     #pragma omp task
                                     {
-                                        core_zgemm(
+                                        plasma_core_zgemm(
                                             PlasmaNoTrans, PlasmaNoTrans,
                                             mvam, mvak, mvan,
                                             -1.0, L(m, n), ldam,
@@ -460,7 +460,7 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                                                     (k+1)*A.mb, k*A.nb,
                                                      mlkk, mvak);
 
-                                core_zgetrf(view, IPIV(k+1), ib,
+                                plasma_core_zgetrf(view, IPIV(k+1), ib,
                                             rank, num_panel_threads,
                                             max_idx, max_val, &info,
                                             &barrier);
@@ -499,7 +499,7 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                         if (sequence->status == PlasmaSuccess) {
                             plasma_desc_t view =
                                 plasma_desc_view(A, 0, (n-1)*A.nb, A.m, na);
-                            core_zgeswp(PlasmaRowwise, view, k1, k2, ipiv, 1);
+                            plasma_core_zgeswp(PlasmaRowwise, view, k1, k2, ipiv, 1);
                         }
                     }
                 }
@@ -510,20 +510,20 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                 int ldtkp1 = plasma_tile_mmain(W4, k+1);
                 // copy upper-triangular part of L(k+1,k+1) to T(k+1,k)
                 // and then zero it out
-                core_omp_zlacpy(
+                plasma_core_omp_zlacpy(
                         PlasmaUpper, PlasmaNoTrans,
                         mvakp1, mvak,
                         L(k+1, k+1), ldakp1,
                         T(k+1, k  ), ldtkp1,
                         sequence, request);
-                core_omp_zlaset(
+                plasma_core_omp_zlaset(
                         PlasmaUpper,
                         ldakp1, ldak_n, 0, 0,
                         mvakp1, mvak,
                         0.0, 1.0,
                         L(k+1, k+1));
                 if (k > 0) {
-                    core_omp_ztrsm(
+                    plasma_core_omp_ztrsm(
                         PlasmaRight, PlasmaLower,
                         PlasmaConjTrans, PlasmaUnit,
                         mvakp1, mvak,
@@ -559,7 +559,7 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                         for (int rank = 0; rank < num_swap_threads; rank++) {
                             #pragma omp task shared(barrier)
                             {
-                                core_zheswp(rank, num_swap_threads, PlasmaLower, A, k1, k2, ipiv, 1, &barrier);
+                                plasma_core_zheswp(rank, num_swap_threads, PlasmaLower, A, k1, k2, ipiv, 1, &barrier);
                             }
                         }
                         #pragma omp taskwait
@@ -599,14 +599,14 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                              depend(out:Tout21[0:nvak*ldtkp1]) \
                              depend(out:Tout[0:nvak*ldtkp1])
             {
-                core_zlacpy(
+                plasma_core_zlacpy(
                     PlasmaGeneral, PlasmaNoTrans,
                     mvak, mvak,
                     T(k, k), ldtk,
                     Tgb(k, k), ldtk);
                 if (k+1 < T.nt) {
                     int mvakp1 = plasma_tile_mview(A, k+1);
-                    core_zlacpy(
+                    plasma_core_zlacpy(
                         PlasmaGeneral, PlasmaNoTrans,
                         mvakp1, mvak,
                         T(kp1, k), ldtkp1,
@@ -614,7 +614,7 @@ void plasma_pzhetrf_aasen(plasma_enum_t uplo,
                 }
                 if (k > 0) {
                     int nvakm1 = plasma_tile_nview(A, k-1);
-                    core_zlacpy(
+                    plasma_core_zlacpy(
                         PlasmaGeneral, PlasmaConjTrans,
                         mvak, nvakm1,
                         T(k, km1), ldtk,

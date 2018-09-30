@@ -52,7 +52,7 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-int core_zpotrf(plasma_enum_t uplo,
+int plasma_core_zpotrf(plasma_enum_t uplo,
                  int n,
                  plasma_complex64_t *A, int lda)
 {
@@ -63,7 +63,7 @@ int core_zpotrf(plasma_enum_t uplo,
 }
 
 /******************************************************************************/
-void core_omp_zpotrf(plasma_enum_t uplo,
+void plasma_core_omp_zpotrf(plasma_enum_t uplo,
                      int n,
                      plasma_complex64_t *A, int lda,
                      int iinfo,
@@ -72,7 +72,7 @@ void core_omp_zpotrf(plasma_enum_t uplo,
     #pragma omp task depend(inout:A[0:lda*n])
     {
         if (sequence->status == PlasmaSuccess) {
-            int info = core_zpotrf(uplo,
+            int info = plasma_core_zpotrf(uplo,
                                    n,
                                    A, lda);
             if (info != 0)

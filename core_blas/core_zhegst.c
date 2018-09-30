@@ -66,7 +66,7 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-int core_zhegst(int itype, plasma_enum_t uplo,
+int plasma_core_zhegst(int itype, plasma_enum_t uplo,
                 int n,
                 plasma_complex64_t *A, int lda,
                 plasma_complex64_t *B, int ldb)
@@ -80,7 +80,7 @@ int core_zhegst(int itype, plasma_enum_t uplo,
 }
 
 /******************************************************************************/
-void core_omp_zhegst(int itype, plasma_enum_t uplo,
+void plasma_core_omp_zhegst(int itype, plasma_enum_t uplo,
                      int n,
                      plasma_complex64_t *A, int lda,
                      plasma_complex64_t *B, int ldb,
@@ -91,7 +91,7 @@ void core_omp_zhegst(int itype, plasma_enum_t uplo,
                      depend(in:B[0:ldb*n])
     {
         if (sequence->status == PlasmaSuccess)
-            core_zhegst(itype, uplo,
+            plasma_core_zhegst(itype, uplo,
                         n,
                         A, lda,
                         B, ldb);

@@ -47,7 +47,7 @@ void plasma_pzlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
             if (uplo == PlasmaLower) {
                 for (int n = 0; n < imin(m, A.nt); n++) {
                     int nvan = plasma_tile_nview(A, n);
-                    core_omp_zlange(PlasmaMaxNorm,
+                    plasma_core_omp_zlange(PlasmaMaxNorm,
                                     mvam, nvan,
                                     A(m, n), ldam,
                                     &stub, &work[A.mt*n+m],
@@ -57,7 +57,7 @@ void plasma_pzlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
             else { // PlasmaUpper
                 for (int n = m+1; n < A.nt; n++) {
                     int nvan = plasma_tile_nview(A, n);
-                    core_omp_zlange(PlasmaMaxNorm,
+                    plasma_core_omp_zlange(PlasmaMaxNorm,
                                     mvam, nvan,
                                     A(m, n), ldam,
                                     &stub, &work[A.mt*n+m],
@@ -66,7 +66,7 @@ void plasma_pzlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
             }
             if (m < A.nt) {
                 int nvam = plasma_tile_nview(A, m);
-                core_omp_zlantr(PlasmaMaxNorm, uplo, diag,
+                plasma_core_omp_zlantr(PlasmaMaxNorm, uplo, diag,
                                 mvam, nvam,
                                 A(m, m), ldam,
                                 &stub, &work[A.mt*m+m],
@@ -74,7 +74,7 @@ void plasma_pzlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
             }
         }
         #pragma omp taskwait
-        core_omp_dlantr(PlasmaMaxNorm, uplo, PlasmaNonUnit,
+        plasma_core_omp_dlantr(PlasmaMaxNorm, uplo, PlasmaNonUnit,
                         A.mt, A.nt,
                         work, A.mt,
                         &stub, value,
@@ -90,7 +90,7 @@ void plasma_pzlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
             if (uplo == PlasmaLower) {
                 for (int n = 0; n < imin(m, A.nt); n++) {
                     int nvan = plasma_tile_nview(A, n);
-                    core_omp_zlange_aux(PlasmaOneNorm,
+                    plasma_core_omp_zlange_aux(PlasmaOneNorm,
                                         mvam, nvan,
                                         A(m, n), ldam,
                                         &work[A.n*m+n*A.nb],
@@ -100,7 +100,7 @@ void plasma_pzlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
             else { // PlasmaUpper
                 for (int n = m+1; n < A.nt; n++) {
                     int nvan = plasma_tile_nview(A, n);
-                    core_omp_zlange_aux(PlasmaOneNorm,
+                    plasma_core_omp_zlange_aux(PlasmaOneNorm,
                                         mvam, nvan,
                                         A(m, n), ldam,
                                         &work[A.n*m+n*A.nb],
@@ -109,7 +109,7 @@ void plasma_pzlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
             }
             if (m < A.nt) {
                 int nvam = plasma_tile_nview(A, m);
-                core_omp_zlantr_aux(PlasmaOneNorm, uplo, diag,
+                plasma_core_omp_zlantr_aux(PlasmaOneNorm, uplo, diag,
                                     mvam, nvam,
                                     A(m, m), ldam,
                                     &work[A.n*m+m*A.nb],
@@ -118,7 +118,7 @@ void plasma_pzlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
         }
         #pragma omp taskwait
         workspace = work + A.mt*A.n;
-        core_omp_dlange(PlasmaInfNorm,
+        plasma_core_omp_dlange(PlasmaInfNorm,
                         A.n, A.mt,
                         work, A.n,
                         workspace, value,
@@ -135,7 +135,7 @@ void plasma_pzlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
             if (uplo == PlasmaLower) {
                 for (int n = 0; n < imin(m, A.nt); n++) {
                     int nvan = plasma_tile_nview(A, n);
-                    core_omp_zlange_aux(PlasmaInfNorm,
+                    plasma_core_omp_zlange_aux(PlasmaInfNorm,
                                         mvam, nvan,
                                         A(m, n), ldam,
                                         &work[A.m*n+m*A.mb],
@@ -145,7 +145,7 @@ void plasma_pzlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
             else { // PlasmaUpper
                 for (int n = m+1; n < A.nt; n++) {
                     int nvan = plasma_tile_nview(A, n);
-                    core_omp_zlange_aux(PlasmaInfNorm,
+                    plasma_core_omp_zlange_aux(PlasmaInfNorm,
                                         mvam, nvan,
                                         A(m, n), ldam,
                                         &work[A.m*n+m*A.mb],
@@ -154,7 +154,7 @@ void plasma_pzlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
             }
             if (m < A.nt) {
                 int nvam = plasma_tile_nview(A, m);
-                core_omp_zlantr_aux(PlasmaInfNorm, uplo, diag,
+                plasma_core_omp_zlantr_aux(PlasmaInfNorm, uplo, diag,
                                     mvam, nvam,
                                     A(m, m), ldam,
                                     &work[A.m*m+m*A.nb],
@@ -163,7 +163,7 @@ void plasma_pzlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
         }
         #pragma omp taskwait
         workspace = work + A.nt*A.m;
-        core_omp_dlange(PlasmaInfNorm,
+        plasma_core_omp_dlange(PlasmaInfNorm,
                         A.m, A.nt,
                         work, A.m,
                         workspace, value,
@@ -181,7 +181,7 @@ void plasma_pzlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
             if (uplo == PlasmaLower) {
                 for (int n = 0; n < imin(m, A.nt); n++) {
                     int nvan = plasma_tile_nview(A, n);
-                    core_omp_zgessq(mvam, nvan,
+                    plasma_core_omp_zgessq(mvam, nvan,
                                     A(m, n), ldam,
                                     &scale[A.mt*n+m], &sumsq[A.mt*n+m],
                                     sequence, request);
@@ -190,7 +190,7 @@ void plasma_pzlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
             else { // PlasmaUpper
                 for (int n = m+1; n < A.nt; n++) {
                     int nvan = plasma_tile_nview(A, n);
-                    core_omp_zgessq(mvam, nvan,
+                    plasma_core_omp_zgessq(mvam, nvan,
                                     A(m, n), ldam,
                                     &scale[A.mt*n+m], &sumsq[A.mt*n+m],
                                     sequence, request);
@@ -198,7 +198,7 @@ void plasma_pzlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
             }
             if (m < A.nt) {
                 int nvam = plasma_tile_nview(A, m);
-                core_omp_ztrssq(uplo, diag,
+                plasma_core_omp_ztrssq(uplo, diag,
                                 mvam, nvam,
                                 A(m, m), ldam,
                                 &scale[A.mt*m+m], &sumsq[A.mt*m+m],
@@ -206,7 +206,7 @@ void plasma_pzlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
             }
         }
         #pragma omp taskwait
-        core_omp_dgessq_aux(A.mt*A.nt,
+        plasma_core_omp_dgessq_aux(A.mt*A.nt,
                             scale, sumsq,
                             value,
                             sequence, request);

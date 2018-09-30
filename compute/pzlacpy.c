@@ -42,7 +42,7 @@ void plasma_pzlacpy(plasma_enum_t uplo, plasma_enum_t transa,
             int ldbm = plasma_tile_mmain(B, m);
             if (m < A.nt) {
                 int nvan = plasma_tile_nview(A, m);
-                core_omp_zlacpy(
+                plasma_core_omp_zlacpy(
                     PlasmaUpper, transa,
                     mvam, nvan,
                     A(m, m), ldam,
@@ -52,7 +52,7 @@ void plasma_pzlacpy(plasma_enum_t uplo, plasma_enum_t transa,
             for (int n = m+1; n < A.nt; n++) {
                 int nvan = plasma_tile_nview(A, n);
                 if (transa == PlasmaNoTrans) {
-                    core_omp_zlacpy(
+                    plasma_core_omp_zlacpy(
                         PlasmaGeneral, transa,
                         mvam, nvan,
                         A(m, n), ldam,
@@ -61,7 +61,7 @@ void plasma_pzlacpy(plasma_enum_t uplo, plasma_enum_t transa,
                 }
                 else {
                     int ldbn = plasma_tile_mmain(B, n);
-                    core_omp_zlacpy(
+                    plasma_core_omp_zlacpy(
                         PlasmaGeneral, transa,
                         mvam, nvan,
                         A(m, n), ldam,
@@ -81,7 +81,7 @@ void plasma_pzlacpy(plasma_enum_t uplo, plasma_enum_t transa,
             int ldbm = plasma_tile_mmain(B, m);
             if (m < A.nt) {
                 int nvan = plasma_tile_nview(A, m);
-                core_omp_zlacpy(
+                plasma_core_omp_zlacpy(
                     PlasmaLower, transa,
                     mvam, nvan,
                     A(m, m), ldam,
@@ -91,7 +91,7 @@ void plasma_pzlacpy(plasma_enum_t uplo, plasma_enum_t transa,
             for (int n = 0; n < imin(m, A.nt); n++) {
                 int nvan = plasma_tile_nview(A, n);
                 if (transa == PlasmaNoTrans) {
-                    core_omp_zlacpy(
+                    plasma_core_omp_zlacpy(
                         PlasmaGeneral, transa,
                         mvam, nvan,
                         A(m, n), ldam,
@@ -100,7 +100,7 @@ void plasma_pzlacpy(plasma_enum_t uplo, plasma_enum_t transa,
                 }
                 else {
                     int ldbn = plasma_tile_mmain(B, n);
-                    core_omp_zlacpy(
+                    plasma_core_omp_zlacpy(
                         PlasmaGeneral, transa,
                         mvam, nvan,
                         A(m, n), ldam,
@@ -122,7 +122,7 @@ void plasma_pzlacpy(plasma_enum_t uplo, plasma_enum_t transa,
             for (int n = 0; n < A.nt; n++) {
                 int nvan = plasma_tile_nview(A, n);
                 if (transa == PlasmaNoTrans) {
-                    core_omp_zlacpy(
+                    plasma_core_omp_zlacpy(
                         PlasmaGeneral, transa,
                         mvam, nvan,
                         A(m, n), ldam,
@@ -131,7 +131,7 @@ void plasma_pzlacpy(plasma_enum_t uplo, plasma_enum_t transa,
                 }
                 else {
                     int ldbn = plasma_tile_mmain(B, n);
-                    core_omp_zlacpy(
+                    plasma_core_omp_zlacpy(
                         PlasmaGeneral, transa,
                         mvam, nvan,
                         A(m, n), ldam,

@@ -109,13 +109,13 @@ void test_dzamax(param_value_t param[], bool run)
         if (colrow == PlasmaColumnwise) {
             for (int j = 0; j < n; j++) {
                 CBLAS_INDEX idx = cblas_izamax(m, &A[lda*j], 1);
-                valref[j] = core_dcabs1(A[lda*j+idx]);
+                valref[j] = plasma_core_dcabs1(A[lda*j+idx]);
             }
         }
         else {
             for (int i = 0; i < m; i++) {
                 CBLAS_INDEX idx = cblas_izamax(n, &A[i], lda);
-                valref[i] = core_dcabs1(A[i+lda*idx]);
+                valref[i] = plasma_core_dcabs1(A[i+lda*idx]);
             }
         }
 

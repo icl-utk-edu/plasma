@@ -46,7 +46,7 @@ void plasma_pzunglq(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
             for (int m = k; m < Q.mt; m++) {
                 int mvqm = plasma_tile_mview(Q, m);
                 int ldqm = plasma_tile_mmain(Q, m);
-                core_omp_ztsmlq(
+                plasma_core_omp_ztsmlq(
                     PlasmaRight, PlasmaNoTrans,
                     mvqm, Q.nb, mvqm, nvqn, mvak, ib,
                     Q(m, k), ldqm,
@@ -60,7 +60,7 @@ void plasma_pzunglq(plasma_desc_t A, plasma_desc_t T, plasma_desc_t Q,
         for (int m = k; m < Q.mt; m++) {
             int mvqm = plasma_tile_mview(Q, m);
             int ldqm = plasma_tile_mmain(Q, m);
-            core_omp_zunmlq(
+            plasma_core_omp_zunmlq(
                 PlasmaRight, PlasmaNoTrans,
                 mvqm, nvqk, imin(nvak, mvak), ib,
                 A(k, k), ldak,

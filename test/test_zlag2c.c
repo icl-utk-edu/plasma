@@ -124,7 +124,7 @@ void test_zlag2c(param_value_t param[], bool run)
         retval = LAPACKE_zlag2c_work(mtrxLayout, m, n, A, lda, AsRef, ldas);
 
         if (retval != PlasmaSuccess) {
-            coreblas_error("LAPACKE_zlag2c_work() failed");
+            plasma_coreblas_error("LAPACKE_zlag2c_work() failed");
             param[PARAM_ERROR].d   = 1.0;
             param[PARAM_SUCCESS].i = false;
             return;

@@ -86,7 +86,7 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-int core_zgeqrt(int m, int n, int ib,
+int plasma_core_zgeqrt(int m, int n, int ib,
                 plasma_complex64_t *A, int lda,
                 plasma_complex64_t *T, int ldt,
                 plasma_complex64_t *tau,
@@ -94,39 +94,39 @@ int core_zgeqrt(int m, int n, int ib,
 {
     // Check input arguments.
     if (m < 0) {
-        coreblas_error("illegal value of m");
+        plasma_coreblas_error("illegal value of m");
         return -1;
     }
     if (n < 0) {
-        coreblas_error("illegal value of n");
+        plasma_coreblas_error("illegal value of n");
         return -2;
     }
     if ((ib < 0) || ( (ib == 0) && (m > 0) && (n > 0) )) {
-        coreblas_error("illegal value of ib");
+        plasma_coreblas_error("illegal value of ib");
         return -3;
     }
     if (A == NULL) {
-        coreblas_error("NULL A");
+        plasma_coreblas_error("NULL A");
         return -4;
     }
     if (lda < imax(1, m) && m > 0) {
-        coreblas_error("illegal value of lda");
+        plasma_coreblas_error("illegal value of lda");
         return -5;
     }
     if (T == NULL) {
-        coreblas_error("NULL T");
+        plasma_coreblas_error("NULL T");
         return -6;
     }
     if (ldt < imax(1, ib) && ib > 0) {
-        coreblas_error("illegal value of ldt");
+        plasma_coreblas_error("illegal value of ldt");
         return -7;
     }
     if (tau == NULL) {
-        coreblas_error("NULL tau");
+        plasma_coreblas_error("NULL tau");
         return -8;
     }
     if (work == NULL) {
-        coreblas_error("NULL work");
+        plasma_coreblas_error("NULL work");
         return -9;
     }
 
@@ -169,7 +169,7 @@ int core_zgeqrt(int m, int n, int ib,
 }
 
 /******************************************************************************/
-void core_omp_zgeqrt(int m, int n, int ib,
+void plasma_core_omp_zgeqrt(int m, int n, int ib,
                      plasma_complex64_t *A, int lda,
                      plasma_complex64_t *T, int ldt,
                      plasma_workspace_t work,
@@ -184,7 +184,7 @@ void core_omp_zgeqrt(int m, int n, int ib,
             plasma_complex64_t *tau = ((plasma_complex64_t*)work.spaces[tid]);
 
             // Call the kernel.
-            int info = core_zgeqrt(m, n, ib,
+            int info = plasma_core_zgeqrt(m, n, ib,
                                    A, lda,
                                    T, ldt,
                                    tau,

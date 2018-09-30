@@ -29,10 +29,10 @@
  *
  *******************************************************************************
  *
- * @sa core_scabs1
+ * @sa plasma_core_scabs1
  *
  ******************************************************************************/
-double core_dcabs1(plasma_complex64_t alpha)
+double plasma_core_dcabs1(plasma_complex64_t alpha)
 {
     return fabs(creal(alpha)) + fabs(cimag(alpha));
 }

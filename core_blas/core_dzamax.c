@@ -17,7 +17,7 @@
 #include <math.h>
 
 /******************************************************************************/
-void core_omp_dzamax(int colrow, int m, int n,
+void plasma_core_omp_dzamax(int colrow, int m, int n,
                      const plasma_complex64_t *A, int lda,
                      double *values,
                      plasma_sequence_t *sequence, plasma_request_t *request)
@@ -29,9 +29,9 @@ void core_omp_dzamax(int colrow, int m, int n,
         {
             if (sequence->status == PlasmaSuccess) {
                 for (int j = 0; j < n; j++) {
-                    values[j] = core_dcabs1(A[lda*j]);
+                    values[j] = plasma_core_dcabs1(A[lda*j]);
                     for (int i = 1; i < m; i++) {
-                        double tmp = core_dcabs1(A[lda*j+i]);
+                        double tmp = plasma_core_dcabs1(A[lda*j+i]);
                         if (tmp > values[j])
                             values[j] = tmp;
                     }
@@ -45,11 +45,11 @@ void core_omp_dzamax(int colrow, int m, int n,
         {
             if (sequence->status == PlasmaSuccess) {
                 for (int i = 0; i < m; i++)
-                    values[i] = core_dcabs1(A[i]);
+                    values[i] = plasma_core_dcabs1(A[i]);
 
                 for (int j = 1; j < n; j++) {
                     for (int i = 0; i < m; i++) {
-                        double tmp = core_dcabs1(A[lda*j+i]);
+                        double tmp = plasma_core_dcabs1(A[lda*j+i]);
                         if (tmp > values[i])
                             values[i] = tmp;
                     }

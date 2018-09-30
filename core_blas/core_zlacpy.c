@@ -58,7 +58,7 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-void core_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
+void plasma_core_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
                  int m, int n,
                  const plasma_complex64_t *A, int lda,
                        plasma_complex64_t *B, int ldb)
@@ -111,7 +111,7 @@ void core_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
 }
 
 /******************************************************************************/
-void core_omp_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
+void plasma_core_omp_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
                      int m, int n,
                      const plasma_complex64_t *A, int lda,
                            plasma_complex64_t *B, int ldb,
@@ -121,7 +121,7 @@ void core_omp_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
                      depend(out:B[0:ldb*n])
     {
         if (sequence->status == PlasmaSuccess)
-            core_zlacpy(uplo, transa,
+            plasma_core_zlacpy(uplo, transa,
                         m, n,
                         A, lda,
                         B, ldb);

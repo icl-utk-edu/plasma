@@ -87,7 +87,7 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-void core_zgemm(plasma_enum_t transa, plasma_enum_t transb,
+void plasma_core_zgemm(plasma_enum_t transa, plasma_enum_t transb,
                 int m, int n, int k,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                                           const plasma_complex64_t *B, int ldb,
@@ -102,7 +102,7 @@ void core_zgemm(plasma_enum_t transa, plasma_enum_t transb,
 }
 
 /******************************************************************************/
-void core_omp_zgemm(
+void plasma_core_omp_zgemm(
     plasma_enum_t transa, plasma_enum_t transb,
     int m, int n, int k,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
@@ -127,7 +127,7 @@ void core_omp_zgemm(
                      depend(inout:C[0:ldc*n])
     {
         if (sequence->status == PlasmaSuccess)
-            core_zgemm(transa, transb,
+            plasma_core_zgemm(transa, transb,
                        m, n, k,
                        alpha, A, lda,
                               B, ldb,

@@ -52,7 +52,7 @@ void plasma_pzpb2desc(plasma_complex64_t *pA, int lda,
         {
             int mb = imin(A.mb, A.m-m*A.mb);
             int nb = imin(A.nb, A.n-n*A.nb);
-            core_omp_zlacpy_lapack2tile_band(
+            plasma_core_omp_zlacpy_lapack2tile_band(
                    A.uplo, m, n,
                    mb, nb, A.mb, A.kl, A.ku,
                    bandA(m, n), lda-1,

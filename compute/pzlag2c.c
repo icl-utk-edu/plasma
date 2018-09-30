@@ -57,7 +57,7 @@ void plasma_pzlag2c(plasma_desc_t A, plasma_desc_t As,
             int ldb = plasma_tile_mmain(As, m);
             for (int n = 0; n < A.nt; n++) {
                 int an = plasma_tile_nview(A, n);
-                core_omp_zlag2c(
+                plasma_core_omp_zlag2c(
                     am, an,
                     A(m, n),  lda,
                     As(m, n), ldb,
@@ -74,7 +74,7 @@ void plasma_pzlag2c(plasma_desc_t A, plasma_desc_t As,
             for (int m = m_start; m <= m_end; m++) {
                 int ldam = plasma_tile_mmain_band(A, m, n);
                 int mvam = plasma_tile_mview(A, m);
-                core_omp_zlag2c(
+                plasma_core_omp_zlag2c(
                     mvam, nvan,
                     A(m, n), ldam,
                     As(m, n), ldam,

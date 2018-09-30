@@ -133,7 +133,7 @@ void test_zlacpy(param_value_t param[], bool run)
     }
 
     //================================================================
-    // Test results by comparing to result of core_zlacpy function
+    // Test results by comparing to result of plasma_core_zlacpy function
     //================================================================
     if (test) {
         // Calculate relative error |op(A) - B|_F / |A|_F < 3*eps
@@ -156,7 +156,7 @@ void test_zlacpy(param_value_t param[], bool run)
                     B[i + j*ldb] -= A[i + j*lda];
         }
         if (retval != PlasmaSuccess) {
-            coreblas_error("LAPACKE_zlacpy_work() failed");
+            plasma_coreblas_error("LAPACKE_zlacpy_work() failed");
             param[PARAM_ERROR].d   = 1.0;
             param[PARAM_SUCCESS].i = false;
             return;

@@ -54,7 +54,7 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-void core_zheswp(int rank, int num_threads,
+void plasma_core_zheswp(int rank, int num_threads,
                  int uplo, plasma_desc_t A, int k1, int k2, const int *ipiv,
                  int incx, plasma_barrier_t *barrier)
 {

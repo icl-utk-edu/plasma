@@ -19,7 +19,7 @@
 
 /******************************************************************************/
 __attribute__((weak))
-void core_zlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
+void plasma_core_zlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
                  int m, int n,
                  const plasma_complex64_t *A, int lda,
                  double *work, double *value)
@@ -38,7 +38,7 @@ void core_zlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
 }
 
 /******************************************************************************/
-void core_omp_zlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
+void plasma_core_omp_zlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
                      int m, int n,
                      const plasma_complex64_t *A, int lda,
                      double *work, double *value,
@@ -48,12 +48,12 @@ void core_omp_zlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t diag,
                      depend(out:value[0:1])
     {
         if (sequence->status == PlasmaSuccess)
-            core_zlantr(norm, uplo, diag, m, n, A, lda, work, value);
+            plasma_core_zlantr(norm, uplo, diag, m, n, A, lda, work, value);
     }
 }
 
 /******************************************************************************/
-void core_omp_zlantr_aux(plasma_enum_t norm, plasma_enum_t uplo,
+void plasma_core_omp_zlantr_aux(plasma_enum_t norm, plasma_enum_t uplo,
                          plasma_enum_t diag,
                          int m, int n,
                          const plasma_complex64_t *A, int lda,

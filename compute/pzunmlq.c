@@ -51,7 +51,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                 int ldbk = plasma_tile_mmain(B, k);
                 for (int n = 0; n < B.nt; n++) {
                     int nvbn = plasma_tile_nview(B, n);
-                    core_omp_zunmlq(
+                    plasma_core_omp_zunmlq(
                             side, trans,
                             mvbk, nvbn, imin(nvak, mvak), ib,
                             A(k, k), ldak,
@@ -65,7 +65,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                     int ldbm = plasma_tile_mmain(B, m);
                     for (int n = 0; n < B.nt; n++) {
                         int nvbn = plasma_tile_nview(B, n);
-                        core_omp_ztsmlq(
+                        plasma_core_omp_ztsmlq(
                                 side, trans,
                                 B.mb, nvbn, mvbm, nvbn, mvak, ib,
                                 B(k, n), ldbk,
@@ -93,7 +93,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                     int ldbm = plasma_tile_mmain(B, m);
                     for (int n = 0; n < B.nt; n++) {
                         int nvbn = plasma_tile_nview(B, n);
-                        core_omp_ztsmlq(
+                        plasma_core_omp_ztsmlq(
                                 side, trans,
                                 B.mb, nvbn, mvbm, nvbn, mvak, ib,
                                 B(k, n), ldbk,
@@ -106,7 +106,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                 }
                 for (int n = 0; n < B.nt; n++) {
                     int nvbn = plasma_tile_nview(B, n);
-                    core_omp_zunmlq(
+                    plasma_core_omp_zunmlq(
                             side, trans,
                             mvbk, nvbn, imin(nvak, mvak), ib,
                             A(k, k), ldak,
@@ -133,7 +133,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                     for (int m = 0; m < B.mt; m++) {
                         int mvbm = plasma_tile_mview(B, m);
                         int ldbm = plasma_tile_mmain(B, m);
-                        core_omp_ztsmlq(
+                        plasma_core_omp_ztsmlq(
                                 side, trans,
                                 mvbm, B.nb, mvbm, nvbn, mvak, ib,
                                 B(m, k), ldbm,
@@ -147,7 +147,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                 for (int m = 0; m < B.mt; m++) {
                     int mvbm = plasma_tile_mview(B, m);
                     int ldbm = plasma_tile_mmain(B, m);
-                    core_omp_zunmlq(
+                    plasma_core_omp_zunmlq(
                             side, trans,
                             mvbm, nvbk, imin(nvak, mvak), ib,
                             A(k, k), ldak,
@@ -170,7 +170,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                 for (int m = 0; m < B.mt; m++) {
                     int mvbm = plasma_tile_mview(B, m);
                     int ldbm = plasma_tile_mmain(B, m);
-                    core_omp_zunmlq(
+                    plasma_core_omp_zunmlq(
                             side, trans,
                             mvbm, nvbk, imin(nvak, mvak), ib,
                             A(k, k), ldak,
@@ -184,7 +184,7 @@ void plasma_pzunmlq(plasma_enum_t side, plasma_enum_t trans,
                     for (int m = 0; m < B.mt; m++) {
                         int mvbm = plasma_tile_mview(B, m);
                         int ldbm = plasma_tile_mmain(B, m);
-                        core_omp_ztsmlq(
+                        plasma_core_omp_ztsmlq(
                                 side, trans,
                                 mvbm, B.nb, mvbm, nvbn, mvak, ib,
                                 B(m, k), ldbm,

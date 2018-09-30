@@ -16,7 +16,7 @@
 
 /******************************************************************************/
 __attribute__((weak))
-void core_zlascl(plasma_enum_t uplo,
+void plasma_core_zlascl(plasma_enum_t uplo,
                  double cfrom, double cto,
                  int m, int n,
                  plasma_complex64_t *A, int lda)
@@ -34,7 +34,7 @@ void core_zlascl(plasma_enum_t uplo,
 }
 
 /******************************************************************************/
-void core_omp_zlascl(plasma_enum_t uplo,
+void plasma_core_omp_zlascl(plasma_enum_t uplo,
                      double cfrom, double cto,
                      int m, int n,
                      plasma_complex64_t *A, int lda,
@@ -43,7 +43,7 @@ void core_omp_zlascl(plasma_enum_t uplo,
     #pragma omp task depend(inout:A[0:lda*n])
     {
         if (sequence->status == PlasmaSuccess)
-            core_zlascl(uplo,
+            plasma_core_zlascl(uplo,
                         cfrom, cto,
                         m, n,
                         A, lda);

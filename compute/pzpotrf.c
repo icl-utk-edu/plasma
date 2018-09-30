@@ -38,7 +38,7 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
         for (int k = 0; k < A.mt; k++) {
             int mvak = plasma_tile_mview(A, k);
             int ldak = plasma_tile_mmain(A, k);
-            core_omp_zpotrf(
+            plasma_core_omp_zpotrf(
                 PlasmaLower, mvak,
                 A(k, k), ldak,
                 A.nb*k,
@@ -47,7 +47,7 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
             for (int m = k+1; m < A.mt; m++) {
                 int mvam = plasma_tile_mview(A, m);
                 int ldam = plasma_tile_mmain(A, m);
-                core_omp_ztrsm(
+                plasma_core_omp_ztrsm(
                     PlasmaRight, PlasmaLower,
                     PlasmaConjTrans, PlasmaNonUnit,
                     mvam, A.mb,
@@ -58,7 +58,7 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
             for (int m = k+1; m < A.mt; m++) {
                 int mvam = plasma_tile_mview(A, m);
                 int ldam = plasma_tile_mmain(A, m);
-                core_omp_zherk(
+                plasma_core_omp_zherk(
                     PlasmaLower, PlasmaNoTrans,
                     mvam, A.mb,
                     -1.0, A(m, k), ldam,
@@ -67,7 +67,7 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
 
                 for (int n = k+1; n < m; n++) {
                     int ldan = plasma_tile_mmain(A, n);
-                    core_omp_zgemm(
+                    plasma_core_omp_zgemm(
                         PlasmaNoTrans, PlasmaConjTrans,
                         mvam, A.mb, A.mb,
                         -1.0, A(m, k), ldam,
@@ -85,7 +85,7 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
         for (int k = 0; k < A.nt; k++) {
             int nvak = plasma_tile_nview(A, k);
             int ldak = plasma_tile_mmain(A, k);
-            core_omp_zpotrf(
+            plasma_core_omp_zpotrf(
                 PlasmaUpper, nvak,
                 A(k, k), ldak,
                 A.nb*k,
@@ -93,7 +93,7 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
 
             for (int m = k+1; m < A.nt; m++) {
                 int nvam = plasma_tile_nview(A, m);
-                core_omp_ztrsm(
+                plasma_core_omp_ztrsm(
                     PlasmaLeft, PlasmaUpper,
                     PlasmaConjTrans, PlasmaNonUnit,
                     A.nb, nvam,
@@ -104,7 +104,7 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
             for (int m = k+1; m < A.nt; m++) {
                 int nvam = plasma_tile_nview(A, m);
                 int ldam = plasma_tile_mmain(A, m);
-                core_omp_zherk(
+                plasma_core_omp_zherk(
                     PlasmaUpper, PlasmaConjTrans,
                     nvam, A.mb,
                     -1.0, A(k, m), ldak,
@@ -113,7 +113,7 @@ void plasma_pzpotrf(plasma_enum_t uplo, plasma_desc_t A,
 
                 for (int n = k+1; n < m; n++) {
                     int ldan = plasma_tile_mmain(A, n);
-                    core_omp_zgemm(
+                    plasma_core_omp_zgemm(
                         PlasmaConjTrans, PlasmaNoTrans,
                         A.mb, nvam, A.mb,
                         -1.0, A(k, n), ldak,

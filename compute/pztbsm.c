@@ -48,7 +48,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                     plasma_complex64_t lalpha = k == 0 ? alpha : 1.0;
                     for (int n = 0; n < B.nt; n++) {
                         int nvbn = plasma_tile_nview(B, n);
-                        core_omp_ztrsm(
+                        plasma_core_omp_ztrsm(
                             side, uplo, trans, diag,
                             mvbk, nvbn,
                             lalpha, A(B.mt-k-1, B.mt-k-1), ldak,
@@ -60,7 +60,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                         int ldbm = plasma_tile_mmain(B, m);
                         for (int n = 0; n < B.nt; n++) {
                             int nvbn = plasma_tile_nview(B, n);
-                            core_omp_zgemm(
+                            plasma_core_omp_zgemm(
                                 PlasmaNoTrans, PlasmaNoTrans,
                                 B.mb, nvbn, mvbk,
                                 -1.0,   A(m, B.mt-k-1), ldam,
@@ -82,7 +82,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                     plasma_complex64_t lalpha = k == 0 ? alpha : 1.0;
                     for (int n = 0; n < B.nt; n++) {
                         int nvbn = plasma_tile_nview(B, n);
-                        core_omp_ztrsm(
+                        plasma_core_omp_ztrsm(
                             side, uplo, trans, diag,
                             mvbk, nvbn,
                             lalpha, A(k, k), ldak,
@@ -94,7 +94,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                         int ldbm = plasma_tile_mmain(B, m);
                         for (int n = 0; n < B.nt; n++) {
                             int nvbn = plasma_tile_nview(B, n);
-                            core_omp_zgemm(
+                            plasma_core_omp_zgemm(
                                 trans, PlasmaNoTrans,
                                 mvbm, nvbn, B.mb,
                                 -1.0,   A(k, m), ldak,
@@ -126,10 +126,10 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                             // TODO: nested parallelization like getrf
                             #pragma omp taskwait
                             if (sequence->status == PlasmaSuccess) {
-                                core_zgeswp(PlasmaRowwise, view, k*A.nb+1, k*A.nb+mvbk, ipiv, 1);
+                                plasma_core_zgeswp(PlasmaRowwise, view, k*A.nb+1, k*A.nb+mvbk, ipiv, 1);
                             }
                         }
-                        core_omp_ztrsm(
+                        plasma_core_omp_ztrsm(
                             side, uplo, trans, diag,
                             mvbk, nvbn,
                             lalpha, A(k, k), ldak,
@@ -142,7 +142,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                         int ldbm = plasma_tile_mmain(B, m);
                         for (int n = 0; n < B.nt; n++) {
                             int nvbn = plasma_tile_nview(B, n);
-                            core_omp_zgemm(
+                            plasma_core_omp_zgemm(
                                 PlasmaNoTrans, PlasmaNoTrans,
                                 mvbm, nvbn, B.mb,
                                 -1.0,   A(m, k), ldam,
@@ -168,7 +168,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                         int ldbm = plasma_tile_mmain(B, m);
                         for (int n = 0; n < B.nt; n++) {
                             int nvbn = plasma_tile_nview(B, n);
-                            core_omp_zgemm(
+                            plasma_core_omp_zgemm(
                                 trans, PlasmaNoTrans,
                                 mvbk, nvbn, mvbm,
                                 -1.0,   A(m, B.mt-k-1), ldam,
@@ -179,7 +179,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                     }
                     for (int n = 0; n < B.nt; n++) {
                         int nvbn = plasma_tile_nview(B, n);
-                        core_omp_ztrsm(
+                        plasma_core_omp_ztrsm(
                             side, uplo, trans, diag,
                             mvbk, nvbn,
                             lalpha, A(B.mt-k-1, B.mt-k-1), ldak,
@@ -194,7 +194,7 @@ void plasma_pztbsm(plasma_enum_t side, plasma_enum_t uplo,
                             view.type = PlasmaGeneral;
                             #pragma omp taskwait
                             if (sequence->status == PlasmaSuccess) {
-                                core_zgeswp(PlasmaRowwise, view, k1, k2, ipiv, -1);
+                                plasma_core_zgeswp(PlasmaRowwise, view, k1, k2, ipiv, -1);
                             }
                         }
                     }

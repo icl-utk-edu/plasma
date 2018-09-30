@@ -76,7 +76,7 @@ void plasma_pzunmqr_tree(plasma_enum_t side, plasma_enum_t trans,
                 for (int n = 0; n < B.nt; n++) {
                     int nvbn = plasma_tile_nview(B, n);
 
-                    core_omp_zunmqr(side, trans,
+                    plasma_core_omp_zunmqr(side, trans,
                                     mvbk, nvbn, imin(mvak, nvaj), ib,
                                     A(k, j), ldak,
                                     T(k, j), T.mb,
@@ -94,7 +94,7 @@ void plasma_pzunmqr_tree(plasma_enum_t side, plasma_enum_t trans,
                 for (int n = 0; n < B.nt; n++) {
                     int nvbn = plasma_tile_nview(B, n);
 
-                    core_omp_zttmqr(
+                    plasma_core_omp_zttmqr(
                         side, trans,
                         mvbkpiv, nvbn, mvbk, nvbn, imin(mvakpiv+mvak, nvaj), ib,
                         B(kpiv, n), ldbkpiv,
@@ -114,7 +114,7 @@ void plasma_pzunmqr_tree(plasma_enum_t side, plasma_enum_t trans,
                 for (int n = 0; n < B.nt; n++) {
                     int nvbn = plasma_tile_nview(B, n);
 
-                    core_omp_ztsmqr(
+                    plasma_core_omp_ztsmqr(
                         side, trans,
                         mvbkpiv, nvbn, mvbk, nvbn, imin(mvakpiv+mvak, nvaj), ib,
                         B(kpiv, n), ldbkpiv,
@@ -161,7 +161,7 @@ void plasma_pzunmqr_tree(plasma_enum_t side, plasma_enum_t trans,
                     int mvbm = plasma_tile_mview(B, m);
                     int ldbm = plasma_tile_mmain(B, m);
 
-                    core_omp_zunmqr(
+                    plasma_core_omp_zunmqr(
                         side, trans,
                         mvbm, nvbk, imin(mvak, nvaj), ib,
                         A(k, j), ldak,
@@ -179,7 +179,7 @@ void plasma_pzunmqr_tree(plasma_enum_t side, plasma_enum_t trans,
                     int mvbm = plasma_tile_mview(B, m);
                     int ldbm = plasma_tile_mmain(B, m);
 
-                    core_omp_zttmqr(
+                    plasma_core_omp_zttmqr(
                         side, trans,
                         mvbm, nvbkpiv, mvbm, nvbk, imin(mvakpiv+mvak, nvaj), ib,
                         B(m, kpiv), ldbm,
@@ -198,7 +198,7 @@ void plasma_pzunmqr_tree(plasma_enum_t side, plasma_enum_t trans,
                     int mvbm = plasma_tile_mview(B, m);
                     int ldbm = plasma_tile_mmain(B, m);
 
-                    core_omp_ztsmqr(
+                    plasma_core_omp_ztsmqr(
                         side, trans,
                         mvbm, nvbkpiv, mvbm, nvbk, imin(mvakpiv+mvak, nvaj), ib,
                         B(m, kpiv), ldbm,

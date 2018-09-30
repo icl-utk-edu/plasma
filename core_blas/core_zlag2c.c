@@ -46,7 +46,7 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-void core_zlag2c(int m, int n,
+void plasma_core_zlag2c(int m, int n,
                  plasma_complex64_t *A,  int lda,
                  plasma_complex32_t *As, int ldas)
 {
@@ -54,7 +54,7 @@ void core_zlag2c(int m, int n,
 }
 
 /******************************************************************************/
-void core_omp_zlag2c(int m, int n,
+void plasma_core_omp_zlag2c(int m, int n,
                      plasma_complex64_t *A,  int lda,
                      plasma_complex32_t *As, int ldas,
                      plasma_sequence_t *sequence, plasma_request_t *request)
@@ -63,6 +63,6 @@ void core_omp_zlag2c(int m, int n,
                      depend(out:As[0:ldas*n])
     {
         if (sequence->status == PlasmaSuccess)
-            core_zlag2c(m, n, A, lda, As, ldas);
+            plasma_core_zlag2c(m, n, A, lda, As, ldas);
     }
 }

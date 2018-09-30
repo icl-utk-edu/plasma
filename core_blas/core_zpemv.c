@@ -109,7 +109,7 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-int core_zpemv(plasma_enum_t trans, int storev,
+int plasma_core_zpemv(plasma_enum_t trans, int storev,
                int m, int n, int l,
                plasma_complex64_t alpha,
                const plasma_complex64_t *A, int lda,
@@ -122,40 +122,40 @@ int core_zpemv(plasma_enum_t trans, int storev,
     if ((trans != PlasmaNoTrans) &&
         (trans != PlasmaTrans)   &&
         (trans != PlasmaConjTrans)) {
-        coreblas_error("Illegal value of trans");
+        plasma_coreblas_error("Illegal value of trans");
         return -1;
     }
     if ((storev != PlasmaColumnwise) && (storev != PlasmaRowwise)) {
-        coreblas_error("Illegal value of storev");
+        plasma_coreblas_error("Illegal value of storev");
         return -2;
     }
     if (!( ((storev == PlasmaColumnwise) && (trans != PlasmaNoTrans)) ||
            ((storev == PlasmaRowwise) && (trans == PlasmaNoTrans)) )) {
-        coreblas_error("Illegal values of trans/storev");
+        plasma_coreblas_error("Illegal values of trans/storev");
         return -2;
     }
     if (m < 0) {
-        coreblas_error("Illegal value of m");
+        plasma_coreblas_error("Illegal value of m");
         return -3;
     }
     if (n < 0) {
-        coreblas_error("Illegal value of n");
+        plasma_coreblas_error("Illegal value of n");
         return -4;
     }
     if (l > imin(m, n)) {
-        coreblas_error("Illegal value of l");
+        plasma_coreblas_error("Illegal value of l");
         return -5;
     }
     if (lda < imax(1, m)) {
-        coreblas_error("Illegal value of lda");
+        plasma_coreblas_error("Illegal value of lda");
         return -8;
     }
     if (incx < 1) {
-        coreblas_error("Illegal value of incx");
+        plasma_coreblas_error("Illegal value of incx");
         return -10;
     }
     if (incy < 1) {
-        coreblas_error("Illegal value of incy");
+        plasma_coreblas_error("Illegal value of incy");
         return -13;
     }
 
@@ -183,7 +183,7 @@ int core_zpemv(plasma_enum_t trans, int storev,
 
         // Columnwise / NoTrans
         if (trans == PlasmaNoTrans) {
-            coreblas_error("PlasmaNoTrans/PlasmaColumnwise not implemented");
+            plasma_coreblas_error("PlasmaNoTrans/PlasmaColumnwise not implemented");
             return -1;
         }
         // Columnwise / [Conj]Trans
@@ -281,7 +281,7 @@ int core_zpemv(plasma_enum_t trans, int storev,
         }
         // Rowwise/[Conj]Trans
         else {
-            coreblas_error("Plasma[Conj]Trans/PlasmaRowwise not implemented");
+            plasma_coreblas_error("Plasma[Conj]Trans/PlasmaRowwise not implemented");
             return -1;
         }
     }

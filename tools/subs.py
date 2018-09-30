@@ -462,11 +462,12 @@ subs = {
     # Note r for raw string literals, otherwise \b is a bell character.
     # The \b is deleted from replacement strings.
     # conj() and fabs() are overloaded in MAGMA, so don't need substitution.
-    (r'',                   r'',                    r'\bconjf\b',           r'\bconj\b'            ),
-    (r'\bfabsf\b',          r'\bfabs\b',            r'\bfabsf\b',           r'\bfabs\b'            ),
-    (r'\bfabsf\b',          r'\bfabs\b',            r'\bcabsf\b',           r'\bcabs\b'            ),
-    (r'\bfabsf\b',          r'\bfabs\b',            r'\bcore_scabs1\b',     r'\bcore_dcabs1\b'     ),
-    (r'\bsqrtf\b',          r'\bsqrt\b',            r'\bsqrtf\b',           r'\bsqrt\b'            ),
+    (r'',                   r'',               r'\bconjf\b',              r'\bconj\b'              ),
+    (r'\bfabsf\b',          r'\bfabs\b',       r'\bfabsf\b',              r'\bfabs\b'              ),
+    (r'\bfabsf\b',          r'\bfabs\b',       r'\bcabsf\b',              r'\bcabs\b'              ),
+    (r'\bfabsf\b',          r'\bfabs\b',       r'\bplasma_core_scabs1\b', r'\bplasma_core_dcabs1\b'),  # this is for function names
+    (r'\bfabsf\b',          r'\bfabs\b',       r'\bcore_scabs1\b',        r'\bcore_dcabs1\b'       ),  # this is for file names
+    (r'\bsqrtf\b',          r'\bsqrt\b',       r'\bsqrtf\b',              r'\bsqrt\b'              ),
 
     # ----- Constants
     # Do not convert ConjTrans to Trans, since in most cases ConjTrans

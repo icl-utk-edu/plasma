@@ -18,7 +18,7 @@
 
 /******************************************************************************/
 __attribute__((weak))
-void core_zgessq(int m, int n,
+void plasma_core_zgessq(int m, int n,
                  const plasma_complex64_t *A, int lda,
                  double *scale, double *sumsq)
 {
@@ -30,7 +30,7 @@ void core_zgessq(int m, int n,
 }
 
 /******************************************************************************/
-void core_omp_zgessq(int m, int n,
+void plasma_core_omp_zgessq(int m, int n,
                      const plasma_complex64_t *A, int lda,
                      double *scale, double *sumsq,
                      plasma_sequence_t *sequence, plasma_request_t *request)
@@ -42,13 +42,13 @@ void core_omp_zgessq(int m, int n,
         if (sequence->status == PlasmaSuccess) {
             *scale = 0.0;
             *sumsq = 1.0;
-            core_zgessq(m, n, A, lda, scale, sumsq);
+            plasma_core_zgessq(m, n, A, lda, scale, sumsq);
         }
     }
 }
 
 /******************************************************************************/
-void core_omp_zgessq_aux(int n,
+void plasma_core_omp_zgessq_aux(int n,
                          const double *scale, const double *sumsq,
                          double *value,
                          plasma_sequence_t *sequence, plasma_request_t *request)

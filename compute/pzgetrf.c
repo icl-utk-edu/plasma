@@ -105,7 +105,7 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                                              k*A.mb, k*A.nb,
                                              A.m-k*A.mb, nvak);
 
-                        core_zgetrf(view, &ipiv[k*A.mb], ib,
+                        plasma_core_zgetrf(view, &ipiv[k*A.mb], ib,
                                     rank, num_panel_threads,
                                     max_idx, max_val, &info,
                                     &barrier);
@@ -151,10 +151,10 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                     int k2 = imin(k*A.mb+A.mb, A.m);
                     plasma_desc_t view =
                         plasma_desc_view(A, 0, n*A.nb, A.m, nvan);
-                    core_zgeswp(PlasmaRowwise, view, k1, k2, ipiv, 1);
+                    plasma_core_zgeswp(PlasmaRowwise, view, k1, k2, ipiv, 1);
 
                     // trsm
-                    core_ztrsm(PlasmaLeft, PlasmaLower,
+                    plasma_core_ztrsm(PlasmaLeft, PlasmaLower,
                                PlasmaNoTrans, PlasmaUnit,
                                mvak, nvan,
                                1.0, A(k, k), ldak,
@@ -166,7 +166,7 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
 
                         #pragma omp task priority(n == k+1)
                         {
-                            core_zgemm(
+                            plasma_core_zgemm(
                                 PlasmaNoTrans, PlasmaNoTrans,
                                 mvam, nvan, A.nb,
                                 -1.0, A(m, k), ldam,
@@ -213,7 +213,7 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
                     plasma_desc_view(A, 0, k*A.nb, A.m, A.nb);
                 int k1 = (k+1)*A.mb+1;
                 int k2 = imin(A.m, A.n);
-                core_zgeswp(PlasmaRowwise, view, k1, k2, ipiv, 1);
+                plasma_core_zgeswp(PlasmaRowwise, view, k1, k2, ipiv, 1);
             }
         }
 

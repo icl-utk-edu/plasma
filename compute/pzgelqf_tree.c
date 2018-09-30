@@ -56,7 +56,7 @@ void plasma_pzgelqf_tree(plasma_desc_t A, plasma_desc_t T,
 
         if (kernel == PlasmaGeKernel) {
             // triangularization
-            core_omp_zgelqt(
+            plasma_core_omp_zgelqt(
                 mvaj, nvak, ib,
                 A(j, k), ldaj,
                 T(j, k), T.mb,
@@ -67,7 +67,7 @@ void plasma_pzgelqf_tree(plasma_desc_t A, plasma_desc_t T,
                 int mvajj = plasma_tile_mview(A, jj);
                 int ldajj = plasma_tile_mmain(A, jj);
 
-                core_omp_zunmlq(
+                plasma_core_omp_zunmlq(
                     PlasmaRight, Plasma_ConjTrans,
                     mvajj, nvak, imin(mvaj, nvak), ib,
                     A(j,  k), ldaj,
@@ -81,7 +81,7 @@ void plasma_pzgelqf_tree(plasma_desc_t A, plasma_desc_t T,
             // elimination of the tile
             int nvakpiv = plasma_tile_nview(A, kpiv);
 
-            core_omp_zttlqt(
+            plasma_core_omp_zttlqt(
                 mvaj, nvak, ib,
                 A(j,  kpiv), ldaj,
                 A(j,  k),    ldaj,
@@ -93,7 +93,7 @@ void plasma_pzgelqf_tree(plasma_desc_t A, plasma_desc_t T,
                 int mvajj = plasma_tile_mview(A, jj);
                 int ldajj = plasma_tile_mmain(A, jj);
 
-                core_omp_zttmlq(
+                plasma_core_omp_zttmlq(
                     PlasmaRight, Plasma_ConjTrans,
                     mvajj, nvakpiv, mvajj, nvak, imin(mvaj, nvakpiv+nvak), ib,
                     A(jj, kpiv), ldajj,
@@ -108,7 +108,7 @@ void plasma_pzgelqf_tree(plasma_desc_t A, plasma_desc_t T,
             // elimination of the tile
             int nvakpiv = plasma_tile_nview(A, kpiv);
 
-            core_omp_ztslqt(
+            plasma_core_omp_ztslqt(
                 mvaj, nvak, ib,
                 A(j,  kpiv), ldaj,
                 A(j,  k),    ldaj,
@@ -120,7 +120,7 @@ void plasma_pzgelqf_tree(plasma_desc_t A, plasma_desc_t T,
                 int mvajj = plasma_tile_mview(A, jj);
                 int ldajj = plasma_tile_mmain(A, jj);
 
-                core_omp_ztsmlq(
+                plasma_core_omp_ztsmlq(
                     PlasmaRight, Plasma_ConjTrans,
                     mvajj, nvakpiv, mvajj, nvak, imin(mvaj, nvakpiv+nvak), ib,
                     A(jj, kpiv), ldajj,

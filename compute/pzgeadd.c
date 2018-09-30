@@ -44,7 +44,7 @@ void plasma_pzgeadd(plasma_enum_t transa,
             int ldbm = plasma_tile_mmain(B, m);
             for (int n = 0; n < B.nt; n++) {
                 int nvbn = plasma_tile_nview(B, n);
-                core_omp_zgeadd(
+                plasma_core_omp_zgeadd(
                     transa, mvbm, nvbn,
                     alpha, A(m, n), ldam,
                     beta,  B(m, n), ldbm,
@@ -62,7 +62,7 @@ void plasma_pzgeadd(plasma_enum_t transa,
             for (int n = 0; n < B.nt; n++) {
                 int nvbn = plasma_tile_nview(B, n);
                 int ldan = plasma_tile_mmain(A, n);
-                core_omp_zgeadd(
+                plasma_core_omp_zgeadd(
                     transa, mvbm, nvbn,
                     alpha, A(n, m), ldan,
                     beta,  B(m, n), ldbm,

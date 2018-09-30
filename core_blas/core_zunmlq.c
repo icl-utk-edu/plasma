@@ -32,7 +32,7 @@
  *    \f[
  *        Q = H(k) . . . H(2) H(1)
  *    \f]
- *  as returned by core_zgelqt. Q is of order m if side = PlasmaLeft
+ *  as returned by plasma_core_zgelqt. Q is of order m if side = PlasmaLeft
  *  and of order n if side = PlasmaRight.
  *
  *******************************************************************************
@@ -65,7 +65,7 @@
  *                     (lda,n) if SIDE = PlasmaRight,
  *         The i-th row must contain the vector which defines the
  *         elementary reflector H(i), for i = 1,2,...,k, as returned by
- *         core_zgelqt in the first k rows of its array argument A.
+ *         plasma_core_zgelqt in the first k rows of its array argument A.
  *
  * @param[in] lda
  *         The leading dimension of the array A.  lda >= max(1,k).
@@ -102,7 +102,7 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-int core_zunmlq(plasma_enum_t side, plasma_enum_t trans,
+int plasma_core_zunmlq(plasma_enum_t side, plasma_enum_t trans,
                 int m, int n, int k, int ib,
                 const plasma_complex64_t *A,    int lda,
                 const plasma_complex64_t *T,    int ldt,
@@ -111,7 +111,7 @@ int core_zunmlq(plasma_enum_t side, plasma_enum_t trans,
 {
     // Check input arguments.
     if ((side != PlasmaLeft) && (side != PlasmaRight)) {
-        coreblas_error("illegal value of side");
+        plasma_coreblas_error("illegal value of side");
         return -1;
     }
 
@@ -128,55 +128,55 @@ int core_zunmlq(plasma_enum_t side, plasma_enum_t trans,
     }
 
     if (trans != PlasmaNoTrans && trans != Plasma_ConjTrans) {
-        coreblas_error("illegal value of trans");
+        plasma_coreblas_error("illegal value of trans");
         return -2;
     }
     if (m < 0) {
-        coreblas_error("illegal value of m");
+        plasma_coreblas_error("illegal value of m");
         return -3;
     }
     if (n < 0) {
-        coreblas_error("illegal value of n");
+        plasma_coreblas_error("illegal value of n");
         return -4;
     }
     if (k < 0 || k > nq) {
-        coreblas_error("illegal value of k");
+        plasma_coreblas_error("illegal value of k");
         return -5;
     }
     if (ib < 0) {
-        coreblas_error("illegal value of ib");
+        plasma_coreblas_error("illegal value of ib");
         return -6;
     }
     if (A == NULL) {
-        coreblas_error("NULL A");
+        plasma_coreblas_error("NULL A");
         return -7;
     }
     if ((lda < imax(1, k)) && (k > 0)) {
-        coreblas_error("illegal value of lda");
+        plasma_coreblas_error("illegal value of lda");
         return -8;
     }
     if (T == NULL) {
-        coreblas_error("NULL T");
+        plasma_coreblas_error("NULL T");
         return -9;
     }
     if (ldt < imax(1, ib)) {
-        coreblas_error("illegal value of ldt");
+        plasma_coreblas_error("illegal value of ldt");
         return -10;
     }
     if (C == NULL) {
-        coreblas_error("NULL C");
+        plasma_coreblas_error("NULL C");
         return -11;
     }
     if ((ldc < imax(1, m)) && (m > 0)) {
-        coreblas_error("illegal value of ldc");
+        plasma_coreblas_error("illegal value of ldc");
         return -12;
     }
     if (work == NULL) {
-        coreblas_error("NULL work");
+        plasma_coreblas_error("NULL work");
         return -13;
     }
     if ((ldwork < imax(1, nw)) && (nw > 0)) {
-        coreblas_error("illegal value of ldwork");
+        plasma_coreblas_error("illegal value of ldwork");
         return -14;
     }
 
@@ -236,7 +236,7 @@ int core_zunmlq(plasma_enum_t side, plasma_enum_t trans,
 }
 
 /******************************************************************************/
-void core_omp_zunmlq(plasma_enum_t side, plasma_enum_t trans,
+void plasma_core_omp_zunmlq(plasma_enum_t side, plasma_enum_t trans,
                      int m, int n, int k, int ib,
                      const plasma_complex64_t *A, int lda,
                      const plasma_complex64_t *T, int ldt,
@@ -261,7 +261,7 @@ void core_omp_zunmlq(plasma_enum_t side, plasma_enum_t trans,
             int ldwork = side == PlasmaLeft ? n : m; // TODO: double check
 
             // Call the kernel.
-            int info = core_zunmlq(side, trans,
+            int info = plasma_core_zunmlq(side, trans,
                                    m, n, k, ib,
                                    A, lda,
                                    T, ldt,

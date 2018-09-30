@@ -53,7 +53,7 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                         int ldbk = plasma_tile_mmain(B, k);
                         plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
                         if (k < m) {
-                            core_omp_zgemm(
+                            plasma_core_omp_zgemm(
                                 PlasmaNoTrans, PlasmaNoTrans,
                                 mvcm, nvcn, mvck,
                                 alpha, A(m, k), ldam,
@@ -63,7 +63,7 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                         }
                         else {
                             if (k == m) {
-                                core_omp_zhemm(
+                                plasma_core_omp_zhemm(
                                     side, uplo,
                                     mvcm, nvcn,
                                     alpha, A(k, k), ldak,
@@ -72,7 +72,7 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                                     sequence, request);
                             }
                             else {
-                                core_omp_zgemm(
+                                plasma_core_omp_zgemm(
                                     PlasmaConjTrans, PlasmaNoTrans,
                                     mvcm, nvcn, mvck,
                                     alpha, A(k, m), ldak,
@@ -93,7 +93,7 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                         int ldbk = plasma_tile_mmain(B, k);
                         plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
                         if (k < m) {
-                            core_omp_zgemm(
+                            plasma_core_omp_zgemm(
                                 PlasmaConjTrans, PlasmaNoTrans,
                                 mvcm, nvcn, mvck,
                                 alpha, A(k, m), ldak,
@@ -103,7 +103,7 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                         }
                         else {
                             if (k == m) {
-                                core_omp_zhemm(
+                                plasma_core_omp_zhemm(
                                     side, uplo,
                                     mvcm, nvcn,
                                     alpha, A(k, k), ldak,
@@ -112,7 +112,7 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                                     sequence, request);
                             }
                             else {
-                                core_omp_zgemm(
+                                plasma_core_omp_zgemm(
                                     PlasmaNoTrans, PlasmaNoTrans,
                                     mvcm, nvcn, mvck,
                                     alpha, A(m, k), ldam,
@@ -136,7 +136,7 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                         int ldak = plasma_tile_mmain(A, k);
                         plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
                         if (k < n) {
-                            core_omp_zgemm(
+                            plasma_core_omp_zgemm(
                                 PlasmaNoTrans, PlasmaConjTrans,
                                 mvcm, nvcn, nvck,
                                 alpha, B(m, k), ldbm,
@@ -146,7 +146,7 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                         }
                         else {
                             if (n == k) {
-                                core_omp_zhemm(
+                                plasma_core_omp_zhemm(
                                     side, uplo,
                                     mvcm, nvcn,
                                     alpha, A(k, k), ldak,
@@ -155,7 +155,7 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                                     sequence, request);
                             }
                             else {
-                                core_omp_zgemm(
+                                plasma_core_omp_zgemm(
                                     PlasmaNoTrans, PlasmaNoTrans,
                                     mvcm, nvcn, nvck,
                                     alpha, B(m, k), ldbm,
@@ -175,7 +175,7 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                         int ldak = plasma_tile_mmain(A, k);
                         plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
                         if (k < n) {
-                            core_omp_zgemm(
+                            plasma_core_omp_zgemm(
                                 PlasmaNoTrans, PlasmaNoTrans,
                                 mvcm, nvcn, nvck,
                                 alpha, B(m, k), ldbm,
@@ -185,7 +185,7 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                         }
                         else {
                             if (n == k) {
-                                core_omp_zhemm(
+                                plasma_core_omp_zhemm(
                                     side, uplo,
                                     mvcm, nvcn,
                                     alpha, A(k, k), ldak,
@@ -194,7 +194,7 @@ void plasma_pzhemm(plasma_enum_t side, plasma_enum_t uplo,
                                     sequence, request);
                             }
                             else {
-                                core_omp_zgemm(
+                                plasma_core_omp_zgemm(
                                     PlasmaNoTrans, PlasmaConjTrans,
                                     mvcm, nvcn, nvck,
                                     alpha, B(m, k), ldbm,

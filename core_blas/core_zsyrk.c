@@ -71,7 +71,7 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-void core_zsyrk(plasma_enum_t uplo, plasma_enum_t trans,
+void plasma_core_zsyrk(plasma_enum_t uplo, plasma_enum_t trans,
                 int n, int k,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                 plasma_complex64_t beta,        plasma_complex64_t *C, int ldc)
@@ -84,7 +84,7 @@ void core_zsyrk(plasma_enum_t uplo, plasma_enum_t trans,
 }
 
 /******************************************************************************/
-void core_omp_zsyrk(
+void plasma_core_omp_zsyrk(
     plasma_enum_t uplo, plasma_enum_t trans,
     int n, int k,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
@@ -101,7 +101,7 @@ void core_omp_zsyrk(
                      depend(inout:C[0:ldc*n])
     {
         if (sequence->status == PlasmaSuccess)
-            core_zsyrk(uplo, trans,
+            plasma_core_zsyrk(uplo, trans,
                        n, k,
                        alpha, A, lda,
                        beta,  C, ldc);

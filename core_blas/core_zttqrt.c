@@ -83,7 +83,7 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-int core_zttqrt(int m, int n, int ib,
+int plasma_core_zttqrt(int m, int n, int ib,
                 plasma_complex64_t *A1, int lda1,
                 plasma_complex64_t *A2, int lda2,
                 plasma_complex64_t *T,  int ldt,
@@ -92,47 +92,47 @@ int core_zttqrt(int m, int n, int ib,
 {
     // Check input arguments.
     if (m < 0) {
-        coreblas_error("illegal value of m");
+        plasma_coreblas_error("illegal value of m");
         return -1;
     }
     if (n < 0) {
-        coreblas_error("illegal value of n");
+        plasma_coreblas_error("illegal value of n");
         return -2;
     }
     if (ib < 0) {
-        coreblas_error("illegal value of ib");
+        plasma_coreblas_error("illegal value of ib");
         return -3;
     }
     if (A1 == NULL) {
-        coreblas_error("NULL A1");
+        plasma_coreblas_error("NULL A1");
         return -4;
     }
     if (lda1 < imax(1, m) && m > 0) {
-        coreblas_error("illegal value of lda1");
+        plasma_coreblas_error("illegal value of lda1");
         return -5;
     }
     if (A2 == NULL) {
-        coreblas_error("NULL A2");
+        plasma_coreblas_error("NULL A2");
         return -6;
     }
     if (lda2 < imax(1, m) && m > 0) {
-        coreblas_error("illegal value of lda2");
+        plasma_coreblas_error("illegal value of lda2");
         return -7;
     }
     if (T == NULL) {
-        coreblas_error("NULL T");
+        plasma_coreblas_error("NULL T");
         return -8;
     }
     if (ldt < imax(1, ib) && ib > 0) {
-        coreblas_error("illegal value of ldt");
+        plasma_coreblas_error("illegal value of ldt");
         return -9;
     }
     if (tau == NULL) {
-        coreblas_error("NULL tau");
+        plasma_coreblas_error("NULL tau");
         return -10;
     }
     if (work == NULL) {
-        coreblas_error("NULL work");
+        plasma_coreblas_error("NULL work");
         return -11;
     }
 
@@ -196,7 +196,7 @@ int core_zttqrt(int m, int n, int ib,
                 int l = imin(i, imax(0, m-ii));
                 plasma_complex64_t alpha = -(tau[j]);
 
-                core_zpemv(
+                plasma_core_zpemv(
                         Plasma_ConjTrans, PlasmaColumnwise,
                         imin(j, m), i, l,
                         alpha, &A2[lda2*ii], lda2,
@@ -220,7 +220,7 @@ int core_zttqrt(int m, int n, int ib,
             int mi = imin(ii+sb, m);
             int ni = n-(ii+sb);
             int l  = imin(sb, imax(0, mi-ii));
-            core_zparfb(
+            plasma_core_zparfb(
                 PlasmaLeft, Plasma_ConjTrans,
                 PlasmaForward, PlasmaColumnwise,
                 ib, ni, mi, ni, sb, l,             //replaced sb by ib
@@ -236,7 +236,7 @@ int core_zttqrt(int m, int n, int ib,
 }
 
 /******************************************************************************/
-void core_omp_zttqrt(int m, int n, int ib,
+void plasma_core_omp_zttqrt(int m, int n, int ib,
                      plasma_complex64_t *A1, int lda1,
                      plasma_complex64_t *A2, int lda2,
                      plasma_complex64_t *T,  int ldt,
@@ -253,7 +253,7 @@ void core_omp_zttqrt(int m, int n, int ib,
             plasma_complex64_t *tau = ((plasma_complex64_t*)work.spaces[tid]);
 
             // Call the kernel.
-            int info = core_zttqrt(m, n, ib,
+            int info = plasma_core_zttqrt(m, n, ib,
                                    A1, lda1,
                                    A2, lda2,
                                    T,  ldt,

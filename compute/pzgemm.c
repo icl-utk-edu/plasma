@@ -50,7 +50,7 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                 if (alpha == 0.0 || inner_k == 0) {
                     int ldam = imax(1, plasma_tile_mmain(A, 0));
                     int ldbk = imax(1, plasma_tile_mmain(B, 0));
-                    core_omp_zgemm(
+                    plasma_core_omp_zgemm(
                         transa, transb,
                         mvcm, nvcn, 0,
                         alpha, A(0, 0), ldam,
@@ -68,7 +68,7 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                             int nvak = plasma_tile_nview(A, k);
                             int ldbk = plasma_tile_mmain(B, k);
                             plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
-                            core_omp_zgemm(
+                            plasma_core_omp_zgemm(
                                 transa, transb,
                                 mvcm, nvcn, nvak,
                                 alpha, A(m, k), ldam,
@@ -85,7 +85,7 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                         for (int k = 0; k < A.nt; k++) {
                             int nvak = plasma_tile_nview(A, k);
                             plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
-                            core_omp_zgemm(
+                            plasma_core_omp_zgemm(
                                 transa, transb,
                                 mvcm, nvcn, nvak,
                                 alpha, A(m, k), ldam,
@@ -105,7 +105,7 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                             int ldak = plasma_tile_mmain(A, k);
                             int ldbk = plasma_tile_mmain(B, k);
                             plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
-                            core_omp_zgemm(
+                            plasma_core_omp_zgemm(
                                 transa, transb,
                                 mvcm, nvcn, mvak,
                                 alpha, A(k, m), ldak,
@@ -123,7 +123,7 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                             int mvak = plasma_tile_mview(A, k);
                             int ldak = plasma_tile_mmain(A, k);
                             plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
-                            core_omp_zgemm(
+                            plasma_core_omp_zgemm(
                                 transa, transb,
                                 mvcm, nvcn, mvak,
                                 alpha, A(k, m), ldak,
@@ -149,7 +149,7 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                 if (alpha == 0.0 || inner_k == 0) {
                     int ldam = imax(1, plasma_tile_mmain(A, 0));
                     int ldbk = imax(1, plasma_tile_mmain(B, 0));
-                    core_omp_zgemm(
+                    plasma_core_omp_zgemm(
                         transa, transb,
                         mvcm, nvcn, 0,
                         alpha, A(0, 0), ldam,
@@ -172,7 +172,7 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                             int ldbk = plasma_tile_mmain(B, k);
                             plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
 
-                            core_omp_zgemm(
+                            plasma_core_omp_zgemm(
                                 transa, transb,
                                 mvcm, nvcn, nvak,
                                 alpha, A(m, k), ldam,

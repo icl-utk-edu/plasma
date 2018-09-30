@@ -41,7 +41,7 @@ void plasma_pztr2desc(plasma_complex64_t *pA, int lda,
             plasma_complex64_t *f77 = &pA[(size_t)A.nb*lda*n + (size_t)A.mb*m];
             plasma_complex64_t *bdl = (plasma_complex64_t*)plasma_tile_addr(A, m, n);
 
-            core_omp_zlacpy(PlasmaGeneral, PlasmaNoTrans,
+            plasma_core_omp_zlacpy(PlasmaGeneral, PlasmaNoTrans,
                             y2-y1, x2-x1,
                             &(f77[x1*lda+y1]), lda,
                             &(bdl[x1*A.nb+y1]), ldt,

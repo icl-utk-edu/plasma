@@ -71,7 +71,7 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-void core_zherk(plasma_enum_t uplo, plasma_enum_t trans,
+void plasma_core_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                 int n, int k,
                 double alpha, const plasma_complex64_t *A, int lda,
                 double beta,        plasma_complex64_t *C, int ldc)
@@ -84,7 +84,7 @@ void core_zherk(plasma_enum_t uplo, plasma_enum_t trans,
 }
 
 /******************************************************************************/
-void core_omp_zherk(plasma_enum_t uplo, plasma_enum_t trans,
+void plasma_core_omp_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                     int n, int k,
                     double alpha, const plasma_complex64_t *A, int lda,
                     double beta,        plasma_complex64_t *C, int ldc,
@@ -100,7 +100,7 @@ void core_omp_zherk(plasma_enum_t uplo, plasma_enum_t trans,
                      depend(inout:C[0:ldc*n])
     {
         if (sequence->status == PlasmaSuccess)
-            core_zherk(uplo, trans,
+            plasma_core_zherk(uplo, trans,
                        n, k,
                        alpha, A, lda,
                        beta,  C, ldc);

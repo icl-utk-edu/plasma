@@ -18,7 +18,7 @@
 #include <math.h>
 
 /******************************************************************************/
-// This computation also shows up in core_zsyssq() and can be factored out.
+// This computation also shows up in plasma_core_zsyssq() and can be factored out.
 // LAPACK does real and imag components separately in zlassq.
 static inline void ssq(plasma_complex64_t value, double *scale, double *sumsq)
 {
@@ -36,7 +36,7 @@ static inline void ssq(plasma_complex64_t value, double *scale, double *sumsq)
 
 /******************************************************************************/
 __attribute__((weak))
-void core_ztrssq(plasma_enum_t uplo, plasma_enum_t diag,
+void plasma_core_ztrssq(plasma_enum_t uplo, plasma_enum_t diag,
                  int m, int n,
                  const plasma_complex64_t *A, int lda,
                  double *scale, double *sumsq)
@@ -87,7 +87,7 @@ void core_ztrssq(plasma_enum_t uplo, plasma_enum_t diag,
 }
 
 /******************************************************************************/
-void core_omp_ztrssq(plasma_enum_t uplo, plasma_enum_t diag,
+void plasma_core_omp_ztrssq(plasma_enum_t uplo, plasma_enum_t diag,
                      int m, int n,
                      const plasma_complex64_t *A, int lda,
                      double *scale, double *sumsq,
@@ -100,7 +100,7 @@ void core_omp_ztrssq(plasma_enum_t uplo, plasma_enum_t diag,
         if (sequence->status == PlasmaSuccess) {
             *scale = 0.0;
             *sumsq = 1.0;
-            core_ztrssq(uplo, diag, m, n, A, lda, scale, sumsq);
+            plasma_core_ztrssq(uplo, diag, m, n, A, lda, scale, sumsq);
         }
     }
 }

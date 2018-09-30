@@ -39,13 +39,13 @@ void plasma_pzgetri_aux(plasma_desc_t A, plasma_desc_t W,
         int ldwk = plasma_tile_mmain(W, k);
 
         // copy L(k, k) into W(k)
-        core_omp_zlacpy(
+        plasma_core_omp_zlacpy(
             PlasmaLower, PlasmaNoTrans,
             mvak, nvak,
             A(k, k), ldak, W(k), ldwk,
             sequence, request );
         // zero strictly-lower part of U(k, k)
-        core_omp_zlaset(
+        plasma_core_omp_zlaset(
             PlasmaLower,
             ldak, ldakn, 1, 0,
             nvak-1, nvak-1,
@@ -56,13 +56,13 @@ void plasma_pzgetri_aux(plasma_desc_t A, plasma_desc_t W,
             int ldam = plasma_tile_mmain(A, m);
             int ldwm = plasma_tile_mmain(W, m);
             // copy L(m, k) to W(m)
-            core_omp_zlacpy(
+            plasma_core_omp_zlacpy(
                 PlasmaGeneral, PlasmaNoTrans,
                 mvam, nvak,
                 A(m, k), ldam, W(m), ldwm,
                 sequence, request );
             // zero U(m, k)
-            core_omp_zlaset(
+            plasma_core_omp_zlaset(
                 PlasmaGeneral,
                 ldam, ldakn, 0, 0,
                 mvam, nvak,
@@ -76,7 +76,7 @@ void plasma_pzgetri_aux(plasma_desc_t A, plasma_desc_t W,
             for (int n = k+1; n < A.nt; n++) {
                 int nvan = plasma_tile_nview(A, n);
                 int ldwn = plasma_tile_mmain(W, n);
-                core_omp_zgemm(
+                plasma_core_omp_zgemm(
                      PlasmaNoTrans, PlasmaNoTrans,
                      mvam, nvak, nvan,
                      -1.0, A(m, n), ldam,
@@ -90,7 +90,7 @@ void plasma_pzgetri_aux(plasma_desc_t A, plasma_desc_t W,
         for (int m = 0; m < A.mt; m++) {
             int mvam = plasma_tile_mview(A, m);
             int ldam = plasma_tile_mmain(A, m);
-            core_omp_ztrsm(
+            plasma_core_omp_ztrsm(
                 PlasmaRight, PlasmaLower,
                 PlasmaNoTrans, PlasmaUnit,
                 mvam, nvak,

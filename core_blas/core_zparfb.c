@@ -126,7 +126,7 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
+int plasma_core_zparfb(plasma_enum_t side, plasma_enum_t trans,
                 plasma_enum_t direct, plasma_enum_t storev,
                 int m1, int n1, int m2, int n2, int k, int l,
                       plasma_complex64_t *A1,   int lda1,
@@ -137,84 +137,84 @@ int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
 {
     // Check input arguments.
     if (side != PlasmaLeft && side != PlasmaRight) {
-        coreblas_error("illegal value of side");
+        plasma_coreblas_error("illegal value of side");
         return -1;
     }
     if (trans != PlasmaNoTrans && trans != Plasma_ConjTrans) {
-        coreblas_error("illegal value of trans");
+        plasma_coreblas_error("illegal value of trans");
         return -2;
     }
     if (direct != PlasmaForward && direct != PlasmaBackward) {
-        coreblas_error("illegal value of direct");
+        plasma_coreblas_error("illegal value of direct");
         return -3;
     }
     if (storev != PlasmaColumnwise && storev != PlasmaRowwise) {
-        coreblas_error("illegal value of storev");
+        plasma_coreblas_error("illegal value of storev");
         return -4;
     }
     if (m1 < 0) {
-        coreblas_error("illegal value of m1");
+        plasma_coreblas_error("illegal value of m1");
         return -5;
     }
     if (n1 < 0) {
-        coreblas_error("illegal value of n1");
+        plasma_coreblas_error("illegal value of n1");
         return -6;
     }
     if (m2 < 0 || (side == PlasmaRight && m1 != m2)) {
-        coreblas_error("illegal value of m2");
+        plasma_coreblas_error("illegal value of m2");
         return -7;
     }
     if (n2 < 0 ||
         (side == PlasmaLeft && n1 != n2)) {
-        coreblas_error("illegal value of n2");
+        plasma_coreblas_error("illegal value of n2");
         return -8;
     }
     if (k < 0) {
-        coreblas_error("illegal value of k");
+        plasma_coreblas_error("illegal value of k");
         return -9;
     }
     if (l < 0) {
-        coreblas_error("illegal value of l");
+        plasma_coreblas_error("illegal value of l");
         return -10;
     }
     if (A1 == NULL) {
-        coreblas_error("NULL A1");
+        plasma_coreblas_error("NULL A1");
         return -11;
     }
     if (lda1 < 0) {
-        coreblas_error("illegal value of lda1");
+        plasma_coreblas_error("illegal value of lda1");
         return -12;
     }
     if (A2 == NULL) {
-        coreblas_error("NULL A2");
+        plasma_coreblas_error("NULL A2");
         return -13;
     }
     if (lda2 < 0) {
-        coreblas_error("illegal value of lda2");
+        plasma_coreblas_error("illegal value of lda2");
         return -14;
     }
     if (V == NULL) {
-        coreblas_error("NULL V");
+        plasma_coreblas_error("NULL V");
         return -15;
     }
     if (ldv < 0) {
-        coreblas_error("illegal value of ldv");
+        plasma_coreblas_error("illegal value of ldv");
         return -16;
     }
     if (T == NULL) {
-        coreblas_error("NULL T");
+        plasma_coreblas_error("NULL T");
         return -17;
     }
     if (ldt < 0) {
-        coreblas_error("illegal value of ldt");
+        plasma_coreblas_error("illegal value of ldt");
         return -18;
     }
     if (work == NULL) {
-        coreblas_error("NULL work");
+        plasma_coreblas_error("NULL work");
         return -19;
     }
     if (ldwork < 0) {
-        coreblas_error("illegal value of ldwork");
+        plasma_coreblas_error("illegal value of ldwork");
         return -20;
     }
 
@@ -234,7 +234,7 @@ int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
             //                                      ( A2 )
 
             // W = A1 + op(V) * A2
-            core_zpamm(PlasmaW, PlasmaLeft, storev,
+            plasma_core_zpamm(PlasmaW, PlasmaLeft, storev,
                        k, n1, m2, l,
                        A1,   lda1,
                        A2,   lda2,
@@ -258,7 +258,7 @@ int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
 
             // A2 = A2 - op(V) * W
             // W = V * W, A2 = A2 - W
-            core_zpamm(PlasmaA2, PlasmaLeft, storev,
+            plasma_core_zpamm(PlasmaA2, PlasmaLeft, storev,
                        m2, n2, k, l,
                        A1,   lda1,
                        A2,   lda2,
@@ -272,7 +272,7 @@ int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
             // Form  H * A  or  H^H * A  where A  = ( A1 A2 )
 
             // W = A1 + A2 * op(V)
-            core_zpamm(PlasmaW, PlasmaRight, storev,
+            plasma_core_zpamm(PlasmaW, PlasmaRight, storev,
                        m1, k, n2, l,
                        A1,   lda1,
                        A2,   lda2,
@@ -296,7 +296,7 @@ int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
 
             // A2 = A2 - W * op(V)
             // W = W * V^H, A2 = A2 - W
-            core_zpamm(PlasmaA2, PlasmaRight, storev,
+            plasma_core_zpamm(PlasmaA2, PlasmaRight, storev,
                        m2, n2, k, l,
                        A1,   lda1,
                        A2,   lda2,
@@ -305,7 +305,7 @@ int core_zparfb(plasma_enum_t side, plasma_enum_t trans,
         }
     }
     else {
-        coreblas_error("Backward / Left or Right not implemented");
+        plasma_coreblas_error("Backward / Left or Right not implemented");
         return PlasmaErrorNotSupported;
     }
 

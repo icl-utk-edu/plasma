@@ -78,7 +78,7 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-int core_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
+int plasma_core_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
                 int m, int n,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
                 plasma_complex64_t beta,        plasma_complex64_t *B, int ldb)
@@ -86,43 +86,43 @@ int core_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
     // Check input arguments
     if ((uplo != PlasmaUpper) &&
         (uplo != PlasmaLower)) {
-        coreblas_error("illegal value of uplo");
+        plasma_coreblas_error("illegal value of uplo");
         return -1;
     }
 
     if ((transa != PlasmaNoTrans) &&
         (transa != PlasmaTrans)   &&
         (transa != PlasmaConjTrans)) {
-        coreblas_error("illegal value of transa");
+        plasma_coreblas_error("illegal value of transa");
         return -2;
     }
 
     if (m < 0) {
-        coreblas_error("illegal value of m");
+        plasma_coreblas_error("illegal value of m");
         return -3;
     }
 
     if (n < 0) {
-        coreblas_error("illegal value of n");
+        plasma_coreblas_error("illegal value of n");
         return -4;
     }
 
     if (A == NULL) {
-        coreblas_error("NULL A");
+        plasma_coreblas_error("NULL A");
         return -6;
     }
     if ((transa == PlasmaNoTrans && lda < imax(1, m) && m > 0) ||
         (transa != PlasmaNoTrans && lda < imax(1, n) && n > 0)) {
-        coreblas_error("illegal value of lda");
+        plasma_coreblas_error("illegal value of lda");
         return -7;
     }
 
     if (B == NULL) {
-        coreblas_error("NULL B");
+        plasma_coreblas_error("NULL B");
         return -9;
     }
     if (ldb < imax(1, m) && (m > 0)) {
-        coreblas_error("illegal value of ldb");
+        plasma_coreblas_error("illegal value of ldb");
         return -10;
     }
 
@@ -183,7 +183,7 @@ int core_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
 }
 
 /******************************************************************************/
-void core_omp_ztradd(
+void plasma_core_omp_ztradd(
     plasma_enum_t uplo, plasma_enum_t transa,
     int m, int n,
     plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
@@ -196,7 +196,7 @@ void core_omp_ztradd(
                      depend(inout:B[0:ldb*n])
     {
         if (sequence->status == PlasmaSuccess) {
-            int retval = core_ztradd(uplo, transa,
+            int retval = plasma_core_ztradd(uplo, transa,
                                      m, n,
                                      alpha, A, lda,
                                      beta, B, ldb);

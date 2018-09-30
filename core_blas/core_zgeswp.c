@@ -19,7 +19,7 @@
 
 /******************************************************************************/
 __attribute__((weak))
-void core_zgeswp(plasma_enum_t colrow,
+void plasma_core_zgeswp(plasma_enum_t colrow,
                  plasma_desc_t A, int k1, int k2, const int *ipiv, int incx)
 {
     //================
