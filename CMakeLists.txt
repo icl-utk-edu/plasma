@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 3.0 FATAL_ERROR )
 
-project( PLASMA VERSION 18.9 LANGUAGES C )
+project( PLASMA VERSION 18.10.0 LANGUAGES C )
 
 set( CMAKE_THREAD_PREFER_PTHREAD 1 )
 include( FindThreads )
