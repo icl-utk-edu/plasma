@@ -318,8 +318,12 @@ find_library(MATH_LIBRARY m)
 if( MATH_LIBRARY )
   # OpenBLAS needs to link C math library (usually -lm) but MKL doesn't
   target_link_libraries( plasmatest plasma plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${MATH_LIBRARY} )
+  target_link_libraries( plasma plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${MATH_LIBRARY} )
+  target_link_libraries( plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${MATH_LIBRARY} )
 else( MATH_LIBRARY )
   target_link_libraries( plasmatest plasma plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} )
+  target_link_libraries( plasma plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} )
+  target_link_libraries( plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} )
 endif( MATH_LIBRARY )
 
 
