@@ -5,40 +5,6 @@ project( PLASMA VERSION 18.9 LANGUAGES C )
 set( CMAKE_THREAD_PREFER_PTHREAD 1 )
 include( FindThreads )
 
-# use standard module to find Python.c
-include( FindPythonInterp )
-
-if ( PYTHONINTERP_FOUND )
-
-  message( STATUS "Generating PLASMA compute files..." )
-
-  foreach (filename plasma_z plasma_internal_z core_lapack_z plasma_core_blas_z)
-    foreach (precision_letter s d c)
-      execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/codegen.py -p ${precision_letter} ${CMAKE_CURRENT_SOURCE_DIR}/include/${filename}.h)
-    endforeach()
-  endforeach()
-
-  foreach (filename include/plasma_zc.h include/plasma_internal_zc.h include/plasma_core_blas_zc.h test/test_zc.h)
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/codegen.py -p ds ${CMAKE_CURRENT_SOURCE_DIR}/${filename})
-  endforeach()
-
-  foreach (filename dzamax zgelqf zgemm zgeqrf zunglq zungqr zunmlq zunmqr zpotrf zpotrs zsymm zsyr2k zsyrk ztradd ztrmm ztrsm ztrtri zunglq zungqr zunmlq zunmqr zgbsv zgbtrf zgbtrs zgeadd zgeinv zgelqs zgels zgeqrs zgesv zgeswp zgetrf zgetri zgetrs zhemm zher2k zherk zhesv zhetrf zhetrs zlacpy zlangb zlange zlanhe zlansy zlantr zlascl zlaset zlauum zpbsv zpbtrf zpbtrs zpoinv zposv zpotri zgetri_aux zdesc2ge zdesc2pb zdesc2tr zge2desc zpb2desc ztr2desc pdzamax pzgbtrf pzgeadd pzgelqf pzgelqf_tree pzgemm pzgeqrf pzgeqrf_tree pzgeswp pzgetrf pzgetri_aux pzhemm pzher2k pzherk pzhetrf_aasen pzlacpy pzlangb pzlange pzlanhe pzlansy pzlantr pzlascl pzlaset pzlauum pzpbtrf pzpotrf pzsymm pzsyr2k pzsyrk pztbsm pztradd pztrmm pztrsm pztrtri pzunglq pzunglq_tree pzungqr pzungqr_tree pzunmlq pzunmlq_tree pzunmqr pzunmqr_tree pzdesc2ge pzdesc2pb pzdesc2tr pzge2desc pzpb2desc pztr2desc)
-    foreach (precision_letter s d c)
-      execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/codegen.py -p ${precision_letter} ${CMAKE_CURRENT_SOURCE_DIR}/compute/${filename}.c)
-    endforeach()
-  endforeach()
-
-  foreach (filename zcposv zcgesv zcgbsv clag2z zlag2c pclag2z pzlag2c)
-    foreach (precision_letter ds)
-      execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/codegen.py -p ${precision_letter} ${CMAKE_CURRENT_SOURCE_DIR}/compute/${filename}.c)
-    endforeach()
-  endforeach()
-
-else ( PYTHONINTERP_FOUND )
-
-  message(FATAL "Python was not found on your system.")
-endif ( PYTHONINTERP_FOUND )
-
 macro( use_c99 )
   if (CMAKE_VERSION VERSION_LESS "3.1")
     if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -237,21 +203,6 @@ target_include_directories(plasma PUBLIC
 	$<INSTALL_INTERFACE:include>
 )
 
-if ( PYTHONINTERP_FOUND )
-  message( STATUS "Generating CORE BLAS files..." )
-  foreach (filename zgeadd zgemm zgeswp zgetrf zheswp zlacpy zlacpy_band zheswp ztrsm dzamax zgelqt zgeqrt zgessq zhegst zhemm zher2k zherk zhessq zlange zlanhe zlansy zlantr zlascl zlaset zlauum zunmlq zunmqr zpemv zpamm zpotrf zhegst zsymm zsyr2k zsyrk zsyssq ztradd ztrmm ztrssq ztrtri ztslqt ztsmlq ztsmqr ztsqrt zttlqt zttmlq zttmqr zttqrt zunmlq zunmqr zparfb dcabs1)
-    foreach (precision_letter s d c)
-      execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/codegen.py -p ${precision_letter} ${CMAKE_CURRENT_SOURCE_DIR}/core_blas/core_${filename}.c)
-    endforeach()
-  endforeach()
-
-  foreach (filename zlag2c clag2z)
-    foreach (precision_letter ds)
-      execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/codegen.py -p ${precision_letter} ${CMAKE_CURRENT_SOURCE_DIR}/core_blas/core_${filename}.c)
-    endforeach()
-  endforeach()
-endif ( PYTHONINTERP_FOUND )
-
 add_library(plasma_core_blas SHARED include/plasma_core_blas.h
 core_blas/core_clag2z.c core_blas/core_dcabs1.c core_blas/core_scabs1.c core_blas/core_dzamax.c core_blas/core_zgeadd.c core_blas/core_zgelqt.c
 core_blas/core_zgemm.c core_blas/core_zgeqrt.c core_blas/core_zgessq.c core_blas/core_zgeswp.c core_blas/core_zgetrf.c
@@ -312,20 +263,6 @@ target_include_directories(plasma_core_blas PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	$<INSTALL_INTERFACE:include>
 )
-
-if ( PYTHONINTERP_FOUND )
-  foreach (filename test_zcposv test_zcgesv test_zcgbsv test_zlag2c test_clag2z)
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/codegen.py -p ds ${CMAKE_CURRENT_SOURCE_DIR}/test/${filename}.c)
-  endforeach(filename)
-
-  message( STATUS "Generating test files..." )
-
-  foreach (filename z.h dzamax.c zgbsv.c zgbtrf.c zgeadd.c zgeinv.c zgelqf.c zgelqs.c zgels.c zgemm.c zgeqrf.c zgeqrs.c zgesv.c zgeswp.c zgetrf.c zgetri_aux.c zgetri.c zgetrs.c zhemm.c zher2k.c zherk.c zhesv.c zhetrf.c zlacpy.c zlangb.c zlange.c zlanhe.c zlansy.c zlantr.c zlascl.c zlaset.c zlauum.c zpbsv.c zpbtrf.c zpoinv.c zposv.c zpotrf.c zpotri.c zpotrs.c zsymm.c zsyr2k.c zsyrk.c ztradd.c ztrmm.c ztrsm.c ztrtri.c zunmlq.c zunmqr.c)
-    foreach (letter s d c)
-      execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/codegen.py -p ${letter} ${CMAKE_CURRENT_SOURCE_DIR}/test/test_${filename})
-    endforeach( letter )
-  endforeach( filename )
-endif ( PYTHONINTERP_FOUND )
 
 add_executable(plasmatest test/test.h test/test.c include/plasma.h
 test/test_dzamax.c test/test_damax.c test/test_scamax.c test/test_samax.c
