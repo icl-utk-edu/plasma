@@ -118,7 +118,7 @@ compute/dtrmm.c compute/dtrsm.c compute/dtrtri.c compute/sgelqf.c
 compute/sgemm.c compute/sgeqrf.c compute/sorglq.c compute/sorgqr.c
 compute/sormlq.c compute/sormqr.c compute/spotrf.c compute/spotrs.c
 compute/ssymm.c compute/ssyr2k.c compute/ssyrk.c compute/stradd.c
-compute/strmm.c compute/strsm.c compute/strtri.c control/async.c
+compute/strmm.c compute/strsm.c compute/strtri.c
 compute/dsposv.c compute/dgbsv.c compute/cgbsv.c compute/sgbsv.c
 compute/dgbtrf.c compute/dgbtrs.c compute/cgbtrf.c compute/cgbtrs.c
 compute/sgbtrf.c compute/sgbtrs.c compute/dgeadd.c compute/cgeadd.c
@@ -194,7 +194,7 @@ compute/pzge2desc.c compute/pzpb2desc.c compute/pztr2desc.c
 compute/pcge2desc.c compute/pcpb2desc.c compute/pctr2desc.c
 compute/pdge2desc.c compute/pdpb2desc.c compute/pdtr2desc.c
 compute/psge2desc.c compute/pspb2desc.c compute/pstr2desc.c
-control/barrier.c control/constants.c control/context.c control/descriptor.c
+control/constants.c control/context.c control/descriptor.c
 control/tree.c control/tuning.c control/workspace.c)
 
 # CMake knows about "plasma" library at this point so inform CMake where the headers are
@@ -257,7 +257,7 @@ core_blas/core_ssyssq.c core_blas/core_stradd.c core_blas/core_strmm.c
 core_blas/core_strssq.c core_blas/core_strtri.c core_blas/core_stslqt.c
 core_blas/core_stsmlq.c core_blas/core_stsmqr.c core_blas/core_stsqrt.c
 core_blas/core_sttlqt.c core_blas/core_sttmlq.c core_blas/core_sttmqr.c
-core_blas/core_sttqrt.c)
+core_blas/core_sttqrt.c control/barrier.c control/async.c)
 
 target_include_directories(plasma_core_blas PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
