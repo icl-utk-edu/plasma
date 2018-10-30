@@ -28,12 +28,11 @@
 void
 plasma_tuning_init(plasma_context_t *plasma)
 {
-    lua_State *L = (lua_State *)plasma->L;
     // Initiaize Lua.
     lua_State *L = luaL_newstate();
     if (L == NULL) {
         plasma_error("luaL_newstate() failed");
-        return NULL;
+        return;
     }
     luaL_openlibs(L);
 
@@ -42,7 +41,7 @@ plasma_tuning_init(plasma_context_t *plasma)
     if (config_filename == NULL) {
         plasma_error("PLASMA_TUNING_FILENAME not set");
         lua_close(L);
-        return NULL;
+        return;
     }
 
     // Check if config file exists.
@@ -51,7 +50,7 @@ plasma_tuning_init(plasma_context_t *plasma)
     if (file == NULL) {
         plasma_error("config file not found");
         lua_close(L);
-        return NULL;
+        return;
     }
     fclose(file);
 
@@ -60,10 +59,8 @@ plasma_tuning_init(plasma_context_t *plasma)
     if (retval != 0) {
         plasma_error("error executing tuning file");
         lua_close(L);
-        return NULL;
+        return;
     }
-
-    return L;
 }
 
 /******************************************************************************/
