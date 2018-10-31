@@ -2,8 +2,8 @@ cmake_minimum_required( VERSION 3.0 FATAL_ERROR )
 
 project( PLASMA VERSION 18.10.0 LANGUAGES C )
 
-set( CMAKE_THREAD_PREFER_PTHREAD 1 )
-include( FindThreads )
+#set( CMAKE_THREAD_PREFER_PTHREAD 1 )
+#find_package( Threads )
 
 macro( use_c99 )
   if (CMAKE_VERSION VERSION_LESS "3.1")
@@ -19,10 +19,10 @@ endmacro( use_c99 )
 use_c99()
 
 # use standard module to find LAPACK
-include( FindBLAS ) # use BLA_VENDOR (by default "All") "Intel" "Intel10_32" "Intel10_64lp" "Intel10_64p_seq" "IBMESSL" "Generic"
+find_package( BLAS REQUIRED ) # use BLA_VENDOR (by default "All") "Intel" "Intel10_32" "Intel10_64lp" "Intel10_64p_seq" "IBMESSL" "Generic"
 
 # use standard module to find LAPACK (this seems to call FindBLAS)
-include( FindLAPACK )
+find_package( LAPACK REQUIRED )
 
 message( STATUS "BLAS(${BLAS_FOUND})" )  # linker flags `${BLA_LINKER_FLAGS}'" )
 message( STATUS "LAPACK(${LAPACK_FOUND})" )  # libraries: ${LAPACK_LIBRARIES}" )
@@ -59,7 +59,7 @@ if (BLAS_FOUND)
 endif (BLAS_FOUND)
 
 # use standard module to find Lua
-include( FindLua )
+find_package( Lua )
 
 if ( LUA_FOUND )
   include_directories( ${LUA_INCLUDE_DIR} )
@@ -317,13 +317,13 @@ test/test_zunmqr.c test/test_dormqr.c test/test_cunmqr.c test/test_sormqr.c)
 find_library(MATH_LIBRARY m)
 if( MATH_LIBRARY )
   # OpenBLAS needs to link C math library (usually -lm) but MKL doesn't
-  target_link_libraries( plasmatest plasma plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${MATH_LIBRARY} )
-  target_link_libraries( plasma plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${MATH_LIBRARY} )
-  target_link_libraries( plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${MATH_LIBRARY} )
+  target_link_libraries( plasmatest plasma plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${LUA_LIBRARIES} ${MATH_LIBRARY} )
+  target_link_libraries( plasma plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${LUA_LIBRARIES} ${MATH_LIBRARY} )
+  target_link_libraries( plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${LUA_LIBRARIES} ${MATH_LIBRARY} )
 else( MATH_LIBRARY )
-  target_link_libraries( plasmatest plasma plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} )
-  target_link_libraries( plasma plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} )
-  target_link_libraries( plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} )
+  target_link_libraries( plasmatest plasma plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${LUA_LIBRARIES} )
+  target_link_libraries( plasma plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${LUA_LIBRARIES} )
+  target_link_libraries( plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${LUA_LIBRARIES} )
 endif( MATH_LIBRARY )
 
 
