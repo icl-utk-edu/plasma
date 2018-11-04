@@ -2,6 +2,8 @@ cmake_minimum_required( VERSION 3.0 FATAL_ERROR )
 
 project( PLASMA VERSION 18.10.0 LANGUAGES C )
 
+set(CMAKE_SUPPRESS_REGENERATION on)
+
 #set( CMAKE_THREAD_PREFER_PTHREAD 1 )
 #find_package( Threads )
 
