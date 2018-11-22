@@ -17,7 +17,7 @@
  */
 #define PLASMA_VERSION_MAJOR   18
 #define PLASMA_VERSION_MINOR   11
-#define PLASMA_VERSION_PATCH   0
+#define PLASMA_VERSION_PATCH   1
 
 #ifdef __cplusplus
 extern "C" {

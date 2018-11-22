@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 3.0 FATAL_ERROR )
 
-project( PLASMA VERSION 18.10.0 LANGUAGES C )
+project( PLASMA VERSION 18.11.1 LANGUAGES C )
 
 set(CMAKE_SUPPRESS_REGENERATION on)
 
@@ -29,8 +29,6 @@ find_package( LAPACK REQUIRED )
 message( STATUS "BLAS(${BLAS_FOUND})" )  # linker flags `${BLA_LINKER_FLAGS}'" )
 message( STATUS "LAPACK(${LAPACK_FOUND})" )  # libraries: ${LAPACK_LIBRARIES}" )
 
-include( Modules/FindCBLAS.cmake )
-
 if (BLAS_FOUND)
   # BLA_VENDOR is the input variable to allow only checks for specific vendor BLAS
   #if ( BLA_VENDOR STREQUAL "Intel" OR BLA_VENDOR STREQUAL "Intel10_32" OR BLA_VENDOR STREQUAL "Intel10_64lp" OR BLA_VENDOR STREQUAL "Intel10_64p_seq" )
@@ -50,7 +48,7 @@ if (BLAS_FOUND)
   elseif ( BLAS_LIBRARIES MATCHES openblas )
     message( STATUS "Found OpenBLAS" )
 
-    add_definitions( -DPLASMA_WITH_OPENBLAS ) # this is command line only
+    add_definitions( -DPLASMA_WITH_OPENBLAS )
     set( PLASMA_WITH_OPENBLAS 1 )
 
   else ()
@@ -60,24 +58,45 @@ if (BLAS_FOUND)
 
 endif (BLAS_FOUND)
 
-# use standard module to find Lua
-find_package( Lua )
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/Modules")
 
-if ( LUA_FOUND )
-  include_directories( ${LUA_INCLUDE_DIR} )
-  add_definitions( -DPLASMA_USE_LUA ) # this is command line only
-  set( PLASMA_USE_LUA 1 ) # this will be substituted in the config file
-endif ( LUA_FOUND )
+find_package( CBLAS REQUIRED )
+include_directories(${CBLAS_INCLUDE_DIRS})
+if (CBLAS_PROVIDER STREQUAL "mkl")
+  add_definitions(-DPLASMA_WITH_MKL)
+  set(PLASMA_WITH_MKL TRUE)
+elseif (CBLAS_PROVIDER STREQUAL "netlib")
+  add_definitions(-DPLASMA_WITH_NETLIB)
+  set(PLASMA_WITH_NETLIB TRUE)
+endif()
+
+find_package( LAPACKE REQUIRED )
+include_directories(${LAPACKE_INCLUDE_DIRS})
+
+set(PLASMA_LINALG_LIBRARIES ${LAPACKE_LIBRARIES} ${LAPACK_LIBRARIES} ${CBLAS_LIBRARIES} ${BLAS_LIBRARIES})
+
+if (PLASMA_DETECT_LUA)
+  find_package( Lua )
+
+  if ( LUA_FOUND )
+    include_directories( ${LUA_INCLUDE_DIR} )
+    add_definitions( -DPLASMA_USE_LUA ) # this is command line only
+    set( PLASMA_USE_LUA 1 ) # this will be substituted in the config file
+  endif()
+endif()
 
 # use standard module to find OpenMP
 find_package( OpenMP )
-if ( OPENMP_FOUND )
-  set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}" )
+if (OPENMP_FOUND)
+  if (OpenMP_C_VERSION  VERSION_LESS 4.5)
+    message(FATAL_ERROR "OpenMP C version ${OpenMP_C_VERSION} is too old. Version 4.5 or later is required.")
+  endif()
+  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
   # set C++ flags in case C++ compiler is used to compiler PLASMA
-  set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
-else ( OPENMP_FOUND )
-  message( FATAL "OpenMP not found." )
-endif ( OPENMP_FOUND )
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+else()
+  message(FATAL_ERROR "OpenMP not found.")
+endif()
 
 add_library(plasma SHARED include/plasma.h
 compute/clag2z.c compute/dzamax.c compute/scamax.c compute/samax.c compute/damax.c compute/pclag2z.c compute/pdzamax.c
@@ -197,7 +216,7 @@ compute/pcge2desc.c compute/pcpb2desc.c compute/pctr2desc.c
 compute/pdge2desc.c compute/pdpb2desc.c compute/pdtr2desc.c
 compute/psge2desc.c compute/pspb2desc.c compute/pstr2desc.c
 control/constants.c control/context.c control/descriptor.c
-control/tree.c control/tuning.c control/workspace.c)
+control/tree.c control/tuning.c control/workspace.c control/version.c)
 
 # CMake knows about "plasma" library at this point so inform CMake where the headers are
 target_include_directories(plasma PUBLIC
@@ -319,15 +338,14 @@ test/test_zunmqr.c test/test_dormqr.c test/test_cunmqr.c test/test_sormqr.c)
 find_library(MATH_LIBRARY m)
 if( MATH_LIBRARY )
   # OpenBLAS needs to link C math library (usually -lm) but MKL doesn't
-  target_link_libraries( plasmatest plasma plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${LUA_LIBRARIES} ${MATH_LIBRARY} )
-  target_link_libraries( plasma plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${LUA_LIBRARIES} ${MATH_LIBRARY} )
-  target_link_libraries( plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${LUA_LIBRARIES} ${MATH_LIBRARY} )
+  set(PLASMA_LIBRARIES ${PLASMA_LINALG_LIBRARIES} ${LUA_LIBRARIES} ${MATH_LIBRARY})
 else( MATH_LIBRARY )
-  target_link_libraries( plasmatest plasma plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${LUA_LIBRARIES} )
-  target_link_libraries( plasma plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${LUA_LIBRARIES} )
-  target_link_libraries( plasma_core_blas ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${LUA_LIBRARIES} )
+  set(PLASMA_LIBRARIES ${PLASMA_LINALG_LIBRARIES} ${LUA_LIBRARIES})
 endif( MATH_LIBRARY )
 
+target_link_libraries( plasmatest plasma plasma_core_blas ${PLASMA_LIBRARIES} )
+target_link_libraries( plasma plasma_core_blas ${PLASMA_LIBRARIES} )
+target_link_libraries( plasma_core_blas ${PLASMA_LIBRARIES} )
 
 target_include_directories(plasmatest PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -339,3 +357,4 @@ configure_file( include/plasma_config.hin ${CMAKE_CURRENT_SOURCE_DIR}/include/pl
 install(TARGETS plasma plasma_core_blas LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
 file( GLOB plasma_headers include/plasma*.h)
 install(FILES ${plasma_headers} DESTINATION include)
+install(TARGETS plasmatest RUNTIME DESTINATION bin)

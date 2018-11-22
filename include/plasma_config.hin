@@ -10,4 +10,6 @@
 
 #cmakedefine PLASMA_WITH_MKL
 
+#cmakedefine PLASMA_WITH_NETLIB
+
 #cmakedefine PLASMA_USE_LUA
