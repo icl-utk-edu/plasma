@@ -124,8 +124,8 @@ static const int InfoLen = 1024;
 static const int InfoSpacing = 11;
 
 // function declarations
-void print_main_usage();
-void print_routine_usage(const char *name, param_value_t pval[]);
+void print_main_usage(const char *program_name);
+void print_routine_usage(const char *program_name, const char *name, param_value_t pval[]);
 void print_usage(int label);
 void print_header(const char *name, param_value_t param[]);
 int  test_routine(const char *name, param_value_t param[], bool test);

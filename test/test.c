@@ -441,7 +441,7 @@ int main(int argc, char **argv)
         strcmp(argv[1], "-h") == 0 ||
         strcmp(argv[1], "--help") == 0) {
 
-        print_main_usage();
+        print_main_usage(argv[0]);
         return EXIT_SUCCESS;
     }
 
@@ -486,14 +486,14 @@ int main(int argc, char **argv)
  * @brief Prints generic usage information.
  *
  ******************************************************************************/
-void print_main_usage()
+void print_main_usage(const char *program_name)
 {
     printf("Usage:\n"
-           "\ttest [-h|--help]\n"
-           "\ttest routine [-h|--help]\n"
-           "\ttest routine [parameter1, parameter2, ...]\n"
+           "\t%s [-h|--help]\n"
+           "\t%s routine [-h|--help]\n"
+           "\t%s routine [parameter1, parameter2, ...]\n"
            "\n"
-           "Available routines:");
+           "Available routines:", program_name, program_name, program_name);
     for (int i = 0; routines[i].name != NULL; ++i) {
         if (i % 4 == 0) {
             printf("\n\t");
@@ -511,14 +511,15 @@ void print_main_usage()
  * @param[in,out] pval - array of parameter values
  *
  ******************************************************************************/
-void print_routine_usage(const char *name, param_value_t pval[])
+void print_routine_usage(const char *program_name, const char *name, param_value_t pval[])
 {
     printf("Usage:\n"
-           "\ttest %s [-h|--help]\n"
-           "\ttest %s (parameter1, parameter2, ...)\n\n"
+           "\t%s %s [-h|--help]\n"
+           "\t%s %s (parameter1, parameter2, ...)\n\n"
            "Options:\n"
            "\t%*sshow this screen\n",
-           name, name,
+           program_name, name,
+           program_name, name,
            DescriptionIndent, "-h --help");
     print_usage(PARAM_ITER);
     print_usage(PARAM_OUTER);
@@ -877,7 +878,7 @@ void param_read(int argc, char **argv, param_t param[])
                  strcmp(argv[i], "--help") == 0) {
             param_value_t pval[PARAM_SIZEOF]; // snapshot of values
             param_snap(param, pval);
-            print_routine_usage(routine, pval);
+            print_routine_usage(argv[0], routine, pval);
             exit(EXIT_SUCCESS);
         }
         else {
