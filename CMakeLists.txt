@@ -66,6 +66,9 @@ endif (BLAS_FOUND)
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/Modules")
 
+cmake_policy(PUSH)
+cmake_policy(SET CMP0074 NEW) # allows to use CBLAS_ROOT and LAPACKE_ROOT
+
 find_package( CBLAS REQUIRED )
 include_directories(${CBLAS_INCLUDE_DIRS})
 if (CBLAS_PROVIDER STREQUAL "mkl")
@@ -78,6 +81,8 @@ endif()
 
 find_package( LAPACKE REQUIRED )
 include_directories(${LAPACKE_INCLUDE_DIRS})
+
+cmake_policy(POP)
 
 set(PLASMA_LINALG_LIBRARIES ${LAPACKE_LIBRARIES} ${LAPACK_LIBRARIES} ${CBLAS_LIBRARIES} ${BLAS_LIBRARIES})
 
