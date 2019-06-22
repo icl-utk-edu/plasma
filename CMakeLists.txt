@@ -51,6 +51,12 @@ if (BLAS_FOUND)
     add_definitions( -DPLASMA_WITH_OPENBLAS )
     set( PLASMA_WITH_OPENBLAS 1 )
 
+  elseif ( BLAS_LIBRARIES MATCHES "Accelerate" )
+    message( STATUS "Found Apple Accelerate Framework" )
+
+    add_definitions( -DPLASMA_WITH_ACCELERATE )
+    set( PLASMA_WITH_ACCELERATE 1 )
+
   else ()
     message( STATUS "Found Generic BLAS" )
     message( STATUS "vendor ${BLA_VENDOR}, linker flags `${BLA_LINKER_FLAGS}'" )
