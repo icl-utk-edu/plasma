@@ -33,19 +33,19 @@ if (BLAS_FOUND)
   # BLA_VENDOR is the input variable to allow only checks for specific vendor BLAS
   #if ( BLA_VENDOR STREQUAL "Intel" OR BLA_VENDOR STREQUAL "Intel10_32" OR BLA_VENDOR STREQUAL "Intel10_64lp" OR BLA_VENDOR STREQUAL "Intel10_64p_seq" )
   #
-  if ( BLAS_LIBRARIES MATCHES mkl_core )
+  if ( BLAS_LIBRARIES MATCHES "mkl_core" )
 
     message( STATUS "Found Intel MKL" )
     add_definitions( -DPLASMA_WITH_MKL ) # this is command line only
     set( HAVE_MKL 1 )
 
-  elseif ( BLAS_LIBRARIES MATCHES essl )
+  elseif ( BLAS_LIBRARIES MATCHES "essl" )
     message( STATUS "Found IBM ESSL" )
 
     set( HAVE_ESSL 1 )
     set( PLASMA_WITH_ESSL 1 )
 
-  elseif ( BLAS_LIBRARIES MATCHES openblas )
+  elseif ( BLAS_LIBRARIES MATCHES "openblas" )
     message( STATUS "Found OpenBLAS" )
 
     add_definitions( -DPLASMA_WITH_OPENBLAS )
