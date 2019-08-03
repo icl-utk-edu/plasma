@@ -15,9 +15,9 @@
 /*
  * RELEASE is a, b, c, f (alpha, beta, candidate, and final).
  */
-#define PLASMA_VERSION_MAJOR   18
-#define PLASMA_VERSION_MINOR   11
-#define PLASMA_VERSION_PATCH   1
+#define PLASMA_VERSION_MAJOR   19
+#define PLASMA_VERSION_MINOR   8
+#define PLASMA_VERSION_PATCH   0
 
 #ifdef __cplusplus
 extern "C" {
