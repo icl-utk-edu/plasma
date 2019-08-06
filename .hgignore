@@ -315,7 +315,6 @@ compute/strtri.c
 config/__init__.pyc
 config/config.pyc
 config/environment.pyc
-control/version.c
 core_blas/core_cgeadd.c
 core_blas/core_cgelqt.c
 core_blas/core_cgemm.c
