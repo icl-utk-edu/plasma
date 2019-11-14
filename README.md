@@ -26,17 +26,17 @@ About
 =====
 
 PLASMA is a software package for solving problems in dense linear algebra
-using multicore processors and Xeon Phi coprocessors.
+on multicore systems.
 PLASMA provides implementations of state-of-the-art algorithms
 using cutting-edge task scheduling techniques.
 PLASMA currently offers a collection of routines
 for solving linear systems of equations, least squares problems,
 eigenvalue problems, and singular value problems.
 
-PLASMA is in the process of porting from [QUARK](http://icl.cs.utk.edu/quark/)
-to [OpenMP](http://openmp.org/wp/).
-At the same time, it is moving from its ICL SVN repository
-to this Bitbucket Mercurial repository.
+PLASMA was ported from [QUARK](http://icl.cs.utk.edu/quark/)
+to [OpenMP](http://www.openmp.org/) using the modern features of the latter.
+At the same time, PLASMA was moved from its ICL SVN repository
+to this Bitbucket Mercurial repository (a move to Git is forthcoming).
 The content of this repository reflects the progress of the transition.
 Before the transition is complete, the last release of the old PLASMA
 is available here:
