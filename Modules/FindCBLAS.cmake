@@ -57,4 +57,13 @@ if ("x_${CBLAS_PROVIDER}_x" STREQUAL "x_netlib_x" OR "x_${CBLAS_PROVIDER}_x" STR
   endif()
 endif()
 
+if ("x_${CBLAS_PROVIDER}_x" STREQUAL "x_accelerate_x" OR "x_${CBLAS_PROVIDER}_x" STREQUAL "x_any_x")
+  find_package( Accelerate )
+  if (Accelerate_FOUND)
+    set(CBLAS_INCLUDE_DIRS ${Accelerate_INCLUDE_DIRS})
+    set(CBLAS_LIBRARIES ${Accelerate_LIBRARIES})
+    set(CBLAS_PROVIDER "accelerate")
+  endif()
+endif()
+
 find_package_handle_standard_args(CBLAS REQUIRED_VARS CBLAS_INCLUDE_DIRS CBLAS_LIBRARIES CBLAS_PROVIDER)
