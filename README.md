@@ -26,7 +26,7 @@ About
 =====
 
 PLASMA is a software package for solving problems in dense linear algebra
-on multicore systems.
+using OpenMP.
 PLASMA provides implementations of state-of-the-art algorithms
 using cutting-edge task scheduling techniques.
 PLASMA currently offers a collection of routines
