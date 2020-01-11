@@ -100,6 +100,25 @@ if (PLASMA_DETECT_LUA)
   endif()
 endif()
 
+if (PLASMA_DETECT_MAGMA)
+    find_package( CUDA ) # MAGMA requires CUDA
+  if (CUDA_FOUND)
+    include_directories( ${CUDA_INCLUDE_DIRS} )
+
+    message( STATUS "Looking for MAGMA" )
+    find_package( MAGMA )
+
+    if ( MAGMA_FOUND )
+      include_directories( ${MAGMA_INCLUDE_DIRS} )
+      add_definitions( -DPLASMA_USE_MAGMA ) # this is command line only
+      set( PLASMA_USE_MAGMA 1 ) # this will be substituted in the config file
+    else()
+      message( STATUS "MAGMA not found" )
+    endif()
+
+  endif()
+endif()
+
 # use standard module to find OpenMP
 find_package( OpenMP )
 if (OPENMP_FOUND)
@@ -359,7 +378,11 @@ else( MATH_LIBRARY )
 endif( MATH_LIBRARY )
 
 target_link_libraries( plasmatest plasma plasma_core_blas ${PLASMA_LIBRARIES} )
-target_link_libraries( plasma plasma_core_blas ${PLASMA_LIBRARIES} )
+if ( MAGMA_FOUND )
+    target_link_libraries( plasma plasma_core_blas ${PLASMA_LIBRARIES} ${MAGMA_LIBRARIES} ${CUDA_LIBRARIES} )
+else()
+  target_link_libraries( plasma plasma_core_blas ${PLASMA_LIBRARIES} )
+endif()
 target_link_libraries( plasma_core_blas ${PLASMA_LIBRARIES} )
 
 target_include_directories(plasmatest PUBLIC
