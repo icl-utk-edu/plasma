@@ -15,6 +15,10 @@
 #include <stdlib.h>
 #include <omp.h>
 
+#if defined(PLASMA_USE_MAGMA)
+#include <magma.h>
+#endif
+
 static int max_contexts = 1024;
 static int num_contexts = 0;
 
@@ -43,6 +47,11 @@ int plasma_init()
     pthread_mutex_unlock(&context_map_lock);
 
     plasma_context_attach();
+
+#if defined(PLASMA_USE_MAGMA)
+    magma_init();
+#endif
+
     return PlasmaSuccess;
 }
 
@@ -52,6 +61,10 @@ int plasma_init()
 */
 int plasma_finalize()
 {
+#if defined(PLASMA_USE_MAGMA)
+    magma_finalize();
+#endif
+
     plasma_context_detach();
     return PlasmaSuccess;
 }
