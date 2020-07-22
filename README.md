@@ -42,6 +42,8 @@ Before the transition is complete, the last release of the old PLASMA
 is available here:
 https://bitbucket.org/icl/plasma/downloads/plasma-2.8.tar.gz
 
+More information about the old PLASMA based on QUARK is included below.
+
 Documentation
 =============
 
@@ -184,3 +186,16 @@ License
     theory of liability, whether in contract, strict liability, or tort
     (including negligence or otherwise) arising in any way out of the use
     of this software, even if advised of the possibility of such damage.
+
+Old PLASMA version based on QUARK
+=================================
+
+The old version PLASMA is still available for reference but is no longer maintained.
+
+* Old overview: https://icl.utk.edu/plasma/overview/
+* Old release news: https://icl.utk.edu/plasma/news/
+* Old publications: https://icl.utk.edu/plasma/pubs/
+* Old links: https://icl.utk.edu/plasma/links/
+* Old list of contributors: https://icl.utk.edu/plasma/people/
+* Old documentation: https://icl.utk.edu/plasma/custom/index.html?lid=124&slid=232
+* Old releases: http://icl.cs.utk.edu/plasma/software/browse.html
