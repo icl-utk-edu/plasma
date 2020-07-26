@@ -11,17 +11,18 @@
 !!  solution of linear system A*X=B, where A is n-by-n matrix, X and B
 !!  are n-by-nrhs matrices
 
-      PROGRAM TEST_ZCGESV
+      program test_zcgesv
 
-      USE, INTRINSIC :: ISO_FORTRAN_ENV
-      USE            :: OMP_LIB
-      USE            :: PLASMA
+      use, intrinsic :: iso_fortran_env
+      use            :: iso_c_binding
+      use            :: omp_lib
+      use            :: plasma
 
-      IMPLICIT NONE
+      implicit none
 
       ! Precisions
-      integer, parameter :: sp = REAL32
-      integer, parameter :: dp = REAL64
+      integer, parameter :: sp = c_float
+      integer, parameter :: dp = c_double
 
       ! Matrices A, X, B
       complex(dp), allocatable :: A(:,:), Aref(:,:), X(:,:), B(:,:)
@@ -137,4 +138,4 @@
       ! Deallocate matrices
       deallocate(A, Aref, X, B, iPiv, work, stat=info)
 
-      END PROGRAM TEST_ZCGESV
+      end program test_zcgesv

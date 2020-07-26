@@ -9,12 +9,13 @@
 !>
 program test_zgels
     use, intrinsic :: iso_fortran_env
+    use iso_c_binding
 
     use plasma
     implicit none
 
-    integer, parameter :: sp = REAL32
-    integer, parameter :: dp = REAL64
+    integer, parameter :: sp = c_float
+    integer, parameter :: dp = c_double
 
     ! set working precision, this value is rewritten for different precisions
     integer, parameter :: wp = dp
@@ -113,6 +114,7 @@ program test_zgels
     ! Solve problem problem A X = B using least-squares if m >= n,
     ! or with minimum norm solution if m < n.
     !=============================================================
+
     call plasma_zgels(PlasmaNoTrans, m, n, nrhs, A, lda, descT, B, ldb, info)
     call check_error('plasma_zgels()', info)
 

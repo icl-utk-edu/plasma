@@ -10,16 +10,17 @@
 !>    @brief Tests PLASMA linear system (Ax=b) solution based on
 !>           Cholesky factorization
 
-      PROGRAM TEST_ZPOTRS
+      program test_zpotrs
 
-      USE, INTRINSIC :: ISO_FORTRAN_ENV
-      USE OMP_LIB
-      USE PLASMA
+      use, intrinsic :: iso_fortran_env
+      use iso_c_binding
+      use omp_lib
+      use plasma
 
-      IMPLICIT NONE
+      implicit none
 
-      integer, parameter :: sp = REAL32
-      integer, parameter :: dp = REAL64
+      integer, parameter :: sp = c_float
+      integer, parameter :: dp = c_double
 
       ! set working precision, this value is rewritten for different precisions
       integer, parameter :: wp = dp
@@ -161,4 +162,4 @@
       ! Deallocate matrices A, B
       deallocate(A, B, stat=infoPlasma)
 
-      END PROGRAM TEST_ZPOTRS
+      end program test_zpotrs

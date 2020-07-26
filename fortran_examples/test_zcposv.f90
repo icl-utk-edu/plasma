@@ -12,17 +12,18 @@
 !!  n-by-n Hermitian positive definite matrix, and X, B are n-by-nrhs
 !!  matrices
 
-      PROGRAM TEST_ZCPOSV
+      program test_zcposv
 
-      USE, INTRINSIC :: ISO_FORTRAN_ENV
-      USE            :: OMP_LIB
-      USE            :: PLASMA
+      use, intrinsic :: iso_fortran_env
+      use            :: iso_c_binding
+      use            :: omp_lib
+      use            :: plasma
 
-      IMPLICIT NONE
+      implicit none
 
       ! Precisions
-      integer, parameter :: sp = REAL32
-      integer, parameter :: dp = REAL64
+      integer, parameter :: sp = c_float
+      integer, parameter :: dp = c_double
 
       ! Matrices A, X, B
       complex(dp), allocatable :: A(:,:), Aref(:,:), X(:,:), B(:,:)
@@ -164,4 +165,4 @@
       ! Deallocate matrices
       deallocate(A, Aref, X, B, work, stat=info)
 
-      END PROGRAM TEST_ZCPOSV
+      end program test_zcposv

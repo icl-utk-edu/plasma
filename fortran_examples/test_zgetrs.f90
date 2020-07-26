@@ -9,12 +9,13 @@
 !>
 program test_zgetrs
     use, intrinsic :: iso_fortran_env
+    use :: iso_c_binding
 
     use plasma
     implicit none
 
-    integer, parameter :: sp = REAL32
-    integer, parameter :: dp = REAL64
+    integer, parameter :: sp = c_float
+    integer, parameter :: dp = c_double
 
     ! set working precision, this value is rewritten for different precisions
     integer, parameter :: wp = dp

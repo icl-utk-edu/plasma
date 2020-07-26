@@ -9,16 +9,17 @@
 !>
 !>    @brief Tests PLASMA Cholesky factorization
 
-      PROGRAM TEST_ZPOTRF
+      program test_zpotrf
 
-      USE, INTRINSIC :: ISO_FORTRAN_ENV
-      USE OMP_LIB
-      USE PLASMA
+      use, intrinsic :: iso_fortran_env
+      use iso_c_binding
+      use omp_lib
+      use plasma
 
-      IMPLICIT NONE
+      implicit none
 
-      integer, parameter :: sp = REAL32
-      integer, parameter :: dp = REAL64
+      integer, parameter :: sp = c_float
+      integer, parameter :: dp = c_double
 
       ! set working precision, this value is rewritten for different precisions
       integer, parameter :: wp = dp
@@ -157,4 +158,4 @@
       ! Deallocate matrix A
       deallocate(A, stat=infoPlasma)
 
-      END PROGRAM TEST_ZPOTRF
+      end program test_zpotrf
