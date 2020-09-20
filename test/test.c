@@ -445,6 +445,14 @@ int main(int argc, char **argv)
         return EXIT_SUCCESS;
     }
 
+    if (strcmp(argv[1], "-v") == 0 ||
+        strcmp(argv[1], "--version") == 0) {
+        printf("PLASMA version %d.%d.%d\n",
+            PLASMA_VERSION_MAJOR, PLASMA_VERSION_MINOR, PLASMA_VERSION_PATCH);
+
+        return EXIT_SUCCESS;
+    }
+
     const char *routine = argv[1];
 
     // Ensure that ParamDesc has an entry for every param_label_t value.
@@ -490,6 +498,7 @@ void print_main_usage(const char *program_name)
 {
     printf("Usage:\n"
            "\t%s [-h|--help]\n"
+           "\t%s [-v|--version]\n"
            "\t%s routine [-h|--help]\n"
            "\t%s routine [parameter1, parameter2, ...]\n"
            "\n"
