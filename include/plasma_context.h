@@ -13,8 +13,6 @@
 #include "plasma_types.h"
 #include "plasma_barrier.h"
 
-#include <pthread.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -32,19 +30,12 @@ typedef struct {
     void *L;                        ///< Lua state pointer; unusued when Lua is missing
 } plasma_context_t;
 
-typedef struct {
-    pthread_t thread_id;       ///< thread id
-    plasma_context_t *context; ///< pointer to associated context
-} plasma_context_map_t;
-
 /******************************************************************************/
 int plasma_init();
 int plasma_finalize();
 int plasma_set(plasma_enum_t param, int value);
 int plasma_get(plasma_enum_t param, int *value);
 
-int plasma_context_attach();
-int plasma_context_detach();
 plasma_context_t *plasma_context_self();
 void plasma_context_init(plasma_context_t *context);
 void plasma_context_finalize(plasma_context_t *context);

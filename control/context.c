@@ -19,34 +19,25 @@
 #include <magma.h>
 #endif
 
-static int max_contexts = 1024;
-static int num_contexts = 0;
-
-plasma_context_map_t *context_map = NULL;
-pthread_mutex_t context_map_lock = PTHREAD_MUTEX_INITIALIZER;
+static int plasma_initialized_g = 0;
+static plasma_context_t plasma_context_g;
 
 /***************************************************************************//**
     @ingroup plasma_init
     Initializes PLASMA, allocating its context.
+    This function must be called outside of any parallel region.
 */
 int plasma_init()
 {
-    pthread_mutex_lock(&context_map_lock);
+    if (plasma_initialized_g)
+        return PlasmaErrorNotInitialized;
 
-    // Allocate context map if NULL.
-    if (context_map == NULL) {
-        context_map =
-            (plasma_context_map_t*)calloc(max_contexts,
-                                          sizeof(plasma_context_map_t));
-        if (context_map == NULL) {
-            pthread_mutex_unlock(&context_map_lock);
-            plasma_error("calloc() failed");
-            return PlasmaErrorOutOfMemory;
-        }
-    }
-    pthread_mutex_unlock(&context_map_lock);
+    if (omp_in_parallel())
+        return PlasmaErrorNotInitialized;
 
-    plasma_context_attach();
+    plasma_initialized_g = 1;
+
+    plasma_context_init(&plasma_context_g);
 
 #if defined(PLASMA_USE_MAGMA)
     magma_init();
@@ -58,62 +49,75 @@ int plasma_init()
 /***************************************************************************//**
     @ingroup plasma_init
     Finalizes PLASMA, freeing its context.
+    This function must be called outside of any parallel region.
 */
 int plasma_finalize()
 {
+    if (! plasma_initialized_g)
+        return PlasmaErrorNotInitialized;
+
+    if (omp_in_parallel())
+        return PlasmaErrorEnvironment;
+
 #if defined(PLASMA_USE_MAGMA)
     magma_finalize();
 #endif
 
-    plasma_context_detach();
+    plasma_context_finalize(&plasma_context_g);
+
+    plasma_initialized_g = 0;
+
     return PlasmaSuccess;
 }
 
-/******************************************************************************/
+/***************************************************************************//**
+    @ingroup plasma_init
+    Sets one of PLASMA's internal state variables.
+    This function must be called outside of any parallel region.
+*/
 int plasma_set(plasma_enum_t param, int value)
 {
-    plasma_context_t *plasma;
-
-    plasma = plasma_context_self();
-    if (plasma == NULL) {
-        plasma_error("PLASMA not initialized");
+    if (! plasma_initialized_g)
         return PlasmaErrorNotInitialized;
-    }
+
+    if (omp_in_parallel())
+        return PlasmaErrorEnvironment;
+
     switch (param) {
     case PlasmaTuning:
         if (value != PlasmaEnabled && value != PlasmaDisabled) {
             plasma_error("invalid tuning flag");
             return PlasmaErrorIllegalValue;
         }
-        plasma->tuning = value;
+        plasma_context_g.tuning = value;
         break;
     case PlasmaNb:
         if (value <= 0) {
             plasma_error("invalid tile size");
             return PlasmaErrorIllegalValue;
         }
-        plasma->nb = value;
+        plasma_context_g.nb = value;
         break;
     case PlasmaIb:
         if (value <= 0) {
             plasma_error("invalid inner block size");
             return PlasmaErrorIllegalValue;
         }
-        plasma->ib = value;
+        plasma_context_g.ib = value;
         break;
     case PlasmaNumPanelThreads:
         if (value <= 0) {
             plasma_error("invalid number of panel threads");
             return PlasmaErrorIllegalValue;
         }
-        plasma->max_panel_threads = value;
+        plasma_context_g.max_panel_threads = value;
         break;
     case PlasmaHouseholderMode:
         if (value != PlasmaFlatHouseholder && value != PlasmaTreeHouseholder) {
             plasma_error("invalid Householder mode");
             return PlasmaErrorIllegalValue;
         }
-        plasma->householder_mode = value;
+        plasma_context_g.householder_mode = value;
         break;
     default:
         plasma_error("unknown parameter");
@@ -122,31 +126,30 @@ int plasma_set(plasma_enum_t param, int value)
     return PlasmaSuccess;
 }
 
-/******************************************************************************/
+/***************************************************************************//**
+    @ingroup plasma_init
+    Gets one of PLASMA's internal state variables.
+*/
 int plasma_get(plasma_enum_t param, int *value)
 {
-    plasma_context_t *plasma;
-
-    plasma = plasma_context_self();
-    if (plasma == NULL) {
-        plasma_fatal_error("PLASMA not initialized");
+    if (! plasma_initialized_g)
         return PlasmaErrorNotInitialized;
-    }
+
     switch (param) {
     case PlasmaTuning:
-        *value = plasma->tuning;
+        *value = plasma_context_g.tuning;
         return PlasmaSuccess;
     case PlasmaNb:
-        *value = plasma->nb;
+        *value = plasma_context_g.nb;
         return PlasmaSuccess;
     case PlasmaIb:
-        *value = plasma->ib;
+        *value = plasma_context_g.ib;
         return PlasmaSuccess;
     case PlasmaNumPanelThreads:
-        *value = plasma->max_panel_threads;
+        *value = plasma_context_g.max_panel_threads;
         return PlasmaSuccess;
     case PlasmaHouseholderMode:
-        *value = plasma->householder_mode;
+        *value = plasma_context_g.householder_mode;
         return PlasmaSuccess;
     default:
         plasma_error("Unknown parameter");
@@ -155,94 +158,15 @@ int plasma_get(plasma_enum_t param, int *value)
     return PlasmaSuccess;
 }
 
-/******************************************************************************/
-int plasma_context_attach()
-{
-    pthread_mutex_lock(&context_map_lock);
-
-    // Reallocate context map if out of space.
-    if (num_contexts == max_contexts-1) {
-        max_contexts *= 2;
-        context_map = (plasma_context_map_t*) realloc(
-            &context_map, max_contexts*sizeof(plasma_context_map_t));
-        if (context_map == NULL) {
-            pthread_mutex_unlock(&context_map_lock);
-            plasma_error("realloc() failed");
-            return PlasmaErrorOutOfMemory;
-        }
-    }
-    // Create the context.
-    plasma_context_t *context;
-    context = (plasma_context_t*)malloc(sizeof(plasma_context_t));
-    if (context == NULL) {
-        pthread_mutex_unlock(&context_map_lock);
-        plasma_error("malloc() failed");
-        return PlasmaErrorOutOfMemory;
-    }
-    // Initialize the context.
-    plasma_context_init(context);
-
-    // Find and empty slot and insert the context.
-    for (int i = 0; i < max_contexts; i++) {
-        if (context_map[i].context == NULL) {
-            context_map[i].context = context;
-            context_map[i].thread_id = pthread_self();
-            num_contexts++;
-            pthread_mutex_unlock(&context_map_lock);
-            return PlasmaSuccess;
-        }
-    }
-    // This should never happen.
-    pthread_mutex_unlock(&context_map_lock);
-    plasma_error("empty slot not found");
-    return PlasmaErrorInternal;
-}
-
-/******************************************************************************/
-int plasma_context_detach()
-{
-    pthread_mutex_lock(&context_map_lock);
-
-    // Find the thread and remove its context.
-    for (int i = 0; i < max_contexts; i++) {
-        if (context_map[i].context != NULL &&
-            pthread_equal(context_map[i].thread_id, pthread_self())) {
-
-            plasma_context_finalize(context_map[i].context);
-            free(context_map[i].context);
-            context_map[i].context = NULL;
-            num_contexts--;
-            pthread_mutex_unlock(&context_map_lock);
-            return PlasmaSuccess;
-        }
-    }
-    pthread_mutex_unlock(&context_map_lock);
-    plasma_error("context not found");
-    return PlasmaErrorInternal;
-}
-
-/******************************************************************************/
-plasma_context_t *plasma_context_self()
-{
-    pthread_mutex_lock(&context_map_lock);
-
-    // Find the thread and return its context.
-    for (int i = 0; i < max_contexts; i++) {
-        if (context_map[i].context != NULL &&
-            pthread_equal(context_map[i].thread_id, pthread_self())) {
-
-            pthread_mutex_unlock(&context_map_lock);
-            return context_map[i].context;
-        }
-    }
-    pthread_mutex_unlock(&context_map_lock);
-    plasma_error("context not found");
-    return NULL;
-}
-
-/******************************************************************************/
+/***************************************************************************//**
+    @ingroup plasma_init
+    Initializes PLASMA's execution context to default values.
+*/
 void plasma_context_init(plasma_context_t *context)
 {
+    if (! context)
+        return;
+
     // Set defaults.
     context->tuning = PlasmaEnabled;
     context->nb = 256;
@@ -255,8 +179,24 @@ void plasma_context_init(plasma_context_t *context)
     plasma_tuning_init(context);
 }
 
-/******************************************************************************/
+/***************************************************************************//**
+    @ingroup plasma_init
+    Resets PLASMA's execution context.
+*/
 void plasma_context_finalize(plasma_context_t *context)
 {
     plasma_tuning_finalize(context);
+}
+
+/***************************************************************************//**
+    @ingroup plasma_init
+    Returns PLASMA's default execution context or NULL if PLASMA was not
+    initialized.
+*/
+plasma_context_t *plasma_context_self()
+{
+    if (plasma_initialized_g)
+        return &plasma_context_g;
+    else
+        return NULL;
 }
