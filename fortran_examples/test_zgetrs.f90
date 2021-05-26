@@ -47,7 +47,6 @@ program test_zgetrs
 
     ! auxiliary variables
     integer :: info
-
     integer :: seed(4) = [0, 0, 0, 1]
 
     real(wp) :: normA
@@ -125,7 +124,7 @@ program test_zgetrs
     !==============================================
     ! Call LU back-substitution for B.
     !==============================================
-    call plasma_zgetrs(n, nrhs, A, lda, ipiv, B, ldb, info)
+    call plasma_zgetrs(PlasmaNoTrans, n, nrhs, A, lda, ipiv, B, ldb, info)
     call check_error('plasma_zgetrs()', info)
 
     !==============================================

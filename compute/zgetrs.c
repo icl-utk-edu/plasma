@@ -22,7 +22,7 @@
 /***************************************************************************//**
  *
  ******************************************************************************/
-int plasma_zgetrs(int n, int nrhs,
+int plasma_zgetrs(plasma_enum_t trans, int n, int nrhs,
                   plasma_complex64_t *pA, int lda, int *ipiv,
                   plasma_complex64_t *pB, int ldb)
 {
@@ -33,6 +33,12 @@ int plasma_zgetrs(int n, int nrhs,
         return PlasmaErrorNotInitialized;
     }
 
+    if ((trans != PlasmaNoTrans) &&
+        (trans != PlasmaTrans) &&
+        (trans != PlasmaConjTrans)) {
+        plasma_error("illegal value of trans");
+        return -1;
+    }
     if (n < 0) {
         plasma_error("illegal value of n");
         return -1;
@@ -97,7 +103,7 @@ int plasma_zgetrs(int n, int nrhs,
         plasma_omp_zge2desc(pB, ldb, B, &sequence, &request);
 
         // Call the tile async function.
-        plasma_omp_zgetrs(A, ipiv, B, &sequence, &request);
+        plasma_omp_zgetrs(trans, A, ipiv, B, &sequence, &request);
 
         // Translate back to LAPACK layout.
         plasma_omp_zdesc2ge(B, pB, ldb, &sequence, &request);
@@ -115,7 +121,7 @@ int plasma_zgetrs(int n, int nrhs,
 /***************************************************************************//**
  *
  ******************************************************************************/
-void plasma_omp_zgetrs(plasma_desc_t A, int *ipiv,
+void plasma_omp_zgetrs(plasma_enum_t trans, plasma_desc_t A, int *ipiv,
                        plasma_desc_t B,
                        plasma_sequence_t *sequence, plasma_request_t *request)
 {
@@ -128,6 +134,13 @@ void plasma_omp_zgetrs(plasma_desc_t A, int *ipiv,
     }
 
     // Check input arguments.
+    if ((trans != PlasmaNoTrans) &&
+        (trans != PlasmaTrans) &&
+        (trans != PlasmaConjTrans)) {
+        plasma_error("illegal value of trans");
+        plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
+        return;
+    }
     if (plasma_desc_check(A) != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorIllegalValue);
         plasma_error("invalid A");
@@ -154,15 +167,27 @@ void plasma_omp_zgetrs(plasma_desc_t A, int *ipiv,
         return;
 
     // Call the parallel functions.
-    plasma_pzgeswp(PlasmaRowwise, B, ipiv, 1, sequence, request);
+    if (trans == PlasmaNoTrans) {
+        plasma_pzgeswp(PlasmaRowwise, B, ipiv, 1, sequence, request);
 
-    plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
-                  1.0, A,
-                       B,
-                  sequence, request);
+        plasma_pztrsm(PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaUnit,
+                      1.0, A,
+                      B,
+                      sequence, request);
+        plasma_pztrsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans, PlasmaNonUnit,
+                      1.0, A,
+                      B,
+                      sequence, request);
+    }else {
+        plasma_pztrsm(PlasmaLeft, PlasmaUpper, trans, PlasmaNonUnit,
+                      1.0, A,
+                      B,
+                      sequence, request);
 
-    plasma_pztrsm(PlasmaLeft, PlasmaUpper, PlasmaNoTrans, PlasmaNonUnit,
-                  1.0, A,
-                       B,
-                  sequence, request);
+        plasma_pztrsm(PlasmaLeft, PlasmaLower, trans, PlasmaUnit,
+                      1.0, A,
+                      B,
+                      sequence, request);
+        plasma_pzgeswp(PlasmaRowwise, B, ipiv, -1, sequence, request);
+    }
 }
