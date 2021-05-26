@@ -178,7 +178,8 @@ void plasma_omp_zgetrs(plasma_enum_t trans, plasma_desc_t A, int *ipiv,
                       1.0, A,
                       B,
                       sequence, request);
-    }else {
+    }
+    else {
         plasma_pztrsm(PlasmaLeft, PlasmaUpper, trans, PlasmaNonUnit,
                       1.0, A,
                       B,

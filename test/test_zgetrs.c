@@ -43,7 +43,7 @@ void test_zgetrs(param_value_t param[], bool run)
     //================================================================
     // Mark which parameters are used.
     //================================================================
-    param[PARAM_TRANS ].used = true;
+    param[PARAM_TRANS  ].used = true;
     param[PARAM_DIM    ].used = PARAM_USE_N;
     param[PARAM_NRHS   ].used = true;
     param[PARAM_PADA   ].used = true;
@@ -156,7 +156,8 @@ void test_zgetrs(param_value_t param[], bool run)
                         CBLAS_SADDR(zmone), Aref, lda,
                         B,    ldb,
                         CBLAS_SADDR(zone),  Bref, ldb);
-        }  else {
+        }
+        else {
             cblas_zgemm(CblasColMajor, CblasTrans, CblasNoTrans, n, nrhs, n,
                         CBLAS_SADDR(zmone), Aref, lda,
                         B,    ldb,

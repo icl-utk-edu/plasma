@@ -65,17 +65,15 @@ void plasma_core_omp_zlag2c(int m, int n,
                      depend(out:As[0:ldas*n])
     {
         int info;
-        if (sequence->status == PlasmaSuccess)
-           {
-               info = plasma_core_zlag2c(m, n, A, lda, As, ldas);
-               if (info != 0)
-               {
-                   #pragma omp critical (plasma_critical_sequence)
-                   {
-                       // Value will be 1, so it doesn't matter which tile sets status.
-                       plasma_request_fail(sequence, request, info);
-                   }
-               }
-           }
+        if (sequence->status == PlasmaSuccess) {
+            info = plasma_core_zlag2c(m, n, A, lda, As, ldas);
+            if (info != 0) {
+                #pragma omp critical (plasma_critical_sequence)
+                {
+                    // Value will be 1, so it doesn't matter which tile sets status.
+                    plasma_request_fail(sequence, request, info);
+                }
+            }
+        }
     }
 }

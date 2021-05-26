@@ -89,9 +89,9 @@ int plasma_zgetri(int n, plasma_complex64_t *pA, int lda, int *ipiv);
 
 int plasma_zgetri_aux(int n, plasma_complex64_t *pA, int lda);
 
-    int plasma_zgetrs(plasma_enum_t trans, int n, int nrhs,
-                      plasma_complex64_t *pA, int lda, int *ipiv,
-                      plasma_complex64_t *pB, int ldb);
+int plasma_zgetrs(plasma_enum_t trans, int n, int nrhs,
+                  plasma_complex64_t *pA, int lda, int *ipiv,
+                  plasma_complex64_t *pB, int ldb);
 
 int plasma_zhemm(plasma_enum_t side, plasma_enum_t uplo,
                  int m, int n,
@@ -356,9 +356,9 @@ void plasma_omp_zgetri(plasma_desc_t A, int *ipiv, plasma_desc_t W,
 void plasma_omp_zgetri_aux(plasma_desc_t A, plasma_desc_t W,
                            plasma_sequence_t *sequence, plasma_request_t *request);
 
-    void plasma_omp_zgetrs(plasma_enum_t trans, plasma_desc_t A, int *ipiv,
-                           plasma_desc_t B,
-                           plasma_sequence_t *sequence, plasma_request_t *request);
+void plasma_omp_zgetrs(plasma_enum_t trans, plasma_desc_t A, int *ipiv,
+                       plasma_desc_t B,
+                       plasma_sequence_t *sequence, plasma_request_t *request);
 
 void plasma_omp_zhemm(plasma_enum_t side, plasma_enum_t uplo,
                       plasma_complex64_t alpha, plasma_desc_t A,

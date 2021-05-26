@@ -65,10 +65,8 @@ void plasma_core_omp_zgessq_aux(int n,
                     sum = sumsq[i] + sum*((scl/scale[i])*(scl/scale[i]));
                     scl = scale[i];
                 }
-                else {
-                    if (scl > 0.) {
-                        sum = sum + sumsq[i]*(scale[i]/scl)*(scale[i]/scl);
-                    }
+                else if (scl > 0.) {
+                    sum = sum + sumsq[i]*(scale[i]/scl)*(scale[i]/scl);
                 }
             }
             *value = scl*sqrt(sum);
