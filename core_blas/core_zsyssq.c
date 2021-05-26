@@ -105,7 +105,7 @@ void plasma_core_omp_zsyssq_aux(int m, int n,
                     sum = sumsq[idx] + sum*((scl/scale[idx])*(scl/scale[idx]));
                     scl = scale[idx];
                 }
-                else {
+                else if (scl > 0) {
                     sum = sum + sumsq[idx]*((scale[idx]/scl)*(scale[idx]/scl));
                 }
             }
