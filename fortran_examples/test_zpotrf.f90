@@ -9,17 +9,15 @@
 !>
 !>    @brief Tests PLASMA Cholesky factorization
 
-      program test_zpotrf
+      PROGRAM TEST_ZPOTRF
 
-      use, intrinsic :: iso_fortran_env
-      use iso_c_binding
-      use omp_lib
-      use plasma
+      USE, INTRINSIC :: ISO_FORTRAN_ENV, only: INPUT_UNIT, OUTPUT_UNIT, REAL32, REAL64
+      USE OMP_LIB
+      USE PLASMA
+      IMPLICIT NONE
 
-      implicit none
-
-      integer, parameter :: sp = c_float
-      integer, parameter :: dp = c_double
+      integer, parameter :: sp = REAL32
+      integer, parameter :: dp = REAL64
 
       ! set working precision, this value is rewritten for different precisions
       integer, parameter :: wp = dp
@@ -32,12 +30,9 @@
       real(wp)                 :: Anorm, error, tol
       character                :: uploLapack ='L'
       integer                  :: uploPlasma = PlasmaLower
-      !character(len=32)        :: frmt ="(10(3X,F7.3,SP,F7.3,'i'))"
       integer                  :: lda, infoPlasma, infoLapack, i
       logical                  :: success = .false.
 
-      ! Performance variables
-      real(dp) :: tstart, tstop, telapsed
 
       ! External functions
       real(wp), external :: dlamch, zlanhe, zlange
@@ -58,12 +53,6 @@
         A(i,i) = A(i,i) + n
       end do
 
-      !print *, "Random Hermitian positive definite matrix A:"
-      !do i = 1, n
-      !  print frmt, A(i,:)
-      !end do
-      !print *, ""
-
       allocate(Aref(lda,n), stat=infoPlasma)
       Aref = A
 
@@ -72,27 +61,16 @@
       !==============================================
       call plasma_init(infoPlasma)
 
-      tstart = omp_get_wtime()
       !==============================================
       ! Perform Cholesky factorization.
       !==============================================
       call plasma_zpotrf(uploPlasma, n, A, lda, infoPlasma)
-      tstop  = omp_get_wtime()
-      telapsed  = tstop-tstart
 
       !==============================================
       ! Finalise PLASMA.
       !==============================================
       call plasma_finalize(infoPlasma)
 
-      !print *, "Factor " // uploLapack // " of Chol(A):"
-      !do i = 1, n
-      !  print frmt, A(i,:)
-      !end do
-      !print *, ""
-
-      print *, "Time:", telapsed
-      print *, ""
 
       ! Check Cholesky decomposition is correct
 
