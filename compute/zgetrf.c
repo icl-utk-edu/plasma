@@ -85,9 +85,19 @@ int plasma_zgetrf(int m, int n,
 
         // Call the tile async function.
         plasma_omp_zgetrf(A, ipiv, &sequence, &request);
+    }
 
+    // If status/=0, matrix is singular don't copy back factored matrix,
+    if (sequence.status == 0)
+    {
         // Translate back to LAPACK layout.
-        plasma_omp_zdesc2ge(A, pA, lda, &sequence, &request);
+        #pragma omp parallel
+        #pragma omp master
+        {
+            plasma_omp_zdesc2ge(A, pA, lda, &sequence, &request);
+        }
+    } else {
+        plasma_request_fail(&sequence, &request, imin(m,n) + sequence.status);
     }
 
     // Free matrix A in tile layout.
