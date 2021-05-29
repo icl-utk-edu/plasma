@@ -28,7 +28,7 @@
 
 /***************************************************************************//**
  *
- * @brief Tests ZPOTRF.
+ * @brief Tests ZGETRF.
  *
  * @param[in,out] param - array of parameters
  * @param[in]     run - whether to run test
