@@ -58,6 +58,7 @@ void test_zgetrs(param_value_t param[], bool run)
     // Set parameters.
     //================================================================
     plasma_enum_t trans = plasma_trans_const(param[PARAM_TRANS].c);
+
     int n = param[PARAM_DIM].dim.n;
     int nrhs = param[PARAM_NRHS].i;
 

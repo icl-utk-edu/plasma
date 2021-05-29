@@ -40,6 +40,7 @@ void test_zgels(param_value_t param[], bool run)
     //================================================================
     // Mark which parameters are used.
     //================================================================
+    param[PARAM_TRANS  ].used = true;
     param[PARAM_DIM    ].used = PARAM_USE_M | PARAM_USE_N;
     param[PARAM_NRHS   ].used = true;
     param[PARAM_PADA   ].used = true;
@@ -53,6 +54,8 @@ void test_zgels(param_value_t param[], bool run)
     //================================================================
     // Set parameters.
     //================================================================
+    plasma_enum_t trans = plasma_trans_const(param[PARAM_TRANS].c);
+
     int m    = param[PARAM_DIM].dim.m;
     int n    = param[PARAM_DIM].dim.n;
     int nrhs = param[PARAM_NRHS].i;
@@ -122,7 +125,7 @@ void test_zgels(param_value_t param[], bool run)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    plasma_zgels(PlasmaNoTrans, m, n, nrhs,
+    plasma_zgels(trans, m, n, nrhs,
                  A, lda,
                  &T,
                  B, ldb);
@@ -134,13 +137,26 @@ void test_zgels(param_value_t param[], bool run)
     double flop;
     if (m >= n) {
         // cost of QR-based factorization and solve
-        flop = flops_zgeqrf(m, n) + flops_zgeqrs(m, n, nrhs);
+        flop = flops_zgeqrf(m, n);
+        if (trans == PlasmaNoTrans) {
+            flop += flops_zgeqrs(m, n, nrhs);
+        }
+        else {
+            flop += flops_ztrsm(PlasmaLeft, n, nrhs)
+                  + flops_zunmqr(PlasmaLeft, m, nrhs, n);
+        }
     }
     else {
         // cost of LQ-based factorization, triangular solve, and Q^H application
-        flop = flops_zgelqf(m, n) +
-               flops_ztrsm(PlasmaLeft, m, nrhs) +
-               flops_zunmlq(PlasmaLeft, n, nrhs, m);
+        flop = flops_zgelqf(m, n);
+        if (trans == PlasmaNoTrans) {
+            flop += flops_ztrsm(PlasmaLeft, m, nrhs)
+                  + flops_zunmlq(PlasmaLeft, n, nrhs, m);
+        }
+        else {
+            flop += flops_ztrsm(PlasmaLeft, m, nrhs)
+                  + flops_zunmlq(PlasmaLeft, n, nrhs, m);
+        }
     }
     param[PARAM_GFLOPS].d = flop / time / 1e9;
 
@@ -154,32 +170,53 @@ void test_zgels(param_value_t param[], bool run)
                                            Aref, lda, work);
 
         // |B|_F
-        double Bnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'F', m, nrhs,
+        int mb = (trans == PlasmaNoTrans) ? m : n;
+        double Bnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'F', mb, nrhs,
                                            Bref, ldb, work);
 
         // |X|_F, solution X is now stored in the n-by-nrhs part of B
-        double Xnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'F', n, nrhs,
+        int mx = (trans == PlasmaNoTrans) ? n : m;
+        double Xnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'F', mx, nrhs,
                                            B, ldb, work);
 
-        // compute residual and store it in B = A*X - B
+        // compute residual and store it in B = A*X - B or B = A^H * X - B
         plasma_complex64_t zone  =  1.0;
         plasma_complex64_t zmone = -1.0;
         plasma_complex64_t zzero =  0.0;
-        cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, nrhs, n,
-                    CBLAS_SADDR(zone), Aref, lda, B, ldb,
-                    CBLAS_SADDR(zmone), Bref, ldb);
+        if (trans == PlasmaNoTrans) {
+            cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans,
+                        m, nrhs, n,
+                        CBLAS_SADDR(zone), Aref, lda, B, ldb,
+                        CBLAS_SADDR(zmone), Bref, ldb);
+        }
+        else {
+            cblas_zgemm(CblasColMajor, CblasConjTrans, CblasNoTrans,
+                        n, nrhs, m,
+                        CBLAS_SADDR(zone), Aref, lda, B, ldb,
+                        CBLAS_SADDR(zmone), Bref, ldb);
+        }
 
-        // Compute B = A^H * (A*X - B)
-        cblas_zgemm(CblasColMajor, CblasConjTrans, CblasNoTrans, n, nrhs, m,
-                    CBLAS_SADDR(zone), Aref, lda, Bref, ldb,
-                    CBLAS_SADDR(zzero), B, ldb);
+        // Compute B = A^H * (A*X - B) or B = A * (A^H * X - B)
+        if (trans == PlasmaNoTrans) {
+            cblas_zgemm(CblasColMajor, CblasConjTrans, CblasNoTrans,
+                        n, nrhs, m,
+                        CBLAS_SADDR(zone), Aref, lda, Bref, ldb,
+                        CBLAS_SADDR(zzero), B, ldb);
+        }
+        else {
+            cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans,
+                        m, nrhs, n,
+                        CBLAS_SADDR(zone), Aref, lda, Bref, ldb,
+                        CBLAS_SADDR(zzero), B, ldb);
+        }
 
         // |RES|_F
-        double Rnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'F', n, nrhs,
+        int mres = (trans == PlasmaNoTrans) ? n : m;
+        double Rnorm = LAPACKE_zlange_work(LAPACK_COL_MAJOR, 'F', mres, nrhs,
                                            B, ldb, work);
 
         // normalize the result
-        double result = Rnorm / ((Anorm*Xnorm+Bnorm)*n);
+        double result = Rnorm / ((Anorm*Xnorm+Bnorm)*mres);
 
         param[PARAM_ERROR].d = result;
         param[PARAM_SUCCESS].i = result < tol;
