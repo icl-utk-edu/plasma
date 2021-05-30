@@ -88,15 +88,16 @@ int plasma_zgetrf(int m, int n,
     }
 
     // If status/=0, matrix is singular don't copy back factored matrix,
-    if (sequence.status == 0)
-    {
+    if (sequence.status == 0) {
+
         // Translate back to LAPACK layout.
         #pragma omp parallel
         #pragma omp master
         {
             plasma_omp_zdesc2ge(A, pA, lda, &sequence, &request);
         }
-    } else {
+    }
+    else {
         plasma_request_fail(&sequence, &request, imin(m,n) + sequence.status);
     }
 

@@ -7,14 +7,14 @@
 !>
 !> @precisions normal z -> s d c
 !>
-!>    @brief Tests PLASMA Cholesky factorization
+!> @brief Tests PLASMA Cholesky factorization
 
-      PROGRAM TEST_ZPOTRF
+      program test_zpotrf
 
-      USE, INTRINSIC :: ISO_FORTRAN_ENV, only: INPUT_UNIT, OUTPUT_UNIT, REAL32, REAL64
-      USE OMP_LIB
-      USE PLASMA
-      IMPLICIT NONE
+      use, intrinsic :: iso_fortran_env, only: input_unit, output_unit, real32, real64
+      use omp_lib
+      use plasma
+      implicit none
 
       integer, parameter :: sp = REAL32
       integer, parameter :: dp = REAL64
@@ -71,7 +71,6 @@
       !==============================================
       call plasma_finalize(infoPlasma)
 
-
       ! Check Cholesky decomposition is correct
 
       ! Factorize matrix A using Cholesky
@@ -80,21 +79,9 @@
 
       if (infoLapack == 0) then
 
-        !print *, "Factor " // uploLapack // " of Chol(Aref):"
-        !do i = 1, n
-        !  print frmt, Aref(i,:)
-        !end do
-        !print *, ""
-
         ! Calculate difference A := -1*Aref+A, A := A-Aref
         ! A = A-Aref
         call zaxpy(lda*n, zmone, Aref, 1, A, 1)
-
-        !print *, "A := A-Aref"
-        !do i = 1, n
-        !  print frmt, Aref(i,:)
-        !end do
-        !print *, ""
 
         ! Calculate norms |Aref|_F, |Aref-A|_F,
         Anorm = zlanhe('F', uploLapack, n, Aref, lda, work)
