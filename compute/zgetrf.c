@@ -87,7 +87,7 @@ int plasma_zgetrf(int m, int n,
         plasma_omp_zgetrf(A, ipiv, &sequence, &request);
     }
 
-    // If status/=0, matrix is singular don't copy back factored matrix,
+    // If status/=0, matrix is singular don't copy back the factored matrix.
     if (sequence.status == 0) {
 
         // Translate back to LAPACK layout.
