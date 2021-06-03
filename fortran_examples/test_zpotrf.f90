@@ -11,13 +11,15 @@
 
       program test_zpotrf
 
-      use, intrinsic :: iso_fortran_env, only: input_unit, output_unit, real32, real64
-      use omp_lib
-      use plasma
+      use, intrinsic :: iso_fortran_env
+      use            :: iso_c_binding
+      use            :: omp_lib
+      use            :: plasma
       implicit none
 
-      integer, parameter :: sp = REAL32
-      integer, parameter :: dp = REAL64
+      ! Precisions
+      integer, parameter :: sp = c_float
+      integer, parameter :: dp = c_double
 
       ! set working precision, this value is rewritten for different precisions
       integer, parameter :: wp = dp
