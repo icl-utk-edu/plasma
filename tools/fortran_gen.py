@@ -780,7 +780,7 @@ def main():
 
     # export the module
     modulefilename = write_module(opts.prefix, module_name, enum_list, struct_list, function_list)
-    print "Exported file: " + modulefilename
+    print("Exported file: " + modulefilename)
 
 # execute the program
 main()

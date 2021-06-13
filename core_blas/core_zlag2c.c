@@ -46,11 +46,13 @@
  *
  ******************************************************************************/
 __attribute__((weak))
-void plasma_core_zlag2c(int m, int n,
+int plasma_core_zlag2c(int m, int n,
                  plasma_complex64_t *A,  int lda,
                  plasma_complex32_t *As, int ldas)
 {
-    LAPACKE_zlag2c_work(LAPACK_COL_MAJOR, m, n, A, lda, As, ldas);
+    int info;
+    info = LAPACKE_zlag2c_work(LAPACK_COL_MAJOR, m, n, A, lda, As, ldas);
+    return info;
 }
 
 /******************************************************************************/
@@ -62,7 +64,16 @@ void plasma_core_omp_zlag2c(int m, int n,
     #pragma omp task depend(in:A[0:lda*n]) \
                      depend(out:As[0:ldas*n])
     {
-        if (sequence->status == PlasmaSuccess)
-            plasma_core_zlag2c(m, n, A, lda, As, ldas);
+        int info;
+        if (sequence->status == PlasmaSuccess) {
+            info = plasma_core_zlag2c(m, n, A, lda, As, ldas);
+            if (info != 0) {
+                #pragma omp critical (plasma_critical_sequence)
+                {
+                    // Value will be 1, so it doesn't matter which tile sets status.
+                    plasma_request_fail(sequence, request, info);
+                }
+            }
+        }
     }
 }

@@ -23,9 +23,9 @@
  *
  * @ingroup plasma_gels
  *
- *  Solves overdetermined or underdetermined linear systems
- *  involving an m-by-n matrix A using a QR or LQ factorization of A.  It
- *  is assumed that A has full rank.  The following options are provided:
+ *  Solves overdetermined or underdetermined linear systems involving an m-by-n
+ *  matrix A, or its conjugate-transpose, using a QR or LQ factorization of A.
+ *  It is assumed that A has full rank. The following options are provided:
  *
  *  # trans = PlasmaNoTrans and m >= n: find the least squares solution of an
  *    overdetermined system, i.e., solve the least squares problem:
@@ -34,6 +34,13 @@
  *  # trans = PlasmaNoTrans and m < n: find the minimum norm solution of an
  *    underdetermined system A * X = B.
  *
+ *  # trans = Plasma_ConjTrans and m >= n: find the minimum norm solution of an
+ *    underdetermined system A^H * X = B.
+ *
+ *  # trans = Plasma_ConjTrans and m < n: find the least squares solution of an
+ *    overdetermined system, i.e., solve the least squares problem:
+ *    minimize || B - A^H*X ||.
+ *
  *  Several right-hand side vectors B and solution vectors X can be handled in a
  *  single call; they are stored as the columns of the m-by-nrhs right-hand side
  *  matrix B and the n-by-nrhs solution matrix X.
@@ -41,8 +48,8 @@
  *******************************************************************************
  *
  * @param[in] trans
- *          - PlasmaNoTrans:  the linear system involves A
- *                            (the only supported option for now).
+ *          - PlasmaNoTrans:    the linear system involves A
+ *          - Plasma_ConjTrans: the linear system involves A^H
  *
  * @param[in] m
  *          The number of rows of the matrix A. m >= 0.
@@ -75,12 +82,18 @@
  *          vectors, stored columnwise;
  *          On exit, if return value = 0, B is overwritten by the solution
  *          vectors, stored columnwise:
- *          if m >= n, rows 1 to N of B contain the least squares solution
- *          vectors; the residual sum of squares for the solution in each column
- *          is given by the sum of squares of the modulus of elements n+1 to m
- *          in that column;
- *          if m < n, rows 1 to n of B contain the minimum norm solution
- *          vectors;
+ *          if trans = PlasmaNoTrans and m >= n, rows 1 to n of B contain the
+ *          least squares solution vectors; the residual sum of squares
+ *          for the solution in each column is given by the sum of
+ *          squares of the modulus of elements n+1 to m in that column;
+ *          if trans = PlasmaNoTrans and m < n, rows 1 to n of B contain the
+ *          minimum norm solution vectors;
+ *          if trans = Plasma_ConjTrans and m >= n, rows 1 to m of B contain the
+ *          minimum norm solution vectors;
+ *          if trans = Plasma_ConjTrans and m < n, rows 1 to m of B contain the
+ *          least squares solution vectors; the residual sum of squares
+ *          for the solution in each column is given by the sum of
+ *          squares of the modulus of elements M+1 to N in that column.
  *
  * @param[in] ldb
  *          The leading dimension of the array B. ldb >= max(1,m,n).
@@ -114,9 +127,10 @@ int plasma_zgels(plasma_enum_t trans,
     }
 
     // Check input arguments.
-    if (trans != PlasmaNoTrans) {
-        plasma_error("only PlasmaNoTrans supported");
-        return PlasmaErrorNotSupported;
+    if ((trans != PlasmaNoTrans) &&
+        (trans != Plasma_ConjTrans)) {
+        plasma_error("illegal value of trans");
+        return PlasmaErrorIllegalValue;
     }
     if (m < 0) {
         plasma_error("illegal value of m");
@@ -213,7 +227,7 @@ int plasma_zgels(plasma_enum_t trans,
         plasma_omp_zge2desc(pB, ldb, B, &sequence, &request);
 
         // Call the tile async function.
-        plasma_omp_zgels(PlasmaNoTrans,
+        plasma_omp_zgels(trans,
                          A, *T,
                          B, work,
                          &sequence, &request);
@@ -247,8 +261,8 @@ int plasma_zgels(plasma_enum_t trans,
  *******************************************************************************
  *
  * @param[in] trans
- *          - PlasmaNoTrans:  the linear system involves A
- *                            (the only supported option for now).
+ *          - PlasmaNoTrans:    the linear system involves A
+ *          - Plasma_ConjTrans: the linear system involves A^H
  *
  * @param[in,out] A
  *          Descriptor of matrix A stored in the tile layout.
@@ -310,8 +324,9 @@ void plasma_omp_zgels(plasma_enum_t trans,
     }
 
     // Check input arguments.
-    if (trans != PlasmaNoTrans) {
-        plasma_error("only PlasmaNoTrans supported");
+    if ((trans != PlasmaNoTrans) &&
+        (trans != Plasma_ConjTrans)) {
+        plasma_error("illegal value of trans");
         plasma_request_fail(sequence, request, PlasmaErrorNotSupported);
         return;
     }
@@ -352,6 +367,8 @@ void plasma_omp_zgels(plasma_enum_t trans,
     // Solve using QR factorization.
     //===============================
     if (A.m >= A.n) {
+
+        // Compute QR factorization of A.
         if (plasma->householder_mode == PlasmaTreeHouseholder) {
             plasma_pzgeqrf_tree(A, T, work, sequence, request);
         }
@@ -359,28 +376,62 @@ void plasma_omp_zgels(plasma_enum_t trans,
             plasma_pzgeqrf(A, T, work, sequence, request);
         }
 
-        if (plasma->householder_mode == PlasmaTreeHouseholder) {
-            plasma_pzunmqr_tree(PlasmaLeft, Plasma_ConjTrans,
-                                A, T, B,
-                                work, sequence, request);
-        }
-        else {
-            plasma_pzunmqr(PlasmaLeft, Plasma_ConjTrans,
-                           A, T, B,
-                           work, sequence, request);
-        }
+        if (trans == PlasmaNoTrans) {
 
-        plasma_pztrsm(PlasmaLeft, PlasmaUpper,
-                      PlasmaNoTrans, PlasmaNonUnit,
-                      1.0,
-                      plasma_desc_view(A, 0, 0, A.n, A.n),
-                      plasma_desc_view(B, 0, 0, A.n, B.n),
-                      sequence, request);
+            // Find Y = Q^H * B.
+            if (plasma->householder_mode == PlasmaTreeHouseholder) {
+                plasma_pzunmqr_tree(PlasmaLeft, Plasma_ConjTrans,
+                                    A, T, B,
+                                    work, sequence, request);
+            }
+            else {
+                plasma_pzunmqr(PlasmaLeft, Plasma_ConjTrans,
+                               A, T, B,
+                               work, sequence, request);
+            }
+
+            // Solve R * X = Y.
+            plasma_pztrsm(PlasmaLeft, PlasmaUpper,
+                          PlasmaNoTrans, PlasmaNonUnit,
+                          1.0,
+                          plasma_desc_view(A, 0, 0, A.n, A.n),
+                          plasma_desc_view(B, 0, 0, A.n, B.n),
+                          sequence, request);
+        }
+        else { // trans == Plasma_ConjTrans
+
+            // Zero the trailing block of the right-hand-side matrix.
+            // B has less rows than X.
+            plasma_pzlaset(PlasmaGeneral, 0.0, 0.0,
+                           plasma_desc_view(B, A.n, 0, A.m-A.n, B.n),
+                           sequence, request);
+
+            // Solve R^H * Y = B.
+            plasma_pztrsm(
+                PlasmaLeft, PlasmaUpper, Plasma_ConjTrans, PlasmaNonUnit,
+                1.0, plasma_desc_view(A, 0, 0, A.n, A.n),
+                     plasma_desc_view(B, 0, 0, A.n, B.n),
+                sequence, request);
+
+            // Find X = Q * Y.
+            if (plasma->householder_mode == PlasmaTreeHouseholder) {
+                plasma_pzunmqr_tree(PlasmaLeft, PlasmaNoTrans,
+                                    A, T, B,
+                                    work, sequence, request);
+            }
+            else {
+                plasma_pzunmqr(PlasmaLeft, PlasmaNoTrans,
+                               A, T, B,
+                               work, sequence, request);
+            }
+        }
     }
     //===============================
     // Solve using LQ factorization.
     //===============================
     else {
+
+        // Compute LQ factorization of A.
         if (plasma->householder_mode == PlasmaTreeHouseholder) {
             plasma_pzgelqf_tree(A, T, work, sequence, request);
         }
@@ -388,29 +439,53 @@ void plasma_omp_zgels(plasma_enum_t trans,
             plasma_pzgelqf(A, T, work, sequence, request);
         }
 
-        // Zero the trailing block of the right-hand-side matrix.
-        // B has less rows than X.
-        plasma_pzlaset(PlasmaGeneral, 0.0, 0.0,
-                       plasma_desc_view(B, A.m, 0, A.n-A.m, B.n),
-                       sequence, request);
+        if (trans == PlasmaNoTrans) {
 
-        // Solve L * Y = B.
-        plasma_pztrsm(
-            PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaNonUnit,
-            1.0, plasma_desc_view(A, 0, 0, A.m, A.m),
-                 plasma_desc_view(B, 0, 0, A.m, B.n),
-            sequence, request);
+            // Zero the trailing block of the right-hand-side matrix.
+            // B has less rows than X.
+            plasma_pzlaset(PlasmaGeneral, 0.0, 0.0,
+                           plasma_desc_view(B, A.m, 0, A.n-A.m, B.n),
+                           sequence, request);
 
-        // Find X = Q^H * Y.
-        if (plasma->householder_mode == PlasmaTreeHouseholder) {
-            plasma_pzunmlq_tree(PlasmaLeft, Plasma_ConjTrans,
-                                A, T, B,
-                                work, sequence, request);
+            // Solve L * Y = B.
+            plasma_pztrsm(
+                PlasmaLeft, PlasmaLower, PlasmaNoTrans, PlasmaNonUnit,
+                1.0, plasma_desc_view(A, 0, 0, A.m, A.m),
+                     plasma_desc_view(B, 0, 0, A.m, B.n),
+                sequence, request);
+
+            // Find X = Q^H * Y.
+            if (plasma->householder_mode == PlasmaTreeHouseholder) {
+                plasma_pzunmlq_tree(PlasmaLeft, Plasma_ConjTrans,
+                                    A, T, B,
+                                    work, sequence, request);
+            }
+            else {
+                plasma_pzunmlq(PlasmaLeft, Plasma_ConjTrans,
+                               A, T, B,
+                               work, sequence, request);
+            }
         }
-        else {
-            plasma_pzunmlq(PlasmaLeft, Plasma_ConjTrans,
-                           A, T, B,
-                           work, sequence, request);
+        else { // trans == Plasma_ConjTrans
+
+            // Find Y = Q * B.
+            if (plasma->householder_mode == PlasmaTreeHouseholder) {
+                plasma_pzunmlq_tree(PlasmaLeft, PlasmaNoTrans,
+                                    A, T, B,
+                                    work, sequence, request);
+            }
+            else {
+                plasma_pzunmlq(PlasmaLeft, PlasmaNoTrans,
+                               A, T, B,
+                               work, sequence, request);
+            }
+
+            // Solve L^H * X = Y.
+            plasma_pztrsm(
+                PlasmaLeft, PlasmaLower, Plasma_ConjTrans, PlasmaNonUnit,
+                1.0, plasma_desc_view(A, 0, 0, A.m, A.m),
+                     plasma_desc_view(B, 0, 0, A.m, B.n),
+                sequence, request);
         }
     }
 }
