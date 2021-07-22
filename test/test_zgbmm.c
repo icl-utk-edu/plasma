@@ -129,17 +129,20 @@ void test_zgbmm(param_value_t param[], bool run)
 
     int seed[] = {0, 0, 0, 1};
     lapack_int retval;
-    /// need to determine what zlarnv does
     retval = LAPACKE_zlarnv(1, seed, (size_t)lda*An, A);
     assert(retval == 0);
-    /// The routine to set matrix values is laset (zlaset here)
-    LAPACKE_zlaset();
-
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*Bn, B);
     assert(retval == 0);
 
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldc*Cn, C);
     assert(retval == 0);
+
+    //printf("%g,%g\n",A[0],A[1]);
+    /// The routine to set matrix values is laset (zlaset here)
+    // Set all values in A to zero to help debug
+    LAPACKE_zlaset(LAPACK_COL_MAJOR,PlasmaGeneral,
+                        Am, An, 0, 0, A, lda);
+    //printf("%g,%g\n",A[0],A[1]);
 
     plasma_complex64_t *Cref = NULL;
     if (test) {
@@ -155,13 +158,20 @@ void test_zgbmm(param_value_t param[], bool run)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
+    /*
+    plasma_zgemm(
+        transa, transb,
+        m, n, k,
+        alpha, A, lda,
+               B, ldb,
+         beta, C, ldc);
+    */
     plasma_zgbmm(
         transa, transb,
         m, n, k, kl, ku,
         alpha, A, lda,
                B, ldb,
          beta, C, ldc);
-
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
