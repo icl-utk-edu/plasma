@@ -78,6 +78,7 @@ blas_mixed = [
     # ----- regular routines
     ('daxpy',                'zaxpy'               ),
     ('ddot',                 'zdotc'               ),
+    ('dgbmm',                'zgbmm'               ),
     ('dgbsv',                'zgbsv'               ),
     ('dgeadd',               'zgeadd'              ),
     ('dgemm',                'zgemm'               ),
@@ -141,6 +142,7 @@ blas = [
     ('scopy',                'dcopy',                'scopy',                'dcopy'               ),
     ('sdot',                 'ddot',                 'cdotc',                'zdotc'               ),
     ('sdot',                 'ddot',                 'cdotu',                'zdotu'               ),
+    ('sgbmm',                'dgbmm',                'cgbmm',                'zgbmm'               ),
     ('sgeadd',               'dgeadd',               'cgeadd',               'zgeadd'              ),
     ('sgemm',                'dgemm',                'cgemm',                'zgemm'               ),
     ('sgemv',                'dgemv',                'cgemv',                'zgemv'               ),
