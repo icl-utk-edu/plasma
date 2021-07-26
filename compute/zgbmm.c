@@ -193,7 +193,6 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
     // quick return
     if (m == 0 || n == 0 || ((alpha == 0.0 || k == 0) && beta == 1.0))
         return PlasmaSuccess;
-
     // Tune parameters.
     if (plasma->tuning)
         plasma_tune_gemm(plasma, PlasmaComplexDouble, m, n, k);
@@ -209,9 +208,11 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
     int retval;
     // call band matrix versions.
     /// TODO: go back and properly pass an uplo
-    retval = plasma_desc_general_band_create(PlasmaComplexDouble, nb, nb,
-                                        PlasmaGeneral,
-                                        am, an, 0, 0, am, an, kl, ku, &A);
+    //retval = plasma_desc_general_band_create(PlasmaComplexDouble, nb, nb,
+                                        //PlasmaGeneral,
+                                        //am, an, 0, 0, am, an, kl, ku, &A);
+    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
+                                        am, an, 0, 0, am, an, &A);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;

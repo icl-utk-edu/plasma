@@ -137,12 +137,55 @@ void test_zgbmm(param_value_t param[], bool run)
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldc*Cn, C);
     assert(retval == 0);
 
-    //printf("%g,%g\n",A[0],A[1]);
-    /// The routine to set matrix values is laset (zlaset here)
+    void bonehead_printmxn(plasma_complex64_t* M, int mRows, int nColumns)
+    {
+        int ii, jj;
+        for(ii = 0; ii < mRows; ii++)
+        {
+            // finished a row
+            printf("\n");
+            for(jj = 0; jj < nColumns; jj++)
+            {
+                printf("%+1.3lf + %+1.3lfi  ",
+                        creal(M[jj*mRows+ii]),cimag(M[jj*mRows+ii]));
+            }
+        }
+        printf("\n");
+    }
+    // bonehead_printmxn(A,Am,An);
     // Set all values in A to zero to help debug
-    LAPACKE_zlaset(LAPACK_COL_MAJOR,PlasmaGeneral,
-                        Am, An, 0, 0, A, lda);
-    //printf("%g,%g\n",A[0],A[1]);
+    // printf("Am=%d,An=%d,lda=%d\n",Am,An,lda);
+    // printf("Bm=%d,Bn=%d,ldb=%d\n",Bm,Bn,ldb);
+    // printf("Cm=%d,Cn=%d,ldc=%d\n",Cm,Cn,ldc);
+    // This exact set of arguments sets a band matrix up *almost* perfectly
+    // There is still the issue of corner bleeding.
+    int cornerI, cornerJ, extralower, extraupper;
+    if(kl+ku <= Am)
+    {
+        plasma_zlaset(PlasmaGeneral, Am-kl-ku, An-1, 0, 0, A+1+kl, lda+1);
+        extralower = ku-1;
+        extraupper = kl-1;
+    }
+    else
+    {
+        extralower = Am-1-kl;
+        extraupper = Am-1-ku;
+    }
+    // bonehead_printmxn(A,Am,An);
+    // fix the corner bleeding
+    for(; extralower > 0; extralower--)
+    {
+        cornerI = Am-extralower;
+        plasma_zlaset(PlasmaGeneral,1,extralower,0,0,A+cornerI,lda+1);
+    }
+    for(; extraupper > 0; extraupper--)
+    {
+        cornerJ = An-extraupper;
+        plasma_zlaset(PlasmaGeneral,1,extraupper,0,0,A+lda*cornerJ,lda+1);
+    }
+    // bonehead_printmxn(A,Am,An);
+    // bonehead_printmxn(B,Bm,Bn);
+    // Set all values in A to zero to help debug
 
     plasma_complex64_t *Cref = NULL;
     if (test) {
