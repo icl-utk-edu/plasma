@@ -208,11 +208,15 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
     int retval;
     // call band matrix versions.
     /// TODO: go back and properly pass an uplo
-    //retval = plasma_desc_general_band_create(PlasmaComplexDouble, nb, nb,
-                                        //PlasmaGeneral,
-                                        //am, an, 0, 0, am, an, kl, ku, &A);
-    retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        am, an, 0, 0, am, an, &A);
+    // Could replace am with a much smaller number of rows!
+    int tku = (ku+kl+nb-1)/nb; // number of tiles in upper band above diagonal
+    int tkl = (kl+nb-1)/nb;    // number of tiles in lower band below diagonal
+    int lm = (tku+tkl+1)*nb;   // reduced number of "rows" in the matrix
+    retval = plasma_desc_general_band_create(PlasmaComplexDouble, nb, nb,
+                                        PlasmaGeneral,
+                                        lm, an, 0, 0, am, an, kl, ku, &A);
+    // retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
+                                        // am, an, 0, 0, am, an, &A);
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
@@ -247,11 +251,11 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
     {
         // Translate to tile layout.
         /// create band matrix versions
-        plasma_omp_zge2desc(pA, lda, A, &sequence, &request);
+        plasma_omp_zgb2desc(pA, lda, A, &sequence, &request);
         /// what if A is transposed? tiling function does not acknowledge.
         /// must be acknowledged in calling function.
-        plasma_omp_zge2desc(pB, ldb, B, &sequence, &request);
-        plasma_omp_zge2desc(pC, ldc, C, &sequence, &request);
+        plasma_omp_zgb2desc(pB, ldb, B, &sequence, &request);
+        plasma_omp_zgb2desc(pC, ldc, C, &sequence, &request);
 
         // Call the tile async function.
         plasma_omp_zgbmm(transa, transb,
