@@ -212,8 +212,8 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
     int tku = (ku+kl+nb-1)/nb; // number of tiles in upper band above diagonal
     int tkl = (kl+nb-1)/nb;    // number of tiles in lower band below diagonal
     int lm = (tku+tkl+1)*nb;   // reduced number of "rows" in the matrix
-    retval = plasma_desc_general_band_create(PlasmaComplexDouble, nb, nb,
-                                        PlasmaGeneral,
+    retval = plasma_desc_general_band_create(PlasmaComplexDouble,PlasmaGeneral,
+                                        nb,nb,
                                         lm, an, 0, 0, am, an, kl, ku, &A);
     // retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
                                         // am, an, 0, 0, am, an, &A);
@@ -245,19 +245,43 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
     plasma_request_t request;
     retval = plasma_request_init(&request);
 
+
+
+
     // asynchronous block
-    #pragma omp parallel
-    #pragma omp master
+    //// #pragma omp parallel
+    //// #pragma omp master
     {
         // Translate to tile layout.
-        /// create band matrix versions
-        plasma_omp_zgb2desc(pA, lda, A, &sequence, &request);
-        /// what if A is transposed? tiling function does not acknowledge.
-        /// must be acknowledged in calling function.
+        //// create band matrix versions
+        plasma_omp_zge2desc(pA, lda, A, &sequence, &request);
+        //// what if A is transposed? tiling function does not acknowledge.
+        //// must be acknowledged in calling function.
         plasma_omp_zgb2desc(pB, ldb, B, &sequence, &request);
-        plasma_omp_zgb2desc(pC, ldc, C, &sequence, &request);
+        plasma_omp_zge2desc(pC, ldc, C, &sequence, &request);
+        // void naive_printmxn(plasma_complex64_t* M, int mRows, int nColumns)
+        // {
+            // int ii, jj;
+            // for(ii = 0; ii < mRows; ii++)
+            // {
+                // // finished a row
+                // printf("\n");
+                // for(jj = 0; jj < nColumns; jj++)
+                // {
+                    // printf("%+1.3lf + %+1.3lfi  ",
+                            // creal(M[jj*mRows+ii]),cimag(M[jj*mRows+ii]));
+                // }
+            // }
+            // printf("\n");
+        // }
+        // naive_printmxn((plasma_complex64_t*)C.matrix,C.m,C.n+1);
 
         // Call the tile async function.
+        printf("PLASMA Tile Beginnings:\n");
+        printf("*A(%d,%d) = %1.3f\n",0,0,*(plasma_complex64_t*)plasma_tile_addr(A,0,0));
+        printf("*A(%d,%d) = %1.3f\n",1,1,*(plasma_complex64_t*)plasma_tile_addr(A,1,1));
+        printf("*B(%d,%d) = %1.3f\n",0,0,*(plasma_complex64_t*)plasma_tile_addr(B,0,0));
+        printf("*B(%d,%d) = %1.3f\n",1,1,*(plasma_complex64_t*)plasma_tile_addr(B,1,1));
         plasma_omp_zgbmm(transa, transb,
                          alpha, A,
                                 B,
@@ -265,7 +289,7 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
                          &sequence, &request);
 
         // Translate back to LAPACK layout.
-        /// create band matrxi version
+        //// create band matrix version
         plasma_omp_zdesc2ge(C, pC, ldc, &sequence, &request);
     }
     // implicit synchronization

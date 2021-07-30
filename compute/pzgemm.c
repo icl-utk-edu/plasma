@@ -164,14 +164,39 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                     if (transb == PlasmaNoTrans) {
                         int k_start = (imax(0, m*A.mb-A.kl)) / A.nb;
                         int k_end = (imin(A.n-1, (m+1)*A.mb+A.ku-1)) / A.nb;
-                        //printf("[%s]: m=%d\tn=%d\tk_s=%d\tk_e=%d\n",
-                        //       __FILE__, m, n, k_start, k_end);
+                        printf("[%s]: m=%d\tn=%d\tk_s=%d\tk_e=%d\n",
+                               __FILE__, m, n, k_start, k_end);
+
+
+                        void naive_printmxn(plasma_complex64_t* M, int mRows, int nColumns)
+                        {
+                            int ii, jj;
+                            for(ii = 0; ii < mRows; ii++)
+                            {
+                                // finished a row
+                                printf("\n");
+                                for(jj = 0; jj < nColumns; jj++)
+                                {
+                                    printf("%+1.3lf   ", M[jj*mRows+ii]);
+                                }
+                            }
+                            printf("\n");
+                        }
+                        naive_printmxn((plasma_complex64_t*)C.matrix,C.m,C.n);
+
+
                         for (int k = k_start; k <= k_end; k++) {
+                        // for (int k = 0; k < A.nt; k++) {
                             int ldam = plasma_tile_mmain_band(A, m, k);
                             int nvak = plasma_tile_nview(A, k);
                             int ldbk = plasma_tile_mmain(B, k);
                             plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
 
+                            printf("[%s]: k=%d\tldam=%d\tldbk=%d\tldcm=%d\n",
+                                            __FILE__,k,ldam,ldbk,ldcm);
+
+                            printf("A(%d,%d)=%1.3f\tB(%d,%d)=%1.3f\n",
+                                    m,k,*A(m,k),k,n,*B(k,n));
                             plasma_core_omp_zgemm(
                                 transa, transb,
                                 mvcm, nvcn, nvak,
@@ -179,6 +204,7 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                                 B(k, n), ldbk,
                                 zbeta, C(m, n), ldcm,
                                 sequence, request);
+                            naive_printmxn((plasma_complex64_t*)C.matrix,C.m,C.n);
                         }
                     }
                     //=====================================

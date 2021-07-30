@@ -43,15 +43,28 @@ void plasma_pzgb2desc(plasma_complex64_t *pA, int lda,
             x2 = n == A.nt-1 ? (A.j+A.n-1)%A.nb+1 : A.nb;
             y2 = m == A.mt-1 ? (A.i+A.m-1)%A.mb+1 : A.mb;
 
+            //// printf("Full view:\nm=%d\nn=%d\nx1=%d\ny1=%d\nx2=%d\ny2=%d\n",
+                               //// m,n,x1,y1,x2,y2);
+
             f77 = &pA[(size_t)A.nb*lda*n + (size_t)A.mb*m];
             bdl = (plasma_complex64_t*)plasma_tile_addr(A, m, n);
 
-            // need plasa_core_omp_zlacpy_lapack2tile_band ?
-            plasma_core_omp_zlacpy(PlasmaGeneralBand, PlasmaNoTrans,
+            plasma_core_omp_zlacpy(
+                            PlasmaGeneralBand, PlasmaNoTrans,
                             y2-y1, x2-x1,
                             &(f77[x1*lda+y1]), lda,
                             &(bdl[x1*A.nb+y1]), ldt,
                             sequence, request);
+                            
+            // need plasa_core_omp_zlacpy_lapack2tile_band ?
+            // plasma_core_omp_zlacpy_tile2lapack_band(
+                            // PlasmaGeneralBand,
+                            // A.i/A.nb, A.j/A.nb,
+                            // y2-y1, x2-x1,
+                            // A.nb, A.kl, A.ku,
+                            // &(f77[x1*lda+y1]), lda,
+                            // &(bdl[x1*A.nb+y1]), ldt
+                            // );
         }
     }
 }

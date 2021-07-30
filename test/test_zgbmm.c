@@ -137,7 +137,7 @@ void test_zgbmm(param_value_t param[], bool run)
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldc*Cn, C);
     assert(retval == 0);
 
-    void bonehead_printmxn(plasma_complex64_t* M, int mRows, int nColumns)
+    void naive_printmxn(plasma_complex64_t* M, int mRows, int nColumns)
     {
         int ii, jj;
         for(ii = 0; ii < mRows; ii++)
@@ -146,13 +146,12 @@ void test_zgbmm(param_value_t param[], bool run)
             printf("\n");
             for(jj = 0; jj < nColumns; jj++)
             {
-                printf("%+1.3lf + %+1.3lfi  ",
-                        creal(M[jj*mRows+ii]),cimag(M[jj*mRows+ii]));
+                printf("%+1.3lf  ", M[jj*mRows+ii]);
             }
         }
         printf("\n");
     }
-    // bonehead_printmxn(A,Am,An);
+    // naive_printmxn(A,Am,An);
     // Set all values in A to zero to help debug
     // printf("Am=%d,An=%d,lda=%d\n",Am,An,lda);
     // printf("Bm=%d,Bn=%d,ldb=%d\n",Bm,Bn,ldb);
@@ -171,7 +170,7 @@ void test_zgbmm(param_value_t param[], bool run)
         extralower = Am-1-kl;
         extraupper = Am-1-ku;
     }
-    // bonehead_printmxn(A,Am,An);
+    // naive_printmxn(A,Am,An);
     // fix the corner bleeding
     for(; extralower > 0; extralower--)
     {
@@ -183,8 +182,10 @@ void test_zgbmm(param_value_t param[], bool run)
         cornerJ = An-extraupper;
         plasma_zlaset(PlasmaGeneral,1,extraupper,0,0,A+lda*cornerJ,lda+1);
     }
-    // bonehead_printmxn(A,Am,An);
-    // bonehead_printmxn(B,Bm,Bn);
+    naive_printmxn(A,Am,An);
+    naive_printmxn(B,Bm,Bn);
+    naive_printmxn(C,Cm,Cn);
+    printf("////////////////////////////\n");
     // Set all values in A to zero to help debug
 
     plasma_complex64_t *Cref = NULL;
@@ -217,6 +218,8 @@ void test_zgbmm(param_value_t param[], bool run)
          beta, C, ldc);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
+    printf("////////////////////////////\n");
+    naive_printmxn(C,Cm,Cn);
 
     param[PARAM_TIME].d = time;
     param[PARAM_GFLOPS].d = flops_zgemm(m, n, k) / time / 1e9;
@@ -263,7 +266,6 @@ void test_zgbmm(param_value_t param[], bool run)
 
         param[PARAM_ERROR].d = error;
         param[PARAM_SUCCESS].i = error < 3*eps;
-        printf("target error: %g\n", 3*eps);
     }
 
     //================================================================
