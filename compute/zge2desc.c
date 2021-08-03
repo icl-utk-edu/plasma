@@ -63,7 +63,6 @@ void plasma_omp_zge2desc(plasma_complex64_t *pA, int lda,
     if (A.m == 0 || A.n == 0)
         return;
 
-    printf("[%s]: calling next\n",__FILE__);
     // Call the parallel function.
     plasma_pzge2desc(pA, lda, A, sequence, request);
 }

@@ -34,7 +34,6 @@ void plasma_pzgb2desc(plasma_complex64_t *pA, int lda,
     int x1, y1;
     int x2, y2;
     int n, m, ldt;
-    printf("A.klt=%d\nA.kut=%d\n",A.klt,A.kut);
     for (m = 0; m < A.mt; m++) {
         for (n = 0; n < A.nt; n++) {
             // don't want to copy tiles without elements (plasma_tile_addr)
@@ -56,35 +55,18 @@ void plasma_pzgb2desc(plasma_complex64_t *pA, int lda,
 
             f77 = &pA[(size_t)A.nb*lda*n + (size_t)A.mb*m];
             bdl = (plasma_complex64_t*)plasma_tile_addr(A, m, n);
-            printf("[%s] Full view:\nm=%d\nn=%d\nx1=%d\ny1=%d\nx2=%d\ny2=%d\nlda=%d\n",
-                       __FILE__,m,n,x1,y1,x2,y2,lda);
-            printf("pA(%d,%d) = %1.3f (%u)\n", m, n,
-                   pA[(size_t)A.nb*lda*n + (size_t)A.mb*m],
-                   &pA[(size_t)A.nb*lda*n + (size_t)A.mb*m]-
-                   &pA[(size_t)A.nb*lda*0 + (size_t)A.mb*0]);
+            // printf("[%s] Full view:\nm=%d\nn=%d\nx1=%d\ny1=%d\nx2=%d\ny2=%d\nlda=%d\n",
+                       // __FILE__,m,n,x1,y1,x2,y2,lda);
+            // printf("pA(%d,%d) = %1.3f (%u)\n", m, n,
+                   // pA[(size_t)A.nb*lda*n + (size_t)A.mb*m],
+                   // &pA[(size_t)A.nb*lda*n + (size_t)A.mb*m]-
+                   // &pA[(size_t)A.nb*lda*0 + (size_t)A.mb*0]);
             plasma_core_omp_zlacpy(
                             PlasmaGeneralBand, PlasmaNoTrans,
                             y2-y1, x2-x1,
                             &(f77[x1*lda+y1]), lda,
                             &(bdl[x1*A.nb+y1]), ldt,
                             sequence, request);
-            assert(&f77[x1*lda+y1] == f77);
-            assert(&bdl[x1*A.nb+y1] == bdl);
-            printf("post copy:\n*f77=%1.3f\n*bdl=%1.3f\n",
-                    f77[x1*lda+y1],bdl[x1*A.nb+y1]);
-            printf("addresses:\nf77   :%u\nbdl   :%u\nA(%d,%d):%u\n\n",
-                    &f77[x1*lda+y1],&bdl[x1*A.nb+y1],m,n,
-                    (plasma_complex64_t*)plasma_tile_addr(A,m,n));
-                            
-            // need plasa_core_omp_zlacpy_lapack2tile_band ?
-            // plasma_core_omp_zlacpy_tile2lapack_band(
-                            // PlasmaGeneralBand,
-                            // A.i/A.nb, A.j/A.nb,
-                            // y2-y1, x2-x1,
-                            // A.nb, A.kl, A.ku,
-                            // &(f77[x1*lda+y1]), lda,
-                            // &(bdl[x1*A.nb+y1]), ldt
-                            // );
         }
     }
 }

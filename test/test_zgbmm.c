@@ -182,11 +182,9 @@ void test_zgbmm(param_value_t param[], bool run)
         cornerJ = An-extraupper;
         plasma_zlaset(PlasmaGeneral,1,extraupper,0,0,A+lda*cornerJ,lda+1);
     }
-    naive_printmxn(A,Am,An);
-    naive_printmxn(B,Bm,Bn);
-    naive_printmxn(C,Cm,Cn);
-    printf("////////////////////////////\n");
-    // Set all values in A to zero to help debug
+    // naive_printmxn(A,Am,An);
+    // naive_printmxn(B,Bm,Bn);
+    // naive_printmxn(C,Cm,Cn);
 
     plasma_complex64_t *Cref = NULL;
     if (test) {
@@ -218,8 +216,7 @@ void test_zgbmm(param_value_t param[], bool run)
          beta, C, ldc);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
-    printf("////////////////////////////\n");
-    naive_printmxn(C,Cm,Cn);
+    // naive_printmxn(C,Cm,Cn);
 
     param[PARAM_TIME].d = time;
     param[PARAM_GFLOPS].d = flops_zgemm(m, n, k) / time / 1e9;
