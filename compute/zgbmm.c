@@ -66,7 +66,7 @@
  *          The width of the band below the diagonal in band matrix A.
  *
  * @param[in] ku
- *          The width of the band avobe the diagonal in band matrix A.
+ *          The width of the band above the diagonal in band matrix A.
  *
  * @param[in] alpha
  *          The scalar alpha.
@@ -207,7 +207,6 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
     plasma_desc_t C;
     int retval;
     // call band matrix versions.
-    /// TODO: go back and properly pass an uplo
     // Could replace am with a much smaller number of rows!
     int tku = (ku+kl+nb-1)/nb; // number of tiles in upper band above diagonal
     int tkl = (kl+nb-1)/nb;    // number of tiles in lower band below diagonal
@@ -217,6 +216,7 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
                                         lm, an, 0, 0, am, an, kl, ku, &A);
     // retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
                                         // am, an, 0, 0, am, an, &A);
+    // A.type = PlasmaGeneralBand;
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
@@ -248,16 +248,17 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
 
 
 
+    printf("[%s]: beginning copy\n",__FILE__);
     // asynchronous block
     //// #pragma omp parallel
     //// #pragma omp master
     {
         // Translate to tile layout.
         //// create band matrix versions
-        plasma_omp_zge2desc(pA, lda, A, &sequence, &request);
+        plasma_omp_zgb2desc(pA, lda, A, &sequence, &request);
         //// what if A is transposed? tiling function does not acknowledge.
         //// must be acknowledged in calling function.
-        plasma_omp_zgb2desc(pB, ldb, B, &sequence, &request);
+        plasma_omp_zge2desc(pB, ldb, B, &sequence, &request);
         plasma_omp_zge2desc(pC, ldc, C, &sequence, &request);
         // void naive_printmxn(plasma_complex64_t* M, int mRows, int nColumns)
         // {
@@ -278,10 +279,49 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
 
         // Call the tile async function.
         printf("PLASMA Tile Beginnings:\n");
-        printf("*A(%d,%d) = %1.3f\n",0,0,*(plasma_complex64_t*)plasma_tile_addr(A,0,0));
-        printf("*A(%d,%d) = %1.3f\n",1,1,*(plasma_complex64_t*)plasma_tile_addr(A,1,1));
-        printf("*B(%d,%d) = %1.3f\n",0,0,*(plasma_complex64_t*)plasma_tile_addr(B,0,0));
-        printf("*B(%d,%d) = %1.3f\n",1,1,*(plasma_complex64_t*)plasma_tile_addr(B,1,1));
+        printf("kut: %d\n", A.kut);
+        printf("A.A21: %d\n", A.A21);
+        printf("A.A12: %d\n", A.A12);
+        printf("A.A22: %d\n", A.A22);
+        printf("A.gm: %d\n", A.gm);
+        printf("A.gn: %d\n", A.gn);
+        printf("A.mb: %d\n", A.mb);
+        printf("A.nb: %d\n", A.nb);
+        printf("A.i: %d\n", A.i);
+        printf("A.j: %d\n", A.j);
+        for(int jj = 0; jj < A.nt; jj++)
+        {
+           for(int ii = 0; ii < A.mt; ii++)
+           {
+              printf("*A(%d,%d) = %1.3f (%u) (same as genA(%d,%d))\n",
+                 ii,jj,*(plasma_complex64_t*)plasma_tile_addr(A,ii,jj),
+                        (plasma_complex64_t*)plasma_tile_addr(A,ii,jj)-
+                        (plasma_complex64_t*)plasma_tile_addr(A,0 ,0 ),
+                        (A.kut-1)+ii-jj,jj);
+           }
+        }
+        for(int jj = 0; jj < A.nt; jj++)
+        {
+           for(int ii = 0; ii < A.mt; ii++)
+           {
+              printf("*A(%d,%d) = %1.3f (%u)\n",
+                 A.kut-1+ii-jj,jj,
+                *(plasma_complex64_t*)plasma_tile_addr_general(A,A.kut-1+ii-jj,jj),
+                 (plasma_complex64_t*)plasma_tile_addr_general(A,A.kut-1+ii-jj,jj)-
+                 (plasma_complex64_t*)plasma_tile_addr_general(A,A.kut-1,0 )
+                        );
+           }
+        }
+        for(int jj = 0; jj < A.nt; jj++)
+        {
+           for(int ii = 0; ii < A.mt; ii++)
+           {
+              printf("*B(%d,%d) = %1.3f (%u)\n",
+                 ii,jj,*(plasma_complex64_t*)plasma_tile_addr(B,ii,jj),
+                        (plasma_complex64_t*)plasma_tile_addr(B,ii,jj)-
+                        (plasma_complex64_t*)plasma_tile_addr(B,0 ,0 ));
+           }
+        }
         plasma_omp_zgbmm(transa, transb,
                          alpha, A,
                                 B,

@@ -503,8 +503,10 @@ subs = {
 
     ('psdesc2ge',            'pddesc2ge',            'pcdesc2ge',            'pzdesc2ge'           ),
     ('psge2desc',            'pdge2desc',            'pcge2desc',            'pzge2desc'           ),
+    ('psgb2desc',            'pdgb2desc',            'pcgb2desc',            'pzgb2desc'           ),
     ('sdesc2ge',             'ddesc2ge',             'cdesc2ge',             'zdesc2ge'            ),
     ('sge2desc',             'dge2desc',             'cge2desc',             'zge2desc'            ),
+    ('sgb2desc',             'dgb2desc',             'cgb2desc',             'zgb2desc'            ),
 
     ('psdesc2pb',            'pddesc2pb',            'pcdesc2pb',            'pzdesc2pb'           ),
     ('pspb2desc',            'pdpb2desc',            'pcpb2desc',            'pzpb2desc'           ),

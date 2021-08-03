@@ -158,6 +158,7 @@ void test_zgbmm(param_value_t param[], bool run)
     // printf("Cm=%d,Cn=%d,ldc=%d\n",Cm,Cn,ldc);
     // This exact set of arguments sets a band matrix up *almost* perfectly
     // There is still the issue of corner bleeding.
+    // fix the corner bleeding
     int cornerI, cornerJ, extralower, extraupper;
     if(kl+ku <= Am)
     {
@@ -171,7 +172,6 @@ void test_zgbmm(param_value_t param[], bool run)
         extraupper = Am-1-ku;
     }
     // naive_printmxn(A,Am,An);
-    // fix the corner bleeding
     for(; extralower > 0; extralower--)
     {
         cornerI = Am-extralower;

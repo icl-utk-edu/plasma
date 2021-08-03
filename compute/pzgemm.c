@@ -190,7 +190,9 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                             int ldam = plasma_tile_mmain_band(A, m, k);
                             int nvak = plasma_tile_nview(A, k);
                             int ldbk = plasma_tile_mmain(B, k);
-                            plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
+                            plasma_complex64_t zbeta = k == k_start ? beta : 1.0;
+                            // unlike general version, need k == k_start to
+                            // guarantee that beta will properly apply.
 
                             printf("[%s]: k=%d\tldam=%d\tldbk=%d\tldcm=%d\n",
                                             __FILE__,k,ldam,ldbk,ldcm);
