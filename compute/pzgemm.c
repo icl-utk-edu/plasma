@@ -186,7 +186,6 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
 
 
                         for (int k = k_start; k <= k_end; k++) {
-                        // for (int k = 0; k < A.nt; k++) {
                             int ldam = plasma_tile_mmain_band(A, m, k);
                             int nvak = plasma_tile_nview(A, k);
                             int ldbk = plasma_tile_mmain(B, k);
@@ -207,6 +206,22 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                                 zbeta, C(m, n), ldcm,
                                 sequence, request);
                             // naive_printmxn((plasma_complex64_t*)C.matrix,C.m,C.n);
+                        }
+                        // must also ensure that C adds to itself for beta!=0
+                        if(k_start > k_end)
+                        {
+                            int k = 0;
+                            int ldam = plasma_tile_mmain_band(A, m, k);
+                            int nvak = plasma_tile_nview(A, k);
+                            int ldbk = plasma_tile_mmain(B, k);
+                            plasma_complex64_t zbeta = beta;
+                            plasma_core_omp_zgemm(
+                                transa, transb,
+                                mvcm, nvcn, nvak,
+                                0, A(m, k), ldam,
+                                B(k, n), ldbk,
+                                zbeta, C(m, n), ldcm,
+                                sequence, request);
                         }
                     }
                     //=====================================

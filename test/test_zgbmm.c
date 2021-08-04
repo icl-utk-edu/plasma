@@ -159,28 +159,71 @@ void test_zgbmm(param_value_t param[], bool run)
     // This exact set of arguments sets a band matrix up *almost* perfectly
     // There is still the issue of corner bleeding.
     // fix the corner bleeding
-    int cornerI, cornerJ, extralower, extraupper;
-    if(kl+ku <= Am)
+
+    // square matrix OR rectangular tall matrix
+    if(Am>=An)
     {
-        plasma_zlaset(PlasmaGeneral, Am-kl-ku, An-1, 0, 0, A+1+kl, lda+1);
-        extralower = ku-1;
-        extraupper = kl-1;
+        int cornerI, cornerJ, extralower, extraupper;
+        if(kl+ku <= Am)
+        {
+            plasma_zlaset(PlasmaGeneral, Am-kl-ku, An-1, 0, 0, A+1+kl, lda+1);
+            extralower = ku-1;
+            extraupper = kl-1;
+        }
+        else
+        {
+            extralower = Am-1-kl;
+            extraupper = Am-1-ku;
+        }
+        // naive_printmxn(A,Am,An);
+        for(; extralower > 0; extralower--)
+        {
+            cornerI = Am-extralower;
+            plasma_zlaset(PlasmaGeneral,1,extralower,0,0,A+cornerI,lda+1);
+        }
+        for(; extraupper > 0; extraupper--)
+        {
+            cornerJ = An-extraupper;
+            plasma_zlaset(PlasmaGeneral,1,extraupper,0,0,A+lda*cornerJ,lda+1);
+        }
+        if(Am>An) // Am strictly greater
+        {
+            plasma_zlaset(PlasmaGeneral, (Am-An)-kl, 1, 0, 0,
+                            A+(lda*(An-1))+(An+kl), lda);
+        }
     }
-    else
+    else if(An>Am)
     {
-        extralower = Am-1-kl;
-        extraupper = Am-1-ku;
-    }
-    // naive_printmxn(A,Am,An);
-    for(; extralower > 0; extralower--)
-    {
-        cornerI = Am-extralower;
-        plasma_zlaset(PlasmaGeneral,1,extralower,0,0,A+cornerI,lda+1);
-    }
-    for(; extraupper > 0; extraupper--)
-    {
-        cornerJ = An-extraupper;
-        plasma_zlaset(PlasmaGeneral,1,extraupper,0,0,A+lda*cornerJ,lda+1);
+        // clear out a square part of the matrix (left side).
+        int cornerI, cornerJ, extralower, extraupper;
+        if(kl+ku <= Am)
+        {
+            plasma_zlaset(PlasmaGeneral, Am-kl-ku, Am-1, 0, 0, A+1+kl, lda+1);
+            extralower = ku-1;
+            extraupper = kl-1;
+        }
+        else
+        {
+            extralower = Am-1-kl;
+            extraupper = Am-1-ku;
+        }
+        for(; extralower > 0; extralower--)
+        {
+            cornerI = Am-extralower;
+            plasma_zlaset(PlasmaGeneral,1,extralower,0,0,A+cornerI,lda+1);
+        }
+        for(; extraupper > 0; extraupper--)
+        {
+            cornerJ = An-extraupper;
+            plasma_zlaset(PlasmaGeneral,1,extraupper,0,0,A+lda*cornerJ,lda+1);
+        }
+        // now zero out the right side
+        for(int i = 0; i < Am; i++)
+        {
+            int blcols = (i-(Am-1)+ku) > 0 ? (i-(Am-1)+ku) : 0;
+            plasma_zlaset(PlasmaGeneral,1,An-(Am+blcols),0,0,
+                                          A+(lda*(Am+blcols))+i,lda);
+        }
     }
     // naive_printmxn(A,Am,An);
     // naive_printmxn(B,Bm,Bn);
@@ -219,7 +262,15 @@ void test_zgbmm(param_value_t param[], bool run)
     // naive_printmxn(C,Cm,Cn);
 
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = flops_zgemm(m, n, k) / time / 1e9;
+    // flops for a band matrix may be much less than that for a 
+    // general matrix. Not implementing any sort of new function for this
+    // because we can simply substitute k with 1+kl+ku for an excellent
+    // approximation
+    // Opportunities for more accurate flops count: consider tiling
+    // and multiplications by zero.
+    // int band_k = 1 + ((ku+param[PARAM_NB].i-1)/param[PARAM_NB].i);
+                     // ((kl+param[PARAM_NB].i-1)/param[PARAM_NB].i);
+    param[PARAM_GFLOPS].d = flops_zgemm(m, n, ku+kl+1) / time / 1e9;
 
     //================================================================
     // Test results by comparing to a reference implementation.
