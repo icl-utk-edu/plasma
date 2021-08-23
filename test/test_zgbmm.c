@@ -133,32 +133,12 @@ void test_zgbmm(param_value_t param[], bool run)
     assert(retval == 0);
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldb*Bn, B);
     assert(retval == 0);
-
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldc*Cn, C);
     assert(retval == 0);
 
-    void naive_printmxn(plasma_complex64_t* M, int mRows, int nColumns)
-    {
-        int ii, jj;
-        for(ii = 0; ii < mRows; ii++)
-        {
-            // finished a row
-            printf("\n");
-            for(jj = 0; jj < nColumns; jj++)
-            {
-                printf("%+1.3lf  ", M[jj*mRows+ii]);
-            }
-        }
-        printf("\n");
-    }
-    // naive_printmxn(A,Am,An);
-    // Set all values in A to zero to help debug
     // printf("Am=%d,An=%d,lda=%d\n",Am,An,lda);
     // printf("Bm=%d,Bn=%d,ldb=%d\n",Bm,Bn,ldb);
     // printf("Cm=%d,Cn=%d,ldc=%d\n",Cm,Cn,ldc);
-    // This exact set of arguments sets a band matrix up *almost* perfectly
-    // There is still the issue of corner bleeding.
-    // fix the corner bleeding
 
     // square matrix OR rectangular tall matrix
     if(Am>=An)
@@ -175,7 +155,6 @@ void test_zgbmm(param_value_t param[], bool run)
             extralower = Am-1-kl;
             extraupper = Am-1-ku;
         }
-        // naive_printmxn(A,Am,An);
         for(; extralower > 0; extralower--)
         {
             cornerI = Am-extralower;
@@ -225,9 +204,6 @@ void test_zgbmm(param_value_t param[], bool run)
                                           A+(lda*(Am+blcols))+i,lda);
         }
     }
-    // naive_printmxn(A,Am,An);
-    // naive_printmxn(B,Bm,Bn);
-    // naive_printmxn(C,Cm,Cn);
 
     plasma_complex64_t *Cref = NULL;
     if (test) {
@@ -243,14 +219,6 @@ void test_zgbmm(param_value_t param[], bool run)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    /*
-    plasma_zgemm(
-        transa, transb,
-        m, n, k,
-        alpha, A, lda,
-               B, ldb,
-         beta, C, ldc);
-    */
     plasma_zgbmm(
         transa, transb,
         m, n, k, kl, ku,

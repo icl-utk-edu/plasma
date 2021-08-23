@@ -108,7 +108,7 @@
  * @sa plasma_omp_zgbmm
  * @sa plasma_cgbmm
  * @sa plasma_dgbmm
- * @sa plasma_sgnmm
+ * @sa plasma_sgbmm
  *
  ******************************************************************************/
 int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
@@ -196,7 +196,7 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
     // Tune parameters.
     if (plasma->tuning)
         plasma_tune_gemm(plasma, PlasmaComplexDouble, m, n, k);
-        /// change to gbmm
+        // gbmm tune not implemented yet - simply use gemm's tune for now.
 
     // Set tiling parameters.
     int nb = plasma->nb;
@@ -207,16 +207,14 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
     plasma_desc_t C;
     int retval;
     // call band matrix versions.
-    // Could replace am with a much smaller number of rows!
+    // for this application: Could replace am with much smaller number of rows!
     int tku = (ku+kl+nb-1)/nb; // number of tiles in upper band above diagonal
     int tkl = (kl+nb-1)/nb;    // number of tiles in lower band below diagonal
     int lm = (tku+tkl+1)*nb;   // reduced number of "rows" in the matrix
+
     retval = plasma_desc_general_band_create(PlasmaComplexDouble,PlasmaGeneral,
                                         nb,nb,
                                         lm, an, 0, 0, am, an, kl, ku, &A);
-    // retval = plasma_desc_general_create(PlasmaComplexDouble, nb, nb,
-                                        // am, an, 0, 0, am, an, &A);
-    // A.type = PlasmaGeneralBand;
     if (retval != PlasmaSuccess) {
         plasma_error("plasma_desc_general_create() failed");
         return retval;
@@ -245,36 +243,15 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
     plasma_request_t request;
     retval = plasma_request_init(&request);
 
-
-
-
     // asynchronous block
-    //// #pragma omp parallel
-    //// #pragma omp master
+    // if considering debugging , remove these directives.
+    #pragma omp parallel
+    #pragma omp master
     {
         // Translate to tile layout.
-        //// create band matrix versions
         plasma_omp_zgb2desc(pA, lda, A, &sequence, &request);
-        //// what if A is transposed? tiling function does not acknowledge.
-        //// must be acknowledged in calling function.
         plasma_omp_zgb2desc(pB, ldb, B, &sequence, &request);
         plasma_omp_zgb2desc(pC, ldc, C, &sequence, &request);
-        // void naive_printmxn(plasma_complex64_t* M, int mRows, int nColumns)
-        // {
-            // int ii, jj;
-            // for(ii = 0; ii < mRows; ii++)
-            // {
-                // // finished a row
-                // printf("\n");
-                // for(jj = 0; jj < nColumns; jj++)
-                // {
-                    // printf("%+1.3lf + %+1.3lfi  ",
-                            // creal(M[jj*mRows+ii]),cimag(M[jj*mRows+ii]));
-                // }
-            // }
-            // printf("\n");
-        // }
-        // naive_printmxn((plasma_complex64_t*)C.matrix,C.m,C.n+1);
 
         // Call the tile async function.
         plasma_omp_zgbmm(transa, transb,
@@ -301,7 +278,7 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
 
 /***************************************************************************//**
  *
- * @ingroup plasma_gemm
+ * @ingroup plasma_gbmm
  *
  *  Performs matrix multiplication.
  *  Non-blocking tile version of plasma_zgbmm().
@@ -422,7 +399,7 @@ void plasma_omp_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
         return;
 
     // Call the parallel function.
-    // general band is part of this function: no need to change this one.
+    // general band is part of this function: no need to create pzgbmm.
     plasma_pzgemm(transa, transb,
                   alpha, A,
                          B,
