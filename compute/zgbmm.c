@@ -117,6 +117,7 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
                                            plasma_complex64_t *pB, int ldb,
                  plasma_complex64_t beta,  plasma_complex64_t *pC, int ldc)
 {
+    //// printf("[%s]: alpha=%1.4f beta=%1.4f\n",__FILE__,alpha,beta);
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -194,6 +195,7 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
     if (m == 0 || n == 0 || ((alpha == 0.0 || k == 0) && beta == 1.0))
         return PlasmaSuccess;
     // Tune parameters.
+    plasma->tuning = PlasmaEnabled;
     if (plasma->tuning)
         plasma_tune_gemm(plasma, PlasmaComplexDouble, m, n, k);
         // gbmm tune not implemented yet - simply use gemm's tune for now.
@@ -206,9 +208,10 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
     plasma_desc_t B;
     plasma_desc_t C;
     int retval;
-    // call band matrix versions.
-    // for this application: Could replace am with much smaller number of rows!
     int tku = (ku+kl+nb-1)/nb; // number of tiles in upper band above diagonal
+                               // PLASMA conventions allow extra space for tku
+                               // for this application, could replace am with
+                               // smaller number of rows (( (ku+nb-1)/nb ))
     int tkl = (kl+nb-1)/nb;    // number of tiles in lower band below diagonal
     int lm = (tku+tkl+1)*nb;   // reduced number of "rows" in the matrix
 
@@ -243,6 +246,9 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
     plasma_request_t request;
     retval = plasma_request_init(&request);
 
+    //// printf("pA[1,1] = %1.4f\n",*pA);
+    //// printf("pB[1,1] = %1.4f\n",*pB);
+    //// printf("pC[1,1] = %1.4f\n",*pC);
     // asynchronous block
     // if considering debugging , remove these directives.
     #pragma omp parallel

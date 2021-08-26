@@ -146,6 +146,8 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                 // alpha*A*B does not contribute; scale C
                 //=========================================
                 int inner_k = transa == PlasmaNoTrans ? A.n : A.m;
+                //// printf("[%s]: inner_k = %d alpha = %1.4f beta=%1.4f\n",
+                       //// __FILE__,inner_k,alpha,beta);
                 if (alpha == 0.0 || inner_k == 0) {
                     int ldam = imax(1, plasma_tile_mmain(A, 0));
                     int ldbk = imax(1, plasma_tile_mmain(B, 0));
