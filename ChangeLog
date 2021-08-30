@@ -1,0 +1,34 @@
+# ChangeLog
+
+All notable changes to this project will be documented in this file.
+
+## [Unreleased]
+
+## [21.9.29] - 2021-09-29
+### Added
+- Add transpose option to xGETRS() functions
+- Add transpose option to xGELS() functions
+- Add convinience scripts for C and Fortran examples
+- Add Python script for quickly launching tets
+
+### Removed
+- Remove Fortran code and comments producing warnings
+
+### Fixed
+- Fix wrong pointer in tuning
+- Fix division by zero for zero-matrix norm
+- Fix error propagation in sequences
+- Fix LU factorization for rectangular matrices
+
+## [20.9.20] - 2020-09-20
+### Added
+- New detection of Apple's Accelerate Framework as BLAS and LAPACK implementations
+- New GPU offload option detection of the MAGMA library
+- Version reporting in tester
+
+### Removed
+- Remove POSIX threads code and now only OpenMP threading support
+
+### Fixed
+- Fix support for wider range of CMake versions
+- Fix Fortran examples' syntax
