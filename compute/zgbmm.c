@@ -117,7 +117,6 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
                                            plasma_complex64_t *pB, int ldb,
                  plasma_complex64_t beta,  plasma_complex64_t *pC, int ldc)
 {
-    //// printf("[%s]: alpha=%1.4f beta=%1.4f\n",__FILE__,alpha,beta);
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
     if (plasma == NULL) {
@@ -246,9 +245,6 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
     plasma_request_t request;
     retval = plasma_request_init(&request);
 
-    //// printf("pA[1,1] = %1.4f\n",*pA);
-    //// printf("pB[1,1] = %1.4f\n",*pB);
-    //// printf("pC[1,1] = %1.4f\n",*pC);
     // asynchronous block
     // if considering debugging , remove these directives.
     #pragma omp parallel

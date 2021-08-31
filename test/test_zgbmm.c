@@ -139,9 +139,6 @@ void test_zgbmm(param_value_t param[], bool run)
     //// printf("Am=%d,An=%d,lda=%d\n",Am,An,lda);
     //// printf("Bm=%d,Bn=%d,ldb=%d\n",Bm,Bn,ldb);
     //// printf("Cm=%d,Cn=%d,ldc=%d\n",Cm,Cn,ldc);
-    //// printf("A[1,1] = %1.4f\n",*A);
-    //// printf("B[1,1] = %1.4f\n",*B);
-    //// printf("[%s]: alpha=%1.4f\n",__FILE__,alpha);
 
     // square matrix OR rectangular tall matrix
     if(Am>=An)
@@ -220,7 +217,6 @@ void test_zgbmm(param_value_t param[], bool run)
     //================================================================
     // Run and time PLASMA.
     //================================================================
-    //// printf("[%s]: alpha=%1.4f\n",__FILE__,alpha);
     plasma_time_t start = omp_get_wtime();
 
     plasma_zgbmm(
@@ -286,8 +282,6 @@ void test_zgbmm(param_value_t param[], bool run)
 
         param[PARAM_ERROR].d = error;
         param[PARAM_SUCCESS].i = error < 3*eps;
-        //// printf("C[1,1] = %1.4f\n",*C);
-        //// printf("Cref[1,1] = %1.4f\n",*Cref);
     }
 
     //================================================================
