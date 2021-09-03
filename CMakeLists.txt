@@ -88,7 +88,7 @@ if(${CMAKE_VERSION} VERSION_GREATER 11.99.9)
 cmake_policy(POP)
 endif()
 
-set(PLASMA_LINALG_LIBRARIES -llapacke ${LAPACKE_LIBRARIES} ${LAPACK_LIBRARIES} ${CBLAS_LIBRARIES} ${BLAS_LIBRARIES})
+set(PLASMA_LINALG_LIBRARIES ${LAPACKE_LIBRARIES} ${LAPACK_LIBRARIES} ${CBLAS_LIBRARIES} ${BLAS_LIBRARIES})
 
 if (PLASMA_DETECT_LUA)
   find_package( Lua )
@@ -250,6 +250,8 @@ compute/pcge2desc.c compute/pcpb2desc.c compute/pctr2desc.c
 compute/pdge2desc.c compute/pdpb2desc.c compute/pdtr2desc.c
 compute/psge2desc.c compute/pspb2desc.c compute/pstr2desc.c
 compute/zgbmm.c compute/dgbmm.c compute/sgbmm.c compute/cgbmm.c
+compute/zgb2desc.c compute/dgb2desc.c compute/sgb2desc.c compute/cgb2desc.c
+compute/pzgb2desc.c compute/pdgb2desc.c compute/psgb2desc.c compute/pcgb2desc.c
 control/constants.c control/context.c control/descriptor.c
 control/tree.c control/tuning.c control/workspace.c control/version.c)
 
