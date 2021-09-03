@@ -43,6 +43,7 @@ void test_zgetrs(param_value_t param[], bool run)
     //================================================================
     // Mark which parameters are used.
     //================================================================
+    param[PARAM_TRANS  ].used = true;
     param[PARAM_DIM    ].used = PARAM_USE_N;
     param[PARAM_NRHS   ].used = true;
     param[PARAM_PADA   ].used = true;
@@ -56,6 +57,8 @@ void test_zgetrs(param_value_t param[], bool run)
     //================================================================
     // Set parameters.
     //================================================================
+    plasma_enum_t trans = plasma_trans_const(param[PARAM_TRANS].c);
+
     int n = param[PARAM_DIM].dim.n;
     int nrhs = param[PARAM_NRHS].i;
 
@@ -121,7 +124,7 @@ void test_zgetrs(param_value_t param[], bool run)
     // Run and time PLASMA.
     //================================================================
     plasma_time_t start = omp_get_wtime();
-    plasma_zgetrs(n, nrhs, A, lda, ipiv, B, ldb);
+    plasma_zgetrs(trans, n, nrhs, A, lda, ipiv, B, ldb);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
 
@@ -148,11 +151,19 @@ void test_zgetrs(param_value_t param[], bool run)
         double Xnorm = LAPACKE_zlange_work(
             LAPACK_COL_MAJOR, 'I', n, nrhs, B, ldb, work);
 
-        // Bref -= Aref*B
-        cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, nrhs, n,
-                    CBLAS_SADDR(zmone), Aref, lda,
-                                        B,    ldb,
-                    CBLAS_SADDR(zone),  Bref, ldb);
+        if (trans == PlasmaNoTrans) {
+            // Bref -= Aref*B
+            cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, nrhs, n,
+                        CBLAS_SADDR(zmone), Aref, lda,
+                        B,    ldb,
+                        CBLAS_SADDR(zone),  Bref, ldb);
+        }
+        else {
+            cblas_zgemm(CblasColMajor, CblasTrans, CblasNoTrans, n, nrhs, n,
+                        CBLAS_SADDR(zmone), Aref, lda,
+                        B,    ldb,
+                        CBLAS_SADDR(zone),  Bref, ldb);
+        }
 
         double Rnorm = LAPACKE_zlange_work(
             LAPACK_COL_MAJOR, 'I', n, nrhs, Bref, ldb, work);

@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /******************************************************************************/
-void plasma_core_zlag2c(int m, int n,
+int plasma_core_zlag2c(int m, int n,
                  plasma_complex64_t *A,  int lda,
                  plasma_complex32_t *As, int ldas);
 
