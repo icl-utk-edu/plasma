@@ -192,8 +192,7 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                                 sequence, request);
                         }
                         // must also ensure that C adds to itself for beta!=0
-                        if(k_start > k_end)
-                        {
+                        if(k_start > k_end) {
                             int k = 0;
                             int ldam = plasma_tile_mmain_band(A, m, k);
                             int nvak = plasma_tile_nview(A, k);
@@ -232,8 +231,7 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                                 sequence, request);
                         }
                         // must also ensure that C adds to itself for beta!=0
-                        if(k_start > k_end)
-                        {
+                        if(k_start > k_end) {
                             int k = 0;
                             int ldam = plasma_tile_mmain_band(A, m, k);
                             int nvak = plasma_tile_nview(A, k);
@@ -273,8 +271,7 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                                 sequence, request);
                         }
                         // must also ensure that C adds to itself for beta!=0
-                        if(k_start > k_end)
-                        {
+                        if(k_start > k_end) {
                             int k = 0;
                             int ldak = plasma_tile_mmain_band(A, k, m);
                             int mvak = plasma_tile_mview(A, k);
@@ -313,8 +310,7 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                                 sequence, request);
                         }
                         // must also ensure that C adds to itself for beta!=0
-                        if(k_start > k_end)
-                        {
+                        if(k_start > k_end) {
                             int k = 0;
                             int ldak = plasma_tile_mmain_band(A, k, m);
                             int mvak = plasma_tile_mview(A, k);
