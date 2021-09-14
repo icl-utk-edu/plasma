@@ -36,7 +36,7 @@
  *
  *  alpha and beta are scalars, and A, B and C are matrices, with op( A )
  *  an m-by-k matrix, op( B ) a k-by-n matrix and C an m-by-n matrix.
- *  A is a band Matrix, but the same is not guaranteed of B or C.
+ *  A is a band matrix, but the same is not guaranteed of B or C.
  *
  *******************************************************************************
  *
