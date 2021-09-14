@@ -29,6 +29,12 @@ int plasma_dzamax(plasma_enum_t colrow,
                   int m, int n,
                   plasma_complex64_t *pA, int lda, double *values);
 
+int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
+                 int m, int n, int k, int kl, int ku,
+                 plasma_complex64_t alpha, plasma_complex64_t *pA, int lda,
+                                           plasma_complex64_t *pB, int ldb,
+                 plasma_complex64_t beta,  plasma_complex64_t *pC, int ldc);
+
 int plasma_zgbsv(int n, int kl, int ku, int nrhs,
                  plasma_complex64_t *pAB, int ldab, int *ipiv,
                  plasma_complex64_t *pB,  int ldb);
@@ -278,6 +284,12 @@ void plasma_omp_dzamax(plasma_enum_t colrow, plasma_desc_t A,
                        double *work, double *values,
                        plasma_sequence_t *sequence, plasma_request_t *request);
 
+void plasma_omp_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
+                      plasma_complex64_t alpha, plasma_desc_t A,
+                                                plasma_desc_t B,
+                      plasma_complex64_t beta,  plasma_desc_t C,
+                      plasma_sequence_t *sequence, plasma_request_t *request);
+
 void plasma_omp_zgbsv(plasma_desc_t AB, int *ipiv, plasma_desc_t B,
                       plasma_sequence_t *sequence, plasma_request_t *request);
 
@@ -300,6 +312,11 @@ void plasma_omp_zdesc2pb(plasma_desc_t A,
 
 void plasma_omp_zdesc2tr(plasma_desc_t A,
                          plasma_complex64_t *pA, int lda,
+                         plasma_sequence_t *sequence,
+                         plasma_request_t *request);
+
+void plasma_omp_zgb2desc(plasma_complex64_t *pA, int lda,
+                         plasma_desc_t A,
                          plasma_sequence_t *sequence,
                          plasma_request_t *request);
 

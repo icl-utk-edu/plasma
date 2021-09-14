@@ -44,6 +44,11 @@ void plasma_pzdesc2tr(plasma_desc_t A,
                       plasma_sequence_t *sequence,
                       plasma_request_t *request);
 
+void plasma_pzgb2desc(plasma_complex64_t *pA, int lda,
+                      plasma_desc_t A,
+                      plasma_sequence_t *sequence,
+                      plasma_request_t *request);
+
 void plasma_pzge2desc(plasma_complex64_t *pA, int lda,
                       plasma_desc_t A,
                       plasma_sequence_t *sequence,
