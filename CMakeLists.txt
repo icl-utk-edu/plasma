@@ -250,6 +250,7 @@ compute/pcge2desc.c compute/pcpb2desc.c compute/pctr2desc.c
 compute/pdge2desc.c compute/pdpb2desc.c compute/pdtr2desc.c
 compute/psge2desc.c compute/pspb2desc.c compute/pstr2desc.c
 compute/zgbmm.c compute/dgbmm.c compute/sgbmm.c compute/cgbmm.c
+compute/zgbset.c compute/dgbset.c compute/sgbset.c compute/cgbset.c
 compute/zgb2desc.c compute/dgb2desc.c compute/sgb2desc.c compute/cgb2desc.c
 compute/pzgb2desc.c compute/pdgb2desc.c compute/psgb2desc.c compute/pcgb2desc.c
 control/constants.c control/context.c control/descriptor.c

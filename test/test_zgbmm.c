@@ -140,70 +140,72 @@ void test_zgbmm(param_value_t param[], bool run)
     //// printf("Bm=%d,Bn=%d,ldb=%d\n",Bm,Bn,ldb);
     //// printf("Cm=%d,Cn=%d,ldc=%d\n",Cm,Cn,ldc);
 
+    // zero out elements outside band
+    plasma_zgbset(Am, An, kl, ku, A, lda);
     // square matrix OR rectangular tall matrix
-    if(Am>=An)
-    {
-        int cornerI, cornerJ, extralower, extraupper;
-        if(kl+ku <= Am)
-        {
-            plasma_zlaset(PlasmaGeneral, Am-kl-ku, An-1, 0, 0, A+1+kl, lda+1);
-            extralower = ku-1;
-            extraupper = kl-1;
-        }
-        else
-        {
-            extralower = Am-1-kl;
-            extraupper = Am-1-ku;
-        }
-        for(; extralower > 0; extralower--)
-        {
-            cornerI = Am-extralower;
-            plasma_zlaset(PlasmaGeneral,1,extralower,0,0,A+cornerI,lda+1);
-        }
-        for(; extraupper > 0; extraupper--)
-        {
-            cornerJ = An-extraupper;
-            plasma_zlaset(PlasmaGeneral,1,extraupper,0,0,A+lda*cornerJ,lda+1);
-        }
-        if(Am>An) // Am strictly greater
-        {
-            plasma_zlaset(PlasmaGeneral, (Am-An)-kl, 1, 0, 0,
-                            A+(lda*(An-1))+(An+kl), lda);
-        }
-    }
-    else if(An>Am)
-    {
-        // clear out a square part of the matrix (left side).
-        int cornerI, cornerJ, extralower, extraupper;
-        if(kl+ku <= Am)
-        {
-            plasma_zlaset(PlasmaGeneral, Am-kl-ku, Am-1, 0, 0, A+1+kl, lda+1);
-            extralower = ku-1;
-            extraupper = kl-1;
-        }
-        else
-        {
-            extralower = Am-1-kl;
-            extraupper = Am-1-ku;
-        }
-        for(; extralower > 0; extralower--)
-        {
-            cornerI = Am-extralower;
-            plasma_zlaset(PlasmaGeneral,1,extralower,0,0,A+cornerI,lda+1);
-        }
-        for(; extraupper > 0; extraupper--)
-        {
-            cornerJ = An-extraupper;
-            plasma_zlaset(PlasmaGeneral,1,extraupper,0,0,A+lda*cornerJ,lda+1);
-        }
-        // now zero out the right side
-        for(int i = 0; i < Am; i++)
-        {
-            int blcols = (i-(Am-1)+ku) > 0 ? (i-(Am-1)+ku) : 0;
-            plasma_zlaset(PlasmaGeneral,1,An-(Am+blcols),0,0,
-                                          A+(lda*(Am+blcols))+i,lda);
-        }
-    }
+    // if(Am>=An)
+    // {
+        // int cornerI, cornerJ, extralower, extraupper;
+        // if(kl+ku <= Am)
+        // {
+            // plasma_zlaset(PlasmaGeneral, Am-kl-ku, An-1, 0, 0, A+1+kl, lda+1);
+            // extralower = ku-1;
+            // extraupper = kl-1;
+        // }
+        // else
+        // {
+            // extralower = Am-1-kl;
+            // extraupper = Am-1-ku;
+        // }
+        // for(; extralower > 0; extralower--)
+        // {
+            // cornerI = Am-extralower;
+            // plasma_zlaset(PlasmaGeneral,1,extralower,0,0,A+cornerI,lda+1);
+        // }
+        // for(; extraupper > 0; extraupper--)
+        // {
+            // cornerJ = An-extraupper;
+            // plasma_zlaset(PlasmaGeneral,1,extraupper,0,0,A+lda*cornerJ,lda+1);
+        // }
+        // if(Am>An) // Am strictly greater
+        // {
+            // plasma_zlaset(PlasmaGeneral, (Am-An)-kl, 1, 0, 0,
+                            // A+(lda*(An-1))+(An+kl), lda);
+        // }
+    // }
+    // else if(An>Am)
+    // {
+        // // clear out a square part of the matrix (left side).
+        // int cornerI, cornerJ, extralower, extraupper;
+        // if(kl+ku <= Am)
+        // {
+            // plasma_zlaset(PlasmaGeneral, Am-kl-ku, Am-1, 0, 0, A+1+kl, lda+1);
+            // extralower = ku-1;
+            // extraupper = kl-1;
+        // }
+        // else
+        // {
+            // extralower = Am-1-kl;
+            // extraupper = Am-1-ku;
+        // }
+        // for(; extralower > 0; extralower--)
+        // {
+            // cornerI = Am-extralower;
+            // plasma_zlaset(PlasmaGeneral,1,extralower,0,0,A+cornerI,lda+1);
+        // }
+        // for(; extraupper > 0; extraupper--)
+        // {
+            // cornerJ = An-extraupper;
+            // plasma_zlaset(PlasmaGeneral,1,extraupper,0,0,A+lda*cornerJ,lda+1);
+        // }
+        // // now zero out the right side
+        // for(int i = 0; i < Am; i++)
+        // {
+            // int blcols = (i-(Am-1)+ku) > 0 ? (i-(Am-1)+ku) : 0;
+            // plasma_zlaset(PlasmaGeneral,1,An-(Am+blcols),0,0,
+                                          // A+(lda*(Am+blcols))+i,lda);
+        // }
+    // }
 
     plasma_complex64_t *Cref = NULL;
     if (test) {

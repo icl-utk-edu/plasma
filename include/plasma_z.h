@@ -320,6 +320,9 @@ void plasma_omp_zgb2desc(plasma_complex64_t *pA, int lda,
                          plasma_sequence_t *sequence,
                          plasma_request_t *request);
 
+void plasma_zgbset(int m, int n, int kl, int ku,
+                   plasma_complex64_t *pA, int lda);
+
 void plasma_omp_zge2desc(plasma_complex64_t *pA, int lda,
                          plasma_desc_t A,
                          plasma_sequence_t *sequence,
