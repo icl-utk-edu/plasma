@@ -146,6 +146,8 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                 // alpha*A*B does not contribute; scale C
                 //=========================================
                 int inner_k = transa == PlasmaNoTrans ? A.n : A.m;
+                //// printf("[%s]: inner_k = %d alpha = %1.4f beta=%1.4f\n",
+                       //// __FILE__,inner_k,alpha,beta);
                 if (alpha == 0.0 || inner_k == 0) {
                     int ldam = imax(1, plasma_tile_mmain(A, 0));
                     int ldbk = imax(1, plasma_tile_mmain(B, 0));
@@ -162,20 +164,45 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                     // PlasmaNoTrans / PlasmaNoTrans
                     //================================
                     if (transb == PlasmaNoTrans) {
-                        int k_start = (imax(0, m*A.mb-A.kl)) / A.nb;
-                        int k_end = (imin(A.n-1, (m+1)*A.mb+A.ku-1)) / A.nb;
-                        //printf("[%s]: m=%d\tn=%d\tk_s=%d\tk_e=%d\n",
-                        //       __FILE__, m, n, k_start, k_end);
+                        int k_start = (imax(0, m*A.nb-A.kl)) / A.nb;
+                        int k_end = (imin(A.n-1, (m+1)*A.nb+A.ku-1)) / A.nb;
+                        // printf("[%s]: m=%d\tn=%d\tk_s=%d\tk_e=%d\n",
+                               // __FILE__, m, n, k_start, k_end);
+
+
                         for (int k = k_start; k <= k_end; k++) {
                             int ldam = plasma_tile_mmain_band(A, m, k);
                             int nvak = plasma_tile_nview(A, k);
                             int ldbk = plasma_tile_mmain(B, k);
-                            plasma_complex64_t zbeta = k == 0 ? beta : 1.0;
+                            plasma_complex64_t zbeta =
+                                               k == k_start ? beta : 1.0;
+                            // unlike general version, need k == k_start to
+                            // guarantee that beta will properly apply.
 
+                            // printf("[%s]: k=%d\tldam=%d\tldbk=%d\tldcm=%d\n",
+                                            // __FILE__,k,ldam,ldbk,ldcm);
+                            // printf("A(%d,%d)=%1.3f\tB(%d,%d)=%1.3f\n",
+                                    // m,k,*A(m,k),k,n,*B(k,n));
                             plasma_core_omp_zgemm(
                                 transa, transb,
                                 mvcm, nvcn, nvak,
                                 alpha, A(m, k), ldam,
+                                B(k, n), ldbk,
+                                zbeta, C(m, n), ldcm,
+                                sequence, request);
+                        }
+                        // must also ensure that C adds to itself for beta!=0
+                        if(k_start > k_end)
+                        {
+                            int k = 0;
+                            int ldam = plasma_tile_mmain_band(A, m, k);
+                            int nvak = plasma_tile_nview(A, k);
+                            int ldbk = plasma_tile_mmain(B, k);
+                            plasma_complex64_t zbeta = beta;
+                            plasma_core_omp_zgemm(
+                                transa, transb,
+                                mvcm, nvcn, nvak,
+                                0, A(m, k), ldam,
                                 B(k, n), ldbk,
                                 zbeta, C(m, n), ldcm,
                                 sequence, request);
@@ -185,7 +212,40 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                     // PlasmaNoTrans / Plasma[_Conj]Trans
                     //=====================================
                     else {
-                        assert(0); // not implemented
+                        int k_start = (imax(0, m*A.nb-A.kl)) / A.nb;
+                        int k_end = (imin(A.n-1, (m+1)*A.nb+A.ku-1)) / A.nb;
+
+                        int ldbn = plasma_tile_mmain(B, n);
+                        for (int k = k_start; k <= k_end; k++) {
+                            int ldam = plasma_tile_mmain_band(A, m, k);
+                            int nvak = plasma_tile_nview(A, k);
+                            plasma_complex64_t zbeta =
+                                               k == k_start ? beta : 1.0;
+                            // unlike general version, need k == k_start to
+                            // guarantee that beta will properly apply.
+                            plasma_core_omp_zgemm(
+                                transa, transb,
+                                mvcm, nvcn, nvak,
+                                alpha, A(m, k), ldam,
+                                B(n, k), ldbn,
+                                zbeta, C(m, n), ldcm,
+                                sequence, request);
+                        }
+                        // must also ensure that C adds to itself for beta!=0
+                        if(k_start > k_end)
+                        {
+                            int k = 0;
+                            int ldam = plasma_tile_mmain_band(A, m, k);
+                            int nvak = plasma_tile_nview(A, k);
+                            plasma_complex64_t zbeta = beta;
+                            plasma_core_omp_zgemm(
+                                transa, transb,
+                                mvcm, nvcn, nvak,
+                                0, A(m, k), ldam,
+                                B(n, k), ldbn,
+                                zbeta, C(m, n), ldcm,
+                                sequence, request);
+                        }
                     }
                 }
                 else {
@@ -193,13 +253,80 @@ void plasma_pzgemm(plasma_enum_t transa, plasma_enum_t transb,
                     // Plasma[_Conj]Trans / PlasmaNoTrans
                     //=====================================
                     if (transb == PlasmaNoTrans) {
-                        assert(0); // not implemented
+                        int k_start = (imax(0, m*A.mb-A.ku)) / A.mb;
+                        int k_end = (imin(A.m-1, (m+1)*A.mb+A.kl-1)) / A.mb;
+
+                        for (int k = k_start; k <= k_end; k++) {
+                            int ldak = plasma_tile_mmain_band(A, k, m);
+                            int mvak = plasma_tile_mview(A, k);
+                            int ldbk = plasma_tile_mmain(B, k);
+                            plasma_complex64_t zbeta =
+                                               k == k_start ? beta : 1.0;
+                            // unlike general version, need k == k_start to
+                            // guarantee that beta will properly apply.
+                            plasma_core_omp_zgemm(
+                                transa, transb,
+                                mvcm, nvcn, mvak,
+                                alpha, A(k, m), ldak,
+                                B(k, n), ldbk,
+                                zbeta, C(m, n), ldcm,
+                                sequence, request);
+                        }
+                        // must also ensure that C adds to itself for beta!=0
+                        if(k_start > k_end)
+                        {
+                            int k = 0;
+                            int ldak = plasma_tile_mmain_band(A, k, m);
+                            int mvak = plasma_tile_mview(A, k);
+                            int ldbk = plasma_tile_mmain(B, k);
+                            plasma_complex64_t zbeta = beta;
+                            plasma_core_omp_zgemm(
+                                transa, transb,
+                                mvcm, nvcn, mvak,
+                                0, A(k, m), ldak,
+                                B(k, n), ldbk,
+                                zbeta, C(m, n), ldcm,
+                                sequence, request);
+                        }
                     }
                     //==========================================
                     // Plasma[_Conj]Trans / Plasma[_Conj]Trans
                     //==========================================
                     else {
-                        assert(0); // not implemented
+                        int k_start = (imax(0, m*A.mb-A.ku)) / A.mb;
+                        int k_end = (imin(A.m-1, (m+1)*A.mb+A.kl-1)) / A.mb;
+
+                        int ldbn = plasma_tile_mmain(B, n);
+                        for (int k = k_start; k <= k_end; k++) {
+                            int ldak = plasma_tile_mmain_band(A, k, m);
+                            int mvak = plasma_tile_mview(A, k);
+                            plasma_complex64_t zbeta =
+                                               k == k_start ? beta : 1.0;
+                            // unlike general version, need k == k_start to
+                            // guarantee that beta will properly apply.
+                            plasma_core_omp_zgemm(
+                                transa, transb,
+                                mvcm, nvcn, mvak,
+                                alpha, A(k, m), ldak,
+                                B(n, k), ldbn,
+                                zbeta, C(m, n), ldcm,
+                                sequence, request);
+                        }
+                        // must also ensure that C adds to itself for beta!=0
+                        if(k_start > k_end)
+                        {
+                            int k = 0;
+                            int ldak = plasma_tile_mmain_band(A, k, m);
+                            int mvak = plasma_tile_mview(A, k);
+                            plasma_complex64_t zbeta = beta;
+                            plasma_core_omp_zgemm(
+                                transa, transb,
+                                mvcm, nvcn, mvak,
+                                0, A(k, m), ldak,
+                                B(n, k), ldbn,
+                                zbeta, C(m, n), ldcm,
+                                sequence, request);
+                        }
                     }
                 }
             }

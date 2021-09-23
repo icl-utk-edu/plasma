@@ -20,6 +20,8 @@ extern "C" {
 void plasma_tuning_init(plasma_context_t *plasma);
 void plasma_tuning_finalize(plasma_context_t *plasma);
 
+void plasma_tune_gbmm(plasma_context_t *plasma, plasma_enum_t dtyp,
+                      int m, int n, int k, int kl, int ku);
 void plasma_tune_gbtrf(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int n, int bw);
 void plasma_tune_geadd(plasma_context_t *plasma, plasma_enum_t dtyp,
