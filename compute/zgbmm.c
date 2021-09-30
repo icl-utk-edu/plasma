@@ -5,7 +5,6 @@
  *  PLASMA is a software package provided by:
  *  University of Tennessee, US,
  *  University of Manchester, UK.
- *  This file written by Daniel Mishler with work beginning June 10, 2021
  *
  * @precisions normal z -> s d c
  *
@@ -246,7 +245,6 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
     retval = plasma_request_init(&request);
 
     // asynchronous block
-    // if considering debugging , remove these directives.
     #pragma omp parallel
     #pragma omp master
     {
@@ -263,7 +261,6 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
                          &sequence, &request);
 
         // Translate back to LAPACK layout.
-        //// create band matrix version
         plasma_omp_zdesc2ge(C, pC, ldc, &sequence, &request);
     }
     // implicit synchronization

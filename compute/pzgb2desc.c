@@ -36,13 +36,11 @@ void plasma_pzgb2desc(plasma_complex64_t *pA, int lda,
     int n, m, ldt;
     for (m = 0; m < A.mt; m++) {
         for (n = 0; n < A.nt; n++) {
-            // don't want to copy tiles without elements (plasma_tile_addr)
-            // cannot handle it.
+            // don't want to copy tiles without elements because
+            // (plasma_tile_addr) cannot handle it.
             // Calculate kut without normal space for transformations.
             if(m-n >= A.klt || n-m >= 1+(A.ku+A.nb-1)/A.nb)
             {
-                //// if you notice any bugs, in the copying of matrices,
-                //// check back on this conditional
                 continue;
             }
             ldt = plasma_tile_mmain_band(A, m, n); // possibly too many calls.
@@ -55,12 +53,6 @@ void plasma_pzgb2desc(plasma_complex64_t *pA, int lda,
 
             f77 = &pA[(size_t)A.nb*lda*n + (size_t)A.mb*m];
             bdl = (plasma_complex64_t*)plasma_tile_addr(A, m, n);
-            // printf("[%s] Full view:\nm=%d\nn=%d\nx1=%d\ny1=%d\nx2=%d\ny2=%d\nlda=%d\n",
-                       // __FILE__,m,n,x1,y1,x2,y2,lda);
-            // printf("pA(%d,%d) = %1.3f (%u)\n", m, n,
-                   // pA[(size_t)A.nb*lda*n + (size_t)A.mb*m],
-                   // &pA[(size_t)A.nb*lda*n + (size_t)A.mb*m]-
-                   // &pA[(size_t)A.nb*lda*0 + (size_t)A.mb*0]);
             plasma_core_omp_zlacpy(
                             PlasmaGeneralBand, PlasmaNoTrans,
                             y2-y1, x2-x1,
