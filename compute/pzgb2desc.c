@@ -38,6 +38,7 @@ void plasma_pzgb2desc(plasma_complex64_t *pA, int lda,
         for (n = 0; n < A.nt; n++) {
             // don't want to copy tiles without elements because
             // (plasma_tile_addr) cannot handle it.
+            // Instead of "m-n >= A.kut" (as one might expect), we
             // Calculate kut without normal space for transformations.
             if(m-n >= A.klt || n-m >= 1+(A.ku+A.nb-1)/A.nb)
             {
