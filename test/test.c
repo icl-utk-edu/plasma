@@ -38,6 +38,11 @@ struct routines_t routines[] =
     { "", NULL },
     { "", NULL },
 
+    { "zgbmm", test_zgbmm },
+    { "dgbmm", test_dgbmm },
+    { "cgbmm", test_cgbmm },
+    { "sgbmm", test_sgbmm },
+
     { "zgbsv",  test_zgbsv },
     { "dgbsv",  test_dgbsv },
     { "cgbsv",  test_cgbsv },

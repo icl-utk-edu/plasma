@@ -249,6 +249,10 @@ compute/pzge2desc.c compute/pzpb2desc.c compute/pztr2desc.c
 compute/pcge2desc.c compute/pcpb2desc.c compute/pctr2desc.c
 compute/pdge2desc.c compute/pdpb2desc.c compute/pdtr2desc.c
 compute/psge2desc.c compute/pspb2desc.c compute/pstr2desc.c
+compute/zgbmm.c compute/dgbmm.c compute/sgbmm.c compute/cgbmm.c
+compute/zgbset.c compute/dgbset.c compute/sgbset.c compute/cgbset.c
+compute/zgb2desc.c compute/dgb2desc.c compute/sgb2desc.c compute/cgb2desc.c
+compute/pzgb2desc.c compute/pdgb2desc.c compute/psgb2desc.c compute/pcgb2desc.c
 control/constants.c control/context.c control/descriptor.c
 control/tree.c control/tuning.c control/workspace.c control/version.c)
 
@@ -322,7 +326,8 @@ target_include_directories(plasma_core_blas PUBLIC
 add_executable(plasmatest test/test.h test/test.c include/plasma.h
 test/test_dzamax.c test/test_damax.c test/test_scamax.c test/test_samax.c
 test/test_zcposv.c test/test_dsposv.c test/test_zgbsv.c test/test_dgbsv.c
-test/test_cgbsv.c test/test_sgbsv.c test/test_zgbtrf.c test/test_dgbtrf.c
+test/test_cgbsv.c test/test_sgbsv.c test/test_zgbmm.c test/test_dgbmm.c
+test/test_cgbmm.c test/test_sgbmm.c test/test_zgbtrf.c test/test_dgbtrf.c
 test/test_cgbtrf.c test/test_sgbtrf.c test/test_zgeadd.c test/test_dgeadd.c
 test/test_cgeadd.c test/test_sgeadd.c test/test_zgeinv.c test/test_dgeinv.c
 test/test_cgeinv.c test/test_sgeinv.c test/test_zgelqf.c test/test_dgelqf.c

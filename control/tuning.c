@@ -152,6 +152,16 @@ static void plasma_tune(plasma_context_t *plasma, plasma_enum_t dtyp,
 #endif
 
 /******************************************************************************/
+void plasma_tune_gbmm(plasma_context_t *plasma, plasma_enum_t dtyp,
+                      int m, int n, int k, int kl, int ku)
+{
+    if (NULL == plasma->L)
+        return;
+
+    plasma_tune(plasma, dtyp, "gbmm_nb", &plasma->nb, 5, m, n, k, kl, ku);
+}
+
+/******************************************************************************/
 void plasma_tune_gbtrf(plasma_context_t *plasma, plasma_enum_t dtyp,
                        int n, int bw)
 {

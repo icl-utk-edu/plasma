@@ -18,6 +18,7 @@
 // test routines
 //==============================================================================
 void test_dzamax(param_value_t param[], bool run);
+void test_zgbmm(param_value_t param[], bool run);
 void test_zgbsv(param_value_t param[], bool run);
 void test_zgbtrf(param_value_t param[], bool run);
 void test_zgeadd(param_value_t param[], bool run);
