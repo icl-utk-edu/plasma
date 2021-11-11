@@ -94,6 +94,17 @@ enum {
     PlasmaMaxNorm       = 177,
     PlasmaRealMaxNorm   = 178,
 
+    PlasmaNoVec         = 301,
+    PlasmaVec           = 302,
+    PlasmaIVec          = 303,
+    PlasmaAllVec        = 304,
+    PlasmaSomeVec       = 305,
+    PlasmaCount         = 306,
+
+    PlasmaRangeAll      = 351,
+    PlasmaRangeV        = 352,
+    PlasmaRangeI        = 353,
+
     PlasmaForward       = 391,
     PlasmaBackward      = 392,
 

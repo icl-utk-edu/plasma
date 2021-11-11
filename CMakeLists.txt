@@ -316,7 +316,8 @@ core_blas/core_ssyssq.c core_blas/core_stradd.c core_blas/core_strmm.c
 core_blas/core_strssq.c core_blas/core_strtri.c core_blas/core_stslqt.c
 core_blas/core_stsmlq.c core_blas/core_stsmqr.c core_blas/core_stsqrt.c
 core_blas/core_sttlqt.c core_blas/core_sttmlq.c core_blas/core_sttmqr.c
-core_blas/core_sttqrt.c control/barrier.c control/async.c)
+core_blas/core_sttqrt.c control/barrier.c control/async.c
+compute/dstess.c)
 
 target_include_directories(plasma_core_blas PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

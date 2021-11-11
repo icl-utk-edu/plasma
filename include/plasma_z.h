@@ -218,6 +218,17 @@ int plasma_zpotrs(plasma_enum_t uplo,
                   plasma_complex64_t *pA, int lda,
                   plasma_complex64_t *pB, int ldb);
 
+int plasma_zstess(plasma_enum_t eigt, plasma_enum_t range,
+                  int n, int k,
+                  plasma_complex64_t *diag,
+                  plasma_complex64_t *offd,
+                  double vl, double vu,
+                  int il, int iu,
+                  int *pFound,
+                  double *pVal,
+                  int    *pMul,
+                  double *pVec);
+
 int plasma_zsymm(plasma_enum_t side, plasma_enum_t uplo,
                  int m, int n,
                  plasma_complex64_t alpha, plasma_complex64_t *pA, int lda,

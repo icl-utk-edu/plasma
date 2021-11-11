@@ -313,6 +313,7 @@ lapack = [
     ('ssteqr',               'dsteqr',               'csteqr',               'zsteqr'              ),
     ('ssterf',               'dsterf',               'ssterf',               'dsterf'              ),
     ('ssterm',               'dsterm',               'csterm',               'zsterm'              ),
+    ('sstess',               'dstess',               'cstess',               'zstess'              ),
     ('sstt21',               'dstt21',               'cstt21',               'zstt21'              ),
     ('ssyev',                'dsyev',                'cheev',                'zheev'               ),
     ('ssyevd',               'dsyevd',               'cheevd',               'zheevd'              ),
