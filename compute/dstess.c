@@ -164,14 +164,14 @@ enum {Init, Bisection, GetVector};
 
 typedef struct
 {
-   int    stage;        // stage of operations on this bracket.
-   
-   double lowerBound;
-   double upperBound;
-   int    nLT_low;      // # < lowerBound. -1 if it needs to be found.
-   int    nLT_hi;       // # < upperBound. -1 if it needs to be found.
-   int    numEV;        // number of Eigenvalues in bracket.
-   void   *next;        // A bracket subdivides to more brackets.
+    int    stage;       // stage of operations on this bracket.
+    
+    double lowerBound;
+    double upperBound;
+    int    nLT_low;     // # < lowerBound. -1 if it needs to be found.
+    int    nLT_hi;      // # < upperBound. -1 if it needs to be found.
+    int    numEV;       // number of Eigenvalues in bracket.
+    void   *next;       // A bracket subdivides to more brackets.
 } EvBracket;
 
 // dstein needs work areas to function. Instead of allocating and 
@@ -183,333 +183,214 @@ typedef struct
 
 typedef struct
 {
-   int      *IBLOCK;
-   int      *ISPLIT;
-   double   *WORK;
-   int      *IWORK;
-   int      *IFAIL;
+    int     *IBLOCK;
+    int     *ISPLIT;
+    double  *WORK;
+    int     *IWORK;
+    int     *IFAIL;
 } Stein_Array_t;
 
 // This is the workstack.
 typedef struct
 {
-   int   baseIdx;       // Number of EV less than user's low threshold.
-   plasma_enum_t range; // PlasmaRangeV or PlasmaRangeI.
-   plasma_enum_t eigt;  // PlasmaNoVec or PlasmaVec.
-   int   il, iu;        // For PlasmaRangeI. 
-   int   eigenvalues;   // total number of eigenvalues to find.
-   int   finished;      // # of finished eigenvectors.
-   double *diag;        // some stuff the threads need.
-   double *offd;        // ...
-   int   N;             // size of the matrix.
-   EvBracket* ToDo;     // NULL or chain head of EVBrackets yet to be processed.
-   Stein_Array_t* stein_arrays; // Workspaces per thread for useDstein.
-   int error;           // first error, if non-zero.
-   double *pVal;        // where to store eigenvalues. 
-   int    *pMul;        // where to store Multiplicity.
-   double *pVec;        // where to store eigenvectors.
+    int     baseIdx;        // Number of EV less than user's low threshold.
+    plasma_enum_t range;    // PlasmaRangeV or PlasmaRangeI.
+    plasma_enum_t eigt;     // PlasmaNoVec or PlasmaVec.
+    int     il, iu;         // For PlasmaRangeI. 
+    int     eigenvalues;    // total number of eigenvalues to find.
+    int     finished;       // # of finished eigenvectors.
+    double  *diag;          // some stuff the threads need.
+    double  *offd;          // ...
+    int     N;              // size of the matrix.
+    EvBracket* ToDo;        // NULL or chain head of EVBrackets yet to be processed.
+    Stein_Array_t* stein_arrays; // Workspaces per thread for useDstein.
+    int     error;          // first error, if non-zero.
+    double  *pVal;          // where to store eigenvalues. 
+    int     *pMul;          // where to store Multiplicity.
+    double  *pVec;          // where to store eigenvectors.
 } WorkStack;
 
 //-----------------------------------------------------------------------------
-//SUBROUTINE DORGTSQR( M, N, MB, NB, A, LDA, T, LDT, WORK, LWORK,
-//     $                     INFO )
+// void dgeqrf_( const MKL_INT* m, const MKL_INT* n, double* a, const MKL_INT* lda,
+//             double* tau, double* work, const MKL_INT* lwork, MKL_INT* info ) NOTHROW;
 //
-//      .. Scalar Arguments ..
-//      INTEGER           INFO, LDA, LDT, LWORK, M, N, MB, NB
-//      ..
-//      .. Array Arguments ..
-//      DOUBLE PRECISION  A( LDA, * ), T( LDT, * ), WORK( * )
-//      ..
-//
-// \par Purpose:
-// =============
-// DORGTSQR generates an M-by-N real matrix Q_out with orthonormal columns,
-// which are the first N columns of a product of real orthogonal
-// matrices of order M which are returned by DLATSQR
-//
-//      Q_out = first_N_columns_of( Q(1)_in * Q(2)_in * ... * Q(k)_in ).
-//
-// See the documentation for DLATSQR.
-//
-// Arguments:
-// ==========
-//
-// \param[in] M
-//          M is INTEGER
-//          The number of rows of the matrix A.  M >= 0.
-//
-// \param[in] N
-//          N is INTEGER
-//          The number of columns of the matrix A. M >= N >= 0.
-//
-// \param[in] MB
-//          MB is INTEGER
-//          The row block size used by DLATSQR to return
-//          arrays A and T. MB > N.
-//          (Note that if MB > M, then M is used instead of MB
-//          as the row block size).
-//
-// \param[in] NB
-//          NB is INTEGER
-//          The column block size used by DLATSQR to return
-//          arrays A and T. NB >= 1.
-//          (Note that if NB > N, then N is used instead of NB
-//          as the column block size).
-//
-// \param[in,out] A
-//          A is DOUBLE PRECISION array, dimension (LDA,N)
-//
-//          On entry:
-//
-//             The elements on and above the diagonal are not accessed.
-//             The elements below the diagonal represent the unit
-//             lower-trapezoidal blocked matrix V computed by DLATSQR
-//             that defines the input matrices Q_in(k) (ones on the
-//             diagonal are not stored) (same format as the output A
-//             below the diagonal in DLATSQR).
-//
-//          On exit:
-//
-//             The array A contains an M-by-N orthonormal matrix Q_out,
-//             i.e the columns of A are orthogonal unit vectors.
-//
-// \param[in] LDA
-//          LDA is INTEGER
-//          The leading dimension of the array A.  LDA >= max(1,M).
-//
-// \param[in] T
-//          T is DOUBLE PRECISION array,
-//          dimension (LDT, N * NIRB)
-//          where NIRB = Number_of_input_row_blocks
-//                     = MAX( 1, CEIL((M-N)/(MB-N)) )
-//          Let NICB = Number_of_input_col_blocks
-//                   = CEIL(N/NB)
-//
-//          The upper-triangular block reflectors used to define the
-//          input matrices Q_in(k), k=(1:NIRB*NICB). The block
-//          reflectors are stored in compact form in NIRB block
-//          reflector sequences. Each of NIRB block reflector sequences
-//          is stored in a larger NB-by-N column block of T and consists
-//          of NICB smaller NB-by-NB upper-triangular column blocks.
-//          (same format as the output T in DLATSQR).
-//
-// \param[in] LDT
-//          LDT is INTEGER
-//          The leading dimension of the array T.
-//          LDT >= max(1,min(NB1,N)).
-//
-// \param[out] WORK
-//          (workspace) DOUBLE PRECISION array, dimension (MAX(2,LWORK))
-//          On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
-//
-// \param[in] LWORK
-//          The dimension of the array WORK.  LWORK >= (M+NB)*N.
-//          If LWORK = -1, then a workspace query is assumed.
-//          The routine only calculates the optimal size of the WORK
-//          array, returns this value as the first entry of the WORK
-//          array, and no error message related to LWORK is issued
-//          by XERBLA.
-//
-// \param[out] INFO
-//          INFO is INTEGER
-//          = 0:  successful exit
-//          < 0:  if INFO = -i, the i-th argument had an illegal value
-//
-// Authors:
-// ========
-//
-// \author Univ. of Tennessee
-// \author Univ. of California Berkeley
-// \author Univ. of Colorado Denver
-// \author NAG Ltd.
-//
-// \ingroup doubleOTHERcomputational
-//
-// \par Contributors:
-// ==================
-// November 2019, Igor Kozachenko,
-//                Computer Science Division,
-//                University of California, Berkeley
-// =====================================================================
-//-----------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------------
-// DLATSQR computes a blocked Tall-Skinny QR factorization of
-// a real M-by-N matrix A for M >= N:
+// DGEQRF computes a QR factorization of a real M-by-N matrix A:
 //
 //    A = Q * ( R ),
 //            ( 0 )
+//
 // where:
-//    Q is a M-by-M orthogonal matrix, stored on exit in an implicit
-//    form in the elements below the diagonal of the array A and in
-//    the elements of the array T;
 //
-//    R is an upper-triangular N-by-N matrix, stored on exit in
-//    the elements on and above the diagonal of the array A.
-//
-//    0 is a (M-N)-by-N zero matrix, and is not stored.
+//    Q is a M-by-M orthogonal matrix;
+//    R is an upper-triangular N-by-N matrix;
+//    0 is a (M-N)-by-N zero matrix, if M > N.
 //
 // Arguments:
 // ==========
 //
-// \param[in] M
+// \param[in] int M
 //          M is INTEGER
 //          The number of rows of the matrix A.  M >= 0.
 //
-// \param[in] N
+// \param[in] int N
 //          N is INTEGER
-//          The number of columns of the matrix A. M >= N >= 0.
+//          The number of columns of the matrix A.  N >= 0.
 //
-// \param[in] MB
-//          MB is INTEGER
-//          The row block size to be used in the blocked QR.
-//          MB > N.
-//
-// \param[in] NB
-//          NB is INTEGER
-//          The column block size to be used in the blocked QR.
-//          N >= NB >= 1.
-//
-// \param[in,out] A
+// \param[in,out] double A[M * N]
 //          A is DOUBLE PRECISION array, dimension (LDA,N)
 //          On entry, the M-by-N matrix A.
-//          On exit, the elements on and above the diagonal
-//          of the array contain the N-by-N upper triangular matrix R;
-//          the elements below the diagonal represent Q by the columns
-//          of blocked V (see Further Details).
+//          On exit, the elements on and above the diagonal of the array
+//          contain the min(M,N)-by-N upper trapezoidal matrix R (R is
+//          upper triangular if m >= n); the elements below the diagonal,
+//          with the array TAU, represent the orthogonal matrix Q as a
+//          product of min(m,n) elementary reflectors (see Further
+//          Details).
 //
-// \param[in] LDA
+// \param[in] int LDA
 //          LDA is INTEGER
 //          The leading dimension of the array A.  LDA >= max(1,M).
 //
-// \param[out] T
-//          T is DOUBLE PRECISION array,
-//          dimension (LDT, N * Number_of_row_blocks)
-//          where Number_of_row_blocks = CEIL((M-N)/(MB-N))
-//          The blocked upper triangular block reflectors stored in compact form
-//          as a sequence of upper triangular blocks.
-//          See Further Details below.
+// \param[out] double TAU[N]
+//          TAU is DOUBLE PRECISION array, dimension (min(M,N))
+//          The scalar factors of the elementary reflectors (see Further
+//          Details).
 //
-// \param[in] LDT
-//          LDT is INTEGER
-//          The leading dimension of the array T.  LDT >= NB.
+// \param[out] double WORK[LWORK]
+//          WORK is DOUBLE PRECISION array, dimension (MAX(1,LWORK))
+//          On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
 //
-// \param[out] WORK
-//         (workspace) DOUBLE PRECISION array, dimension (MAX(1,LWORK))
+// \param[in] int LWORK; set to N*NB, should be queried with LWORK=-1.
+//          LWORK is INTEGER
+//          The dimension of the array WORK.  LWORK >= max(1,N).
+//          For optimum performance LWORK >= N*NB, where NB is
+//          the optimal blocksize.
 //
-// \param[in] LWORK
-//          The dimension of the array WORK.  LWORK >= NB*N.
 //          If LWORK = -1, then a workspace query is assumed; the routine
 //          only calculates the optimal size of the WORK array, returns
 //          this value as the first entry of the WORK array, and no error
 //          message related to LWORK is issued by XERBLA.
 //
-// \param[out] INFO
+// \param[out] int INFO
 //          INFO is INTEGER
 //          = 0:  successful exit
 //          < 0:  if INFO = -i, the i-th argument had an illegal value
-//
-// Authors:
-// ========
-//
-// \author Univ. of Tennessee
-// \author Univ. of California Berkeley
-// \author Univ. of Colorado Denver
-// \author NAG Ltd.
-//
-// \par Further Details:
-// =====================
-//
-// Tall-Skinny QR (TSQR) performs QR by a sequence of orthogonal transformations,
-// representing Q as a product of other orthogonal matrices
-//   Q = Q(1) * Q(2) * . . . * Q(k)
-// where each Q(i) zeros out subdiagonal entries of a block of MB rows of A:
-//   Q(1) zeros out the subdiagonal entries of rows 1:MB of A
-//   Q(2) zeros out the bottom MB-N rows of rows [1:N,MB+1:2*MB-N] of A
-//   Q(3) zeros out the bottom MB-N rows of rows [1:N,2*MB-N+1:3*MB-2*N] of A
-//   . . .
-//
-// Q(1) is computed by GEQRT, which represents Q(1) by Householder vectors
-// stored under the diagonal of rows 1:MB of A, and by upper triangular
-// block reflectors, stored in array T(1:LDT,1:N).
-// For more information see Further Details in GEQRT.
-//
-// Q(i) for i>1 is computed by TPQRT, which represents Q(i) by Householder vectors
-// stored in rows [(i-1)*(MB-N)+N+1:i*(MB-N)+N] of A, and by upper triangular
-// block reflectors, stored in array T(1:LDT,(i-1)*N+1:i*N).
-// The last Q(k) may use fewer rows.
-// For more information see Further Details in TPQRT.
-//
-// For more details of the overall algorithm, see the description of
-// Sequential TSQR in Section 2.2 of [1].
-//
-// [1] “Communication-Optimal Parallel and Sequential QR and LU Factorizations,”
-//     J. Demmel, L. Grigori, M. Hoemmen, J. Langou,
-//     SIAM J. Sci. Comput, vol. 34, no. 1, 2012
 //-----------------------------------------------------------------------------
-static int useDlatsqr(double *A, int M, int N) {
-   int MB, NB, LDA, LDT, RowB, LWORK, INFO;
-   double *T, *WORK;
 
-   // MB must be >N. Note we divide (M-N) by (MB-N) for RowB,
-   // so we don't want MB-N near zero.
-   // What we'd like is MB-N to be a power of 2, so MB=N+2^x.
-   int i=512+N;  // test MB-N = 512.
-   while ( (i-N) < (2*N) ) {i=2*(i-N)+N;}
-   MB = i;
-   if (MB>M) MB=M;
+//-----------------------------------------------------------------------------
+// void dorgqr_( const MKL_INT* m, const MKL_INT* n, const MKL_INT* k, double* a,
+//              const MKL_INT* lda, const double* tau, double* work,
+//              const MKL_INT* lwork, MKL_INT* info ) NOTHROW;
+//
+// DORGQR generates an M-by-N real matrix Q with orthonormal columns,
+// which is defined as the first N columns of a product of K elementary
+// reflectors of order M
+//
+//       Q  =  H(1) H(2) . . . H(k)
+//
+// as returned by DGEQRF.
+//
+// Arguments:
+// ==========
+//
+// \param[in] int M
+//          M is INTEGER
+//          The number of rows of the matrix Q. M >= 0.
+//
+// \param[in] int N
+//          N is INTEGER
+//          The number of columns of the matrix Q. M >= N >= 0.
+//
+// \param[in] int K
+//          K is INTEGER
+//          The number of elementary reflectors whose product defines the
+//          matrix Q. N >= K >= 0.
+//
+// \param[in,out] double A[M*N]
+//          A is DOUBLE PRECISION array, dimension (LDA,N)
+//          On entry, the i-th column must contain the vector which
+//          defines the elementary reflector H(i), for i = 1,2,...,k, as
+//          returned by DGEQRF in the first k columns of its array
+//          argument A.
+//          On exit, the M-by-N matrix Q.
+//
+// \param[in] int LDA
+//          LDA is INTEGER
+//          The first dimension of the array A. LDA >= max(1,M).
+//
+// \param[in] double TAU[N]
+//          TAU is DOUBLE PRECISION array, dimension (K)
+//          TAU(i) must contain the scalar factor of the elementary
+//          reflector H(i), as returned by DGEQRF.
+//
+// \param[out] double WORK[LWORK]
+//          WORK is DOUBLE PRECISION array, dimension (MAX(1,LWORK))
+//          On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+//
+// \param[in] int LWORK (same size as in dgeqrf).
+//          LWORK is INTEGER
+//          The dimension of the array WORK. LWORK >= max(1,N).
+//          For optimum performance LWORK >= N*NB, where NB is the
+//          optimal blocksize.
+//
+//          If LWORK = -1, then a workspace query is assumed; the routine
+//          only calculates the optimal size of the WORK array, returns
+//          this value as the first entry of the WORK array, and no error
+//          message related to LWORK is issued by XERBLA.
+//
+// \param[out] int INFO
+//          INFO is INTEGER
+//          = 0:  successful exit
+//          < 0:  if INFO = -i, the i-th argument has an illegal value
+//-----------------------------------------------------------------------------
 
-   if (N < 128) NB=N;
-   else         NB=128;
-   
-   LDA=M;
+//-----------------------------------------------------------------------------
+// useMKL_DGEQRF: Uses MKL_dgeqrf and MKL_dorgqr to orthogonalize the 
+// eigenvectors found.
+// At this writing, this is several times faster than plasma_dgeqrf() and also
+// several times faster than MKL dlatsqr() (Tall Skinny QR).
+//
+// void dgeqrf_( const MKL_INT* m, const MKL_INT* n, double* a, const MKL_INT* lda,
+//             double* tau, double* work, const MKL_INT* lwork, MKL_INT* info ) NOTHROW;
+//-----------------------------------------------------------------------------
+int useMKL_DGEQRF(int N, int nEigVecs, double *pVec) {
+    int MB, NB, LDA, LDT, RowB, LWORK, INFO;
+    double *Tau, *WORK;
 
-   // Note if (MB-N) is small, this produces a massive RowB, and we cannot allocate that much memory.
-   RowB = (M-N)/(MB-N);
-   if ((MB-N)*RowB < (M-N)) RowB++;
-   DSTESS_DEBUG(0) fprintf(stderr, "MB=%i RowB=%i.\n", MB, RowB);
+    Tau = calloc(nEigVecs, sizeof(double)); // tau array.
+    if (Tau == NULL) {
+        return(PlasmaErrorOutOfMemory);
+    }
 
-   LDT = NB;
+    LWORK=-1;                               // A query.
+    double worksize;
 
-   T = malloc(LDT*N*RowB*sizeof(double));
-   // If we cannot allocate: Try to be sensible and try again.
-   // The formula divides by (MB-N) which is the culprit; MB-N is three.
-   // Force MB=M so RowB = 1.
-   if (T == NULL) {
-      MB=M;
-      RowB = 1;
-      T = malloc(LDT*N*RowB*sizeof(double));
-      if (T == NULL) {
-         DSTESS_DEBUG(0) fprintf(stderr, "%s:%i Out of memory for T, LDT*N*RowB=%i.\n", __func__, __LINE__, LDT*N*RowB);
-         return(-1);
-      }
-   }
+    // Get the optimal size of the workspace.
+    dgeqrf_( &N, &nEigVecs, pVec, &N, Tau, &worksize, &LWORK, &INFO);
 
-   // For dlatsqr, LWORK=NB*N, but for dorgtsqr, we need (M+NB)*N.
-   LWORK = (M+NB)*N;
+    LWORK = (int) worksize;
+    WORK = malloc(LWORK * sizeof(double));
+    if (WORK == NULL) {
+        return(PlasmaErrorOutOfMemory);
+    }
 
-   WORK = malloc(LWORK*sizeof(double));
+    double time;
+    
+//  We do not seem to depend on the number of threads at all.
+//  omp_set_num_threads( 1); // 1=2.92s 2=3.03s 4=2.76s 8=3.64s 16=2.7s 32=2.69s
+    if (0) time = -omp_get_wtime();
+    dgeqrf_(&N, &nEigVecs, pVec, &N, Tau, WORK, &LWORK, &INFO);
+    if (0) time += omp_get_wtime();
+    if (0) fprintf(stderr, "%s:%i MKL_dgeqrf ret=%i. time=%.6f S.\n", __func__, __LINE__, INFO, time);
 
-   DSTESS_DEBUG(0) fprintf(stderr, "M=%i N=%i MB=%i NB=%i A=%p LDA=%i T=%p LDT=%i WORK=%p LWORK=%i\n", 
-      M, N, MB, NB, (void*) A, LDA, (void*) T, LDT, (void*) WORK, LWORK);
-   dlatsqr_( &M, &N, &MB, &NB, A, &LDA, T, &LDT, WORK, &LWORK, &INFO);
-   if (INFO != 0) {
-      DSTESS_DEBUG(0) fprintf(stderr, "LAPACK_dlatsqr returned INFO = %i.\n", INFO);
-      return(INFO);
-   }
-
-   DSTESS_DEBUG(0) fprintf(stderr, "Checkpoint after dlatsqr_(), Line=%i.\n", __LINE__);
-   dorgtsqr_( &M, &N, &MB, &NB, A, &LDA, T, &LDT, WORK, &LWORK, &INFO);   
-   DSTESS_DEBUG(0) fprintf(stderr, "Checkpoint after dorgtsqr_(), Line=%i.\n", __LINE__);
-   if (INFO != 0) {
-      DSTESS_DEBUG(0) fprintf(stderr, "LAPACK_dorgtsqr returned INFO = %i.\n", INFO);
-      return(INFO);
-   }
-
-   free(T);
-   free(WORK);
-   return(0);
-} // end useDlatsqr
+    // build Q.
+    if (0) time = -omp_get_wtime();
+    dorgqr_(&N, &nEigVecs, &nEigVecs, pVec, &N, Tau, WORK, &LWORK, &INFO);
+    if (0) time += omp_get_wtime();
+    if (0) fprintf(stderr, "%s:%i MKL_dorgqr ret=%i. time=%.6f S.\n", __func__, __LINE__, INFO, time);
+    free(Tau);
+    free(WORK);
+    return(INFO);
+} // END useMKL_DGEQRF.
 
 //-----------------------------------------------------------------------------
 // useDstein: Uses lapack routine dstein() to recover a single eigenvector.
@@ -539,31 +420,31 @@ static int useDstein( double *diag, double *offd, double u, double *v, int N, St
 //                   indices are stored in IFAIL[].
 // int INFO          =0 success. <0 i-th argument invalid. >0 # evecs failed to converge.
 
-   int M=1, LDZ=N, INFO;
+    int M=1, LDZ=N, INFO;
+ 
+    int thread = omp_get_thread_num();
+    if (myArrays[thread].IBLOCK == NULL) myArrays[thread].IBLOCK = (int*) calloc(N, sizeof(int));
+    if (myArrays[thread].ISPLIT == NULL) myArrays[thread].ISPLIT = (int*) calloc(N, sizeof(int));
+    if (myArrays[thread].WORK   == NULL) myArrays[thread].WORK   = (double*) calloc(5*N, sizeof(double));
+    if (myArrays[thread].IWORK  == NULL) myArrays[thread].IWORK  = (int*) calloc(N, sizeof(int));
+    if (myArrays[thread].IFAIL  == NULL) myArrays[thread].IFAIL  = (int*) calloc(N, sizeof(int));
+    myArrays[thread].IBLOCK[0]=1;
+    myArrays[thread].ISPLIT[0]=N;
+    double W = u;
+ 
+    if (myArrays[thread].IBLOCK == NULL || myArrays[thread].ISPLIT==NULL || 
+        myArrays[thread].WORK==NULL || myArrays[thread].IWORK==NULL || 
+        myArrays[thread].IFAIL==NULL) {
+        DSTESS_DEBUG(1) fprintf(stderr, "%2i:%s:%i dstein failed to allocate workspaces.\n", omp_get_thread_num(), __func__, __LINE__);
+        return(PlasmaErrorOutOfMemory);
+    }
 
-   int thread = omp_get_thread_num();
-   if (myArrays[thread].IBLOCK == NULL) myArrays[thread].IBLOCK = (int*) calloc(N, sizeof(int));
-   if (myArrays[thread].ISPLIT == NULL) myArrays[thread].ISPLIT = (int*) calloc(N, sizeof(int));
-   if (myArrays[thread].WORK   == NULL) myArrays[thread].WORK   = (double*) calloc(5*N, sizeof(double));
-   if (myArrays[thread].IWORK  == NULL) myArrays[thread].IWORK  = (int*) calloc(N, sizeof(int));
-   if (myArrays[thread].IFAIL  == NULL) myArrays[thread].IFAIL  = (int*) calloc(N, sizeof(int));
-   myArrays[thread].IBLOCK[0]=1;
-   myArrays[thread].ISPLIT[0]=N;
-   double W = u;
+    dstein_(&N, diag, offd, &M, &W, myArrays[thread].IBLOCK, myArrays[thread].ISPLIT, v, 
+            &LDZ, myArrays[thread].WORK, myArrays[thread].IWORK, myArrays[thread].IFAIL, &INFO);
+    DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i ev=%.16e dstein returning INFO=%d.\n", 
+                            omp_get_thread_num(), __func__, __LINE__, u, INFO);
 
-   if (myArrays[thread].IBLOCK == NULL || myArrays[thread].ISPLIT==NULL || 
-       myArrays[thread].WORK==NULL || myArrays[thread].IWORK==NULL || 
-       myArrays[thread].IFAIL==NULL) {
-      DSTESS_DEBUG(1) fprintf(stderr, "%2i:%s:%i dstein failed to allocate workspaces.\n", omp_get_thread_num(), __func__, __LINE__);
-      return(PlasmaErrorOutOfMemory);
-   }
-
-   dstein_(&N, diag, offd, &M, &W, myArrays[thread].IBLOCK, myArrays[thread].ISPLIT, v, 
-           &LDZ, myArrays[thread].WORK, myArrays[thread].IWORK, myArrays[thread].IFAIL, &INFO);
-   DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i ev=%.16e dstein returning INFO=%d.\n", 
-                   omp_get_thread_num(), __func__, __LINE__, u, INFO);
-
-   return(INFO);
+    return(INFO);
 } // end useDstein.
 
 //-----------------------------------------------------------------------------
@@ -634,45 +515,45 @@ static int useDstein( double *diag, double *offd, double u, double *v, int N, St
 // comparable auto-scaling Sturm sequence.
 //-----------------------------------------------------------------------------
 static int Sturm_Scaled(double *diag, double *offd, int n, double u) {
-   int i, isneg=0;
-   double s, w, v0, v1, Pm1_0, Pm1_1, PHI, UPSILON;
-   if (n==0) return (0);
-   PHI = ((double)(((long long) 1)<<34));
-   UPSILON = 1.0/PHI;
-
-   Pm1_1 = 1.0;
-   Pm1_0 = (diag[0]-u);
-   if (Pm1_0 < 0) isneg = 1;  // our first test.
-   for (i=1; i<n; i++) {
-      // first part of scaling, just get w.
-      v0 = fabs(Pm1_0);
-      v1 = fabs(Pm1_1);
-      if (v0 > v1) w = v0;
-      else         w = v1;
-
-      // Go ahead and calculate P[i]:
-      s = Pm1_0;
-      Pm1_0 = (diag[i]-u)*Pm1_0 -((offd[i-1]*offd[i-1])*Pm1_1);
-      Pm1_1 = s;
-
-      // Now determine whether to scale these new values.
-      if (w > PHI) {
-         s = PHI/w;
-         Pm1_0 *= s;
-         Pm1_1 *= s;
-      } else if (w < UPSILON) {
-         s = UPSILON/w;
-         Pm1_0 *= s;
-         Pm1_1 *= s;
-      } // else skip scaling.
-
-      // Finally, see if the sign changed.
-      if ( (Pm1_0 < 0 && Pm1_1 >= 0) ||  
-           (Pm1_0 >= 0 && Pm1_1 < 0)
-         ) isneg++;  
-   }
-            
-   return(isneg);
+    int i, isneg=0;
+    double s, w, v0, v1, Pm1_0, Pm1_1, PHI, UPSILON;
+    if (n==0) return (0);
+    PHI = ((double)(((long long) 1)<<34));
+    UPSILON = 1.0/PHI;
+ 
+    Pm1_1 = 1.0;
+    Pm1_0 = (diag[0]-u);
+    if (Pm1_0 < 0) isneg = 1;  // our first test.
+    for (i=1; i<n; i++) {
+        // first part of scaling, just get w.
+        v0 = fabs(Pm1_0);
+        v1 = fabs(Pm1_1);
+        if (v0 > v1) w = v0;
+        else         w = v1;
+ 
+        // Go ahead and calculate P[i]:
+        s = Pm1_0;
+        Pm1_0 = (diag[i]-u)*Pm1_0 -((offd[i-1]*offd[i-1])*Pm1_1);
+        Pm1_1 = s;
+ 
+        // Now determine whether to scale these new values.
+        if (w > PHI) {
+            s = PHI/w;
+            Pm1_0 *= s;
+            Pm1_1 *= s;
+        } else if (w < UPSILON) {
+            s = UPSILON/w;
+            Pm1_0 *= s;
+            Pm1_1 *= s;
+        } // else skip scaling.
+ 
+        // Finally, see if the sign changed.
+        if ( (Pm1_0 < 0 && Pm1_1 >= 0) ||  
+             (Pm1_0 >= 0 && Pm1_1 < 0)
+           ) isneg++;  
+    }
+             
+    return(isneg);
 } // end Sturm_Scaled.
 
 //-----------------------------------------------------------------------------
@@ -691,49 +572,49 @@ static int Sturm_Scaled(double *diag, double *offd, int n, double u) {
 // and max, so we can also use this to compute the matrix Norm. 
 //-----------------------------------------------------------------------------
 static void Bound_MinMax_Eigvalue(double *diag, double *offd, int n, double *Min, double *Max) {
-   int i;
-   double test, testdi, testdim1, min=DBL_MAX, max=-DBL_MAX;
-
-   for (i=0; i<n; i++) {
-      if (i == 0) testdim1=0.;
-      else        testdim1=offd[i-1];
-
-      if (i==(n-1)) testdi=0;
-      else          testdi=offd[i];
-
-      test=diag[i] - fabs(testdi) - fabs(testdim1);
-      if (test < min) {
-         min=test;
-         DSTESS_DEBUG(0) fprintf(stderr,"Gerschgorin row=%i new min=%.16e.\n", i, min);
-      } 
-
-      test=diag[i] + fabs(testdi) + fabs(testdim1);
-      if (test > max) {
-         max=test;
-         DSTESS_DEBUG(0) fprintf(stderr,"Gerschgorin row=%i new max=%.16e.\n", i, max);
-      }      
-   }
-      
-
-   double cp, minLB=min, minUB=max, maxLB=min, maxUB=max;
-   // Now, within that range, find the actual minimum.
-   while (1) {
-      cp = (minLB+minUB)*0.5;
-      if (cp == minLB || cp == minUB) break;
-      if (Sturm_Scaled(diag, offd, n, cp) == n) minLB = cp;
-      else                                      minUB = cp;
-   }
-    
-   // Now find the max within that range. At each midpoint MidP:
-   while (1) {
-      cp = (maxLB+maxUB)*0.5;
-      if (cp == maxLB || cp == maxUB) break;
-      if (Sturm_Scaled(diag, offd, n, cp) == n) maxUB=cp;
-      else                                      maxLB=cp;
-   }
-
-   *Min = minLB;
-   *Max = maxLB;
+    int i;
+    double test, testdi, testdim1, min=DBL_MAX, max=-DBL_MAX;
+ 
+    for (i=0; i<n; i++) {
+        if (i == 0) testdim1=0.;
+        else        testdim1=offd[i-1];
+        
+        if (i==(n-1)) testdi=0;
+        else          testdi=offd[i];
+        
+        test=diag[i] - fabs(testdi) - fabs(testdim1);
+        if (test < min) {
+            min=test;
+            DSTESS_DEBUG(0) fprintf(stderr,"Gerschgorin row=%i new min=%.16e.\n", i, min);
+        } 
+        
+        test=diag[i] + fabs(testdi) + fabs(testdim1);
+        if (test > max) {
+            max=test;
+            DSTESS_DEBUG(0) fprintf(stderr,"Gerschgorin row=%i new max=%.16e.\n", i, max);
+        }      
+    }
+       
+ 
+    double cp, minLB=min, minUB=max, maxLB=min, maxUB=max;
+    // Now, within that range, find the actual minimum.
+    while (1) {
+        cp = (minLB+minUB)*0.5;
+        if (cp == minLB || cp == minUB) break;
+        if (Sturm_Scaled(diag, offd, n, cp) == n) minLB = cp;
+        else                                      minUB = cp;
+    }
+     
+    // Now find the max within that range. At each midpoint MidP:
+    while (1) {
+        cp = (maxLB+maxUB)*0.5;
+        if (cp == maxLB || cp == maxUB) break;
+        if (Sturm_Scaled(diag, offd, n, cp) == n) maxUB=cp;
+        else                                      maxLB=cp;
+    }
+ 
+    *Min = minLB;
+    *Max = maxLB;
 } // end Bound_MinMax_Eigvalue
 
 //-----------------------------------------------------------------------------
@@ -749,13 +630,13 @@ static void Bound_MinMax_Eigvalue(double *diag, double *offd, int n, double *Min
 // alpha, beta, Y, etc.  
 //-----------------------------------------------------------------------------
 static void MM(double *diag, double *offd, int n, double *X, double *Y) {
-   int i;
-   Y[0] = diag[0]*X[0] + offd[0]*X[1];
-   Y[n-1] = offd[n-2]*X[n-2] + diag[n-1]*X[n-1];
-
-   for (i=1; i<(n-1); i++) {
-      Y[i] = offd[i-1]*X[i-1] + diag[i]*X[i] + offd[i]*X[i+1];
-   }
+    int i;
+    Y[0] = diag[0]*X[0] + offd[0]*X[1];
+    Y[n-1] = offd[n-2]*X[n-2] + diag[n-1]*X[n-1];
+ 
+    for (i=1; i<(n-1); i++) {
+        Y[i] = offd[i-1]*X[i-1] + diag[i]*X[i] + offd[i]*X[i+1];
+    }
 } // END MM.
 
 
@@ -766,26 +647,26 @@ static void MM(double *diag, double *offd, int n, double *X, double *Y) {
 // If u==0.0, we'll return L_INF of (A*V). 
 //-----------------------------------------------------------------------------
 static double eigp_error(double *diag, double *offd, int n, double u, double *v) {
-   int i, zeros=0;
-   double *AV, test_vector[4096]; // static workplace to avoid calloc.
-   double norm, dtemp;
-
-   AV = test_vector;              // assume big enough.
-   if (n > 4096) AV = (double*) calloc(n, sizeof(double)); // oops, it isn't.
-
-   MM(diag, offd, n, v, AV); // AV = A*v.
-
-   norm = -DBL_MAX;  // Trying to find maximum.
-   zeros=0;
-   for (i=0; i<n; i++) {
-      dtemp = fabs(AV[i] - u*v[i]);    // This should be zero.
-      if (dtemp > norm) norm=dtemp;
-      if (v[i] == 0.) zeros++;
-   }
-
-   if (AV != test_vector) free(AV);
-   if (zeros == n) return(DBL_MAX);
-   return(norm);
+    int i, zeros=0;
+    double *AV, test_vector[4096]; // static workplace to avoid calloc.
+    double norm, dtemp;
+ 
+    AV = test_vector;              // assume big enough.
+    if (n > 4096) AV = (double*) calloc(n, sizeof(double)); // oops, it isn't.
+ 
+    MM(diag, offd, n, v, AV); // AV = A*v.
+ 
+    norm = -DBL_MAX;  // Trying to find maximum.
+    zeros=0;
+    for (i=0; i<n; i++) {
+        dtemp = fabs(AV[i] - u*v[i]);    // This should be zero.
+        if (dtemp > norm) norm=dtemp;
+        if (v[i] == 0.) zeros++;
+    }
+ 
+    if (AV != test_vector) free(AV);
+    if (zeros == n) return(DBL_MAX);
+    return(norm);
 } // end eigp_error.
 
 
@@ -843,210 +724,209 @@ static double eigp_error(double *diag, double *offd, int n, double u, double *v)
 //-----------------------------------------------------------------------------
 
 void thread_work(WorkStack* Stack) {
-   double *diag = Stack->diag;
-   double *offd = Stack->offd;
-   int    N = Stack->N;
-
-   double cp;
-   int flag, evLess;
-   EvBracket *myB;
-
-   while (1) {
-      flag = 0;
-      myB = NULL;
-      #pragma omp critical (UpdateStack)
-      {
-         if (Stack->finished == Stack->eigenvalues) flag=1;
-         else if (Stack->ToDo != NULL) {
-            myB = Stack->ToDo;
-            Stack->ToDo = myB->next;
-         }
-      }
-
-      // Exit, all the work is done.
-      if (flag==1) return;
-
-      // If all the work isn't done but I couldn't find any,
-      // go back and look again. Another thread must still 
-      // be subdividing or working on a vector.
-      if (myB == NULL) continue;
-
-      // Okay, myB is popped off the stack, we must resolve it.
-      switch (myB->stage) {
-         case Init:
-            myB->nLT_low = Sturm_Scaled(diag, offd, N, myB->lowerBound);
-            myB->nLT_hi =  Sturm_Scaled(diag, offd, N, myB->upperBound);
-            // compute number of eigenvalues in this range. 
-            myB->numEV = (myB->nLT_hi - myB->nLT_low);
-            DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i On entry, #EV in [%.7f, %.7f]==%d, nLT_low=%d, nLT_hi=%d.\n", omp_get_thread_num(), __func__, __LINE__, myB->lowerBound, myB->upperBound, myB->numEV, myB->nLT_low, myB->nLT_hi);
-
-            // If no eigenvalues in this bracket, we discard it and break from the switch() to continue the while().
-            // This happens when ranges are part of the first arbitrary range division.
-            if (myB->numEV == 0) {
-               free(myB);  
-               myB=NULL;
-               break;
+    double *diag = Stack->diag;
+    double *offd = Stack->offd;
+    int    N = Stack->N;
+ 
+    double cp;
+    int flag, evLess;
+    EvBracket *myB;
+ 
+    while (1) {
+        flag = 0;
+        myB = NULL;
+        #pragma omp critical (UpdateStack)
+        {
+            if (Stack->finished == Stack->eigenvalues) flag=1;
+            else if (Stack->ToDo != NULL) {
+                myB = Stack->ToDo;
+                Stack->ToDo = myB->next;
             }
-         
-            if (Stack->range == PlasmaRangeI) {
-               if (myB->nLT_hi  < Stack->il ||     // e.g if il=500, and nLT_hi=499, this bracket is under range of interest.
-                   myB->nLT_low > Stack->iu) {     // e.g if iu=1000, and lLT_low=1001, this bracket is above range of interest.
-                   DSTESS_DEBUG(0) fprintf(stderr, "Line:%i, discard myB, nLT_hi=%i, nLT_low=%i, Stack.il=%i, Stack.iu=%i, myB=%p.\n", 
-                  __LINE__, myB->nLT_hi, myB->nLT_low, Stack->il, Stack->iu, myB);
-                  free(myB);
-                  myB=NULL;
-                  break;
-               }
-            }
-
-            myB->stage = Bisection;
-            // fall into Bisection.
-            
-         case Bisection:
-            flag = 0;
-            while (1) {
-               cp = (myB->lowerBound+myB->upperBound)*0.5;
-               DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i lowerBound=%.16f, upperBound=%.16f, cp=%.16f, nLT_low=%i, nLT_hi=%i.\n", 
-                     omp_get_thread_num(), __func__, __LINE__, myB->lowerBound, myB->upperBound, cp, myB->nLT_low, myB->nLT_hi);
-               if (cp == myB->lowerBound || cp == myB->upperBound) {
-                  // Our bracket has been narrowed to machine epsilon for this magnitude (=ulp).
-                  // We are done; the bracket is always [low,high). 'high' is not included, so
-                  // we have myB->numEV eigenvalues at low, whether it == 1 or is > 1.
-                  // We find the eigenvector.
-                  // (We can test multiplicity with GluedWilk).
-                  DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i cutpoint found eigenvalue %.16e nLT_low=%d idx=%d numEV=%i.\n", omp_get_thread_num(), __func__, __LINE__, myB->lowerBound, myB->nLT_low, myB->nLT_low - Stack->baseIdx, myB->numEV);
-                  break;
-               } else {
-                  // we have a cutpoint. 
-                  evLess = Sturm_Scaled(diag, offd, N, cp);
-                  DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i cp=%.16f, evLess<cp=%i, nLT_low=%i, nLT_hi=%i.\n", 
-                     omp_get_thread_num(), __func__, __LINE__, cp, evLess, myB->nLT_low, myB->nLT_hi);
-                  if (evLess < 0) {
-                     // We could not compute the Sturm sequence for it.
-                     flag = -1; // indicate an error.
-                     DSTESS_DEBUG(0) fprintf(stderr, "Sturm Sequence compute fails for this matrix.\n");
-                     break; // exit while true.
-                  }
-
-                  // Discard empty halves in both PlasmaRangeV and PlasmaRangeI.
-                  // If #EV < cutpoint is the same as the #EV < high, it means
-                  // no EV are in [cutpoint, hi]. We can discard that range.
-                  if (evLess == myB->nLT_hi) {
-                     myB->upperBound = cp;
-                     DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i cp=%.16f Discard high range, now [%.16f, %.16f].\n", omp_get_thread_num(), __func__, __LINE__, cp, myB->lowerBound, myB->upperBound);
-                     continue;
-                  }
-
-                  // If #EV < cutpoint is the same as #EV < low, it means no
-                  // EV are in [low, cutpoint]. We can discard that range. 
-                  if (evLess == myB->nLT_low) {
-                     myB->lowerBound = cp;
-                     DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i cp=%.16f Discard Low range, now [%.16f, %.16f].\n", omp_get_thread_num(), __func__, __LINE__, cp, myB->lowerBound, myB->upperBound);
-                     continue;
-                  }
-
-                  // Note: If we were PlasmaRangeV, the initial bounds given by the user are the ranges,
-                  // so we have nothing further to do. In PlasmaRangeI; the initial bounds are Gerschgorin,
-                  // limits and not enough: We must further narrow to the desired indices.
-                  if (Stack->range == PlasmaRangeI) {
-                        DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i PlasmaRangeI cp=%.16f, evLess=%i, Stack->il=%i, Stack->iu=%i.\n", 
-                        omp_get_thread_num(), __func__, __LINE__, cp, evLess, Stack->il, Stack->iu);
-                     // For PlasmaRangeI:
-                     // Recall that il, iu are 1-relative; while evLess is zero-relative; i.e.
-                     // if [il,iu]=[1,2], evless must be 0, or 1. 
-                     // when evLess<cp == il-1, or just <il, cp is a good boundary and 
-                     // we can discard the lower half.
-                     //
-                     // To judge the upper half, the cutpoint must be < iu, so if it is >= iu, cannot
-                     // contain eigenvalue[iu-1].
-                     // if evLess >= iu, we can discard upper half.
-                     if (evLess < Stack->il) {
-                        // The lower half [lowerBound, cp) is not needed, it has no indices >= il.
-                        myB->lowerBound = cp;
-                        myB->nLT_low    = evLess;
-                        myB->numEV = (myB->nLT_hi-myB->nLT_low);
-                        DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i cp=%.16f PlasmaRangeI: Discard Low range, now [%.16f, %.16f] #Eval=%i.\n", omp_get_thread_num(), __func__, __LINE__, cp, myB->lowerBound, myB->upperBound, myB->numEV);
-                        continue;
-                     }
-
-                     if (evLess >= Stack->iu) {
-                        // The upper half [cp, upperBound) is not needed, it has no indices > iu; 
+        }
+        
+        // Exit, all the work is done.
+        if (flag==1) return;
+        
+        // If all the work isn't done but I couldn't find any,
+        // go back and look again. Another thread must still 
+        // be subdividing or working on a vector.
+        if (myB == NULL) continue;
+        
+        // Okay, myB is popped off the stack, we must resolve it.
+        switch (myB->stage) {
+            case Init:
+                myB->nLT_low = Sturm_Scaled(diag, offd, N, myB->lowerBound);
+                myB->nLT_hi =  Sturm_Scaled(diag, offd, N, myB->upperBound);
+                // compute number of eigenvalues in this range. 
+                myB->numEV = (myB->nLT_hi - myB->nLT_low);
+                DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i On entry, #EV in [%.7f, %.7f]==%d, nLT_low=%d, nLT_hi=%d.\n", omp_get_thread_num(), __func__, __LINE__, myB->lowerBound, myB->upperBound, myB->numEV, myB->nLT_low, myB->nLT_hi);
+                
+                // If no eigenvalues in this bracket, we discard it and break from the switch() to continue the while().
+                // This happens when ranges are part of the first arbitrary range division.
+                if (myB->numEV == 0) {
+                    free(myB);  
+                    myB=NULL;
+                    break;
+                }
+                
+                if (Stack->range == PlasmaRangeI) {
+                    if (myB->nLT_hi  < Stack->il ||     // e.g if il=500, and nLT_hi=499, this bracket is under range of interest.
+                        myB->nLT_low > Stack->iu) {     // e.g if iu=1000, and lLT_low=1001, this bracket is above range of interest.
+                        DSTESS_DEBUG(0) fprintf(stderr, "Line:%i, discard myB, nLT_hi=%i, nLT_low=%i, Stack.il=%i, Stack.iu=%i, myB=%p.\n", 
+                        __LINE__, myB->nLT_hi, myB->nLT_low, Stack->il, Stack->iu, myB);
+                        free(myB);
+                        myB=NULL;
+                        break;
+                    }
+                }
+                
+                myB->stage = Bisection;
+                // fall into Bisection.
+               
+            case Bisection:
+                flag = 0;
+                while (1) {
+                    cp = (myB->lowerBound+myB->upperBound)*0.5;
+                    DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i lowerBound=%.16f, upperBound=%.16f, cp=%.16f, nLT_low=%i, nLT_hi=%i.\n", 
+                            omp_get_thread_num(), __func__, __LINE__, myB->lowerBound, myB->upperBound, cp, myB->nLT_low, myB->nLT_hi);
+                    if (cp == myB->lowerBound || cp == myB->upperBound) {
+                        // Our bracket has been narrowed to machine epsilon for this magnitude (=ulp).
+                        // We are done; the bracket is always [low,high). 'high' is not included, so
+                        // we have myB->numEV eigenvalues at low, whether it == 1 or is > 1.
+                        // We find the eigenvector.
+                        // (We can test multiplicity with GluedWilk).
+                        DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i cutpoint found eigenvalue %.16e nLT_low=%d idx=%d numEV=%i.\n", omp_get_thread_num(), __func__, __LINE__, myB->lowerBound, myB->nLT_low, myB->nLT_low - Stack->baseIdx, myB->numEV);
+                        break;
+                    } else {
+                        // we have a cutpoint. 
+                        evLess = Sturm_Scaled(diag, offd, N, cp);
+                        DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i cp=%.16f, evLess<cp=%i, nLT_low=%i, nLT_hi=%i.\n", 
+                            omp_get_thread_num(), __func__, __LINE__, cp, evLess, myB->nLT_low, myB->nLT_hi);
+                        if (evLess < 0) {
+                            // We could not compute the Sturm sequence for it.
+                            flag = -1; // indicate an error.
+                            DSTESS_DEBUG(0) fprintf(stderr, "Sturm Sequence compute fails for this matrix.\n");
+                            break; // exit while true.
+                        }
+                    
+                        // Discard empty halves in both PlasmaRangeV and PlasmaRangeI.
+                        // If #EV < cutpoint is the same as the #EV < high, it means
+                        // no EV are in [cutpoint, hi]. We can discard that range.
+                        if (evLess == myB->nLT_hi) {
+                            myB->upperBound = cp;
+                            DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i cp=%.16f Discard high range, now [%.16f, %.16f].\n", omp_get_thread_num(), __func__, __LINE__, cp, myB->lowerBound, myB->upperBound);
+                            continue;
+                        }
+                    
+                        // If #EV < cutpoint is the same as #EV < low, it means no
+                        // EV are in [low, cutpoint]. We can discard that range. 
+                        if (evLess == myB->nLT_low) {
+                            myB->lowerBound = cp;
+                            DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i cp=%.16f Discard Low range, now [%.16f, %.16f].\n", omp_get_thread_num(), __func__, __LINE__, cp, myB->lowerBound, myB->upperBound);
+                            continue;
+                        }
+                    
+                        // Note: If we were PlasmaRangeV, the initial bounds given by the user are the ranges,
+                        // so we have nothing further to do. In PlasmaRangeI; the initial bounds are Gerschgorin,
+                        // limits and not enough: We must further narrow to the desired indices.
+                        if (Stack->range == PlasmaRangeI) {
+                            DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i PlasmaRangeI cp=%.16f, evLess=%i, Stack->il=%i, Stack->iu=%i.\n", 
+                              omp_get_thread_num(), __func__, __LINE__, cp, evLess, Stack->il, Stack->iu);
+                            // For PlasmaRangeI:
+                            // Recall that il, iu are 1-relative; while evLess is zero-relative; i.e.
+                            // if [il,iu]=[1,2], evless must be 0, or 1. 
+                            // when evLess<cp == il-1, or just <il, cp is a good boundary and 
+                            // we can discard the lower half.
+                            //
+                            // To judge the upper half, the cutpoint must be < iu, so if it is >= iu, cannot
+                            // contain eigenvalue[iu-1].
+                            // if evLess >= iu, we can discard upper half.
+                            if (evLess < Stack->il) {
+                                // The lower half [lowerBound, cp) is not needed, it has no indices >= il.
+                                myB->lowerBound = cp;
+                                myB->nLT_low    = evLess;
+                                myB->numEV = (myB->nLT_hi-myB->nLT_low);
+                                DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i cp=%.16f PlasmaRangeI: Discard Low range, now [%.16f, %.16f] #Eval=%i.\n", omp_get_thread_num(), __func__, __LINE__, cp, myB->lowerBound, myB->upperBound, myB->numEV);
+                                continue;
+                            }
+                    
+                            if (evLess >= Stack->iu) {
+                                // The upper half [cp, upperBound) is not needed, it has no indices > iu; 
+                                myB->upperBound = cp;
+                                myB->nLT_hi     = evLess;
+                                myB->numEV = (myB->nLT_hi-myB->nLT_low);
+                                DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i cp=%.16f PlasmaRangeI: Discard High range, now [%.16f, %.16f] #Eval=%i.\n", omp_get_thread_num(), __func__, __LINE__, cp, myB->lowerBound, myB->upperBound, myB->numEV);
+                                continue;
+                            }
+                        } // end if index search.
+                    
+                        // Here, the cutpoint has some valid EV on the left and some on the right.
+                        DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i splitting Bracket [%.16f,%.16f,%.16f], nLT_low=%i,nLT_cp=%i,nLT_hi=%i\n", 
+                               omp_get_thread_num(), __func__, __LINE__, myB->lowerBound, cp, myB->upperBound, myB->nLT_low, evLess, myB->nLT_hi);
+                        EvBracket* newBracket = (EvBracket*) calloc(1, sizeof(EvBracket)); 
+                        memcpy(newBracket, myB, sizeof(EvBracket));
+                        // the right side: Low is cp; Hi stays the same; stage is still Bisection.
+                        newBracket->lowerBound = cp;
+                        newBracket->nLT_low = evLess;
+                        newBracket->numEV = (myB->nLT_hi - evLess);
+                        #pragma omp critical (UpdateStack)
+                        {
+                            // make new Bracket head of the ToDo work,
+                            newBracket->next = Stack->ToDo;
+                            Stack->ToDo = newBracket;
+                        }
+                    
+                        // Update the Bracket I kept.                  
                         myB->upperBound = cp;
-                        myB->nLT_hi     = evLess;
-                        myB->numEV = (myB->nLT_hi-myB->nLT_low);
-                        DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i cp=%.16f PlasmaRangeI: Discard High range, now [%.16f, %.16f] #Eval=%i.\n", omp_get_thread_num(), __func__, __LINE__, cp, myB->lowerBound, myB->upperBound, myB->numEV);
-                        continue;
+                        myB->nLT_hi = evLess;
+                        myB->numEV =( evLess - myB->nLT_low); 
+                        continue; 
                      }
-                  } // end if index search.
-
-                  // Here, the cutpoint has some valid EV on the left and some on the right.
-                  DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i splitting Bracket [%.16f,%.16f,%.16f], nLT_low=%i,nLT_cp=%i,nLT_hi=%i\n", 
-                         omp_get_thread_num(), __func__, __LINE__, myB->lowerBound, cp, myB->upperBound, myB->nLT_low, evLess, myB->nLT_hi);
-                  EvBracket* newBracket = (EvBracket*) calloc(1, sizeof(EvBracket)); 
-                  memcpy(newBracket, myB, sizeof(EvBracket));
-                  // the right side: Low is cp; Hi stays the same; stage is still Bisection.
-                  newBracket->lowerBound = cp;
-                  newBracket->nLT_low = evLess;
-                  newBracket->numEV = (myB->nLT_hi - evLess);
-                  #pragma omp critical (UpdateStack)
-                  {
-                     // make new Bracket head of the ToDo work,
-                     newBracket->next = Stack->ToDo;
-                     Stack->ToDo = newBracket;
-                  }
-
-                  // Update the Bracket I kept.                  
-                  myB->upperBound = cp;
-                  myB->nLT_hi = evLess;
-                  myB->numEV =( evLess - myB->nLT_low); 
-                  continue; 
-               }
-            } // end while(true) for Bisection. 
-
-            // When we are done Bisecting, we have an Eigenvalue; proceed to GetVector.
-            DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i Exit while(true), found eigenvalue %.16e nLT_low=%d idx=%d numEV=%i.\n", omp_get_thread_num(), __func__, __LINE__, myB->lowerBound, myB->nLT_low, myB->nLT_low - Stack->baseIdx, myB->numEV);
-            myB->stage=GetVector;
-
-         case GetVector:
-            DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i Getvector ev=%.16e idx=%d\n", omp_get_thread_num(), __func__, __LINE__, myB->lowerBound, myB->nLT_low-Stack->baseIdx);
-            // Okay, count this eigenpair done, add to the Done list.
-            // NOTE: myB->nLT_low is the global zero-relative index
-            //       of this set of mpcity eigenvalues.
-            //       No other brackets can change our entry.
-            int myIdx;
-            if (Stack->range == PlasmaRangeI) {
-               myIdx = myB->nLT_low - (Stack->il-1);
-            } else { // range == PlasmaRangeV
-               myIdx = myB->nLT_low - Stack->baseIdx;
-            }
-
-            if (Stack->eigt == PlasmaVec) {
-
-               // get the eigenvector.
-               int ret=useDstein(diag, offd, myB->lowerBound, &(Stack->pVec[myIdx*N]), N, Stack->stein_arrays);
-               if (ret != 0) {
-                  #pragma omp critical (UpdateStack)
-                  {
-                     if (Stack->error != 0) Stack->error = ret;
-                  }
-               }
-            }
-
-            // Add eigenvalue and multiplicity.
-            Stack->pVal[myIdx]=myB->lowerBound;
-            Stack->pMul[myIdx]=myB->numEV;
-
-            DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i Success adding eigenvector #%d myIdx=%d of %d, value %.16f, mpcity=%d\n", omp_get_thread_num(), __func__, __LINE__, myB->nLT_low, myIdx, Stack->eigenvalues, myB->lowerBound, myB->numEV);
-            #pragma omp atomic 
-               Stack->finished += myB->numEV;
+                } // end while(true) for Bisection. 
+                
+                // When we are done Bisecting, we have an Eigenvalue; proceed to GetVector.
+                DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i Exit while(true), found eigenvalue %.16e nLT_low=%d idx=%d numEV=%i.\n", omp_get_thread_num(), __func__, __LINE__, myB->lowerBound, myB->nLT_low, myB->nLT_low - Stack->baseIdx, myB->numEV);
+                myB->stage=GetVector;
             
-            // Done with this bracket.
-            free(myB);
-            break;
-      } // End switch on stage.
-   } // end Master Loop.
-
-   DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i Exiting thread work.\n", omp_get_thread_num(), __func__, __LINE__);
+            case GetVector:
+                DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i Getvector ev=%.16e idx=%d\n", omp_get_thread_num(), __func__, __LINE__, myB->lowerBound, myB->nLT_low-Stack->baseIdx);
+                // Okay, count this eigenpair done, add to the Done list.
+                // NOTE: myB->nLT_low is the global zero-relative index
+                //       of this set of mpcity eigenvalues.
+                //       No other brackets can change our entry.
+                int myIdx;
+                if (Stack->range == PlasmaRangeI) {
+                    myIdx = myB->nLT_low - (Stack->il-1);
+                } else { // range == PlasmaRangeV
+                    myIdx = myB->nLT_low - Stack->baseIdx;
+                }
+                
+                if (Stack->eigt == PlasmaVec) {
+                    // get the eigenvector.
+                    int ret=useDstein(diag, offd, myB->lowerBound, &(Stack->pVec[myIdx*N]), N, Stack->stein_arrays);
+                    if (ret != 0) {
+                        #pragma omp critical (UpdateStack)
+                        {
+                            if (Stack->error != 0) Stack->error = ret;
+                        }
+                    }
+                }
+                
+                // Add eigenvalue and multiplicity.
+                Stack->pVal[myIdx]=myB->lowerBound;
+                Stack->pMul[myIdx]=myB->numEV;
+                
+                DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i Success adding eigenvector #%d myIdx=%d of %d, value %.16f, mpcity=%d\n", omp_get_thread_num(), __func__, __LINE__, myB->nLT_low, myIdx, Stack->eigenvalues, myB->lowerBound, myB->numEV);
+                #pragma omp atomic 
+                    Stack->finished += myB->numEV;
+                
+                // Done with this bracket.
+                free(myB);
+                break;
+        } // End switch on stage.
+    } // end Master Loop.
+ 
+    DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i Exiting thread work.\n", omp_get_thread_num(), __func__, __LINE__);
 } // end thread_work.
 
 
@@ -1276,7 +1156,7 @@ int plasma_dstess(plasma_enum_t eigt, plasma_enum_t range, // args 1,2
     double start_orth;
     DSTESS_DEBUG(0) start_orth = omp_get_wtime();
 
-    int ret = useDlatsqr(pVec, workStack.N, vectorsFound);
+    int ret = useMKL_DGEQRF(workStack.N, vectorsFound, pVec);
     if (ret != 0) return(ret);
     DSTESS_DEBUG(0) orth_us = (omp_get_wtime() - start_orth)*1.e6;
 
