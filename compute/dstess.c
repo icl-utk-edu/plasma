@@ -210,148 +210,12 @@ typedef struct
     double  *pVec;          // where to store eigenvectors.
 } WorkStack;
 
-//-----------------------------------------------------------------------------
-// void dgeqrf_( const MKL_INT* m, const MKL_INT* n, double* a, const MKL_INT* lda,
-//             double* tau, double* work, const MKL_INT* lwork, MKL_INT* info ) NOTHROW;
-//
-// DGEQRF computes a QR factorization of a real M-by-N matrix A:
-//
-//    A = Q * ( R ),
-//            ( 0 )
-//
-// where:
-//
-//    Q is a M-by-M orthogonal matrix;
-//    R is an upper-triangular N-by-N matrix;
-//    0 is a (M-N)-by-N zero matrix, if M > N.
-//
-// Arguments:
-// ==========
-//
-// \param[in] int M
-//          M is INTEGER
-//          The number of rows of the matrix A.  M >= 0.
-//
-// \param[in] int N
-//          N is INTEGER
-//          The number of columns of the matrix A.  N >= 0.
-//
-// \param[in,out] double A[M * N]
-//          A is DOUBLE PRECISION array, dimension (LDA,N)
-//          On entry, the M-by-N matrix A.
-//          On exit, the elements on and above the diagonal of the array
-//          contain the min(M,N)-by-N upper trapezoidal matrix R (R is
-//          upper triangular if m >= n); the elements below the diagonal,
-//          with the array TAU, represent the orthogonal matrix Q as a
-//          product of min(m,n) elementary reflectors (see Further
-//          Details).
-//
-// \param[in] int LDA
-//          LDA is INTEGER
-//          The leading dimension of the array A.  LDA >= max(1,M).
-//
-// \param[out] double TAU[N]
-//          TAU is DOUBLE PRECISION array, dimension (min(M,N))
-//          The scalar factors of the elementary reflectors (see Further
-//          Details).
-//
-// \param[out] double WORK[LWORK]
-//          WORK is DOUBLE PRECISION array, dimension (MAX(1,LWORK))
-//          On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
-//
-// \param[in] int LWORK; set to N*NB, should be queried with LWORK=-1.
-//          LWORK is INTEGER
-//          The dimension of the array WORK.  LWORK >= max(1,N).
-//          For optimum performance LWORK >= N*NB, where NB is
-//          the optimal blocksize.
-//
-//          If LWORK = -1, then a workspace query is assumed; the routine
-//          only calculates the optimal size of the WORK array, returns
-//          this value as the first entry of the WORK array, and no error
-//          message related to LWORK is issued by XERBLA.
-//
-// \param[out] int INFO
-//          INFO is INTEGER
-//          = 0:  successful exit
-//          < 0:  if INFO = -i, the i-th argument had an illegal value
-//-----------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------------
-// void dorgqr_( const MKL_INT* m, const MKL_INT* n, const MKL_INT* k, double* a,
-//              const MKL_INT* lda, const double* tau, double* work,
-//              const MKL_INT* lwork, MKL_INT* info ) NOTHROW;
-//
-// DORGQR generates an M-by-N real matrix Q with orthonormal columns,
-// which is defined as the first N columns of a product of K elementary
-// reflectors of order M
-//
-//       Q  =  H(1) H(2) . . . H(k)
-//
-// as returned by DGEQRF.
-//
-// Arguments:
-// ==========
-//
-// \param[in] int M
-//          M is INTEGER
-//          The number of rows of the matrix Q. M >= 0.
-//
-// \param[in] int N
-//          N is INTEGER
-//          The number of columns of the matrix Q. M >= N >= 0.
-//
-// \param[in] int K
-//          K is INTEGER
-//          The number of elementary reflectors whose product defines the
-//          matrix Q. N >= K >= 0.
-//
-// \param[in,out] double A[M*N]
-//          A is DOUBLE PRECISION array, dimension (LDA,N)
-//          On entry, the i-th column must contain the vector which
-//          defines the elementary reflector H(i), for i = 1,2,...,k, as
-//          returned by DGEQRF in the first k columns of its array
-//          argument A.
-//          On exit, the M-by-N matrix Q.
-//
-// \param[in] int LDA
-//          LDA is INTEGER
-//          The first dimension of the array A. LDA >= max(1,M).
-//
-// \param[in] double TAU[N]
-//          TAU is DOUBLE PRECISION array, dimension (K)
-//          TAU(i) must contain the scalar factor of the elementary
-//          reflector H(i), as returned by DGEQRF.
-//
-// \param[out] double WORK[LWORK]
-//          WORK is DOUBLE PRECISION array, dimension (MAX(1,LWORK))
-//          On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
-//
-// \param[in] int LWORK (same size as in dgeqrf).
-//          LWORK is INTEGER
-//          The dimension of the array WORK. LWORK >= max(1,N).
-//          For optimum performance LWORK >= N*NB, where NB is the
-//          optimal blocksize.
-//
-//          If LWORK = -1, then a workspace query is assumed; the routine
-//          only calculates the optimal size of the WORK array, returns
-//          this value as the first entry of the WORK array, and no error
-//          message related to LWORK is issued by XERBLA.
-//
-// \param[out] int INFO
-//          INFO is INTEGER
-//          = 0:  successful exit
-//          < 0:  if INFO = -i, the i-th argument has an illegal value
-//-----------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------------
-// useMKL_DGEQRF: Uses MKL_dgeqrf and MKL_dorgqr to orthogonalize the 
-// eigenvectors found.
-// At this writing, this is several times faster than plasma_dgeqrf() and also
-// several times faster than MKL dlatsqr() (Tall Skinny QR).
-//
-// void dgeqrf_( const MKL_INT* m, const MKL_INT* n, double* a, const MKL_INT* lda,
-//             double* tau, double* work, const MKL_INT* lwork, MKL_INT* info ) NOTHROW;
-//-----------------------------------------------------------------------------
+/*******************************************************************************
+ We use the MKL version of dgeqrf_, followed by dorgqr (which forms the actual
+ Q matrix from the results of dgeqrf_). This function will handle creating and
+ destroying the work areas. We tested against MKL's dlatsqr, and plasma_dgeqrf
+ and both are much slower (e.g. 10x slower) than MKL dgeqrf_. Reason unknown.
+*******************************************************************************/
 int useMKL_DGEQRF(int N, int nEigVecs, double *pVec) {
     int MB, NB, LDA, LDT, RowB, LWORK, INFO;
     double *Tau, *WORK;
@@ -375,70 +239,76 @@ int useMKL_DGEQRF(int N, int nEigVecs, double *pVec) {
 
     double time;
     
-//  We do not seem to depend on the number of threads at all.
-//  omp_set_num_threads( 1); // 1=2.92s 2=3.03s 4=2.76s 8=3.64s 16=2.7s 32=2.69s
-    if (0) time = -omp_get_wtime();
-    dgeqrf_(&N, &nEigVecs, pVec, &N, Tau, WORK, &LWORK, &INFO);
-    if (0) time += omp_get_wtime();
-    if (0) fprintf(stderr, "%s:%i MKL_dgeqrf ret=%i. time=%.6f S.\n", __func__, __LINE__, INFO, time);
+    //  We do not seem to depend on the number of threads at all. Run times
+    //  here are nearly identical threads =1,2,4,8,16,32,64. Not sure why.
+
+    DSTESS_DEBUG(0) omp_set_num_threads(1); // For single-thread testing.
+    DSTESS_DEBUG(0) time = -omp_get_wtime();
+    #pragma omp parallel
+    #pragma omp master
+    {dgeqrf_(&N, &nEigVecs, pVec, &N, Tau, WORK, &LWORK, &INFO);}
+
+    DSTESS_DEBUG(0) {
+        time += omp_get_wtime();
+        fprintf(stderr, "%s:%i MKL_dgeqrf ret=%i. time=%.6f S.\n", __func__, __LINE__, INFO, time);
+    }
 
     // build Q.
-    if (0) time = -omp_get_wtime();
-    dorgqr_(&N, &nEigVecs, &nEigVecs, pVec, &N, Tau, WORK, &LWORK, &INFO);
-    if (0) time += omp_get_wtime();
-    if (0) fprintf(stderr, "%s:%i MKL_dorgqr ret=%i. time=%.6f S.\n", __func__, __LINE__, INFO, time);
+    DSTESS_DEBUG(0) omp_set_num_threads(1); // For single-thread testing.
+    DSTESS_DEBUG(0) time = -omp_get_wtime();
+
+    #pragma omp parallel
+    #pragma omp master  
+    {dorgqr_(&N, &nEigVecs, &nEigVecs, pVec, &N, Tau, WORK, &LWORK, &INFO);}
+
+    DSTESS_DEBUG(0) {
+        time += omp_get_wtime();
+        fprintf(stderr, "%s:%i MKL_dorgqr ret=%i. time=%.6f S.\n", __func__, __LINE__, INFO, time);
+    }
+
     free(Tau);
     free(WORK);
     return(INFO);
 } // END useMKL_DGEQRF.
 
-//-----------------------------------------------------------------------------
-// useDstein: Uses lapack routine dstein() to recover a single eigenvector.
-// returns INFO.
-//-----------------------------------------------------------------------------
-static int useDstein( double *diag, double *offd, double u, double *v, int N, Stein_Array_t *myArrays) {
-
-// parameters to dstein: 
-// dstein(int *N, double *D, double *E, int *M, double *W, int *IBLOCK, int *ISPLIT,
-//        double *Z, int *LDZ, double *WORK, int *IWORK, int *IFAIL, int *INFO);
-//
-// int N             The order of the matrix.
-// double D[N]       The N diagonal entries.
-// double E[N-1]     The N-1 offdiagonal entries.
-// int M             The number of eigenvectors to be found.
-// double W[M]       The M eigenvalues, smallest to largest.
-// int IBLOCK[N]     submatrix indices: 1 for block 1, 2 for block 2, etc.
-//                   one indicator for each eigenvalue in W.
-// int ISPLIT[N]     indices where matrix splits: first is (1,ISPLIT[0]), 
-//                   next is (ISPLIT[0]+1, ISPLIT[1]), etc. 
-// double Z[LDZ,M]   2 dimensional array, eigenvector for W[i] is stored in the
-//                   i-th column of Z. 
-// int LDZ           Leading dimension of Z; we will set to N.
-// double WORK[5*N]  Working space.
-// int IWORK[N]      Working space.
-// int IFAIL[M]      Normally zero, if any eigenvectors fail to converge, their
-//                   indices are stored in IFAIL[].
-// int INFO          =0 success. <0 i-th argument invalid. >0 # evecs failed to converge.
-
+/*******************************************************************************
+ Use LAPACK dstein_ to find a single eigenvector.  We may use this routine
+ hundreds or thousands of times, so instead of allocating/freeing the work
+ spaces repeatedly, we have an array of pointers, per thread, to workspaces we
+ allocate if not already allocated for this thread. So we don't allocate more
+ than once per thread. These are freed by the main program before exit.
+ Returns INFO. 0=success. <0, |INFO| is invalid argument index. >0, if 
+ eigenvector failed to converge.
+*******************************************************************************/
+static int useDstein( double *diag, double *offd, double u, double *v, int N, 
+                      Stein_Array_t *myArrays) {
     int M=1, LDZ=N, INFO;
- 
     int thread = omp_get_thread_num();
-    if (myArrays[thread].IBLOCK == NULL) myArrays[thread].IBLOCK = (int*) calloc(N, sizeof(int));
-    if (myArrays[thread].ISPLIT == NULL) myArrays[thread].ISPLIT = (int*) calloc(N, sizeof(int));
+
+    if (myArrays[thread].IBLOCK == NULL) {
+        myArrays[thread].IBLOCK = (int*) calloc(N, sizeof(int));
+        if (myArrays[thread].IBLOCK != NULL) myArrays[thread].IBLOCK[0]=1;
+    }
+
+    if (myArrays[thread].ISPLIT == NULL) {
+        myArrays[thread].ISPLIT = (int*) calloc(N, sizeof(int));
+        if (myArrays[thread].ISPLIT != NULL) myArrays[thread].ISPLIT[0]=N;
+    }
+
     if (myArrays[thread].WORK   == NULL) myArrays[thread].WORK   = (double*) calloc(5*N, sizeof(double));
     if (myArrays[thread].IWORK  == NULL) myArrays[thread].IWORK  = (int*) calloc(N, sizeof(int));
     if (myArrays[thread].IFAIL  == NULL) myArrays[thread].IFAIL  = (int*) calloc(N, sizeof(int));
-    myArrays[thread].IBLOCK[0]=1;
-    myArrays[thread].ISPLIT[0]=N;
-    double W = u;
- 
-    if (myArrays[thread].IBLOCK == NULL || myArrays[thread].ISPLIT==NULL || 
-        myArrays[thread].WORK==NULL || myArrays[thread].IWORK==NULL || 
-        myArrays[thread].IFAIL==NULL) {
-        DSTESS_DEBUG(1) fprintf(stderr, "%2i:%s:%i dstein failed to allocate workspaces.\n", omp_get_thread_num(), __func__, __LINE__);
+    if (myArrays[thread].IBLOCK == NULL || 
+        myArrays[thread].ISPLIT == NULL || 
+        myArrays[thread].WORK   == NULL || 
+        myArrays[thread].IWORK  == NULL || 
+        myArrays[thread].IFAIL  == NULL) {
+        DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i dstein failed to allocate workspaces.\n", omp_get_thread_num(), __func__, __LINE__);
         return(PlasmaErrorOutOfMemory);
     }
 
+    double W = u;
+ 
     dstein_(&N, diag, offd, &M, &W, myArrays[thread].IBLOCK, myArrays[thread].ISPLIT, v, 
             &LDZ, myArrays[thread].WORK, myArrays[thread].IWORK, myArrays[thread].IFAIL, &INFO);
     DSTESS_DEBUG(0) fprintf(stderr, "%2i:%s:%i ev=%.16e dstein returning INFO=%d.\n", 
@@ -569,7 +439,7 @@ static int Sturm_Scaled(double *diag, double *offd, int n, double u) {
 // inline there. This is a simple min/max boundary for the full range of
 // eigenvalues. However, there is no guarantee that \lambda_{min} and
 // \lambda_{max} are actually eigenvalues. We add a step to find the actual min
-// and max, so we can also use this to compute the matrix Norm. 
+// and max.
 //-----------------------------------------------------------------------------
 static void Bound_MinMax_Eigvalue(double *diag, double *offd, int n, double *Min, double *Max) {
     int i;
@@ -624,10 +494,7 @@ static void Bound_MinMax_Eigvalue(double *diag, double *offd, int n, double *Min
 //     [      0, offd[1], diag[2], offd[2],
 //     ...
 //     [ 0...0                     offd[n-2], diag[n-1] ]
-// There is no LAPACK alternative that does just Y=A*X for a symmetric 
-// tridiagonal matrix. DGBMV will do Y=alpha*X +beta*Y, but would require
-// creation of a calling matrix, copying, etc, with added overhead to process
-// alpha, beta, Y, etc.  
+// LAPACK does not do just Y=A*X for a packed symmetric tridiagonal matrix. 
 //-----------------------------------------------------------------------------
 static void MM(double *diag, double *offd, int n, double *X, double *Y) {
     int i;
@@ -641,19 +508,21 @@ static void MM(double *diag, double *offd, int n, double *X, double *Y) {
 
 
 //-----------------------------------------------------------------------------
+// This routine is necessary to determine if eigenvectors should be swapped.
 // eigenpair error: If A*v = u*v, then A*v-u*v should == 0. We compute the
 // L_infinity norm of (A*v-u*v).
-// We return DBL_MAX if the eigenvector (v) is all zeros.
+// We return DBL_MAX if the eigenvector (v) is all zeros, or if we fail to 
+// allocate memory. 
 // If u==0.0, we'll return L_INF of (A*V). 
 //-----------------------------------------------------------------------------
 static double eigp_error(double *diag, double *offd, int n, double u, double *v) {
     int i, zeros=0;
-    double *AV, test_vector[4096]; // static workplace to avoid calloc.
+    double *AV;
     double norm, dtemp;
  
-    AV = test_vector;              // assume big enough.
-    if (n > 4096) AV = (double*) calloc(n, sizeof(double)); // oops, it isn't.
- 
+    AV = (double*) calloc(n, sizeof(double));
+    if (AV == NULL) return(DBL_MAX);
+     
     MM(diag, offd, n, v, AV); // AV = A*v.
  
     norm = -DBL_MAX;  // Trying to find maximum.
@@ -664,7 +533,7 @@ static double eigp_error(double *diag, double *offd, int n, double u, double *v)
         if (v[i] == 0.) zeros++;
     }
  
-    if (AV != test_vector) free(AV);
+    free(AV);
     if (zeros == n) return(DBL_MAX);
     return(norm);
 } // end eigp_error.
@@ -1155,8 +1024,8 @@ int plasma_dstess(plasma_enum_t eigt, plasma_enum_t range, // args 1,2
     double orth_us;
     double start_orth;
     DSTESS_DEBUG(0) start_orth = omp_get_wtime();
-
-    int ret = useMKL_DGEQRF(workStack.N, vectorsFound, pVec);
+    int ret;
+    ret = useMKL_DGEQRF(workStack.N, vectorsFound, pVec);
     if (ret != 0) return(ret);
     DSTESS_DEBUG(0) orth_us = (omp_get_wtime() - start_orth)*1.e6;
 
