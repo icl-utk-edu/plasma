@@ -65,7 +65,8 @@
  *          The width of the band below the diagonal in band matrix A.
  *
  * @param[in] ku
- *          The width of the band above the diagonal in band matrix A.
+ *          The width of the band [above/to the right of] the diagonal
+ *          in band matrix A.
  *
  * @param[in] alpha
  *          The scalar alpha.
@@ -149,12 +150,12 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
         return -5;
     }
     if ((kl < 0) ||
-        (kl > imax(m,n)-1)) {
+        (kl > imax(m,k)-1)) {
         plasma_error("illegal value of kl");
         return -6;
     }
     if ((ku < 0) ||
-        (ku > imax(m,n)-1)) {
+        (ku > imax(m,k)-1)) {
         plasma_error("illegal value of ku");
         return -7;
     }
