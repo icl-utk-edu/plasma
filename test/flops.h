@@ -102,6 +102,61 @@ static double  flops_dgemm(double m, double n, double k)
 static double  flops_sgemm(double m, double n, double k)
     { return    fmuls_gemm(m, n, k) +    fadds_gemm(m, n, k); }
 
+//------------------------------------------------------------ gbmm
+static double fmuls_gbmm(double m, double n, double k, double ku, double kl)
+{
+    // recall A is an m x k matrix, and it the only band matrix
+    double elements = m < k ? m : k;
+    double k_leftover;
+    // elements from kl
+    elements += ku*m;
+    k_leftover = m+ku-k;
+    if(k_leftover > 0)
+    {
+        elements -= (k_leftover)*(k_leftover+1)/2;
+    }
+    elements += kl*k;
+    k_leftover = k+kl-m;
+    if(k_leftover > 0)
+    {
+        elements -= (k_leftover)*(k_leftover+1)/2;
+    }
+    return elements*n;
+}
+
+static double fadds_gbmm(double m, double n, double k, double ku, double kl)
+{
+    // recall A is an m x k matrix, and it the only band matrix
+    double elements = m < k ? m : k;
+    double k_leftover;
+    // elements from kl
+    elements += ku*m;
+    k_leftover = m+ku-k;
+    if(k_leftover > 0)
+    {
+        elements -= (k_leftover)*(k_leftover+1)/2;
+    }
+    elements += kl*k;
+    k_leftover = k+kl-m;
+    if(k_leftover > 0)
+    {
+        elements -= (k_leftover)*(k_leftover+1)/2;
+    }
+    return elements*n;
+}
+
+static double  flops_zgbmm(double m, double n, double k, double ku, double kl)
+    { return 6.*fmuls_gbmm(m, n, k, ku, kl) + 2.*fadds_gbmm(m, n, k, ku, kl); }
+
+static double  flops_cgbmm(double m, double n, double k, double ku, double kl)
+    { return 6.*fmuls_gbmm(m, n, k, ku, kl) + 2.*fadds_gbmm(m, n, k, ku, kl); }
+
+static double  flops_dgbmm(double m, double n, double k, double ku, double kl)
+    { return    fmuls_gbmm(m, n, k, ku, kl) +    fadds_gbmm(m, n, k, ku, kl); }
+
+static double  flops_sgbmm(double m, double n, double k, double ku, double kl)
+    { return    fmuls_gbmm(m, n, k, ku, kl) +    fadds_gbmm(m, n, k, ku, kl); }
+
 //------------------------------------------------------------ symm/hemm
 static double fmuls_symm(plasma_enum_t side, double m, double n)
 {
