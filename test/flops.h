@@ -105,18 +105,16 @@ static double  flops_sgemm(double m, double n, double k)
 //------------------------------------------------------------ gbmm
 static double fmuls_gbmm(double m, double n, double k, double ku, double kl)
 {
-    // recall A is an m x k matrix, and it the only band matrix
-    double elements = m < k ? m : k;
-    double k_leftover;
+    // recall A is an m x k matrix, and it is the only band matrix
+    double elements, k_leftover;
     // elements from kl
-    elements += ku*m;
-    k_leftover = m+ku-k;
+    elements += (ku+1+kl)*(k<m?k:m);
+    k_leftover = (m-k<0?m-k:0)+ku;
     if(k_leftover > 0)
     {
         elements -= (k_leftover)*(k_leftover+1)/2;
     }
-    elements += kl*k;
-    k_leftover = k+kl-m;
+    k_leftover = (k-m<0?k-m:0)+kl;
     if(k_leftover > 0)
     {
         elements -= (k_leftover)*(k_leftover+1)/2;
@@ -126,18 +124,16 @@ static double fmuls_gbmm(double m, double n, double k, double ku, double kl)
 
 static double fadds_gbmm(double m, double n, double k, double ku, double kl)
 {
-    // recall A is an m x k matrix, and it the only band matrix
-    double elements = m < k ? m : k;
-    double k_leftover;
+    // recall A is an m x k matrix, and it is the only band matrix
+    double elements, k_leftover;
     // elements from kl
-    elements += ku*m;
-    k_leftover = m+ku-k;
+    elements += (ku+1+kl)*(k<m?k:m);
+    k_leftover = (m-k<0?m-k:0)+ku;
     if(k_leftover > 0)
     {
         elements -= (k_leftover)*(k_leftover+1)/2;
     }
-    elements += kl*k;
-    k_leftover = k+kl-m;
+    k_leftover = (k-m<0?k-m:0)+kl;
     if(k_leftover > 0)
     {
         elements -= (k_leftover)*(k_leftover+1)/2;

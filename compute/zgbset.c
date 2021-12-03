@@ -32,12 +32,12 @@ void plasma_zgbset(int m, int n, int kl, int ku,
         return;
 
     if ((kl < 0) ||
-        (kl > imax(m,n)-1)) {
+        (kl > m-1)) {
         plasma_error("illegal value of kl");
         return;
     }
     if ((ku < 0) ||
-        (ku > imax(m,n)-1)) {
+        (ku > n-1)) {
         plasma_error("illegal value of ku");
         return;
     }
@@ -54,7 +54,7 @@ void plasma_zgbset(int m, int n, int kl, int ku,
         else
         {
             extralower = m-1-kl;
-            extraupper = m-1-ku;
+            extraupper = n-1-ku;
         }
         for(; extralower > 0; extralower--)
         {
@@ -67,8 +67,12 @@ void plasma_zgbset(int m, int n, int kl, int ku,
             cornerJ = n-extraupper;
             plasma_zlaset(PlasmaGeneral,1,extraupper,0,0,pA+lda*cornerJ,lda+1);
         }
-        if(m>n) // m strictly greater
-                // (clears a "tail" on bottom right below diag)
+        if(m>n+kl) // m strictly greater
+        // clears a "tail" on bottom right below diagonal
+        // note that for small bandwidths on large rectangular matrices of
+        // this kind will lead the above code to neglect zeroing elements
+        // in the final column of pA, which need to be cleared if 
+        // m > n+kl
         {
             plasma_zlaset(PlasmaGeneral, (m-n)-kl, 1, 0, 0,
                             pA+(lda*(n-1))+(n+kl), lda);
@@ -88,7 +92,7 @@ void plasma_zgbset(int m, int n, int kl, int ku,
         else
         {
             extralower = m-1-kl;
-            extraupper = m-1-ku;
+            extraupper = n-1-ku;
         }
         for(; extralower > 0; extralower--)
         {
