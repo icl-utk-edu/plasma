@@ -176,7 +176,7 @@ void test_zgbmm(param_value_t param[], bool run)
     // and multiplications by zero.
     // int band_k = 1 + ((ku+param[PARAM_NB].i-1)/param[PARAM_NB].i);
                      // ((kl+param[PARAM_NB].i-1)/param[PARAM_NB].i);
-    param[PARAM_GFLOPS].d = flops_zgemm(m, n, ku+kl+1) / time / 1e9;
+    param[PARAM_GFLOPS].d = flops_zgbmm(m, n, k, ku, kl) / time / 1e9;
 
     //================================================================
     // Test results by comparing to a reference implementation.

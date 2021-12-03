@@ -62,10 +62,10 @@
  *          of the matrix op( B ). k >= 0.
  *
  * @param[in] kl
- *          The width of the band below the diagonal in band matrix A.
+ *          the lower bandwidth of band matrix A (bandwidth below diagonal)
  *
  * @param[in] ku
- *          The width of the band above the diagonal in band matrix A.
+ *          the upper bandwidth of band matrix A (bandwidth above diagonal)
  *
  * @param[in] alpha
  *          The scalar alpha.
@@ -149,12 +149,12 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
         return -5;
     }
     if ((kl < 0) ||
-        (kl > imax(m,n)-1)) {
+        (kl > m-1)) {
         plasma_error("illegal value of kl");
         return -6;
     }
     if ((ku < 0) ||
-        (ku > imax(m,n)-1)) {
+        (ku > k-1)) {
         plasma_error("illegal value of ku");
         return -7;
     }
