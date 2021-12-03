@@ -136,7 +136,6 @@ static double fadds_gbmm(double m, double n, double k, double ku, double kl)
     {
         elements -= (k_leftover)*(k_leftover+1)/2;
     }
-    if(k_leftover > 0)
     return elements*n;
 }
 
