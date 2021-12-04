@@ -136,10 +136,6 @@ void test_zgbmm(param_value_t param[], bool run)
     retval = LAPACKE_zlarnv(1, seed, (size_t)ldc*Cn, C);
     assert(retval == 0);
 
-    //// printf("Am=%d,An=%d,lda=%d\n",Am,An,lda);
-    //// printf("Bm=%d,Bn=%d,ldb=%d\n",Bm,Bn,ldb);
-    //// printf("Cm=%d,Cn=%d,ldc=%d\n",Cm,Cn,ldc);
-
     // zero out elements outside band
     plasma_zgbset(Am, An, kl, ku, A, lda);
 
@@ -165,18 +161,9 @@ void test_zgbmm(param_value_t param[], bool run)
          beta, C, ldc);
     plasma_time_t stop = omp_get_wtime();
     plasma_time_t time = stop-start;
-    // naive_printmxn(C,Cm,Cn);
 
     param[PARAM_TIME].d = time;
-    // flops for a band matrix may be much less than that for a 
-    // general matrix. Not implementing any sort of new function for this
-    // because we can simply substitute k with 1+kl+ku for an excellent
-    // approximation
-    // Opportunities for more accurate flops count: consider tiling
-    // and multiplications by zero.
-    // int band_k = 1 + ((ku+param[PARAM_NB].i-1)/param[PARAM_NB].i);
-                     // ((kl+param[PARAM_NB].i-1)/param[PARAM_NB].i);
-    param[PARAM_GFLOPS].d = flops_zgbmm(m, n, k, ku, kl) / time / 1e9;
+    param[PARAM_GFLOPS].d = flops_zgbmm(m, n, k, kl, ku) / time / 1e9;
 
     //================================================================
     // Test results by comparing to a reference implementation.
