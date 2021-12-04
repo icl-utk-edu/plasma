@@ -34,8 +34,7 @@
  *    \f[ op( X ) = X^H, \f]
  *
  *  alpha and beta are scalars, and A, B and C are matrices, with op( A )
- *  an m-by-k matrix, op( B ) a k-by-n matrix and C an m-by-n matrix.
- *  A is a band matrix, but the same is not guaranteed of B or C.
+ *  an m-by-k band matrix, op( B ) a k-by-n matrix and C an m-by-n matrix.
  *
  *******************************************************************************
  *
@@ -62,10 +61,10 @@
  *          of the matrix op( B ). k >= 0.
  *
  * @param[in] kl
- *          the lower bandwidth of band matrix A (bandwidth below diagonal)
+ *          the lower bandwidth (below diagonal) of band matrix A
  *
  * @param[in] ku
- *          the upper bandwidth of band matrix A (bandwidth above diagonal)
+ *          the upper bandwidth (above diagonal) of band matrix A
  *
  * @param[in] alpha
  *          The scalar alpha.
@@ -148,13 +147,11 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
         plasma_error("illegal value of k");
         return -5;
     }
-    if ((kl < 0) ||
-        (kl > m-1)) {
+    if ((kl < 0) || (kl > m-1)) {
         plasma_error("illegal value of kl");
         return -6;
     }
-    if ((ku < 0) ||
-        (ku > k-1)) {
+    if ((ku < 0) || (ku > k-1)) {
         plasma_error("illegal value of ku");
         return -7;
     }
@@ -206,10 +203,10 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
     plasma_desc_t B;
     plasma_desc_t C;
     int retval;
-    int tku = (ku+kl+nb-1)/nb; // number of tiles in upper band above diagonal
-                               // PLASMA conventions allow extra space for tku
-                               // for this application, could replace am with
-                               // smaller number of rows (( (ku+nb-1)/nb ))
+    int tku = (ku+kl+nb-1)/nb; /* number of tiles in upper band above diagonal
+                                  PLASMA conventions allow extra space for tku
+                                  for this application, could replace am with
+                                  smaller number of rows (( (ku+nb-1)/nb )) */
     int tkl = (kl+nb-1)/nb;    // number of tiles in lower band below diagonal
     int lm = (tku+tkl+1)*nb;   // reduced number of "rows" in the matrix
 
