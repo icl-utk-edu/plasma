@@ -7,11 +7,20 @@
  *  University of Manchester, UK.
  *
  **/
-#ifndef PLASMA_CONTEXT_H
-#define PLASMA_CONTEXT_H
+#ifndef ICL_PLASMA_CONTEXT_H
+#define ICL_PLASMA_CONTEXT_H
 
 #include "plasma_types.h"
 #include "plasma_barrier.h"
+
+#include <pthread.h>
+#if defined(PLASMA_USE_LUA)
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+#else 
+#define lua_State void
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,6 +28,7 @@ extern "C" {
 
 /******************************************************************************/
 typedef struct {
+    lua_State *L;                   ///< Lua state
     int tuning;                     ///< PlasmaEnabled or PlasmaDisabled
     int nb;                         ///< PlasmaNb
     int ib;                         ///< PlasmaIb
@@ -27,8 +37,15 @@ typedef struct {
     int max_panel_threads;          ///< max threads for panel factorization
     plasma_barrier_t barrier;       ///< thread barrier for multithreaded tasks
     plasma_enum_t householder_mode; ///< PlasmaHouseholderMode
-    void *L;                        ///< Lua state pointer; unusued when Lua is missing
+    int ss_ld;                  // static scheduler progress table leading dimension
+    volatile int ss_abort;      // static scheduler abort flag
+    volatile int *ss_progress;  // static scheduler progress table
 } plasma_context_t;
+
+typedef struct {
+    pthread_t thread_id;       ///< thread id
+    plasma_context_t *context; ///< pointer to associated context
+} plasma_context_map_t;
 
 /******************************************************************************/
 int plasma_init();
@@ -36,6 +53,8 @@ int plasma_finalize();
 int plasma_set(plasma_enum_t param, int value);
 int plasma_get(plasma_enum_t param, int *value);
 
+int plasma_context_attach();
+int plasma_context_detach();
 plasma_context_t *plasma_context_self();
 void plasma_context_init(plasma_context_t *context);
 void plasma_context_finalize(plasma_context_t *context);
@@ -44,4 +63,4 @@ void plasma_context_finalize(plasma_context_t *context);
 }  // extern "C"
 #endif
 
-#endif // PLASMA_CONTEXT_H
+#endif // ICL_PLASMA_CONTEXT_H
