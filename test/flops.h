@@ -108,9 +108,9 @@ static double  flops_sgemm(double m, double n, double k)
 // think rectangle minus trapezoid minus triangle and reduce:
 //        (m*k - (m-kl+m-k-kl-1.0)*0.5*k - (k-ku-1.0)*(k-ku)*0.5)*n;
 //        (m*k - (m-kl)*k+(k-1.0)*k*0.5 - (k-ku-1.0)*(k-ku)*0.5)*n;
-//        (kl*k + (k-1.0)*k*0.5 - (k-ku-1.0)*(k-ku)*0.5)*n;
+//        (kl*k + (k+1.0)*k*0.5 - (k-ku-1.0)*(k-ku)*0.5)*n;
 static double fmuls_gbmm(double m, double n, double k, double kl, double ku)
-{ 
+{
     if(m > k+kl)
         return (kl*k + (k+1.0)*k*0.5 - (k-ku-1.0)*(k-ku)*0.5)*n;
     if(k > m+ku)
@@ -119,7 +119,7 @@ static double fmuls_gbmm(double m, double n, double k, double kl, double ku)
 }
 
 static double fadds_gbmm(double m, double n, double k, double kl, double ku)
-{ 
+{
     if(m > k+kl)
         return (kl*k + (k+1.0)*k*0.5 - (k-ku-1.0)*(k-ku)*0.5)*n;
     if(k > m+ku)
