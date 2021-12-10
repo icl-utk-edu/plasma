@@ -112,18 +112,18 @@ static double  flops_sgemm(double m, double n, double k)
 static double fmuls_gbmm(double m, double n, double k, double kl, double ku)
 { 
     if(m > k+kl)
-        return (kl*k + (k-1.0)*k*0.5 - (k-ku-1.0)*(k-ku)*0.5)*n;
+        return (kl*k + (k+1.0)*k*0.5 - (k-ku-1.0)*(k-ku)*0.5)*n;
     if(k > m+ku)
-        return (ku*m - (m-kl-1.0)*(m-kl)*0.5 + (m-1.0)*m*0.5)*n;
+        return (ku*m - (m-kl-1.0)*(m-kl)*0.5 + (m+1.0)*m*0.5)*n;
     return (m*k - (m-kl-1.0)*(m-kl)*0.5 - (k-ku-1.0)*(k-ku)*0.5)*n;
 }
 
 static double fadds_gbmm(double m, double n, double k, double kl, double ku)
 { 
     if(m > k+kl)
-        return (kl*k + (k-1.0)*k*0.5 - (k-ku-1.0)*(k-ku)*0.5)*n;
+        return (kl*k + (k+1.0)*k*0.5 - (k-ku-1.0)*(k-ku)*0.5)*n;
     if(k > m+ku)
-        return (ku*m - (m-kl-1.0)*(m-kl)*0.5 + (m-1.0)*m*0.5)*n;
+        return (ku*m - (m-kl-1.0)*(m-kl)*0.5 + (m+1.0)*m*0.5)*n;
     return (m*k - (m-kl-1.0)*(m-kl)*0.5 - (k-ku-1.0)*(k-ku)*0.5)*n;
 }
 
