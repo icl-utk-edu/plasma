@@ -7,8 +7,8 @@
  *  University of Manchester, UK.
  *
  **/
-#ifndef ICL_PLASMA_TYPES_H
-#define ICL_PLASMA_TYPES_H
+#ifndef PLASMA_TYPES_H
+#define PLASMA_TYPES_H
 
 #include <complex.h>
 
@@ -180,4 +180,4 @@ plasma_enum_t plasma_uplo_const(char lapack_char);
 }  // extern "C"
 #endif
 
-#endif // ICL_PLASMA_TYPES_H
+#endif // PLASMA_TYPES_H
