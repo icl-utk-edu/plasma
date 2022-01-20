@@ -17,6 +17,7 @@
 #include "plasma_barrier.h"
 #include "plasma_descriptor.h"
 #include "plasma_workspace.h"
+#include "plasma_zlaebz2_work.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -140,6 +141,11 @@ int plasma_zlacpy(plasma_enum_t uplo, plasma_enum_t transa,
                   plasma_complex64_t *pA, int lda,
                   plasma_complex64_t *pB, int ldb);
 
+void plasma_zlaebz2(zlaebz2_WorkStack_t* Stack);
+
+int plasma_zlaneg2(plasma_complex64_t *diag, plasma_complex64_t *offd, 
+                   int n, plasma_complex64_t u);
+
 double plasma_zlangb(plasma_enum_t norm,
                      int m, int n, int kl, int ku,
                      plasma_complex64_t *pAB, int ldab);
@@ -217,6 +223,19 @@ int plasma_zpotrs(plasma_enum_t uplo,
                   int n, int nrhs,
                   plasma_complex64_t *pA, int lda,
                   plasma_complex64_t *pB, int ldb);
+
+int plasma_zstevx2(
+  plasma_enum_t jobtype, plasma_enum_t range,
+  int n, int k,
+  plasma_complex64_t *diag,
+  plasma_complex64_t *offd,
+  plasma_complex64_t vl,
+  plasma_complex64_t vu,
+  int il, int iu,
+  int *pFound,
+  plasma_complex64_t *pVal,
+  int    *pMul,
+  plasma_complex64_t *pVec);
 
 int plasma_zsymm(plasma_enum_t side, plasma_enum_t uplo,
                  int m, int n,

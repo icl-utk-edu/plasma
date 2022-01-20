@@ -94,6 +94,17 @@ enum {
     PlasmaMaxNorm       = 177,
     PlasmaRealMaxNorm   = 178,
 
+    PlasmaNoVec         = 301,
+    PlasmaVec           = 302,
+    PlasmaCount         = 303,
+    PlasmaIVec          = 304,
+    PlasmaAllVec        = 305,
+    PlasmaSomeVec       = 306,
+
+    PlasmaRangeAll      = 351,
+    PlasmaRangeV        = 352,
+    PlasmaRangeI        = 353,
+
     PlasmaForward       = 391,
     PlasmaBackward      = 392,
 
@@ -139,6 +150,13 @@ enum {
     PlasmaInplaceOutplace,
     PlasmaNumPanelThreads,
     PlasmaHouseholderMode
+};
+
+/* State machine in stevx2. */
+enum {
+    PlasmaStageInit,
+    PlasmaStageBisection,
+    PlasmaStageGetVector
 };
 
 /******************************************************************************/
