@@ -103,6 +103,11 @@ struct routines_t routines[] =
     { "", NULL },
     { "", NULL },
 
+    { "zgesdd", test_zgesdd },
+    { "dgesdd", test_dgesdd },
+    { "cgesdd", test_cgesdd },
+    { "sgesdd", test_sgesdd },
+    
     { "zgesv", test_zgesv },
     { "dgesv", test_dgesv },
     { "cgesv", test_cgesv },
@@ -317,8 +322,17 @@ static param_desc_t ParamDesc[] = {
     {"error",              "Error",        9,     false,
      "numerical error"},
 
+    {"error2",             "Error2",       9,     false,
+     "numerical error (eigen/singular values, etc.)"},
+
     {"ortho",              "Orth. error",  9,     false,
      "orthogonality error"},
+
+    {"orthoU",            "U orth.",       9,     false,
+     "orthogonality of U error"},
+
+    {"orthoV",            "V orth.",       9,     false,
+     "orthogonality of V error"},
 
     {"time",               "Time",         9,     false,
      "time to solution"},
@@ -379,11 +393,32 @@ static param_desc_t ParamDesc[] = {
     {"--hmode=[f|t]",      "House. mode",  11,    true,
      "Householder mode for QR/LQ - flat or tree [default: f]"},
 
+    {"--eigt=[v|w]",       "eigt",         6,     true,
+     "type of eigv. calc. v - vectors or w - vectors, values [default: v]"},
+
+    {"--job=[n|v|s|a]",    "job",          6,     true,
+     "whether to compute eigen/singular vectors: n=None, v=Vectors, s=Some, a=All [default: n]"},
+
+    {"--range=[a|v|i]",    "range",        6,     true,
+     "whether to compute all eigenvalues or a range: a=All, v=RangeV, i=RangeI [default: a]"},
+    
     {"--dim=",             "Dimensions",   6,     true,
      "M x N x K dimensions [default: 1000 x 1000 x 1000]\n"
      INDENT "M, N, K can each be a single value or a range.\n"
      INDENT "N and K are optional; if not given, N=M and K=N.\n"
      INDENT "Ex: --dim=100:300:100x64 is 100x64x64, 200x64x64, 300x64x64."},
+
+    {"--vl=",              "vl",           6,     true,
+     "if --range=v, the lower bound of the interval to be searched for eigenvalues."},
+
+    {"--vu=",              "vu",           6,     true,
+     "if --range=v, the upper bound of the interval to be searched for eigenvalues."},
+
+    {"--il=",              "il",           6,     true,
+     "if --range=i, the index of the smallest eigenvalue to be returned."},
+
+    {"--iu=",              "iu",           6,     true,
+     "if --range=i, the index of the largest eigenvalue to be returned."},
 
     {"--kl=",              "kl",           6,     true,
      "Lower bandwidth [default: 200]"},
@@ -649,7 +684,10 @@ int test_routine(const char *name, param_value_t pval[], bool test)
 
             // errors
             case PARAM_ERROR:
+            case PARAM_ERROR2:
             case PARAM_ORTHO:
+            case PARAM_ORTHO_U:
+            case PARAM_ORTHO_V:
                 if (test)
                     printf("  %*.2e", ParamDesc[i].width, pval[i].d);
                 else
@@ -666,6 +704,9 @@ int test_routine(const char *name, param_value_t pval[], bool test)
             case PARAM_COLROW:
             case PARAM_NORM:
             case PARAM_HMODE:
+            case PARAM_EIGT:
+            case PARAM_JOB:
+            case PARAM_RANGE:
                 printf("  %*c", ParamDesc[i].width, pval[i].c);
                 break;
 
@@ -680,6 +721,8 @@ int test_routine(const char *name, param_value_t pval[], bool test)
                 break;
 
             // integer parameters
+            case PARAM_IL:
+            case PARAM_IU:
             case PARAM_KL:
             case PARAM_KU:
             case PARAM_NRHS:
@@ -696,6 +739,8 @@ int test_routine(const char *name, param_value_t pval[], bool test)
                 break;
 
             // double parameters
+            case PARAM_VL:
+            case PARAM_VU:
             case PARAM_TIME:
             case PARAM_GFLOPS:
                 printf("  %*.4f", ParamDesc[i].width, pval[i].d);
@@ -835,6 +880,15 @@ void param_read(int argc, char **argv, param_t param[])
         else if (param_starts_with(argv[i], "--hmode="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_HMODE]);
 
+        else if (param_starts_with(argv[i], "--eigt="))
+            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_EIGT]);
+
+        else if (param_starts_with(argv[i], "--job="))
+            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_JOB]);
+
+        else if (param_starts_with(argv[i], "--range="))
+            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_RANGE]);
+
         //--------------------------------------------------
         // Scan integer parameters.
         //--------------------------------------------------
@@ -847,6 +901,10 @@ void param_read(int argc, char **argv, param_t param[])
                                   outer);
         }
 
+        else if (param_starts_with(argv[i], "--il="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_IL]);
+        else if (param_starts_with(argv[i], "--iu="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_IU]);
         else if (param_starts_with(argv[i], "--kl="))
             err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_KL]);
         else if (param_starts_with(argv[i], "--ku="))
@@ -878,6 +936,10 @@ void param_read(int argc, char **argv, param_t param[])
         //--------------------------------------------------
         else if (param_starts_with(argv[i], "--tol="))
             err = param_scan_double(strchr(argv[i], '=')+1, &param[PARAM_TOL]);
+        else if (param_starts_with(argv[i], "--vl="))
+            err = param_scan_double(strchr(argv[i], '=')+1, &param[PARAM_VL]);
+        else if (param_starts_with(argv[i], "--vu="))
+            err = param_scan_double(strchr(argv[i], '=')+1, &param[PARAM_VU]);
 
         //--------------------------------------------------
         // Scan complex parameters.

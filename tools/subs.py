@@ -187,6 +187,7 @@ lapack = [
     ('sgebal',               'dgebal',               'cgebal',               'zgebal'              ),
     ('sgebd2',               'dgebd2',               'cgebd2',               'zgebd2'              ),
     ('sgebrd',               'dgebrd',               'cgebrd',               'zgebrd'              ),
+    ('sgecpy',               'dgecpy',               'cgecpy',               'zgecpy'               ),
     ('sgeev',                'dgeev',                'cgeev',                'zgeev'               ),
     ('sgegqr',               'dgegqr',               'cgegqr',               'zgegqr'              ),
     ('sgehd2',               'dgehd2',               'cgehd2',               'zgehd2'              ),
@@ -212,6 +213,7 @@ lapack = [
     ('sgeswp',               'dgeswp',               'cgeswp',               'zgeswp'              ),
     ('sget22',               'dget22',               'cget22',               'zget22'              ),
     ('sgetf2',               'dgetf2',               'cgetf2',               'zgetf2'              ),
+    ('sge2gb',               'dge2gb',               'cge2gb',               'zge2gb'              ),
     ('sgetmi',               'dgetmi',               'cgetmi',               'zgetmi'              ),
     ('sgetmo',               'dgetmo',               'cgetmo',               'zgetmo'              ),
     ('sgetrf',               'dgetrf',               'cgetrf',               'zgetrf'              ),
@@ -314,6 +316,7 @@ lapack = [
     ('ssterf',               'dsterf',               'ssterf',               'dsterf'              ),
     ('ssterm',               'dsterm',               'csterm',               'zsterm'              ),
     ('sstt21',               'dstt21',               'cstt21',               'zstt21'              ),
+    ('ssycpy',               'dsycpy',               'checpy',               'zhecpy'              ),
     ('ssyev',                'dsyev',                'cheev',                'zheev'               ),
     ('ssyevd',               'dsyevd',               'cheevd',               'zheevd'              ),
     ('ssygs2',               'dsygs2',               'chegs2',               'zhegs2'              ),
@@ -500,6 +503,10 @@ subs = {
 
     # ----- PLASMA / MAGMA functions, alphabetic order
     ('sy2sb',                'sy2sb',                'he2hb',                'he2hb'               ),
+
+    ('sgbtype1cb',           'dgbtype1cb',           'cgbtype1cb',           'zgbtype1cb'          ),
+    ('sgbtype2cb',           'dgbtype2cb',           'cgbtype2cb',           'zgbtype2cb'          ),
+    ('sgbtype3cb',           'dgbtype3cb',           'cgbtype3cb',           'zgbtype3cb'          ),
 
     ('psdesc2ge',            'pddesc2ge',            'pcdesc2ge',            'pzdesc2ge'           ),
     ('psge2desc',            'pdge2desc',            'pcge2desc',            'pzge2desc'           ),

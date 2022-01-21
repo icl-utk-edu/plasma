@@ -29,6 +29,7 @@ void test_zgels(param_value_t param[], bool run);
 void test_zgemm(param_value_t param[], bool run);
 void test_zgeqrf(param_value_t param[], bool run);
 void test_zgeqrs(param_value_t param[], bool run);
+void test_zgesdd(param_value_t param[], bool run);
 void test_zgesv(param_value_t param[], bool run);
 void test_zgetrf(param_value_t param[], bool run);
 void test_zgetri(param_value_t param[], bool run);

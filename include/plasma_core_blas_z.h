@@ -30,6 +30,27 @@ extern "C" {
 double plasma_core_dcabs1(plasma_complex64_t alpha);
 #endif
 
+void plasma_core_zgbtype1cb(plasma_enum_t uplo, int n, int nb,
+                      plasma_complex64_t *A, int lda,
+                      plasma_complex64_t *VQ, plasma_complex64_t *TAUQ,
+                      plasma_complex64_t *VP, plasma_complex64_t *TAUP,
+                      int st, int ed, int sweep, int Vblksiz, int WANTZ,
+                      plasma_complex64_t *work);
+    
+void plasma_core_zgbtype2cb(plasma_enum_t uplo, int n, int nb,
+                      plasma_complex64_t *A, int lda,
+                      plasma_complex64_t *VQ, plasma_complex64_t *TAUQ,
+                      plasma_complex64_t *VP, plasma_complex64_t *TAUP,
+                      int st, int ed, int sweep, int Vblksiz, int WANTZ,
+                      plasma_complex64_t *work);
+    
+void plasma_core_zgbtype3cb(plasma_enum_t uplo, int n, int nb,
+                      plasma_complex64_t *A, int lda,
+                      plasma_complex64_t *VQ, plasma_complex64_t *TAUQ,
+                      plasma_complex64_t *VP, plasma_complex64_t *TAUP,
+                      int st, int ed, int sweep, int Vblksiz, int WANTZ,
+                      plasma_complex64_t *work);
+    
 int plasma_core_zgeadd(plasma_enum_t transa,
                 int m, int n,
                 plasma_complex64_t alpha, const plasma_complex64_t *A, int lda,
@@ -129,6 +150,13 @@ void plasma_core_zlantr(plasma_enum_t norm, plasma_enum_t uplo, plasma_enum_t di
                  int m, int n,
                  const plasma_complex64_t *A, int lda,
                  double *work, double *value);
+
+int plasma_core_zlarfb_gemm(plasma_enum_t side, plasma_enum_t trans, int direct, int storev,
+                     int M, int N, int K,
+                     const plasma_complex64_t *V, int LDV,
+                     const plasma_complex64_t *T, int LDT,
+                     plasma_complex64_t *C, int LDC,
+                     plasma_complex64_t *WORK, int LDWORK);
 
 void plasma_core_zlascl(plasma_enum_t uplo,
                  double cfrom, double cto,

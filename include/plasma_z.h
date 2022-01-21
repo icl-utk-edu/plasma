@@ -88,6 +88,22 @@ int plasma_zgesv(int n, int nrhs,
                  plasma_complex64_t *pA, int lda, int *ipiv,
                  plasma_complex64_t *pB, int ldb);
 
+void plasma_omp_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
+                       plasma_desc_t A, plasma_desc_t T,
+                       double *S,
+                       plasma_complex64_t *pU,  int ldu,
+                       plasma_complex64_t *pVT, int ldvt,
+                       plasma_workspace_t work,
+                       plasma_sequence_t *sequence, plasma_request_t *request);
+    
+int plasma_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
+                  int m, int n,
+                  plasma_complex64_t *pA, int lda,
+                  plasma_desc_t *T,
+                  double *S,
+                  plasma_complex64_t *pU,  int ldu,
+                  plasma_complex64_t *pVT, int ldvt);
+    
 int plasma_zgetrf(int m, int n,
                   plasma_complex64_t *pA, int lda, int *ipiv);
 
