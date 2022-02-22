@@ -138,69 +138,6 @@
  *
  ******************************************************************************/
 
-/*******************************************************************************
- * This function invokes zgeqrf, followed by ?orgqr, which forms the actual Q
- * matrix from the results of zgeqrf. It handles the query for the optimal
- * workspace size and creates and destroys the work areas. We have tested
- * against MKL's ?latsqr and plasma_zgeqrf; the fastest (by a factor of 10) is
- * MKL zgeqrf. Don't know why.
-*******************************************************************************/
-
-static int use_GEQRF(int N, int nEigVecs, plasma_complex64_t *pVec) {
-    int MB, NB, LDA, LDT, RowB, LWORK, INFO;
-    plasma_complex64_t *Tau, *WORK;
-
-    Tau = calloc(nEigVecs, sizeof(plasma_complex64_t)); /* tau array.   */
-    if (Tau == NULL) {
-        return(PlasmaErrorOutOfMemory);
-    }
-
-    LWORK=-1;                               /* A query.     */
-    plasma_complex64_t worksize;
-
-    /* Get the optimal size of the workspace.               */
-    zgeqrf( &N, &nEigVecs, pVec, &N, Tau, &worksize, &LWORK, &INFO);
-
-    LWORK = (int) worksize;
-    WORK = malloc(LWORK * sizeof(plasma_complex64_t));
-    if (WORK == NULL) {
-        return(PlasmaErrorOutOfMemory);
-    }
-
-    double time;
-    
-    /*  We do not seem to depend on the number of threads at all. Run times   */
-    /*  here are nearly identical threads =1,2,4,8,16,32,64. Not sure why.    */
-
-    if(0) omp_set_num_threads(1);      /* For single-thread testing. */
-    if(0) time = -omp_get_wtime();     /* For timing.                */
-    #pragma omp parallel
-    #pragma omp master
-    {zgeqrf(&N, &nEigVecs, pVec, &N, Tau, WORK, &LWORK, &INFO);}
-
-    if(0) {
-        time += omp_get_wtime();
-        fprintf(stderr, "%s:%i MKL_dgeqrf ret=%i. time=%.6f S.\n", __func__, __LINE__, INFO, time);
-    }
-
-    /* build Q. */
-    if(0) omp_set_num_threads(1);      /* For single-thread testing. */
-    if(0) time = -omp_get_wtime();     /* For timing.                */
-
-    #pragma omp parallel
-    #pragma omp master  
-    {zorgqr(&N, &nEigVecs, &nEigVecs, pVec, &N, Tau, WORK, &LWORK, &INFO);}
-
-    if(0) {
-        time += omp_get_wtime();
-        fprintf(stderr, "%s:%i MKL_dorgqr ret=%i. time=%.6f S.\n", __func__, __LINE__, INFO, time);
-    }
-
-    free(Tau);
-    free(WORK);
-    return(INFO);
-} /* END use_GEQRF. */
-
 /******************************************************************************
  * Finds the least and largest signed eigenvalues (not least magnitude).
  * begins with bounds by Gerschgorin disc. These may be over or under
@@ -218,8 +155,9 @@ static int use_GEQRF(int N, int nEigVecs, plasma_complex64_t *pVec) {
  * inline there. 
  *****************************************************************************/
 
-static void Bound_MinMax_Eigvalue(plasma_complex64_t *diag, plasma_complex64_t *offd, int n, 
-            plasma_complex64_t *Min, plasma_complex64_t *Max) {
+static void Bound_MinMax_Eigvalue(plasma_complex64_t *diag, 
+            plasma_complex64_t *offd, int n, plasma_complex64_t *Min, 
+            plasma_complex64_t *Max) {
     int i;
     plasma_complex64_t test, testdi, testdim1, min=DBL_MAX, max=-DBL_MAX;
  
@@ -277,10 +215,12 @@ static void Bound_MinMax_Eigvalue(plasma_complex64_t *diag, plasma_complex64_t *
  *     [      0, offd[1], diag[2], offd[2],
  *     ...
  *     [ 0...0                     offd[n-2], diag[n-1] ]
- * LAPACK does not do just Y=A*X for a packed symmetric tridiagonal matrix. 
+ * LAPACK does not do just Y=A*X for a packed symmetric tridiagonal matrix.
+ * This routine is necessary to determine if eigenvectors should be swapped.
  *****************************************************************************/
 
-static void MM(plasma_complex64_t *diag, plasma_complex64_t *offd, int n, plasma_complex64_t *X, plasma_complex64_t *Y) {
+static void MM(plasma_complex64_t *diag, plasma_complex64_t *offd, int n, 
+            plasma_complex64_t *X, plasma_complex64_t *Y) {
     int i;
     Y[0] = diag[0]*X[0] + offd[0]*X[1];
     Y[n-1] = offd[n-2]*X[n-2] + diag[n-1]*X[n-1];
@@ -300,7 +240,9 @@ static void MM(plasma_complex64_t *diag, plasma_complex64_t *offd, int n, plasma
  * If u==0.0, we'll return L_INF of (A*V). 
  *****************************************************************************/
 
-static plasma_complex64_t eigp_error(plasma_complex64_t *diag, plasma_complex64_t *offd, int n, plasma_complex64_t u, plasma_complex64_t *v) {
+static plasma_complex64_t eigp_error(plasma_complex64_t *diag, 
+       plasma_complex64_t *offd, int n, plasma_complex64_t u, 
+       plasma_complex64_t *v) {
     int i, zeros=0;
     plasma_complex64_t *AV;
     plasma_complex64_t norm, dtemp;
@@ -400,13 +342,11 @@ int plasma_zstevx2(
         return PlasmaSuccess;
     }
 
-    if(0) omp_set_num_threads(1); /* For single-thread testing. */
     max_threads = omp_get_max_threads();
 
     if (jobtype == PlasmaVec) { 
         stein_arrays = (zlaebz2_Stein_Array_t*) calloc(max_threads, sizeof(zlaebz2_Stein_Array_t));
         if (stein_arrays == NULL) {
-            if(0) fprintf(stderr, "%s:%i check.\n", __func__, __LINE__);
             return PlasmaErrorOutOfMemory;
         }
     }
@@ -420,8 +360,6 @@ int plasma_zstevx2(
     plasma_request_init(&request);
 
     plasma_complex64_t globMinEval, globMaxEval; 
-    plasma_complex64_t tv_start;
-    if(0) tv_start = omp_get_wtime();
 
     zlaebz2_WorkStack_t workStack;
     memset(&workStack, 0, sizeof(zlaebz2_WorkStack_t)); 
@@ -436,7 +374,8 @@ int plasma_zstevx2(
 
     /* Find actual min and max eigenvalues. */
     Bound_MinMax_Eigvalue(workStack.diag, workStack.offd, workStack.N, &globMinEval, &globMaxEval);
-    if (0) fprintf(stderr, "%s:%i globMinEval=%.15f, globMaxEval=%.15f, vl=%.15f vu=%.15f\n", __func__, __LINE__, globMinEval, globMaxEval, vl, vu);
+    if (0) fprintf(stderr, "%s:%i globMinEval=%.15f, globMaxEval=%.15f, vl=%.15f vu=%.15f\n",
+           __func__, __LINE__, globMinEval, globMaxEval, vl, vu);
 
     int evLessThanVL=0, evLessThanVU=n, nEigVals=0;
     if (range == PlasmaRangeV) {
@@ -448,7 +387,9 @@ int plasma_zstevx2(
         else vu = nexttoward(globMaxEval, DBL_MAX);  /* optimize for computing step size */
         /* Compute the number of eigenvalues in [vl, vu). */
         nEigVals = (evLessThanVU - evLessThanVL);
-        if (0) fprintf(stderr, "%s:%i evLessThanVU=%i, evLessThanVL=%i, nEigVals=%i.\n", __func__, __LINE__, evLessThanVU, evLessThanVL, nEigVals);
+        if (0) fprintf(stderr, "%s:%i evLessThanVU=%i, evLessThanVL=%i, nEigVals=%i.\n", 
+               __func__, __LINE__, evLessThanVU, evLessThanVL, nEigVals);
+
          workStack.baseIdx = evLessThanVL;
     } else {
         /* PlasmaRangeI: iu, il already vetted by code above. */
@@ -509,18 +450,11 @@ int plasma_zstevx2(
     }
 
     /* We can launch the threads. */
-    #pragma omp parallel proc_bind(close) /* requires gcc >=4.9. */
+    #pragma omp parallel /* proc_bind(close) requires gcc >=4.9. */
     {
        plasma_zlaebz2(&workStack);
     }
  
-    double tv_epair, epair_us;
-    if(0) {
-        tv_epair = omp_get_wtime();
-        epair_us = (tv_epair-tv_start)*1.e6; 
-        fprintf(stderr, "%s:%i Checkpoint. epair_us=%.3f.\n", __func__, __LINE__, epair_us);
-    }
-
     /* Now, all the eigenvalues should have unit eigenvectors in the array workStack.Done.
      * We don't need to sort that, but we do want to compress it; in case of multiplicity.
      * We compute the final number of eigenvectors in vectorsFound, and mpcity is recorded.
@@ -529,11 +463,9 @@ int plasma_zstevx2(
     for (i=0; i<workStack.eigenvalues; i++) {
         if (pMul[i] > 0) {
             vectorsFound++;
-            if(0) fprintf(stderr, "Done[%d] mpcity=%d value=%.18e.\n", i, pMul[i], pVal[i]);
         }
     }
 
-    if(0) fprintf(stderr, "%s:%i Checkpoint. vectorsFound=%d.\n", __func__, __LINE__, vectorsFound);
     /* record for user. */
     pFound[0] = vectorsFound;
 
@@ -542,10 +474,9 @@ int plasma_zstevx2(
     if (vectorsFound < workStack.eigenvalues) {
         int j=0;   
         for (i=0; i<workStack.eigenvalues; i++) {
-            if (pMul[i] > 0) {
-                pMul[j] = pMul[i];
-                pVal[j] = pVal[i];
-                if (pMul[j] != 1) if(0) fprintf(stderr, "eigenvalue[%i]=%.16e, mpcity=%i.\n", j, pVal[j], pMul[j]);
+            if (pMul[i] > 0) {                          /* If this is NOT a multiplicity, */
+                pMul[j] = pMul[i];                      /* copy to next open slot j       */
+                pVal[j] = pVal[i];      
                 if (workStack.jobtype == PlasmaVec) {
                     if (j != i) {
                         memcpy(&pVec[j*workStack.N], &pVec[i*workStack.N], workStack.N*sizeof(plasma_complex64_t));
@@ -553,18 +484,50 @@ int plasma_zstevx2(
                 }
 
                 j++;
-            }
+            } /* end if we found a non-multiplicity eigenvalue */
         }
     } /* end if compression is needed. */
 
-    double orth_us;
+    double orth_s;
     double start_orth;
-    if(0) start_orth = omp_get_wtime();
     int ret;
-    ret = use_GEQRF(workStack.N, vectorsFound, pVec);
-    if (ret != 0) return(ret);
-    if(0) orth_us = (omp_get_wtime() - start_orth)*1.e6;
 
+    /* perform QR factorization, remember the descriptor. */
+    plasma_desc_t T;
+
+    if(1) start_orth = omp_get_wtime();
+    ret = plasma_zgeqrf(workStack.N, vectorsFound, /* This leaves pVec in compressed state of Q+R */
+                  pVec, workStack.N, &T);
+    if (ret != 0) {
+        fprintf(stderr, "%s:%i ret=%i for plasma_zqeqrf.\n", __func__, __LINE__, ret);
+        exit(-1);
+    }
+
+    /* extract just the Q of the QR, in normal form, in workspace pQ */
+    plasma_complex64_t* pQ = (plasma_complex64_t*) calloc(workStack.N*vectorsFound, sizeof(plasma_complex64_t));
+    ret = plasma_zungqr(workStack.N, vectorsFound, vectorsFound,
+                  pVec, workStack.N, T, pQ, workStack.N);
+
+    if (ret != 0) {
+        fprintf(stderr, "%s:%i ret=%i for plasma_zungqr.\n", __func__, __LINE__, ret);
+        exit(-1);
+    }
+
+    /* copy orthonormal vectors from workspace pQ to pVec for user return. */
+    memcpy(pVec, pQ, workStack.N*vectorsFound*sizeof(plasma_complex64_t));
+    {free(pQ); pQ = NULL;}
+
+    if(1) {
+        orth_s = (omp_get_wtime() - start_orth);
+        fprintf(stderr, "%s:%i plasma_qrf=%.6f sec\n", __func__, __LINE__, orth_s);
+    }
+
+    /*************************************************************************
+     * When eigenvalue are crowded, it is possible that after orthogonalizing
+     * vectors, it can be better to swap neighboring eigenvectors. We just 
+     * test all the pairs; basically ||(A*V-e*V)||_max is the error.  if BOTH 
+     * vectors in a pair have less error by being swapped, we swap them.
+     ************************************************************************/
     int swaps=0;
     if (jobtype == PlasmaVec) {
         int N = workStack.N; 
@@ -576,7 +539,7 @@ int plasma_zstevx2(
             /* We've tried to parallelize the following four tests
              * as four omp tasks. It works, but takes an average of
              * 8% longer (~3.6 ms) than just serial execution. 
-             * omp schedule and taskwait verhead, I presume.
+             * omp schedule and taskwait overhead, I presume.
              */
 
             test[0]= eigp_error(workStack.diag, workStack.offd, N,
@@ -615,7 +578,7 @@ int plasma_zstevx2(
     if (stein_arrays) free(stein_arrays);
 
     /* Return status. */
-    if(0) fprintf(stderr, "plasma_dstess exit-return %d.\n", sequence.status);
+    if(0) fprintf(stderr, "plasma_stevx2 exit with return=%d.\n", sequence.status);
     return sequence.status;
 } /* END plasma_zstevx2 */
 

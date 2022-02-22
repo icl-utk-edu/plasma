@@ -251,18 +251,20 @@ void test_zstevx2(param_value_t param[], bool run)
      ****************************************************************/
 
     if (test) {
-        if (0) fprintf(stderr, "%s:%i plasmaRangeV for _stevx2 m=%i ret=%i, time=%.6f, vectorsFound=%i.\n", __func__, __LINE__, m, ret, time, vectorsFound);
+        if (1) fprintf(stderr, "%s:%i plasmaRangeV for _stevx2 m=%i ret=%i, time=%.6f, vectorsFound=%i.\n", __func__, __LINE__, m, ret, time, vectorsFound);
 
-        if (0) fprintf(stderr, "%s:%i first pVal=%.15f (mpcty=%i), last=%.15f (mpcty=%i).\n", __func__, __LINE__, pVal[0], pMul[0], pVal[vectorsFound-1], pMul[vectorsFound-1]);
-        if (0) fprintf(stderr, "%s:%i eigenvalues[m-1=%i] %.15f.\n", __func__, __LINE__, m-1, eigenvalues[m-1]);
+        if (1) fprintf(stderr, "%s:%i first pVal=%.15f (mpcty=%i), last=%.15f (mpcty=%i).\n", __func__, __LINE__, pVal[0], pMul[0], pVal[vectorsFound-1], pMul[vectorsFound-1]);
+        if (1) fprintf(stderr, "%s:%i eigenvalues[m-1=%i] %.15f.\n", __func__, __LINE__, m-1, eigenvalues[m-1]);
 
         /**********************************************************************
          * Find worst eigenvalue error. However, we must worry about
          * multiplicity. In single precision this first occurs at m=14734, with
          * vl=1.5, vu=2.01; mpcity=2. At m=75000, vl=1.5, vu=2.01, mpcity=10.
+         * We must also worry about the magnitude of eigenvalues; machine 
+         * epsilon for large eigenvalues is much greater than for small ones.
          *********************************************************************/
 
-        plasma_complex64_t worstEigenvalue_error = 0;
+        plasma_complex64_t worstEigenvalue_error = 0, worstEigenvalue_eps;
         lapack_int worstEigenvalue_index = 0, worstEigenvalue_mpcty = 0, max_mpcty = 0;
         plasma_complex64_t worstEigenvector_error = 0;
         lapack_int worstEigenvector_index = 0;
@@ -272,10 +274,12 @@ void test_zstevx2(param_value_t param[], bool run)
             if (pMul[i] > max_mpcty) max_mpcty = pMul[i];
 
             for (j=0; j<pMul[i]; j++) {
-                plasma_complex64_t error = fabs(pVal[i]-eigenvalues[evIdx]);
+                double ev_eps = nexttoward(fabs(eigenvalues[evIdx]), DBL_MAX) - fabs(eigenvalues[evIdx]);
+                plasma_complex64_t error = fabs(pVal[i]-eigenvalues[evIdx]) / ev_eps;
                 if (error > worstEigenvalue_error) {
                     worstEigenvalue_index = i;
                     worstEigenvalue_error = error;
+                    worstEigenvalue_eps = ev_eps; 
                     worstEigenvalue_mpcty = pMul[i];
                 }
 
@@ -286,16 +290,17 @@ void test_zstevx2(param_value_t param[], bool run)
             i++; /* advance to next discovered eigenvalue. */         
         }
 
-        if (0)  fprintf(stderr, "%s:%i worst eigenvalue error: index %i, "
-                "error %.6e (%.3f eps) computed eigenvalue %.15f. "
+        if (1)  fprintf(stderr, "%s:%i worst eigenvalue error: index %i, "
+                "error %.3f in ev_eps =(%.6e) |computed-analytic|=%.15f. "
                 "Max Mpcty=%i.\n", 
                 __func__, __LINE__, 
                 worstEigenvalue_index, worstEigenvalue_error, 
-                (worstEigenvalue_error/eps), pVal[worstEigenvalue_index], 
+                worstEigenvalue_eps, 
+                fabs(pVal[worstEigenvalue_index] - eigenvalues[worstEigenvalue_index]), 
                 max_mpcty);
 
-        param[PARAM_ERROR].d = worstEigenvalue_error;
-        param[PARAM_SUCCESS].i = (worstEigenvalue_error < 3.*eps);
+        param[PARAM_ERROR].d = worstEigenvalue_error*worstEigenvalue_eps;
+        param[PARAM_SUCCESS].i = (worstEigenvalue_error < 3.);
 
         if (!param[PARAM_SUCCESS].i) goto TestingDone; /* exit if not successful. */
 
@@ -327,7 +332,7 @@ void test_zstevx2(param_value_t param[], bool run)
         /* Find ceiling(log_2(m)); double it as allowable eps of err */
         i=1;
         while ((m>>i)) i++;
-        if (0) fprintf(stderr, "%s:%i 2*ceiling(log_2(%i))=%i, vErr=%.3f eps.\n", 
+        if (1) fprintf(stderr, "%s:%i 2*ceiling(log_2(%i))=%i, vErr=%.3f eps.\n", 
                __func__, __LINE__, m, i<<1, (worstEigenvector_error/eps));
 
         param[PARAM_ERROR].d = (worstEigenvector_error);
