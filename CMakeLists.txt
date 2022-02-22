@@ -256,8 +256,15 @@ compute/zgbmm.c compute/dgbmm.c compute/sgbmm.c compute/cgbmm.c
 compute/zgbset.c compute/dgbset.c compute/sgbset.c compute/cgbset.c
 compute/zgb2desc.c compute/dgb2desc.c compute/sgb2desc.c compute/cgb2desc.c
 compute/pzgb2desc.c compute/pdgb2desc.c compute/psgb2desc.c compute/pcgb2desc.c
+compute/zgesdd.c compute/dgesdd.c compute/sgesdd.c compute/cgesdd.c
+compute/pzgbbrd_static.c compute/pcgbbrd_static.c compute/pdgbbrd_static.c compute/psgbbrd_static.c
+compute/pzgecpy_tile2lapack_band.c compute/pcgecpy_tile2lapack_band.c compute/pdgecpy_tile2lapack_band.c compute/psgecpy_tile2lapack_band.c
+compute/pzlarft_blgtrd.c compute/pclarft_blgtrd.c compute/pdlarft_blgtrd.c compute/pslarft_blgtrd.c
+compute/pzunmqr_blgtrd.c compute/pcunmqr_blgtrd.c compute/pdormqr_blgtrd.c compute/psormqr_blgtrd.c
+compute/pcge2gb.c compute/pdge2gb.c compute/psge2gb.c compute/pzge2gb.c
 control/constants.c control/context.c control/descriptor.c
 control/tree.c control/tuning.c control/workspace.c control/version.c)
+
 
 # CMake knows about "plasma" library at this point so inform CMake where the headers are
 target_include_directories(plasma PUBLIC
@@ -319,7 +326,13 @@ core_blas/core_ssyssq.c core_blas/core_stradd.c core_blas/core_strmm.c
 core_blas/core_strssq.c core_blas/core_strtri.c core_blas/core_stslqt.c
 core_blas/core_stsmlq.c core_blas/core_stsmqr.c core_blas/core_stsqrt.c
 core_blas/core_sttlqt.c core_blas/core_sttmlq.c core_blas/core_sttmqr.c
-core_blas/core_sttqrt.c control/barrier.c control/async.c)
+core_blas/core_sttqrt.c control/barrier.c control/async.c
+core_blas/core_cgbtype1cb.c  core_blas/core_dgbtype1cb.c  core_blas/core_sgbtype1cb.c  core_blas/core_zgbtype1cb.c
+core_blas/core_cgbtype2cb.c  core_blas/core_dgbtype2cb.c  core_blas/core_sgbtype2cb.c  core_blas/core_zgbtype2cb.c
+core_blas/core_cgbtype3cb.c  core_blas/core_dgbtype3cb.c  core_blas/core_sgbtype3cb.c  core_blas/core_zgbtype3cb.c
+core_blas/core_clarfb_gemm.c core_blas/core_dlarfb_gemm.c core_blas/core_slarfb_gemm.c core_blas/core_zlarfb_gemm.c
+core_blas/core_clacpy.c core_blas/core_dlacpy.c core_blas/core_slacpy.c core_blas/core_zlacpy.c 
+)
 
 target_include_directories(plasma_core_blas PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -375,6 +388,7 @@ test/test_ztradd.c test/test_dtradd.c test/test_ctradd.c test/test_stradd.c
 test/test_ztrmm.c test/test_dtrmm.c test/test_ctrmm.c test/test_strmm.c
 test/test_ztrsm.c test/test_dtrsm.c test/test_ctrsm.c test/test_strsm.c
 test/test_ztrtri.c test/test_dtrtri.c test/test_ctrtri.c test/test_strtri.c
+test/test_zgesdd.c test/test_dgesdd.c test/test_cgesdd.c test/test_sgesdd.c
 test/test_zunmlq.c test/test_dormlq.c test/test_cunmlq.c test/test_sormlq.c
 test/test_zunmqr.c test/test_dormqr.c test/test_cunmqr.c test/test_sormqr.c)
 

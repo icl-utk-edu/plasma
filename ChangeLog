@@ -3,13 +3,18 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added
+- Add xGBMM() for band matrix multiply
+
+### Fixed
+- Fix reporting of testers' program name
 
 ## [21.9.29] - 2021-09-29
 ### Added
 - Add transpose option to xGETRS() functions
 - Add transpose option to xGELS() functions
-- Add convinience scripts for C and Fortran examples
-- Add Python script for quickly launching tets
+- Add convenience scripts for C and Fortran examples
+- Add Python script for quickly launching tests
 
 ### Removed
 - Remove Fortran code and comments producing warnings

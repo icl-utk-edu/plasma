@@ -131,6 +131,40 @@ plasma_enum_t plasma_uplo_const(char lapack_char)
 }
 
 /***************************************************************************//**
+ * @retval PlasmaAllVec  if lapack_char = 'A'
+ * @retval PlasmaSomeVec if lapack_char = 'S'
+ * @retval PlasmaVec     if lapack_char = 'V'
+ * @retval PlasmaNoVec   if lapack_char = 'N'
+ * @retval PlasmaIVec    if lapack_char = 'I'
+ ******************************************************************************/
+plasma_enum_t plasma_job_const(char lapack_char)
+{
+    switch (lapack_char) {
+    case 'A': case 'a': return PlasmaAllVec;
+    case 'S': case 's': return PlasmaSomeVec;
+    case 'V': case 'v': return PlasmaVec;
+    case 'N': case 'n': return PlasmaNoVec;
+    case 'I': case 'i': return PlasmaIVec;
+    default:            return PlasmaInvalid;
+    }
+}
+
+/***************************************************************************//**
+ * @retval PlasmaRangeAll  if lapack_char = 'A'
+ * @retval PlasmaRangeV    if lapack_char = 'V'
+ * @retval PlasmaRangeI    if lapack_char = 'I'
+ ******************************************************************************/
+plasma_enum_t plasma_range_const(char lapack_char)
+{
+    switch (lapack_char) {
+    case 'A': case 'a': return PlasmaRangeAll;
+    case 'V': case 'v': return PlasmaRangeV;
+    case 'I': case 'i': return PlasmaRangeI;
+    default:            return PlasmaInvalid;
+    }
+}
+
+/***************************************************************************//**
  * @}
  * end group plasma_const
  ******************************************************************************/

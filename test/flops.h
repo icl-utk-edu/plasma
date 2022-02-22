@@ -102,6 +102,43 @@ static double  flops_dgemm(double m, double n, double k)
 static double  flops_sgemm(double m, double n, double k)
     { return    fmuls_gemm(m, n, k) +    fadds_gemm(m, n, k); }
 
+//------------------------------------------------------------ gbmm
+// usually the bottom equation returned calculates the flops,
+// but some matrices are too long or too wide and require extra care
+// think rectangle minus trapezoid minus triangle and reduce:
+//        (m*k - (m-kl+m-k-kl-1.0)*0.5*k - (k-ku-1.0)*(k-ku)*0.5)*n;
+//        (m*k - (m-kl)*k+(k-1.0)*k*0.5 - (k-ku-1.0)*(k-ku)*0.5)*n;
+//        (kl*k + (k+1.0)*k*0.5 - (k-ku-1.0)*(k-ku)*0.5)*n;
+static double fmuls_gbmm(double m, double n, double k, double kl, double ku)
+{
+    if(m > k+kl)
+        return (kl*k + (k+1.0)*k*0.5 - (k-ku-1.0)*(k-ku)*0.5)*n;
+    if(k > m+ku)
+        return (ku*m - (m-kl-1.0)*(m-kl)*0.5 + (m+1.0)*m*0.5)*n;
+    return (m*k - (m-kl-1.0)*(m-kl)*0.5 - (k-ku-1.0)*(k-ku)*0.5)*n;
+}
+
+static double fadds_gbmm(double m, double n, double k, double kl, double ku)
+{
+    if(m > k+kl)
+        return (kl*k + (k+1.0)*k*0.5 - (k-ku-1.0)*(k-ku)*0.5)*n;
+    if(k > m+ku)
+        return (ku*m - (m-kl-1.0)*(m-kl)*0.5 + (m+1.0)*m*0.5)*n;
+    return (m*k - (m-kl-1.0)*(m-kl)*0.5 - (k-ku-1.0)*(k-ku)*0.5)*n;
+}
+
+static double  flops_zgbmm(double m, double n, double k, double kl, double ku)
+    { return 6.*fmuls_gbmm(m, n, k, kl, ku) + 2.*fadds_gbmm(m, n, k, kl, ku); }
+
+static double  flops_cgbmm(double m, double n, double k, double kl, double ku)
+    { return 6.*fmuls_gbmm(m, n, k, kl, ku) + 2.*fadds_gbmm(m, n, k, kl, ku); }
+
+static double  flops_dgbmm(double m, double n, double k, double kl, double ku)
+    { return    fmuls_gbmm(m, n, k, kl, ku) +    fadds_gbmm(m, n, k, kl, ku); }
+
+static double  flops_sgbmm(double m, double n, double k, double kl, double ku)
+    { return    fmuls_gbmm(m, n, k, kl, ku) +    fadds_gbmm(m, n, k, kl, ku); }
+
 //------------------------------------------------------------ symm/hemm
 static double fmuls_symm(plasma_enum_t side, double m, double n)
 {

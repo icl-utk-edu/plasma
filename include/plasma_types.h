@@ -112,7 +112,8 @@ enum {
     PlasmaRowwise       = 402,
 
     PlasmaW             = 501,
-    PlasmaA2            = 502
+    PlasmaA2            = 502,
+    Plasma_Const_Limit  // Ensure always last.
 };
 
 enum {
@@ -162,10 +163,15 @@ enum {
 /******************************************************************************/
 typedef int plasma_enum_t;
 
+typedef double plasma_time_t;
+
 typedef float  _Complex plasma_complex32_t;
 typedef double _Complex plasma_complex64_t;
 
 /******************************************************************************/
+plasma_enum_t plasma_eigt_const(char lapack_char);
+plasma_enum_t plasma_job_const(char lapack_char);
+plasma_enum_t plasma_range_const(char lapack_char);
 plasma_enum_t plasma_diag_const(char lapack_char);
 plasma_enum_t plasma_direct_const(char lapack_char);
 plasma_enum_t plasma_norm_const(char lapack_char);

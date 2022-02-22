@@ -251,10 +251,10 @@ void test_zstevx2(param_value_t param[], bool run)
      ****************************************************************/
 
     if (test) {
-        if (1) fprintf(stderr, "%s:%i plasmaRangeV for _stevx2 m=%i ret=%i, time=%.6f, vectorsFound=%i.\n", __func__, __LINE__, m, ret, time, vectorsFound);
+        if (0) fprintf(stderr, "%s:%i plasmaRangeV for _stevx2 m=%i ret=%i, time=%.6f, vectorsFound=%i.\n", __func__, __LINE__, m, ret, time, vectorsFound);
 
-        if (1) fprintf(stderr, "%s:%i first pVal=%.15f (mpcty=%i), last=%.15f (mpcty=%i).\n", __func__, __LINE__, pVal[0], pMul[0], pVal[vectorsFound-1], pMul[vectorsFound-1]);
-        if (1) fprintf(stderr, "%s:%i eigenvalues[m-1=%i] %.15f.\n", __func__, __LINE__, m-1, eigenvalues[m-1]);
+        if (0) fprintf(stderr, "%s:%i first pVal=%.15f (mpcty=%i), last=%.15f (mpcty=%i).\n", __func__, __LINE__, pVal[0], pMul[0], pVal[vectorsFound-1], pMul[vectorsFound-1]);
+        if (0) fprintf(stderr, "%s:%i eigenvalues[m-1=%i] %.15f.\n", __func__, __LINE__, m-1, eigenvalues[m-1]);
 
         /**********************************************************************
          * Find worst eigenvalue error. However, we must worry about
@@ -290,7 +290,7 @@ void test_zstevx2(param_value_t param[], bool run)
             i++; /* advance to next discovered eigenvalue. */         
         }
 
-        if (1)  fprintf(stderr, "%s:%i worst eigenvalue error: index %i, "
+        if (0)  fprintf(stderr, "%s:%i worst eigenvalue error: index %i, "
                 "error %.3f in ev_eps =(%.6e) |computed-analytic|=%.15f. "
                 "Max Mpcty=%i.\n", 
                 __func__, __LINE__, 
@@ -332,7 +332,7 @@ void test_zstevx2(param_value_t param[], bool run)
         /* Find ceiling(log_2(m)); double it as allowable eps of err */
         i=1;
         while ((m>>i)) i++;
-        if (1) fprintf(stderr, "%s:%i 2*ceiling(log_2(%i))=%i, vErr=%.3f eps.\n", 
+        if (0) fprintf(stderr, "%s:%i 2*ceiling(log_2(%i))=%i, vErr=%.3f eps.\n", 
                __func__, __LINE__, m, i<<1, (worstEigenvector_error/eps));
 
         param[PARAM_ERROR].d = (worstEigenvector_error);
