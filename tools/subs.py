@@ -202,6 +202,7 @@ lapack = [
     ('sgeqp3',               'dgeqp3',               'cgeqp3',               'zgeqp3'              ),
     ('sgeqr2',               'dgeqr2',               'cgeqr2',               'zgeqr2'              ),
     ('sgeqrf',               'dgeqrf',               'cgeqrf',               'zgeqrf'              ),
+    ('sorgqr',               'dorgqr',               'corqqr',               'zorgqr'              ),
     ('sgeqrs',               'dgeqrs',               'cgeqrs',               'zgeqrs'              ),
     ('sgeqrt',               'dgeqrt',               'cgeqrt',               'zgeqrt'              ),
     ('sgerfs',               'dgerfs',               'cgerfs',               'zgerfs'              ),
@@ -230,6 +231,7 @@ lapack = [
     ('slacpy',               'dlacpy',               'clacpy',               'zlacpy'              ),
     ('slacrm',               'dlacrm',               'clacrm',               'zlacrm'              ),
     ('sladiv',               'dladiv',               'cladiv',               'zladiv'              ),
+    ('slaebz2',              'dlaebz2',              'claebz2',              'zlaebz2'             ), # No complex, z is just a template.
     ('slaed',                'dlaed',                'slaed',                'dlaed'               ),
     ('slaex',                'dlaex',                'slaex',                'dlaex'               ),
     ('slag2d',               'dlag2s',               'clag2z',               'zlag2c'              ),
@@ -240,6 +242,7 @@ lapack = [
     ('slamc3',               'dlamc3',               'slamc3',               'dlamc3'              ),
     ('slamch',               'dlamch',               'slamch',               'dlamch'              ),
     ('slamrg',               'dlamrg',               'slamrg',               'dlamrg'              ),
+    ('slaneg',               'dlaneg',               'claneg',               'zlaneg'              ),
     ('slange',               'dlange',               'clange',               'zlange'              ),
     ('slange',               'dlange',               'slange',               'dlange'              ),
     ('slangb',               'dlangb',               'clangb',               'zlangb'              ),
@@ -315,6 +318,7 @@ lapack = [
     ('ssteqr',               'dsteqr',               'csteqr',               'zsteqr'              ),
     ('ssterf',               'dsterf',               'ssterf',               'dsterf'              ),
     ('ssterm',               'dsterm',               'csterm',               'zsterm'              ),
+    ('sstevx2',              'dstevx2',              'cstevx2',              'zstevx2'             ), # No complex; z is just a template.
     ('sstt21',               'dstt21',               'cstt21',               'zstt21'              ),
     ('ssycpy',               'dsycpy',               'checpy',               'zhecpy'              ),
     ('ssyev',                'dsyev',                'cheev',                'zheev'               ),
