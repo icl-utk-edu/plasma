@@ -278,7 +278,9 @@ install_dirs:
 
 install: lib install_dirs
 	cp include/*.h $(prefix)/include
+ifeq ($(fortran), 1)
 	cp include/*.mod $(prefix)/include
+endif
 	cp $(libfiles) $(prefix)/lib
 	# pkgconfig
 	cat lib/pkgconfig/plasma.pc.in         | \
