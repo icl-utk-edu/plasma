@@ -248,6 +248,11 @@ struct routines_t routines[] =
     { "cpotrs", test_cpotrs },
     { "spotrs", test_spotrs },
 
+    { "", NULL },
+    { "dstevx2", test_dstevx2 },
+    { "", NULL },
+    { "sstevx2", test_sstevx2 },
+
     { "zsymm", test_zsymm },
     { "dsymm", test_dsymm },
     { "csymm", test_csymm },

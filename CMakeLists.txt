@@ -201,6 +201,9 @@ compute/spbtrf.c compute/spbtrs.c compute/dlangb.c compute/clangb.c
 compute/slangb.c compute/dposv.c compute/cposv.c compute/sposv.c
 compute/dpoinv.c compute/cpoinv.c compute/spoinv.c compute/dpotri.c
 compute/cpotri.c compute/spotri.c
+compute/slaebz2.c compute/dlaebz2.c 
+compute/slaneg2.c compute/dlaneg2.c 
+compute/sstevx2.c compute/dstevx2.c 
 compute/pslange.c compute/pclaset.c compute/psorglq_tree.c
 compute/psormqr_tree.c compute/pdgelqf_tree.c compute/pslag2d.c
 compute/pcunmqr_tree.c compute/psgeqrf_tree.c compute/pspotrf.c
@@ -377,6 +380,7 @@ test/test_zpoinv.c test/test_dpoinv.c test/test_cpoinv.c test/test_spoinv.c
 test/test_zpotrf.c test/test_dpotrf.c test/test_cpotrf.c test/test_spotrf.c
 test/test_zpotri.c test/test_dpotri.c test/test_cpotri.c test/test_spotri.c
 test/test_zpotrs.c test/test_dpotrs.c test/test_cpotrs.c test/test_spotrs.c
+test/test_dstevx2.c test/test_sstevx2.c
 test/test_zsymm.c test/test_dsymm.c test/test_csymm.c test/test_ssymm.c
 test/test_zsyr2k.c test/test_dsyr2k.c test/test_csyr2k.c test/test_ssyr2k.c
 test/test_zsyrk.c test/test_dsyrk.c test/test_csyrk.c test/test_ssyrk.c

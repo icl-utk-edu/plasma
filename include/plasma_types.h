@@ -94,9 +94,6 @@ enum {
     PlasmaMaxNorm       = 177,
     PlasmaRealMaxNorm   = 178,
 
-    PlasmaEigVal        = 301,  // deprecated; same as PlasmaNoVec
-    PlasmaEigValVec     = 302,  // deprecated; same as PlasmaVec
-
     PlasmaNoVec         = 301,
     PlasmaVec           = 302,
     PlasmaCount         = 303,
