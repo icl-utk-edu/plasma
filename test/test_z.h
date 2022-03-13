@@ -59,6 +59,7 @@ void test_zpotrf(param_value_t param[], bool run);
 void test_zpotri(param_value_t param[], bool run);
 void test_zpotrs(param_value_t param[], bool run);
 void test_zsymm(param_value_t param[], bool run);
+void test_zstevx2(param_value_t param[], bool run);
 void test_zsyr2k(param_value_t param[], bool run);
 void test_zsyrk(param_value_t param[], bool run);
 void test_ztradd(param_value_t param[], bool run);
