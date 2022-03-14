@@ -363,7 +363,7 @@ test/test_zhemm.c test/test_chemm.c test/test_zher2k.c test/test_cher2k.c
 test/test_zherk.c test/test_cherk.c test/test_zhetrf.c test/test_dsytrf.c
 test/test_chetrf.c test/test_ssytrf.c test/test_zhesv.c test/test_dsysv.c
 test/test_chesv.c test/test_ssysv.c test/test_zlacpy.c test/test_dlacpy.c
-test/test_clacpy.c test/test_slacpy.c test/test_zlag2c test/test_clag2z.c
+test/test_clacpy.c test/test_slacpy.c test/test_zlag2c.c test/test_clag2z.c
 test/test_dlag2s.c test/test_slag2d.c test/test_zlange.c test/test_dlange.c
 test/test_clange.c test/test_slange.c test/test_zlanhe.c test/test_clanhe.c
 test/test_zlansy.c test/test_dlansy.c test/test_clansy.c test/test_slansy.c
