@@ -79,9 +79,11 @@ void plasma_zgbset(int m, int n, int kl, int ku,
         }
     }
     // wide rectangular matrix
-    else if(n>m)
+    else /* if(n>m) */
     {
-        // clear out a square part of the matrix (left side).
+        // clear out the square part of the matrix (left side).
+        // so we will use all 'm's instead of 'm's and 'n's. We 
+        // will clear out the right side later.
         int cornerI, cornerJ, extralower, extraupper;
         if(kl+ku < m)
         {
@@ -92,7 +94,7 @@ void plasma_zgbset(int m, int n, int kl, int ku,
         else
         {
             extralower = m-1-kl;
-            extraupper = n-1-ku;
+            extraupper = m-1-ku;
         }
         for(; extralower > 0; extralower--)
         {
@@ -101,12 +103,14 @@ void plasma_zgbset(int m, int n, int kl, int ku,
         }
         for(; extraupper > 0; extraupper--)
         {
-            cornerJ = n-extraupper;
+            cornerJ = m-extraupper;
             plasma_zlaset(PlasmaGeneral,1,extraupper,0,0,pA+lda*cornerJ,lda+1);
         }
         // now zero out the right side
+        // i: the row that we are zeroing
         for(int i = 0; i < m; i++)
         {
+            // blcols: the number of columns in the row that belong to the band
             int blcols = (i-(m-1)+ku) > 0 ? (i-(m-1)+ku) : 0;
             if (n-(m+blcols) <= 0)
             {
