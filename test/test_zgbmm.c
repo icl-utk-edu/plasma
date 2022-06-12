@@ -9,7 +9,6 @@
  * @precisions normal z -> s d c
  *
  **/
- /* Implemented by Daniel Mishler beginning on 07-12-12, 11:05 */
 #include "test.h"
 #include "flops.h"
 #include "plasma.h"
