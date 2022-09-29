@@ -3,13 +3,18 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+## [22.9.29] - 2022-09-29
 ### Added
 - Add xGBMM() for band matrix multiply
+- Add xGESDD() for symmetric/Hermitian divide-and-conquer eigensolver
+- Add xSTEVX() for tridiagonal matrix eigensolver based on bisection
 
 ### Fixed
 - Fix reporting of testers' program name
+- Fix build issues without Fortran interface
 
-## [21.9.29] - 2021-09-29
+## [21.8.29] - 2021-08-29
 ### Added
 - Add transpose option to xGETRS() functions
 - Add transpose option to xGELS() functions
