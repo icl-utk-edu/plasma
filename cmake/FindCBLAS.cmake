@@ -1,4 +1,3 @@
-
 #.rst:
 # FindCBLAS
 # ---------
@@ -27,43 +26,49 @@ if ("x_${CBLAS_PROVIDER}_x" STREQUAL "x_generic_x" OR "x_${CBLAS_PROVIDER}_x" ST
     if (NOT CBLAS_LIBRARIES)
       find_library(CBLAS_LIBRARIES cblas PATHS ${CBLAS_ROOT} ENV CBLAS_ROOT)
     endif()
+  else()
+    find_package( LibSci )
+    if (LibSci_FOUND)
+      set(CBLAS_INCLUDE_DIRS ${LIBSCI_INCLUDE_DIRS})
+      set(CBLAS_LIBRARIES ${LIBSCI_LIBRARIES})
+      set(CBLAS_PROVIDER "libsci")
+      find_package_handle_standard_args(CBLAS "Can't find CBLAS")
+      return()
+    endif()
   endif()
-endif()
 
-if ("x_${CBLAS_PROVIDER}_x" STREQUAL "x_mkl_x" OR "x_${CBLAS_PROVIDER}_x" STREQUAL "x_any_x")
+elseif ("x_${CBLAS_PROVIDER}_x" STREQUAL "x_mkl_x" OR "x_${CBLAS_PROVIDER}_x" STREQUAL "x_any_x")
   find_package( MKL )
   if (MKL_FOUND)
     set(CBLAS_INCLUDE_DIRS ${MKL_INCLUDE_DIRS})
     set(CBLAS_LIBRARIES ${MKL_LIBRARIES})
     set(CBLAS_PROVIDER "mkl")
   endif()
-endif()
 
-if ("x_${CBLAS_PROVIDER}_x" STREQUAL "x_openblas_x" OR "x_${CBLAS_PROVIDER}_x" STREQUAL "x_any_x")
+elseif ("x_${CBLAS_PROVIDER}_x" STREQUAL "x_openblas_x" OR "x_${CBLAS_PROVIDER}_x" STREQUAL "x_any_x")
   find_package( OpenBLAS )
   if (OpenBLAS_FOUND)
     set(CBLAS_INCLUDE_DIRS ${OpenBLAS_INCLUDE_DIRS})
     set(CBLAS_LIBRARIES ${OpenBLAS_LIBRARIES})
     set(CBLAS_PROVIDER "openblas")
   endif()
-endif()
 
-if ("x_${CBLAS_PROVIDER}_x" STREQUAL "x_netlib_x" OR "x_${CBLAS_PROVIDER}_x" STREQUAL "x_any_x")
+elseif ("x_${CBLAS_PROVIDER}_x" STREQUAL "x_netlib_x" OR "x_${CBLAS_PROVIDER}_x" STREQUAL "x_any_x")
   find_package( NetlibCblas )
   if (NetlibCblas_FOUND)
     set(CBLAS_INCLUDE_DIRS ${NetlibCblas_INCLUDE_DIRS})
     set(CBLAS_LIBRARIES ${NetlibCblas_LIBRARIES})
     set(CBLAS_PROVIDER "netlib")
   endif()
-endif()
 
-if ("x_${CBLAS_PROVIDER}_x" STREQUAL "x_accelerate_x" OR "x_${CBLAS_PROVIDER}_x" STREQUAL "x_any_x")
+elseif ("x_${CBLAS_PROVIDER}_x" STREQUAL "x_accelerate_x" OR "x_${CBLAS_PROVIDER}_x" STREQUAL "x_any_x")
   find_package( Accelerate )
   if (Accelerate_FOUND)
     set(CBLAS_INCLUDE_DIRS ${Accelerate_INCLUDE_DIRS})
     set(CBLAS_LIBRARIES ${Accelerate_LIBRARIES})
     set(CBLAS_PROVIDER "accelerate")
   endif()
+
 endif()
 
 find_package_handle_standard_args(CBLAS REQUIRED_VARS CBLAS_INCLUDE_DIRS CBLAS_LIBRARIES CBLAS_PROVIDER)

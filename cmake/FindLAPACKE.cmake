@@ -27,6 +27,16 @@ if ("x_${LAPACKE_PROVIDER}_x" STREQUAL "x_generic_x" OR "x_${LAPACKE_PROVIDER}_x
     if (NOT LAPACKE_LIBRARIES)
       find_library(LAPACKE_LIBRARIES lapacke PATHS ${LAPACKE_ROOT} ENV LAPACKE_ROOT)
     endif()
+  else()
+    find_package( LibSci )
+    if (LibSci_FOUND)
+      set(LAPACKE_INCLUDE_DIRS ${LIBSCI_INCLUDE_DIRS})
+      set(LAPACKE_LIBRARIES ${LIBSCI_LIBRARIES})
+      set(LAPACKE_PROVIDER "libsci")
+      find_package_handle_standard_args(LAPACKE "Can't find LAPACKE")
+      return()
+    endif()
+
   endif()
 endif()
 
