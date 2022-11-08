@@ -10,6 +10,8 @@
 #ifndef PLASMA_CORE_LAPACK_H
 #define PLASMA_CORE_LAPACK_H
 
+#include "plasma_config.h"
+
 #if defined(HAVE_MKL) || defined(PLASMA_WITH_MKL)
     #define MKL_Complex16 double _Complex
     #define MKL_Complex8  float _Complex
@@ -39,7 +41,7 @@
     // LAPACK    cblas.h does: typedef enum {...} CBLAS_ORDER;
     // OpenBLAS  cblas.h does: typedef enum CBLAS_ORDER {...} CBLAS_ORDER;
     // We use (CBLAS_ORDER), so add these typedefs for original cblas.h
-    #ifdef CBLAS_ADD_TYPEDEF
+    #if defined(CBLAS_ADD_TYPEDEF) || defined(PLASMA_CBLAS_ADD_TYPEDEF)
     typedef enum CBLAS_ORDER CBLAS_ORDER;
     typedef enum CBLAS_TRANSPOSE CBLAS_TRANSPOSE;
     typedef enum CBLAS_UPLO CBLAS_UPLO;
