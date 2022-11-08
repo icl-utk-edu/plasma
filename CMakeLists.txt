@@ -4,6 +4,11 @@ project( PLASMA VERSION 22.9.29 LANGUAGES C )
 
 set(CMAKE_SUPPRESS_REGENERATION on)
 
+if (${CMAKE_VERSION} VERSION_GREATER 3.11.99)
+  cmake_policy(PUSH)
+  cmake_policy(SET CMP0074 NEW) # allows to use CBLAS_ROOT and LAPACKE_ROOT
+endif()
+
 #set( CMAKE_THREAD_PREFER_PTHREAD 1 )
 #find_package( Threads )
 
@@ -66,11 +71,6 @@ endif (BLAS_FOUND)
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-if(${CMAKE_VERSION} VERSION_GREATER 11.99.9)
-  cmake_policy(PUSH)
-  cmake_policy(SET CMP0074 NEW) # allows to use CBLAS_ROOT and LAPACKE_ROOT
-endif()
-
 find_package( CBLAS REQUIRED )
 include_directories(${CBLAS_INCLUDE_DIRS})
 if (CBLAS_PROVIDER STREQUAL "mkl")
@@ -84,8 +84,8 @@ endif()
 find_package( LAPACKE REQUIRED )
 include_directories(${LAPACKE_INCLUDE_DIRS})
 
-if(${CMAKE_VERSION} VERSION_GREATER 11.99.9)
-cmake_policy(POP)
+if (${CMAKE_VERSION} VERSION_GREATER 3.11.99)
+  cmake_policy(POP)
 endif()
 
 set(PLASMA_LINALG_LIBRARIES ${LAPACKE_LIBRARIES} ${LAPACK_LIBRARIES} ${CBLAS_LIBRARIES} ${BLAS_LIBRARIES})
@@ -101,7 +101,7 @@ if (PLASMA_DETECT_LUA)
 endif()
 
 if (PLASMA_DETECT_MAGMA)
-    find_package( CUDA ) # MAGMA requires CUDA
+  find_package( CUDA ) # MAGMA requires CUDA
   if (CUDA_FOUND)
     include_directories( ${CUDA_INCLUDE_DIRS} )
 
