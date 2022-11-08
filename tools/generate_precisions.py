@@ -6,12 +6,26 @@
 import os
 import sys
 
+Output_Files = False # show files to be generated but don't generate
+
 def codegen(letters, filenames, fn_format):
     for filename in filenames.split():
+        if Output_Files:
+            os.system("python tools/codegen.py --output {}".format(fn_format.format(filename)))
+            continue
         for letter in letters.split():
             os.system("python tools/codegen.py -p {} {}".format(letter, fn_format.format(filename)))
 
 def main(argv):
+    global Output_Files
+    if "--output" in argv:
+        Output_Files = True
+
+    elif "--help" in argv or "-h" in argv:
+        print("{} [--output]\n".format(argv[0]))
+        print("--output  show files to be generated but don't generate")
+        return 0
+
     codegen("s d c", "plasma_z plasma_internal_z core_lapack_z plasma_core_blas_z plasma_zlaebz2_work", "include/{}.h")
     codegen("ds", "include/plasma_zc.h include/plasma_internal_zc.h include/plasma_core_blas_zc.h test/test_zc.h", "{}")
     codegen("s d c", "dzamax zgelqf zgemm zgbmm zgeqrf zgesdd zunglq zungqr zunmlq zunmqr zpotrf zpotrs zsymm zsyr2k zsyrk ztradd ztrmm ztrsm ztrtri zunglq zungqr zunmlq zunmqr zgbsv zgbtrf zgbtrs zgeadd zgeinv zgelqs zgels zgeqrs zgesv zgeswp zgetrf zgetri zgetrs zhemm zher2k zherk zhesv zhetrf zhetrs zlacpy zlangb zlange zlanhe zlansy zlantr zlascl zlaset zlauum zpbsv zpbtrf zpbtrs zpoinv zposv zpotri zgetri_aux zdesc2ge zdesc2pb zdesc2tr zge2desc zgb2desc zgbset zpb2desc ztr2desc pdzamax pzgbtrf pzgeadd pzgelqf pzgelqf_tree pzgemm pzgeqrf pzgeqrf_tree pzgeswp pzgetrf pzgetri_aux pzhemm pzher2k pzherk pzhetrf_aasen pzlacpy pzlangb pzlange pzlanhe pzlansy pzlantr pzlascl pzlaset pzlauum pzpbtrf pzpotrf pzsymm pzsyr2k pzsyrk pztbsm pztradd pztrmm pztrsm pztrtri pzunglq pzunglq_tree pzungqr pzungqr_tree pzunmlq pzunmlq_tree pzunmqr pzunmqr_tree pzdesc2ge pzdesc2pb pzdesc2tr pzge2desc pzgb2desc pzpb2desc pztr2desc pzge2gb pzgbbrd_static pzgecpy_tile2lapack_band pzlarft_blgtrd pzunmqr_blgtrd", "compute/{}.c")
