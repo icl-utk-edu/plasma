@@ -471,7 +471,6 @@ void plasma_omp_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
     //===================
     // Reduction to band
     //===================
-    plasma_time_t time = omp_get_wtime();
     #pragma omp parallel
     #pragma omp master
     {
@@ -482,8 +481,6 @@ void plasma_omp_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
                                         &pA_band[nb], lda_band,
                                         sequence, request);
     }
-    time = omp_get_wtime() - time;
-    //printf("\n N=%d:  1-stage= %lf\t", n, time);
 
     //====================
     // Setup for bulge chasing
@@ -568,15 +565,12 @@ void plasma_omp_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
     //=======================================
     // Bulge chasing
     //=======================================
-    time = omp_get_wtime();
     plasma_pzgbbrd_static(uplo, minmn, nb, vblksiz,
                           pA_band, lda_band,
                           VQ2, tauQ2, VP2, tauP2,
                           S, E, wantz,
                           work,
                           sequence, request);
-    time = omp_get_wtime() - time;
-    //printf("2-stage= %lf\t", time);
 
     //=======================================
     // SVD solver
@@ -584,7 +578,6 @@ void plasma_omp_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
     // Use lapack D&C routine on the resulting bidiag [S E]
     double rdummy[1];
     int idummy[1];
-    time = omp_get_wtime();
     if (jobu == PlasmaNoVec && jobvt == PlasmaNoVec) {
         lapack_info = LAPACKE_dbdsdc(LAPACK_COL_MAJOR, lapack_uplo,
                                      'N', minmn, S, E,
@@ -658,8 +651,6 @@ void plasma_omp_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
                                          rdummy, idummy);
         #endif
     }
-    time = omp_get_wtime() - time;
-    //printf("SVD= %lf\t", time);
 
     if (lapack_info != 0) {
         plasma_error("bdsdc() failed");
@@ -669,7 +660,6 @@ void plasma_omp_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
     //=======================================
     // Generate U = [Q0] Q1 Q2 U0
     //=======================================
-    time = omp_get_wtime();
     if (jobu == PlasmaAllVec || jobu == PlasmaSomeVec) {
         // compute T2
         #pragma omp parallel
@@ -775,8 +765,6 @@ void plasma_omp_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
 
         plasma_desc_destroy(&VT);
     }
-    time = omp_get_wtime() - time;
-    //printf("Vect= %lf\n", time);
 
 cleanup:
     // Free all arrays.
