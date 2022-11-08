@@ -30,7 +30,7 @@ fi
 echo Preparing $DIR ...
 
 find -H ${DIR} -maxdepth 1 -type f -name '[A-Za-z0-9]*' | \
-    xargs echo ${DIR}/*/*.hin ${DIR}/*/*.[hc] ${DIR}/config/*.py ${DIR}/tools/*.py ${DIR}/Modules/*.cmake ${DIR}/*/*.f90 ${DIR}/*/*.lua ${DIR}/*/doxygen* ${DIR}/lib/pkgconfig/plasma.pc.in |  \
+    xargs echo ${DIR}/*/*.hin ${DIR}/*/*.[hc] ${DIR}/config/*.py ${DIR}/tools/*.py ${DIR}/cmake/*.cmake ${DIR}/*/*.f90 ${DIR}/*/*.lua ${DIR}/*/doxygen* ${DIR}/lib/pkgconfig/plasma.pc.in |  \
     xargs tar --exclude=.hgtags --exclude=plasma_config.h --exclude=Makefile.\*.gen --owner=root --group=root --mtime=1970-01-01 -cshof ${DIR}.tar
 gzip --best --rsyncable --verbose ${DIR}.tar
 
