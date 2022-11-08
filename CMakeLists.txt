@@ -65,6 +65,23 @@ if (BLAS_FOUND)
   else ()
     message( STATUS "Found Generic BLAS" )
     message( STATUS "vendor ${BLA_VENDOR}, linker flags `${BLA_LINKER_FLAGS}'" )
+
+    # save extra includes and set to generic CBLAS header
+    set(PLASMA_CMAKE_EXTRA_INCLUDE_FILES "$CMAKE_EXTRA_INCLUDE_FILES")
+    set(CMAKE_EXTRA_INCLUDE_FILES "cblas.h")
+
+    # check if CBLAS header defines types or enums
+    include(CheckTypeSize)
+    check_type_size( CBLAS_TRANSPOSE PLASMA_CBLAS_TRANSPOSE )
+    if ( NOT HAVE_PLASMA_CBLAS_TRANSPOSE )
+      check_type_size( "enum CBLAS_TRANSPOSE" PLASMA_ENUM_CBLAS_TRANSPOSE )
+      if ( HAVE_PLASMA_ENUM_CBLAS_TRANSPOSE )
+        set( PLASMA_CBLAS_ADD_TYPEDEF 1 )
+      else ()
+        message( FATAL_ERROR "CBLAS_TRANSPOSE missing as defined type or enumeration type" )
+      endif ()
+    endif ()
+    set(CMAKE_EXTRA_INCLUDE_FILES "$PLASMA_CMAKE_EXTRA_INCLUDE_FILES")
   endif ()
 
 endif (BLAS_FOUND)

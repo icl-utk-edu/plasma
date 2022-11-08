@@ -13,3 +13,5 @@
 #cmakedefine PLASMA_WITH_NETLIB
 
 #cmakedefine PLASMA_USE_LUA
+
+#cmakedefine PLASMA_CBLAS_ADD_TYPEDEF
