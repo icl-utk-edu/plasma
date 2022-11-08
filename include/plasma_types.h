@@ -156,8 +156,6 @@ enum {
 /******************************************************************************/
 typedef int plasma_enum_t;
 
-typedef double plasma_time_t;
-
 typedef float  _Complex plasma_complex32_t;
 typedef double _Complex plasma_complex64_t;
 
