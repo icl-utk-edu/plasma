@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Removed
+- Remove old build system files using Python script for configuration in
+Makefile
 
 ## [22.9.29] - 2022-09-29
 ### Added
