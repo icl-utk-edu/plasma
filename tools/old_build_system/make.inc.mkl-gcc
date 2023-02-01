@@ -25,7 +25,7 @@ FCFLAGS   = -fopenmp $(FPIC) -O3 -std=f2008 -Wall
 LDFLAGS   = -fopenmp $(FPIC)
 
 # options for MKL
-CFLAGS   += -DHAVE_MKL
+CFLAGS   += -DPLASMA_HAVE_MKL
 
 # one of: aix bsd c89 freebsd generic linux macosx mingw posix solaris
 # usually generic is fine
