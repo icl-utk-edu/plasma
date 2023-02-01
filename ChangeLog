@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ### Removed
 - Remove old build system files using Python script for configuration in
 Makefile
+- Added support for OpenBLAS and exported CMake configuration
 
 ## [22.9.29] - 2022-09-29
 ### Added
