@@ -25,11 +25,52 @@ endmacro( use_c99 )
 # PLASMA uses C99 features (in-loop definition of for loop variables)
 use_c99()
 
-# use standard module to find LAPACK
-find_package( BLAS REQUIRED ) # use BLA_VENDOR (by default "All") "Intel" "Intel10_32" "Intel10_64lp" "Intel10_64p_seq" "IBMESSL" "Generic"
+# use standard module to find BLAS (calls CMake's FindThreads.cmake if necessary)
+# typically succeeds when `sgemm' is found
+# use BLA_VENDOR (by default "All") "Intel" "Intel10_32" "Intel10_64lp" "Intel10_64p_seq" "IBMESSL" "Generic"
+find_package( BLAS )
+if (BLAS_FOUND)
+  message( STATUS "Found BLAS libraries ${BLAS_LIBRARIES}" )
+else ()
+  message( STATUS "BLAS not found. Set BLAS_LIBRARIES in command line with -D option or with GUI." )
+  find_package( BLAS REQUIRED ) # this is guaranteed to fail with more info for the user
+endif ()
 
-# use standard module to find LAPACK (this seems to call FindBLAS)
+# use standard module to find LAPACK (calls FindBLAS.cmake if necessary)
+# typically succeeds when `cheev' is found
 find_package( LAPACK REQUIRED )
+if (LAPACK_FOUND)
+  message( STATUS "Found LAPACK libraries ${LAPACK_LIBRARIES}" )
+else ()
+  message( STATUS "LAPACK not found. Set LAPACK_LIBRARIES in command line with -D option or with GUI." )
+  find_package( LAPACK REQUIRED ) # this is guaranteed to fail with more info for the user
+endif ()
+
+list(APPEND CMAKE_REQUIRED_LIBRARIES ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
+
+macro( plasma_found_openblas )
+  add_definitions( -DPLASMA_WITH_OPENBLAS )
+  set( PLASMA_WITH_OPENBLAS 1 )
+endmacro( plasma_found_openblas )
+
+find_package( OpenBLAS CONFIG ) # OpenBLAS 0.3.* provide CMake configuration file
+if (OpenBLAS_FOUND)
+  message( STATUS "Found OpenBLAS ${OpenBLAS_VERSION}")
+  find_path(OpenBLAS_INCLUDE_DIRS openblas_config.h PATHS ${OpenBLAS_DIR} ENV OPENBLAS_ROOT PATH_SUFFIXES include DOC "Path to OpenBLAS include directory")
+  find_library(OpenBLAS_LIBRARIES openblas PATHS ${OpenBLAS_DIR} ENV OpenBLAS_DIR)
+
+  # make sure OpenBLAS headers are visible to CMake tests, compiler, and linker
+  include_directories(${OpenBLAS_INCLUDE_DIRS})
+  list(APPEND CMAKE_REQUIRED_INCLUDES ${OpenBLAS_INCLUDE_DIRS})
+  list(APPEND CMAKE_REQUIRED_LIBRARIES ${OpenBLAS_LIBRARIES})
+
+  set(CBLAS_PROVIDER openblas)
+  set(LAPACKE_PROVIDER openblas)
+  plasma_found_openblas()
+else ()
+  message( STATUS "OpenBLAS 0.3.* not found. Set OpenBLAS_DIR environment variable." )
+  message( STATUS "Either file OpenBLASConfig.cmake or openblas-config.cmake, should be inside OpenBLAS_DIR directory tree." )
+endif ()
 
 message( STATUS "BLAS(${BLAS_FOUND})" )  # linker flags `${BLA_LINKER_FLAGS}'" )
 message( STATUS "LAPACK(${LAPACK_FOUND})" )  # libraries: ${LAPACK_LIBRARIES}" )
@@ -37,7 +78,6 @@ message( STATUS "LAPACK(${LAPACK_FOUND})" )  # libraries: ${LAPACK_LIBRARIES}" )
 if (BLAS_FOUND)
   # BLA_VENDOR is the input variable to allow only checks for specific vendor BLAS
   #if ( BLA_VENDOR STREQUAL "Intel" OR BLA_VENDOR STREQUAL "Intel10_32" OR BLA_VENDOR STREQUAL "Intel10_64lp" OR BLA_VENDOR STREQUAL "Intel10_64p_seq" )
-  #
   if ( BLAS_LIBRARIES MATCHES "mkl_core" )
 
     message( STATUS "Found Intel MKL" )
@@ -52,19 +92,16 @@ if (BLAS_FOUND)
 
   elseif ( BLAS_LIBRARIES MATCHES "openblas" )
     message( STATUS "Found OpenBLAS" )
-
-    add_definitions( -DPLASMA_WITH_OPENBLAS )
-    set( PLASMA_WITH_OPENBLAS 1 )
+    plasma_found_openblas()
 
   elseif ( BLAS_LIBRARIES MATCHES "Accelerate" )
     message( STATUS "Found Apple Accelerate Framework" )
-
     add_definitions( -DPLASMA_WITH_ACCELERATE )
     set( PLASMA_WITH_ACCELERATE 1 )
 
   else ()
     message( STATUS "Found Generic BLAS" )
-    message( STATUS "vendor ${BLA_VENDOR}, linker flags `${BLA_LINKER_FLAGS}'" )
+    message( STATUS "vendor `${BLA_VENDOR}', linker flags `${BLA_LINKER_FLAGS}'" )
 
     # save extra includes and set to generic CBLAS header
     set(PLASMA_CMAKE_EXTRA_INCLUDE_FILES "$CMAKE_EXTRA_INCLUDE_FILES")
