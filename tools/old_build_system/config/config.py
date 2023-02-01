@@ -863,7 +863,7 @@ def blas( ilp64=False, required=True ):
 		mkl_set_library_path()
 		(inc, libdir) = get_inc_lib( ['MKLROOT'] )
 		for lib in libs:
-			defs = '-DHAVE_MKL'
+			defs = '-DPLASMA_HAVE_MKL'
 			if (re.search( 'ilp64', lib )):
 				defs += ' -DMKL_ILP64'
 			tests.append({
@@ -981,7 +981,7 @@ def cblas_enum( required=True ):
 	
 	push_lang('C')
 	try:
-		env.append( 'DEFS', '-DCBLAS_ADD_TYPEDEF' )
+		env.append( 'DEFS', '-DPLASMA_CBLAS_ADD_TYPEDEF' )
 		try_compile_run( src )
 		print( 'yes' )
 	except Exception, e:
@@ -2189,7 +2189,7 @@ int main( int argc, char** argv )
 'cblas.c': r'''
 #include <stdio.h>
 
-#ifdef HAVE_MKL
+#ifdef PLASMA_HAVE_MKL
     #include <mkl_cblas.h>
 #else
     #include <cblas.h>
@@ -2227,13 +2227,13 @@ int main( int argc, char** argv )
 'cblas_enum.c': r'''
 #include <stdio.h>
 
-#ifdef HAVE_MKL
+#ifdef PLASMA_HAVE_MKL
     #include <mkl_cblas.h>
 #else
     #include <cblas.h>
 #endif
 
-#ifdef CBLAS_ADD_TYPEDEF
+#ifdef PLASMA_CBLAS_ADD_TYPEDEF
 typedef enum CBLAS_TRANSPOSE CBLAS_TRANSPOSE;
 #endif
 
@@ -2391,7 +2391,7 @@ int main( int argc, char** argv )
 'lapacke.c': r'''
 #include <stdio.h>
 
-#ifdef HAVE_MKL
+#ifdef PLASMA_HAVE_MKL
     #include <mkl_lapacke.h>
 #else
     #include <lapacke.h>
@@ -2424,7 +2424,7 @@ int main( int argc, char** argv )
 'lapacke_dlascl.c': r'''
 #include <stdio.h>
 
-#ifdef HAVE_MKL
+#ifdef PLASMA_HAVE_MKL
     #include <mkl_lapacke.h>
 #else
     #include <lapacke.h>
@@ -2456,7 +2456,7 @@ int main( int argc, char** argv )
 'lapacke_dlantr.c': r'''
 #include <stdio.h>
 
-#ifdef HAVE_MKL
+#ifdef PLASMA_HAVE_MKL
     #include <mkl_lapacke.h>
 #else
     #include <lapacke.h>
@@ -2480,7 +2480,7 @@ int main( int argc, char** argv )
 'lapacke_dlassq.c': fortran_mangling + r'''
 #include <stdio.h>
 
-#ifdef HAVE_MKL
+#ifdef PLASMA_HAVE_MKL
     #include <mkl_lapacke.h>
 #else
     #include <lapacke.h>

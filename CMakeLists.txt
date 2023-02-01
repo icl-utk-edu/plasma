@@ -82,12 +82,12 @@ if (BLAS_FOUND)
 
     message( STATUS "Found Intel MKL" )
     add_definitions( -DPLASMA_WITH_MKL ) # this is command line only
-    set( HAVE_MKL 1 )
+    set( PLASMA_HAVE_MKL 1 )
 
   elseif ( BLAS_LIBRARIES MATCHES "essl" )
     message( STATUS "Found IBM ESSL" )
 
-    set( HAVE_ESSL 1 )
+    set( PLASMA_HAVE_ESSL 1 )
     set( PLASMA_WITH_ESSL 1 )
 
   elseif ( BLAS_LIBRARIES MATCHES "openblas" )
