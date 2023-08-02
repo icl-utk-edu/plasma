@@ -2,12 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
-### Removed
-- Remove old build system files using Python script for configuration in
-Makefile
-- Added support for OpenBLAS and exported CMake configuration
+## [23.8.2] - 2023-08-02
+
+### Added
+- Add support for OpenBLAS and exported CMake configuration
 - Add PLASMA prefix to remaining config macros
+
+### Removed
+- Remove old build system files using Python script for configuration in Makefile
 
 ## [22.9.29] - 2022-09-29
 ### Added
