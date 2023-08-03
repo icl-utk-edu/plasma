@@ -15,18 +15,18 @@
 # User settings
 # -------------
 #
-# OpenBLAS_ROOT is a directory that contains a OpenBLAS installation.
+# OpenBLAS_DIR is a directory that contains a OpenBLAS installation.
 # ENV{OPENBLAS_ROOT} is an environment variable pointing to directory that contains a OpenBLAS installation.
 #
 
 #FIXME: lib/cmake/openblas/OpenBLASConfig.cmake
 
 if (NOT OpenBLAS_INCLUDE_DIRS)
-  find_path(OpenBLAS_INCLUDE_DIRS openblas_config.h PATHS ${OpenBLAS_ROOT} ENV OPENBLAS_ROOT PATH_SUFFIXES include DOC "Path to OpenBLAS include directory")
+  find_path(OpenBLAS_INCLUDE_DIRS openblas_config.h PATHS ${OpenBLAS_DIR} ENV OPENBLAS_ROOT PATH_SUFFIXES include DOC "Path to OpenBLAS include directory")
 endif()
 
 if (NOT OpenBLAS_LIBRARIES)
-  find_library(OpenBLAS_LIBRARIES openblas PATHS ${OpenBLAS_ROOT} ENV OPENBLAS_ROOT)
+  find_library(OpenBLAS_LIBRARIES openblas PATHS ${OpenBLAS_DIR} ENV OPENBLAS_ROOT)
 endif()
 
 find_package_handle_standard_args(OpenBLAS REQUIRED_VARS OpenBLAS_INCLUDE_DIRS OpenBLAS_LIBRARIES)
