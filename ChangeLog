@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- Add an attempt to generate missing precision files if Python present
+
+### Fixed
+- Fix variable pointing to OpenBLAS installation
+- Fix name of Python executable when launching code generation
+
 ## [23.8.2] - 2023-08-02
 
 ### Added
