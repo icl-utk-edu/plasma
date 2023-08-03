@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.0 FATAL_ERROR )
+cmake_minimum_required( VERSION 3.12 FATAL_ERROR )
 
 project( PLASMA VERSION 23.8.2 LANGUAGES C )
 
@@ -12,18 +12,29 @@ endif()
 #set( CMAKE_THREAD_PREFER_PTHREAD 1 )
 #find_package( Threads )
 
-macro( use_c99 )
-  if (CMAKE_VERSION VERSION_LESS "3.1")
-    if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
-      set (CMAKE_C_FLAGS "-std=gnu99 ${CMAKE_C_FLAGS}")
-    endif ( CMAKE_C_COMPILER_ID )
-  else ( )
-    set ( CMAKE_C_STANDARD 99 )
-  endif ( )
-endmacro( use_c99 )
+if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/compute/scamax.c")
+  message( STATUS "Some generated files already exist, proceeding" )
+else ()
+  message( STATUS "Missing files some precision files, trying to generate" )
+
+  include( FindPython )  # requires CMake 3.12
+
+  if (Python_FOUND)
+      message( STATUS "Found Python interpreter wth ID ${Python_INTERPRETER_ID} and EXE ${Python_EXECUTABLE}" )
+      execute_process(COMMAND "${Python_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_precisions.py" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+  else ()
+    message( FATAL_ERROR "Couldn't find Python interpreter, cannot generate all precision files." )
+  endif ()
+endif ()
 
 # PLASMA uses C99 features (in-loop definition of for loop variables)
-use_c99()
+if (CMAKE_VERSION VERSION_LESS "3.1")
+  if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+     set (CMAKE_C_FLAGS "-std=gnu99 ${CMAKE_C_FLAGS}")
+   endif ( CMAKE_C_COMPILER_ID )
+ else ( )
+   set ( CMAKE_C_STANDARD 99 )
+ endif ( )
 
 # use standard module to find BLAS (calls CMake's FindThreads.cmake if necessary)
 # typically succeeds when `sgemm' is found
