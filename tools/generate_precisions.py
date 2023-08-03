@@ -11,10 +11,10 @@ Output_Files = False # show files to be generated but don't generate
 def codegen(letters, filenames, fn_format):
     for filename in filenames.split():
         if Output_Files:
-            os.system("python tools/codegen.py --output {}".format(fn_format.format(filename)))
+            os.system(sys.executable + " tools/codegen.py --output {}".format(fn_format.format(filename)))
             continue
         for letter in letters.split():
-            os.system("python tools/codegen.py -p {} {}".format(letter, fn_format.format(filename)))
+            os.system(sys.executable + " tools/codegen.py -p {} {}".format(letter, fn_format.format(filename)))
 
 def main(argv):
     global Output_Files
