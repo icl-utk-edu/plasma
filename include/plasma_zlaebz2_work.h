@@ -46,7 +46,7 @@ typedef struct
     plasma_enum_t jobtype;      /* PlasmaNoVec, PlasmaVec, PlasmaCount          */
     int     il;                 /* For PlasmaRangeI, least index desired.       */
     int     iu;                 /* For PlasmaRangeI, max index desired.         */
-    zlaebz2_Stein_Array_t* stein_arrays;  /* Workspaces per thread for useStein.*/
+    zlaebz2_Stein_Array_t *stein_arrays;  /* Workspaces per thread for useStein.*/
     int     baseIdx;            /* Number of EV less than user's low threshold. */
     int     error;              /* first error, if non-zero.                    */
     plasma_complex64_t  *pVal;  /* where to store eigenvalues.                  */

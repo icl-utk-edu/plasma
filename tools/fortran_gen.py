@@ -774,6 +774,7 @@ def main():
 
     # register all structs
     struct_list = parse_structs(preprocessed_list)
+    types_dict.update({i[0][2]: 'type({})'.format(i[0][2]) for i in struct_list })
 
     # register all individual functions and their signatures
     function_list = parse_prototypes(preprocessed_list)
