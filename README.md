@@ -14,7 +14,7 @@
 
 * * *
 
-[Download PLASMA Software](https://bitbucket.org/icl/plasma/downloads/plasma-17.1.tar.gz)
+[Download PLASMA Software](https://github.com/icl-utk-edu/plasma/tags)
 
 * * *
 
