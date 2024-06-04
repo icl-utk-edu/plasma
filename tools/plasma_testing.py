@@ -3,16 +3,16 @@
 ###############################################################################
 # This testing suite is derived from the plasma_testing.py script of the PLASMA
 # project for the purpose of INTERTWinE project.
-# Its main goal is to test the correctness of developments of the runtimes from 
-# the point of view of functions of solving systems of equations with dense 
+# Its main goal is to test the correctness of developments of the runtimes from
+# the point of view of functions of solving systems of equations with dense
 # matrices.
-# The benchmark suite comprises: 
+# The benchmark suite comprises:
 # 1. DPOSV routine - solving problems with symmetric positive definite matrices.
 #    (based on Cholesky decomposition of the matrix)
 # 2. DGELS routine - solving problems with general matrices, which can be square
 #    or rectangular, with more rows than columns or vice-versa. Both these cases
 #    are included. (based on QR decomposition of the matrix)
-# 3. DGESV routine - solving problems with general square matrices. 
+# 3. DGESV routine - solving problems with general square matrices.
 #    (based on LU factorization of the matrix)
 # Example:
 #     ./plasma_testing_intertwine.py
@@ -23,9 +23,12 @@ from subprocess import Popen, STDOUT, PIPE
 import os, sys, math
 import getopt
 
-# set path to PLASMA testing directory (part of the distribution, not the installed one)
+Plasma_Tester = "plasmatest"
+#Plasma_Tester smaset path to PLASMA testing directory (part of the distribution, not the installed one)
 plasma_dir = ".."
 path_to_plasma_tests = os.path.realpath(plasma_dir) + "/test"
+if os.path.exists(Plasma_Tester) and os.access(Plasma_Tester, os.X_OK):
+    path_to_plasma_tests = os.path.abspath(os.curdir)
 
 #print path_to_plasma_tests
 
@@ -39,13 +42,17 @@ os.environ["PLASMA_TUNING_FILENAME"] = plasma_dir + "/tuning/default.lua"
 def local_popen( f, cmdline ):
    p=Popen( cmdline, shell=True, stdout=PIPE, stderr=STDOUT )
 
+   """
    r=p.poll()
    while r == None:
       r=p.poll()
+   """
+   r = p.wait()
    pipe=p.stdout
+   #err = subprocess.check_call(cmdline.split(), shell=True)
 
    if r != 0:
-      print "---- TESTING " + cmdline.split()[3] + "... FAILED(" + str(p.returncode) +") !"
+      print("---- TESTING " + cmdline.split()[3] + "... FAILED(" + str(p.returncode) +") !")
       err = p.returncode
       for line in pipe.readlines():
          f.write(str(line))
@@ -54,12 +61,12 @@ def local_popen( f, cmdline ):
       err = "Error parsing output."
       for line in pipe.readlines():
          f.write(str(line))
-         if "pass" in line :
+         if b"pass" in line :
             found = 1
             #print line,
             err = 0
       if found == 0:
-         print cmdline.split()[0] + " " + cmdline.split()[3] + ": FAILED(Unexpected error)"
+         print(cmdline.split()[0] + " " + cmdline.split()[3] + ": FAILED(Unexpected error)")
          f.flush();
          err = "Unexpected error"
 
@@ -70,9 +77,9 @@ def local_popen( f, cmdline ):
 # plot the results right to the stdout
 f = sys.stdout
 
-print " "
-print "----- Testing the subset of double precision PLASMA Routines related to INTERTWinE project -----"
-print " "
+print(" ")
+print("----- Testing the subset of double precision PLASMA Routines related to INTERTWinE project -----")
+print(" ")
 
 # only double precision routines are part of the benchmark
 dtypes = (
@@ -91,13 +98,13 @@ for dtype in range(4):
    transpose = dtypes[3][dtype]
 
 
-   print " "
-   print "------------------------- %s ------------------------" % name
-   print " "
- 
+   print(" ")
+   print("------------------------- %s ------------------------" % name)
+   print(" ")
+
    # play the strings game
    #binary = path_to_plasma_tests + "/" + "%stesting" % letter
-   binary = path_to_plasma_tests + "/test" 
+   binary = path_to_plasma_tests + "/" + Plasma_Tester
 
    geqrf  = "%sgeqrf"  % letter
    potrf  = "%spotrf"  % letter
@@ -107,36 +114,37 @@ for dtype in range(4):
    # check the binary exists
    if (os.path.exists(binary) and os.access(binary,os.X_OK)):
       # geqrf
-      print "------------------------- %s ------------------------" % geqrf
+      print("------------------------- %s ------------------------" % geqrf)
       test = local_popen(f, binary + " " + geqrf + " --outer=y --dim=1000"); errors.append(test);
 
       # potrf
-      print "------------------------- %s ------------------------" % potrf
+      print("------------------------- %s ------------------------" % potrf)
       test = local_popen(f, binary + " " + potrf + " --outer=y --dim=1000"); errors.append(test);
 
       # getrf
-      print "------------------------- %s ------------------------" % getrf
-      test = local_popen(f, binary + " " + getrf + "  --outer=y --dim=500:2000:500x1000"); errors.append(test);
+      print("------------------------- %s ------------------------" % getrf)
+      test = local_popen(f, binary + " " + getrf + "  --outer=y --dim=2000x1000"); errors.append(test);
 
       # gels
-      print "------------------------- %s ------------------------" % gels
-      test = local_popen(f, binary + " " + gels  + " --outer=y --dim=500:2000:500x1000 --hmode=f,t --trans=n," + transpose); errors.append(test);
+      print("------------------------- %s ------------------------" % gels)
+      for h in ("f", "t"):
+          test = local_popen(f, binary + " " + gels  + " --outer=y --dim=2000x1000 --trans=n," + transpose + " --hmode=" + h); errors.append(test);
 
       sys.stdout.flush()
    else:
-      print "The file for testing:", binary, "does not exist or does not have execute rights."
-      print "Have you build PLASMA by make in the PLASMA directory:", plasma_dir, "?"
+      print("The file for testing:", binary, "does not exist or does not have execute rights.")
+      print("Have you build PLASMA by make in the PLASMA directory:", plasma_dir, "?")
 
-print "----- Testing the subset of PLASMA Routines -----"
+print("----- Testing the subset of PLASMA Routines -----")
 if (any(errors)):
-   print "At least one test FAILED."
+   print("At least one test FAILED.")
    sys.exit(1)
-else: 
+else:
    if (len(errors) == 0):
-      print "Tests FAILED, no test were actually run for some reason."
+      print("Tests FAILED, no test were actually run for some reason.")
       sys.exit(2)
    else:
-      print "All tests were SUCCESSFUL."
+      print("All tests were SUCCESSFUL.")
       sys.exit(0)
 
 sys.exit(3)
