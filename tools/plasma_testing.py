@@ -19,7 +19,7 @@
 # The script was tested under Linux/UNIX environment.
 ###############################################################################
 
-from subprocess import Popen, STDOUT, PIPE
+from subprocess import Popen, STDOUT, PIPE, TimeoutExpired
 import os, sys, math
 import getopt
 
@@ -39,17 +39,16 @@ os.environ["PATH"] = os.environ["PATH"]+":"+path_to_plasma_tests
 os.environ["PLASMA_TUNING_FILENAME"] = plasma_dir + "/tuning/default.lua"
 
 # Define a function to open the executable (different filenames on unix and Windows)
-def local_popen( f, cmdline ):
-   p=Popen( cmdline, shell=True, stdout=PIPE, stderr=STDOUT )
+def local_popen(f, cmdline, timeout=10*60):
+   p=Popen(cmdline, shell=True, stdout=PIPE, stderr=STDOUT)
 
-   """
-   r=p.poll()
-   while r == None:
-      r=p.poll()
-   """
-   r = p.wait()
+   try:
+     r = p.wait(timeout=timeout)
+   except TimeoutExpired as exc:
+     print("Timed out after {} seconds for command {}".format(exc.timeout, repr(exc.cmd)))
+     return 127
+
    pipe=p.stdout
-   #err = subprocess.check_call(cmdline.split(), shell=True)
 
    if r != 0:
       print("---- TESTING " + cmdline.split()[3] + "... FAILED(" + str(p.returncode) +") !")
