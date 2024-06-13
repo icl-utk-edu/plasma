@@ -17,6 +17,7 @@ if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/compute/scamax.c")
 else ()
   message( STATUS "Missing files some precision files, trying to generate" )
 
+  include(CheckSymbolExists)
   include( FindPython )  # requires CMake 3.12
 
   if (Python_FOUND)
