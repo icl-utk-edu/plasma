@@ -478,6 +478,8 @@ target_include_directories(plasmatest PUBLIC
 	$<INSTALL_INTERFACE:include>
 )
 
+set_target_properties( plasma_core_blas plasma PROPERTIES VERSION ${CMAKE_PROJECT_VERSION} SOVERSION 1.0)
+
 configure_file( include/plasma_config.hin ${CMAKE_CURRENT_SOURCE_DIR}/include/plasma_config.h @ONLY NEWLINE_STYLE LF )
 
 install(TARGETS plasma plasma_core_blas LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
