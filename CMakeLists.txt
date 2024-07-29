@@ -113,15 +113,36 @@ if (BLAS_FOUND)
 
   else ()
     message( STATUS "Found Generic BLAS" )
-    message( STATUS "vendor `${BLA_VENDOR}', linker flags `${BLA_LINKER_FLAGS}'" )
+    message( STATUS "Vendor `${BLA_VENDOR}', linker flags `${BLA_LINKER_FLAGS}', libs ${BLAS_LIBRARIES}" )
+    foreach( lib ${BLAS_LIBRARIES} )
+      string(REPLACE libblas libcblas librpl ${lib})  # Netlib has simply naming: libcblas and libblas
+      if (EXISTS ${librpl})
+        message( STATUS "Found CBLAS ${librpl}" )
+        list( INSERT BLAS_LIBRARIES 0 "${librpl}" )  # add CBLAS library to BLAS unconditionally
+        file( TO_CMAKE_PATH "${librpl}" libslh )  # turn back-slashes to slashes
+        string( FIND "${libslh}" "/" idx REVERSE )  # find last slash
+        if (${idx} GREATER 0)
+          string( SUBSTRING "${libslh}" 0 ${idx} dir)  # extract directory name
+          string( APPEND dir "/.." )  #  remove library directory: /path/to/blas/lib -> /path/to/blas/lib/..
+          find_path( CBLAS_HEADER_DIR cblas.h PATHS ${CBLAS_INCLUDE_DIRS} ${dir} ENV CBLAS_DIR CBLAS_ROOT PATH_SUFFIXES include DOC "Path to CBLAS include directory" )
+          if (CBLAS_HEADER_DIR)
+            list( INSERT CBLAS_INCLUDE_DIRS 0 "${CBLAS_HEADER_DIR}" )  # insert newly found header location
+            message( STATUS "Found CBLAS header in ${CBLAS_HEADER_DIR}" )
+          endif ()
+        endif ()
+      endif ()
+    endforeach()
 
     # save extra includes and set to generic CBLAS header
     set(PLASMA_CMAKE_EXTRA_INCLUDE_FILES "$CMAKE_EXTRA_INCLUDE_FILES")
     set(CMAKE_EXTRA_INCLUDE_FILES "cblas.h")
+    set( PLASMA_REQUIRED_INCLUDES "${CMAKE_REQUIRED_INCLUDES}" )  # save current value
+    set( CMAKE_REQUIRED_INCLUDES "${CBLAS_INCLUDE_DIRS}" )
 
     # check if CBLAS header defines types or enums
     include(CheckTypeSize)
     check_type_size( CBLAS_TRANSPOSE PLASMA_CBLAS_TRANSPOSE )
+
     if ( NOT HAVE_PLASMA_CBLAS_TRANSPOSE )
       check_type_size( "enum CBLAS_TRANSPOSE" PLASMA_ENUM_CBLAS_TRANSPOSE )
       if ( HAVE_PLASMA_ENUM_CBLAS_TRANSPOSE )
@@ -131,14 +152,24 @@ if (BLAS_FOUND)
       endif ()
     endif ()
     set(CMAKE_EXTRA_INCLUDE_FILES "$PLASMA_CMAKE_EXTRA_INCLUDE_FILES")
+    set( CMAKE_REQUIRED_INCLUDES "${PLASMA_REQUIRED_INCLUDES}" )  # restore old value
   endif ()
 
 endif (BLAS_FOUND)
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+if (CBLAS_INCLUDE_DIRS)  # save non-empty value found above
+    set( PLASMA_CBLAS_INCLUDE_DIRS "${CBLAS_INCLUDE_DIRS}" )
+endif ()
+
 find_package( CBLAS REQUIRED )
+
+if (NOT CBLAS_INCLUDE_DIRS)  # if the above package find failed to come up with anything
+    set( CBLAS_INCLUDE_DIRS "${PLASMA_CBLAS_INCLUDE_DIRS}" )  # restore old value
+endif ()
 include_directories(${CBLAS_INCLUDE_DIRS})
+
 if (CBLAS_PROVIDER STREQUAL "mkl")
   add_definitions(-DPLASMA_WITH_MKL)
   set(PLASMA_WITH_MKL TRUE)
