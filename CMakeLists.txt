@@ -1,6 +1,7 @@
 cmake_minimum_required( VERSION 3.12 FATAL_ERROR )
 
-project( PLASMA VERSION 23.8.2 LANGUAGES C )
+project( PLASMA VERSION 23.8.2 LANGUAGES C
+    HOMEPAGE_URL "https://github.com/icl-utk-edu/plasma" DESCRIPTION "Software library for solving dense linear algebra systems using OpenMP")
 
 set(CMAKE_SUPPRESS_REGENERATION on)
 
