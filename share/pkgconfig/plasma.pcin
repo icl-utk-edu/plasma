@@ -1,0 +1,14 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+bindir=${prefix}/@CMAKE_INSTALL_BINDIR@
+
+Name: @PROJECT_NAME@
+Description: @PROJECT_DESCRIPTION@
+URL: @PROJECT_HOMEPAGE_URL@
+Version: @PROJECT_VERSION@
+Cflags: -I"${includedir}"
+
+Requires:
+Libs: -L"${libdir}" -lplasma -lplasma_core_blas  @plasma_libs_spaced@
+Cflags: @CMAKE_CFLAGS@

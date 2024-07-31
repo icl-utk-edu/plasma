@@ -548,7 +548,15 @@ set_target_properties( plasma_core_blas plasma PROPERTIES VERSION ${CMAKE_PROJEC
 
 configure_file( include/plasma_config.hin ${CMAKE_CURRENT_SOURCE_DIR}/include/plasma_config.h @ONLY NEWLINE_STYLE LF )
 
-install(TARGETS plasma plasma_core_blas LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+include(GNUInstallDirs)
+
+install(TARGETS plasma plasma_core_blas LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 file( GLOB plasma_headers include/plasma*.h)
-install(FILES ${plasma_headers} DESTINATION include)
-install(TARGETS plasmatest RUNTIME DESTINATION bin)
+install(FILES ${plasma_headers} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(TARGETS plasmatest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+# generate pkg-config .pc file from a template
+string(TOLOWER ${PROJECT_NAME} lproj)
+string(REPLACE ";" "\ " plasma_libs_spaced "${PLASMA_LIBRARIES}")
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/share/pkgconfig/${lproj}.pcin ${CMAKE_CURRENT_BINARY_DIR}/${lproj}.pc @ONLY NEWLINE_STYLE LF )
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${lproj}.pc DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
