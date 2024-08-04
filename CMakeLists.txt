@@ -332,9 +332,9 @@ compute/spbtrf.c compute/spbtrs.c compute/dlangb.c compute/clangb.c
 compute/slangb.c compute/dposv.c compute/cposv.c compute/sposv.c
 compute/dpoinv.c compute/cpoinv.c compute/spoinv.c compute/dpotri.c
 compute/cpotri.c compute/spotri.c
-compute/slaebz2.c compute/dlaebz2.c 
-compute/slaneg2.c compute/dlaneg2.c 
-compute/sstevx2.c compute/dstevx2.c 
+compute/slaebz2.c compute/dlaebz2.c
+compute/slaneg2.c compute/dlaneg2.c
+compute/sstevx2.c compute/dstevx2.c
 compute/pslange.c compute/pclaset.c compute/psorglq_tree.c
 compute/psormqr_tree.c compute/pdgelqf_tree.c compute/pslag2d.c
 compute/pcunmqr_tree.c compute/psgeqrf_tree.c compute/pspotrf.c
@@ -462,7 +462,7 @@ core_blas/core_cgbtype1cb.c  core_blas/core_dgbtype1cb.c  core_blas/core_sgbtype
 core_blas/core_cgbtype2cb.c  core_blas/core_dgbtype2cb.c  core_blas/core_sgbtype2cb.c  core_blas/core_zgbtype2cb.c
 core_blas/core_cgbtype3cb.c  core_blas/core_dgbtype3cb.c  core_blas/core_sgbtype3cb.c  core_blas/core_zgbtype3cb.c
 core_blas/core_clarfb_gemm.c core_blas/core_dlarfb_gemm.c core_blas/core_slarfb_gemm.c core_blas/core_zlarfb_gemm.c
-core_blas/core_clacpy.c core_blas/core_dlacpy.c core_blas/core_slacpy.c core_blas/core_zlacpy.c 
+core_blas/core_clacpy.c core_blas/core_dlacpy.c core_blas/core_slacpy.c core_blas/core_zlacpy.c
 )
 
 target_include_directories(plasma_core_blas PUBLIC
@@ -550,10 +550,22 @@ configure_file( include/plasma_config.hin ${CMAKE_CURRENT_SOURCE_DIR}/include/pl
 
 include(GNUInstallDirs)
 
-install(TARGETS plasma plasma_core_blas LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS plasma plasma_core_blas EXPORT plasmaTargets LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 file( GLOB plasma_headers include/plasma*.h)
 install(FILES ${plasma_headers} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(TARGETS plasmatest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS plasmatest EXPORT plasmaTargets RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+# generage config files for upstream CMake projects
+include(CMakePackageConfigHelpers)
+
+write_basic_package_version_file( "${CMAKE_CURRENT_BINARY_DIR}/plasmaExport/plasmaConfigVersion.cmake" VERSION ${PLASMA_VERSION} COMPATIBILITY AnyNewerVersion )
+
+export(EXPORT plasmaTargets FILE "${CMAKE_CURRENT_BINARY_DIR}/plasmaExport/plasmaTargets.cmake" NAMESPACE plasma::)
+
+configure_file( ${PROJECT_SOURCE_DIR}/share/cmake/plasma.cmakein "${CMAKE_CURRENT_BINARY_DIR}/plasmaExport/plasmaConfig.cmake" @ONLY )
+install( EXPORT plasmaTargets FILE plasmaTargets.cmake NAMESPACE plasma:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/plasma NAMESPACE plasma:: CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel )
+
+install( FILES "${CMAKE_CURRENT_BINARY_DIR}/plasmaExport/plasmaConfig.cmake" "${CMAKE_CURRENT_BINARY_DIR}/plasmaExport/plasmaConfigVersion.cmake" DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/plasma )
 
 # generate pkg-config .pc file from a template
 string(TOLOWER ${PROJECT_NAME} lproj)
