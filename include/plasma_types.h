@@ -11,6 +11,7 @@
 #define PLASMA_TYPES_H
 
 #include <complex.h>
+#include <limits.h>
 
 /*
  * RELEASE is a, b, c
@@ -51,7 +52,8 @@ enum {
     PlasmaRealFloat     = 2,
     PlasmaRealDouble    = 3,
     PlasmaComplexFloat  = 4,
-    PlasmaComplexDouble = 5
+    PlasmaComplexDouble = 5,
+    PlasmaDatatypeUnknown = INT_MIN // ensure int storage type in C++
 };
 
 /***************************************************************************//**
@@ -113,35 +115,43 @@ enum {
 
     PlasmaW             = 501,
     PlasmaA2            = 502,
-    Plasma_Const_Limit  // Ensure always last.
+    Plasma_Const_Limit,  // Ensure always last.
+
+    PlasmaConstUnknown = INT_MIN // ensure int storage type in C++
 };
 
 enum {
     PlasmaSuccess = 0,
-    PlasmaErrorNotInitialized,
-    PlasmaErrorNotSupported,
-    PlasmaErrorIllegalValue,
-    PlasmaErrorOutOfMemory,
-    PlasmaErrorNullParameter,
-    PlasmaErrorInternal,
-    PlasmaErrorSequence,
-    PlasmaErrorComponent,
-    PlasmaErrorEnvironment
+    /* 20 negative values reserved for errors with invalid parameters,
+       and additional integer ranges may be needed in the future */
+    PlasmaErrorNotInitialized = -101,
+    PlasmaErrorNotSupported   = -102,
+    PlasmaErrorIllegalValue   = -103,
+    PlasmaErrorOutOfMemory    = -104,
+    PlasmaErrorNullParameter  = -105,
+    PlasmaErrorInternal       = -106,
+    PlasmaErrorSequence       = -107,
+    PlasmaErrorComponent      = -108,
+    PlasmaErrorEnvironment    = -109,
+    PlasmaErrorUnknown = INT_MIN // ensure int storage type in C++
 };
 
 enum {
     PlasmaInplace,
-    PlasmaOutplace
+    PlasmaOutplace,
+    PlasmaInoutUnknown = INT_MAX // ensure int storage type in C++
 };
 
 enum {
     PlasmaFlatHouseholder,
-    PlasmaTreeHouseholder
+    PlasmaTreeHouseholder,
+    PlasmaHouseholderUnknown = INT_MAX // ensure int storage type in C++
 };
 
 enum {
     PlasmaDisabled = 0,
-    PlasmaEnabled = 1
+    PlasmaEnabled = 1,
+    PlasmaAbledUnknown = INT_MAX // ensure int storage type in C++
 };
 
 enum {
@@ -150,7 +160,8 @@ enum {
     PlasmaIb,
     PlasmaInplaceOutplace,
     PlasmaNumPanelThreads,
-    PlasmaHouseholderMode
+    PlasmaHouseholderMode,
+    PlasmaParamUnknown = INT_MAX // ensure int storage type in C++
 };
 
 /******************************************************************************/
