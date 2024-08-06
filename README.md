@@ -44,6 +44,43 @@ https://bitbucket.org/icl/plasma/downloads/plasma-2.8.tar.gz
 
 More information about the old PLASMA based on QUARK is included below.
 
+Installation
+============
+
+Installing PLASMA on a Linux-like systems requires a compiler (PLASMA is
+written in C with OpenMP and also includes Fortran interface) and several
+linear algebra libraries: BLAS and CBLAS (implementation exposing Fortran
+bindings and its C interface) with accompanying LAPACK and LAPACKE
+(implementation exposing Fortran bindings and its C interface).
+
+The regularly tested compilers include [GNU
+GCC](https://gcc.gnu.org/projects/gomp/),
+[LLVM](https://openmp.llvm.org/), Intel, and HPE/Cray.
+The compatible linear algebra libraries include Apple Accelerate/VecLib, ATLAS,
+HPE/Cray LibSci, IBM ESSL, Intel MKL (and oneMKL),
+Netlib
+[BLAS](https://www.netlib.org/blas)/CBLAS/[LAPACK](https://www.netlib.org/lapack)/LAPACKE
+suite, and OpenBLAS. Both ATLAS and Netlib
+implementations provided the functionality required by PLASMA in multiple
+library files. OpenBLAS provides all of its functionality in a single
+library. This difference is handled automatically during installation.
+
+The main supported method of installing PLASMA is through CMake and mos
+package managers, such as Spack, or module systems, such as Tcl Modules
+or Lmod, provide enough information to CMake making the installation a
+three-step process:
+
+    cmake /path/to/plasma
+    cmake --build .
+    cmake --install .
+
+PLASMA manages thread-level parallelism internally through OpenMP and
+thus the BLAS and LAPACK should not use multiple threads for
+parallelism or the resulting performance will suffer. This can be
+achieved by building the BLAS and LAPACK with threading disabled or use
+specific configuration options such as environment variables, for
+example `MKL_NUM_THREADS=1` for MKL.
+
 Documentation
 =============
 
