@@ -4,17 +4,28 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [24.8.7] - 2024-08-07
 ### Added
-- Add an attempt to generate missing precision files if Python present
+- Add an attempt to generate missing precision files if Python present during configuration
+- Add generation of pkg-config files during installation
+- Add generation of CMake expored configuration during installation
+- Add timeout to the basic testing script
+- Add SOVERSION to the installed libraries to track API changes
+- Add detection of CBLAS and LAPACKE headers and libraries based on CMake's FindBLAS() and FindLAPACK()
+- Add description of the CMake installation process with system-level details
 
 ### Fixed
 - Fix variable pointing to OpenBLAS installation
 - Fix name of Python executable when launching code generation
+- Fix download link for available releases in documentation
+- Fix compatibility of basic testing script with Python 3 versions
+- Fix error codes to be negative unlike numerical issues reported as positive integers
+- Fix generation of Fortran wrappers
 
 ## [23.8.2] - 2023-08-02
 
 ### Added
-- Add support for OpenBLAS and exported CMake configuration
+- Add support for OpenBLAS and its exported CMake configuration
 - Add PLASMA prefix to remaining config macros
 
 ### Removed
