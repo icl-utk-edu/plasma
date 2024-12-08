@@ -1,11 +1,19 @@
-Makefile.coreblas.gen
-Makefile.plasma.gen
-Makefile.test.gen
-build
-spack-build
+*.orig
+*.pyc
+.DS_Store
+.id
+__pycache__
+build*
+docs/doxygen/errors.txt
+docs/html
+
+# generated files
 compute/cdesc2ge.c
 compute/cdesc2pb.c
 compute/cdesc2tr.c
+compute/cgb2desc.c
+compute/cgbmm.c
+compute/cgbset.c
 compute/cgbsv.c
 compute/cgbtrf.c
 compute/cgbtrs.c
@@ -18,6 +26,7 @@ compute/cgels.c
 compute/cgemm.c
 compute/cgeqrf.c
 compute/cgeqrs.c
+compute/cgesdd.c
 compute/cgesv.c
 compute/cgeswp.c
 compute/cgetrf.c
@@ -64,6 +73,9 @@ compute/damax.c
 compute/ddesc2ge.c
 compute/ddesc2pb.c
 compute/ddesc2tr.c
+compute/dgb2desc.c
+compute/dgbmm.c
+compute/dgbset.c
 compute/dgbsv.c
 compute/dgbtrf.c
 compute/dgbtrs.c
@@ -76,6 +88,7 @@ compute/dgels.c
 compute/dgemm.c
 compute/dgeqrf.c
 compute/dgeqrs.c
+compute/dgesdd.c
 compute/dgesv.c
 compute/dgeswp.c
 compute/dgetrf.c
@@ -83,7 +96,9 @@ compute/dgetri.c
 compute/dgetri_aux.c
 compute/dgetrs.c
 compute/dlacpy.c
+compute/dlaebz2.c
 compute/dlag2s.c
+compute/dlaneg2.c
 compute/dlangb.c
 compute/dlange.c
 compute/dlansy.c
@@ -107,6 +122,7 @@ compute/dpotrs.c
 compute/dsgbsv.c
 compute/dsgesv.c
 compute/dsposv.c
+compute/dstevx2.c
 compute/dsymm.c
 compute/dsyr2k.c
 compute/dsyrk.c
@@ -121,9 +137,13 @@ compute/dtrtri.c
 compute/pcdesc2ge.c
 compute/pcdesc2pb.c
 compute/pcdesc2tr.c
+compute/pcgb2desc.c
+compute/pcgbbrd_static.c
 compute/pcgbtrf.c
 compute/pcge2desc.c
+compute/pcge2gb.c
 compute/pcgeadd.c
+compute/pcgecpy_tile2lapack_band.c
 compute/pcgelqf.c
 compute/pcgelqf_tree.c
 compute/pcgemm.c
@@ -142,6 +162,7 @@ compute/pclange.c
 compute/pclanhe.c
 compute/pclansy.c
 compute/pclantr.c
+compute/pclarft_blgtrd.c
 compute/pclascl.c
 compute/pclaset.c
 compute/pclauum.c
@@ -164,14 +185,19 @@ compute/pcungqr_tree.c
 compute/pcunmlq.c
 compute/pcunmlq_tree.c
 compute/pcunmqr.c
+compute/pcunmqr_blgtrd.c
 compute/pcunmqr_tree.c
 compute/pdamax.c
 compute/pddesc2ge.c
 compute/pddesc2pb.c
 compute/pddesc2tr.c
+compute/pdgb2desc.c
+compute/pdgbbrd_static.c
 compute/pdgbtrf.c
 compute/pdge2desc.c
+compute/pdge2gb.c
 compute/pdgeadd.c
+compute/pdgecpy_tile2lapack_band.c
 compute/pdgelqf.c
 compute/pdgelqf_tree.c
 compute/pdgemm.c
@@ -186,6 +212,7 @@ compute/pdlangb.c
 compute/pdlange.c
 compute/pdlansy.c
 compute/pdlantr.c
+compute/pdlarft_blgtrd.c
 compute/pdlascl.c
 compute/pdlaset.c
 compute/pdlauum.c
@@ -196,6 +223,7 @@ compute/pdorgqr_tree.c
 compute/pdormlq.c
 compute/pdormlq_tree.c
 compute/pdormqr.c
+compute/pdormqr_blgtrd.c
 compute/pdormqr_tree.c
 compute/pdpb2desc.c
 compute/pdpbtrf.c
@@ -215,9 +243,13 @@ compute/pscamax.c
 compute/psdesc2ge.c
 compute/psdesc2pb.c
 compute/psdesc2tr.c
+compute/psgb2desc.c
+compute/psgbbrd_static.c
 compute/psgbtrf.c
 compute/psge2desc.c
+compute/psge2gb.c
 compute/psgeadd.c
+compute/psgecpy_tile2lapack_band.c
 compute/psgelqf.c
 compute/psgelqf_tree.c
 compute/psgemm.c
@@ -232,6 +264,7 @@ compute/pslangb.c
 compute/pslange.c
 compute/pslansy.c
 compute/pslantr.c
+compute/pslarft_blgtrd.c
 compute/pslascl.c
 compute/pslaset.c
 compute/pslauum.c
@@ -242,6 +275,7 @@ compute/psorgqr_tree.c
 compute/psormlq.c
 compute/psormlq_tree.c
 compute/psormqr.c
+compute/psormqr_blgtrd.c
 compute/psormqr_tree.c
 compute/pspb2desc.c
 compute/pspbtrf.c
@@ -261,6 +295,9 @@ compute/scamax.c
 compute/sdesc2ge.c
 compute/sdesc2pb.c
 compute/sdesc2tr.c
+compute/sgb2desc.c
+compute/sgbmm.c
+compute/sgbset.c
 compute/sgbsv.c
 compute/sgbtrf.c
 compute/sgbtrs.c
@@ -273,6 +310,7 @@ compute/sgels.c
 compute/sgemm.c
 compute/sgeqrf.c
 compute/sgeqrs.c
+compute/sgesdd.c
 compute/sgesv.c
 compute/sgeswp.c
 compute/sgetrf.c
@@ -280,7 +318,9 @@ compute/sgetri.c
 compute/sgetri_aux.c
 compute/sgetrs.c
 compute/slacpy.c
+compute/slaebz2.c
 compute/slag2d.c
+compute/slaneg2.c
 compute/slangb.c
 compute/slange.c
 compute/slansy.c
@@ -301,6 +341,7 @@ compute/sposv.c
 compute/spotrf.c
 compute/spotri.c
 compute/spotrs.c
+compute/sstevx2.c
 compute/ssymm.c
 compute/ssyr2k.c
 compute/ssyrk.c
@@ -312,9 +353,9 @@ compute/stradd.c
 compute/strmm.c
 compute/strsm.c
 compute/strtri.c
-config/__init__.pyc
-config/config.pyc
-config/environment.pyc
+core_blas/core_cgbtype1cb.c
+core_blas/core_cgbtype2cb.c
+core_blas/core_cgbtype3cb.c
 core_blas/core_cgeadd.c
 core_blas/core_cgelqt.c
 core_blas/core_cgemm.c
@@ -334,6 +375,7 @@ core_blas/core_clange.c
 core_blas/core_clanhe.c
 core_blas/core_clansy.c
 core_blas/core_clantr.c
+core_blas/core_clarfb_gemm.c
 core_blas/core_clascl.c
 core_blas/core_claset.c
 core_blas/core_clauum.c
@@ -361,6 +403,9 @@ core_blas/core_cttqrt.c
 core_blas/core_cunmlq.c
 core_blas/core_cunmqr.c
 core_blas/core_damax.c
+core_blas/core_dgbtype1cb.c
+core_blas/core_dgbtype2cb.c
+core_blas/core_dgbtype3cb.c
 core_blas/core_dgeadd.c
 core_blas/core_dgelqt.c
 core_blas/core_dgemm.c
@@ -374,6 +419,7 @@ core_blas/core_dlag2s.c
 core_blas/core_dlange.c
 core_blas/core_dlansy.c
 core_blas/core_dlantr.c
+core_blas/core_dlarfb_gemm.c
 core_blas/core_dlascl.c
 core_blas/core_dlaset.c
 core_blas/core_dlauum.c
@@ -405,6 +451,9 @@ core_blas/core_dttqrt.c
 core_blas/core_samax.c
 core_blas/core_scabs1.c
 core_blas/core_scamax.c
+core_blas/core_sgbtype1cb.c
+core_blas/core_sgbtype2cb.c
+core_blas/core_sgbtype3cb.c
 core_blas/core_sgeadd.c
 core_blas/core_sgelqt.c
 core_blas/core_sgemm.c
@@ -418,6 +467,7 @@ core_blas/core_slag2d.c
 core_blas/core_slange.c
 core_blas/core_slansy.c
 core_blas/core_slantr.c
+core_blas/core_slarfb_gemm.c
 core_blas/core_slascl.c
 core_blas/core_slaset.c
 core_blas/core_slauum.c
@@ -450,19 +500,23 @@ include/core_lapack_c.h
 include/core_lapack_d.h
 include/core_lapack_s.h
 include/plasma_c.h
+include/plasma_claebz2_work.h
 include/plasma_config.h
 include/plasma_core_blas_c.h
 include/plasma_core_blas_d.h
 include/plasma_core_blas_ds.h
 include/plasma_core_blas_s.h
 include/plasma_d.h
+include/plasma_dlaebz2_work.h
 include/plasma_ds.h
 include/plasma_internal_c.h
 include/plasma_internal_d.h
 include/plasma_internal_ds.h
 include/plasma_internal_s.h
 include/plasma_s.h
+include/plasma_slaebz2_work.h
 test/test_c.h
+test/test_cgbmm.c
 test/test_cgbsv.c
 test/test_cgbtrf.c
 test/test_cgeadd.c
@@ -473,6 +527,7 @@ test/test_cgels.c
 test/test_cgemm.c
 test/test_cgeqrf.c
 test/test_cgeqrs.c
+test/test_cgesdd.c
 test/test_cgesv.c
 test/test_cgeswp.c
 test/test_cgetrf.c
@@ -511,6 +566,7 @@ test/test_cunmlq.c
 test/test_cunmqr.c
 test/test_d.h
 test/test_damax.c
+test/test_dgbmm.c
 test/test_dgbsv.c
 test/test_dgbtrf.c
 test/test_dgeadd.c
@@ -521,6 +577,7 @@ test/test_dgels.c
 test/test_dgemm.c
 test/test_dgeqrf.c
 test/test_dgeqrs.c
+test/test_dgesdd.c
 test/test_dgesv.c
 test/test_dgeswp.c
 test/test_dgetrf.c
@@ -549,6 +606,7 @@ test/test_ds.h
 test/test_dsgbsv.c
 test/test_dsgesv.c
 test/test_dsposv.c
+test/test_dstevx2.c
 test/test_dsymm.c
 test/test_dsyr2k.c
 test/test_dsyrk.c
@@ -561,6 +619,7 @@ test/test_dtrtri.c
 test/test_s.h
 test/test_samax.c
 test/test_scamax.c
+test/test_sgbmm.c
 test/test_sgbsv.c
 test/test_sgbtrf.c
 test/test_sgeadd.c
@@ -571,6 +630,7 @@ test/test_sgels.c
 test/test_sgemm.c
 test/test_sgeqrf.c
 test/test_sgeqrs.c
+test/test_sgesdd.c
 test/test_sgesv.c
 test/test_sgeswp.c
 test/test_sgetrf.c
@@ -595,6 +655,7 @@ test/test_sposv.c
 test/test_spotrf.c
 test/test_spotri.c
 test/test_spotrs.c
+test/test_sstevx2.c
 test/test_ssymm.c
 test/test_ssyr2k.c
 test/test_ssyrk.c
@@ -604,4 +665,3 @@ test/test_stradd.c
 test/test_strmm.c
 test/test_strsm.c
 test/test_strtri.c
-tools/subs.pyc

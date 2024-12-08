@@ -22,6 +22,7 @@ else ()
 
   if (Python_FOUND)
       message( STATUS "Found Python interpreter wth ID ${Python_INTERPRETER_ID} and EXE ${Python_EXECUTABLE}" )
+      message( STATUS "Generating files for all precisions. This may take a few minutes." )
       execute_process(COMMAND "${Python_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_precisions.py" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
   else ()
     message( FATAL_ERROR "Couldn't find Python interpreter, cannot generate all precision files." )
