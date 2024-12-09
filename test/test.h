@@ -54,22 +54,22 @@ typedef enum {
     PARAM_UPLO,    // general rectangular or upper or lower triangular
     PARAM_DIAG,    // non-unit or unit diagonal
     PARAM_HMODE,   // Householder mode - tree or flat
-    PARAM_EIGT,    // type of eigenvalue calculation:
-                   //   eigenvalues only or eigenvalues and eigenvectors
     PARAM_JOB,     // type of eigenvalue / singular value calculation
     PARAM_RANGE,   // range of eigenvalue
 
     // numeric params
     PARAM_DIM,     // M, N, K dimensions
-    PARAM_VL,      // the lower bound of the interval to be searched for eigenvalues.
-    PARAM_VU,      // the upper bound of the interval to be searched for eigenvalues.
-    PARAM_IL,      // the index of the smallest eigenvalue to be returned.
-    PARAM_IU,      // the index of the largest eigenvalue to be returned.
     PARAM_KL,      // lower bandwidth
     PARAM_KU,      // upper bandwidth
     PARAM_NRHS,    // number of RHS
     PARAM_NB,      // tile size NBxNB
     PARAM_IB,      // inner blocking size
+
+    PARAM_VL,      // the lower bound of the interval to be searched for eigenvalues.
+    PARAM_VU,      // the upper bound of the interval to be searched for eigenvalues.
+    PARAM_IL,      // the index of the smallest eigenvalue to be returned.
+    PARAM_IU,      // the index of the largest eigenvalue to be returned.
+
     PARAM_ALPHA,   // scalar alpha
     PARAM_BETA,    // scalar beta
     PARAM_PADA,    // padding of A
