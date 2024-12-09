@@ -573,3 +573,11 @@ string(TOLOWER ${PROJECT_NAME} lproj)
 string(REPLACE ";" "\ " plasma_libs_spaced "${PLASMA_LIBRARIES}")
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/share/pkgconfig/${lproj}.pcin ${CMAKE_CURRENT_BINARY_DIR}/${lproj}.pc @ONLY NEWLINE_STYLE LF )
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${lproj}.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
+# Copy run_tests script to build directory.
+add_custom_command(
+    TARGET plasmatest POST_BUILD
+    COMMAND
+        cp ${CMAKE_CURRENT_SOURCE_DIR}/test/run_tests.py
+           ${CMAKE_CURRENT_BINARY_DIR}/run_tests.py
+)

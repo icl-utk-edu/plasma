@@ -107,7 +107,7 @@ struct routines_t routines[] =
     { "dgesdd", test_dgesdd },
     { "cgesdd", test_cgesdd },
     { "sgesdd", test_sgesdd },
-    
+
     { "zgesv", test_zgesv },
     { "dgesv", test_dgesv },
     { "cgesv", test_cgesv },
@@ -380,10 +380,10 @@ static param_desc_t ParamDesc[] = {
     {"--trans=[n|t|c]",    "trans",        6,     true,
      "transposition [default: n]"},
 
-    {"--transa=[n|t|c]",   "transA",       6,     true,
+    {"--transA=[n|t|c]",   "transA",       6,     true,
      "transposition of A [default: n]"},
 
-    {"--transb=[n|t|c]",   "transB",       6,     true,
+    {"--transB=[n|t|c]",   "transB",       6,     true,
      "transposition of B [default: n]"},
 
     {"--side=[l|r]",       "side",         6,     true,
@@ -398,32 +398,17 @@ static param_desc_t ParamDesc[] = {
     {"--hmode=[f|t]",      "House. mode",  11,    true,
      "Householder mode for QR/LQ - flat or tree [default: f]"},
 
-    {"--eigt=[v|w]",       "eigt",         6,     true,
-     "type of eigv. calc. v - vectors or w - vectors, values [default: v]"},
-
     {"--job=[n|v|s|a]",    "job",          6,     true,
      "whether to compute eigen/singular vectors: n=None, v=Vectors, s=Some, a=All [default: n]"},
 
     {"--range=[a|v|i]",    "range",        6,     true,
      "whether to compute all eigenvalues or a range: a=All, v=RangeV, i=RangeI [default: a]"},
-    
+
     {"--dim=",             "Dimensions",   6,     true,
      "M x N x K dimensions [default: 1000 x 1000 x 1000]\n"
      INDENT "M, N, K can each be a single value or a range.\n"
      INDENT "N and K are optional; if not given, N=M and K=N.\n"
      INDENT "Ex: --dim=100:300:100x64 is 100x64x64, 200x64x64, 300x64x64."},
-
-    {"--vl=",              "vl",           6,     true,
-     "if --range=v, the lower bound of the interval to be searched for eigenvalues."},
-
-    {"--vu=",              "vu",           6,     true,
-     "if --range=v, the upper bound of the interval to be searched for eigenvalues."},
-
-    {"--il=",              "il",           6,     true,
-     "if --range=i, the index of the smallest eigenvalue to be returned."},
-
-    {"--iu=",              "iu",           6,     true,
-     "if --range=i, the index of the largest eigenvalue to be returned."},
 
     {"--kl=",              "kl",           6,     true,
      "Lower bandwidth [default: 200]"},
@@ -439,6 +424,18 @@ static param_desc_t ParamDesc[] = {
 
     {"--ib=",              "ib",           4,     true,
      "IB inner blocking size [default: 64]"},
+
+    {"--vl=",              "vl",           6,     true,
+     "if --range=v, the lower bound of the interval to be searched for eigenvalues."},
+
+    {"--vu=",              "vu",           6,     true,
+     "if --range=v, the upper bound of the interval to be searched for eigenvalues."},
+
+    {"--il=",              "il",           6,     true,
+     "if --range=i, the index of the smallest eigenvalue to be returned."},
+
+    {"--iu=",              "iu",           6,     true,
+     "if --range=i, the index of the largest eigenvalue to be returned."},
 
     {"--alpha=",           "alpha",        14,    true,
      "scalar alpha"},
@@ -519,16 +516,15 @@ int main(int argc, char **argv)
 
     // Iterate over parameters and run tests
     plasma_init();
-        do {
-            param_snap(param, pval);
-            for (int i = 0; i < iter; i++) {
+    do {
+        param_snap(param, pval);
+        for (int i = 0; i < iter; ++i) {
             err += test_routine(routine, pval, test);
-            }
-            if (iter > 1) {
-                printf("\n");
-            }
         }
-    while (outer ? param_step_outer(param, 0) : param_step_inner(param));
+        if (iter > 1) {
+            printf("\n");
+        }
+    } while (outer ? param_step_outer(param, 0) : param_step_inner(param));
     plasma_finalize();
     printf("\n");
     return err;
@@ -709,7 +705,6 @@ int test_routine(const char *name, param_value_t pval[], bool test)
             case PARAM_COLROW:
             case PARAM_NORM:
             case PARAM_HMODE:
-            case PARAM_EIGT:
             case PARAM_JOB:
             case PARAM_RANGE:
                 printf("  %*c", ParamDesc[i].width, pval[i].c);
@@ -865,9 +860,9 @@ void param_read(int argc, char **argv, param_t param[])
 
         else if (param_starts_with(argv[i], "--trans="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANS]);
-        else if (param_starts_with(argv[i], "--transa="))
+        else if (param_starts_with(argv[i], "--transA="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANSA]);
-        else if (param_starts_with(argv[i], "--transb="))
+        else if (param_starts_with(argv[i], "--transB="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_TRANSB]);
 
         else if (param_starts_with(argv[i], "--uplo="))
@@ -884,9 +879,6 @@ void param_read(int argc, char **argv, param_t param[])
 
         else if (param_starts_with(argv[i], "--hmode="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_HMODE]);
-
-        else if (param_starts_with(argv[i], "--eigt="))
-            err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_EIGT]);
 
         else if (param_starts_with(argv[i], "--job="))
             err = param_scan_char(strchr(argv[i], '=')+1, &param[PARAM_JOB]);
@@ -979,32 +971,37 @@ void param_read(int argc, char **argv, param_t param[])
 
     //================================================================
     // Set default values for uninitialized list parameters.
+    // Keep in same order as test.h.
     //================================================================
 
     //--------------------------------------------------
     // Set character parameters.
     //--------------------------------------------------
-    if (param[PARAM_SIDE].num == 0)
-        param_add_char('l', &param[PARAM_SIDE]);
+    if (param[PARAM_COLROW].num == 0)
+        param_add_char('c', &param[PARAM_COLROW]);
+    if (param[PARAM_NORM].num == 0)
+        param_add_char('o', &param[PARAM_NORM]);
     if (param[PARAM_TRANS].num == 0)
         param_add_char('n', &param[PARAM_TRANS]);
     if (param[PARAM_TRANSA].num == 0)
         param_add_char('n', &param[PARAM_TRANSA]);
     if (param[PARAM_TRANSB].num == 0)
         param_add_char('n', &param[PARAM_TRANSB]);
+    if (param[PARAM_SIDE].num == 0)
+        param_add_char('l', &param[PARAM_SIDE]);
     if (param[PARAM_UPLO].num == 0)
         param_add_char('l', &param[PARAM_UPLO]);
     if (param[PARAM_DIAG].num == 0)
         param_add_char('n', &param[PARAM_DIAG]);
-    if (param[PARAM_COLROW].num == 0)
-        param_add_char('c', &param[PARAM_COLROW]);
-    if (param[PARAM_NORM].num == 0)
-        param_add_char('o', &param[PARAM_NORM]);
     if (param[PARAM_HMODE].num == 0)
         param_add_char('f', &param[PARAM_HMODE]);
+    if (param[PARAM_JOB].num == 0)
+        param_add_char('n', &param[PARAM_JOB]);
+    if (param[PARAM_RANGE].num == 0)
+        param_add_char('a', &param[PARAM_RANGE]);
 
     //--------------------------------------------------
-    // Set integer parameters.
+    // Set numeric parameters.
     //--------------------------------------------------
     if (param[PARAM_DIM].num == 0) {
         int3_t dim = { 1000, 1000, 1000 };
@@ -1022,6 +1019,24 @@ void param_read(int argc, char **argv, param_t param[])
     if (param[PARAM_IB].num == 0)
         param_add_int(64, &param[PARAM_IB]);
 
+    if (param[PARAM_VL].num == 0)
+        param_add_double(0.0, &param[PARAM_VL]);
+    if (param[PARAM_VU].num == 0)
+        param_add_double(1.0, &param[PARAM_VU]);
+    if (param[PARAM_IL].num == 0)
+        param_add_int(1, &param[PARAM_IL]);
+    if (param[PARAM_IU].num == 0)
+        param_add_int(100, &param[PARAM_IU]);
+
+    if (param[PARAM_ALPHA].num == 0) {
+        plasma_complex64_t z = 1.2345 + 2.3456*_Complex_I;
+        param_add_complex(z, &param[PARAM_ALPHA]);
+    }
+    if (param[PARAM_BETA].num == 0) {
+        plasma_complex64_t z = 6.7890 + 7.8901*_Complex_I;
+        param_add_complex(z, &param[PARAM_BETA]);
+    }
+
     if (param[PARAM_PADA].num == 0)
         param_add_int(0, &param[PARAM_PADA]);
     if (param[PARAM_PADB].num == 0)
@@ -1036,20 +1051,18 @@ void param_read(int argc, char **argv, param_t param[])
     if (param[PARAM_INCX].num == 0)
         param_add_int(1, &param[PARAM_INCX]);
 
-    //--------------------------------------------------
-    // Set double precision parameters.
-    //--------------------------------------------------
-
-    //--------------------------------------------------
-    // Set complex parameters.
-    //--------------------------------------------------
-    if (param[PARAM_ALPHA].num == 0) {
-        plasma_complex64_t z = 1.2345 + 2.3456*_Complex_I;
-        param_add_complex(z, &param[PARAM_ALPHA]);
+    // Check for uninitialized parameters, which will cause an infinite
+    // loop in the outer-product iteration.
+    err = 0;
+    for (int i = 0; i < PARAM_SIZEOF; ++i) {
+        if (param[i].num == 0 && param[i].is_list) {
+            printf( "Error: param[%d], %s, not initialized, at %s:%d\n",
+                    i, ParamDesc[i].header, __FILE__, __LINE__ );
+            err += 1;
+        }
     }
-    if (param[PARAM_BETA].num == 0) {
-        plasma_complex64_t z = 6.7890 + 7.8901*_Complex_I;
-        param_add_complex(z, &param[PARAM_BETA]);
+    if (err) {
+        exit( 1 );
     }
 }
 
@@ -1541,8 +1554,9 @@ int param_step_outer(param_t param[], int idx)
     int ridx = PARAM_SIZEOF - 1 - idx;
     while (ridx >= 0 && param[ridx].num == 0)
         --ridx;
-    if (ridx < 0)
+    if (ridx < 0) {
         return 0;
+    }
 
     if (++param[ridx].pos == param[ridx].num) {
         param[ridx].pos = 0;
