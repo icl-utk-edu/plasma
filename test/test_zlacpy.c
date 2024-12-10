@@ -88,22 +88,6 @@ void test_zlacpy(param_value_t param[], bool run)
 
     lapack_int mtrxLayout = LAPACK_COL_MAJOR;
 
-    // LAPACKE_[zcds]lantr_work has a bug (returns 0)
-    // in MKL <= 11.3.3 (at least). Fixed in LAPACK 3.6.1.
-    // For now, zero out the opposite triangle and use lange.
-    // @sa test_ztrmm
-
-    // Zero out upper or lower triangle of A
-    switch (uplo) {
-        case PlasmaLower:
-            LAPACKE_zlaset_work(
-                mtrxLayout, 'U', m, n-1, 0.0, 0.0, &A[m], lda);
-            break;
-        case PlasmaUpper:
-            LAPACKE_zlaset_work(
-                mtrxLayout, 'L', m-1, n, 0.0, 0.0, &A[1], lda);
-            break;
-    }
     // Zero out B
     int Bm = (transa == PlasmaNoTrans ? m : n);
     int Bn = (transa == PlasmaNoTrans ? n : m);
@@ -140,21 +124,33 @@ void test_zlacpy(param_value_t param[], bool run)
         // Using 3*eps covers complex arithmetic
 
         // Calculate difference op(A)-B
+        // For uplo=lower or upper, don't touch values outside the uplo
+        // triangle, which should still be 0 from initializing B=0.
         if (transa == PlasmaTrans) {
-            for (int i=0; i < m; i++)
-                for (int j=0; j < n; j++)
+            for (int i=0; i < m; i++) {
+                int j_begin = uplo == PlasmaUpper ? i : 0;
+                int j_end   = uplo == PlasmaLower ? imin( i+1, n ) : n;
+                for (int j = j_begin; j < j_end; j++)
                     B[j + i*ldb] -= A[i + j*lda];
+            }
         }
         else if (transa == PlasmaConjTrans) {
-            for (int i=0; i < m; i++)
-                for (int j=0; j < n; j++)
+            for (int i=0; i < m; i++) {
+                int j_begin = uplo == PlasmaUpper ? i : 0;
+                int j_end   = uplo == PlasmaLower ? imin( i+1, n ) : n;
+                for (int j = j_begin; j < j_end; j++)
                     B[j + i*ldb] -= conj(A[i + j*lda]);
+            }
         }
         else {
-            for (int i=0; i < m; i++)
-                for (int j=0; j < n; j++)
+            for (int i=0; i < m; i++) {
+                int j_begin = uplo == PlasmaUpper ? i : 0;
+                int j_end   = uplo == PlasmaLower ? imin( i+1, n ) : n;
+                for (int j = j_begin; j < j_end; j++)
                     B[i + j*ldb] -= A[i + j*lda];
+            }
         }
+
         if (retval != PlasmaSuccess) {
             plasma_coreblas_error("LAPACKE_zlacpy_work() failed");
             param[PARAM_ERROR].d   = 1.0;
