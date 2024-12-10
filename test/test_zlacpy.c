@@ -93,15 +93,15 @@ void test_zlacpy(param_value_t param[], bool run)
     // For now, zero out the opposite triangle and use lange.
     // @sa test_ztrmm
 
-    // Enforce zeroes in general rectangle or upper or lower triangle of A
+    // Zero out upper or lower triangle of A
     switch (uplo) {
         case PlasmaLower:
             LAPACKE_zlaset_work(
-                mtrxLayout, 'U', m-1, n-1, 0.0, 0.0, &A[m], lda);
+                mtrxLayout, 'U', m, n-1, 0.0, 0.0, &A[m], lda);
             break;
         case PlasmaUpper:
             LAPACKE_zlaset_work(
-                mtrxLayout, 'L', m-1, n-1, 0.0, 0.0, &A[1], lda);
+                mtrxLayout, 'L', m-1, n, 0.0, 0.0, &A[1], lda);
             break;
     }
     // Zero out B
