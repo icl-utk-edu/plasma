@@ -179,21 +179,9 @@ void test_ztrsm(param_value_t param[], bool run)
         plasma_complex64_t neg_alpha = -alpha;
         double work[1];
 
-        // LAPACKE_[ds]lantr_work has a bug (returns 0)
-        // in MKL <= 11.3.3 (at least). Fixed in LAPACK 3.6.1.
-        // For now, call LAPACK directly.
-        // LAPACK_zlantr is a macro for correct name mangling (e.g.
-        // adding _ at the end) of the Fortran symbol.
-        // The macro is either defined in lapacke.h, or in the file
-        // plasma_core_lapack_z.h for the use with MKL.
-        char normc = 'F';
-        char uploc = lapack_const(uplo);
-        char diagc = lapack_const(diag);
-        double Anorm = LAPACK_zlantr(&normc, &uploc, &diagc,
-                                     &Am, &Am, A, &lda, work);
-        //double Anorm = LAPACKE_zlantr_work(
-        //                   LAPACK_COL_MAJOR, 'F', lapack_const(uplo),
-        //                   lapack_const(diag), Am, Am, A, lda, work);
+        double Anorm = LAPACKE_zlantr_work(
+                           LAPACK_COL_MAJOR, 'F', lapack_const(uplo),
+                           lapack_const(diag), Am, Am, A, lda, work);
 
         double Xnorm = LAPACKE_zlange_work(
                            LAPACK_COL_MAJOR, 'F', m, n, B, ldb, work);
