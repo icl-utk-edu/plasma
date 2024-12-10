@@ -86,18 +86,12 @@ void test_zlangb(param_value_t param[], bool run)
     assert(retval == 0);
     // zero out elements outside the band
     for (int i = 0; i < m; i++) {
-        for (int j = i+ku+1; j < n; j++) A[i + j*lda] = 0.0;
+        for (int j = i+ku+1; j < n; j++)
+            A[i + j*lda] = 0.0;
     }
     for (int j = 0; j < n; j++) {
-        for (int i = j+kl+1; i < m; i++) A[i + j*lda] = 0.0;
-    }
-    plasma_complex64_t *Aref = NULL;
-    if (test) {
-        Aref = (plasma_complex64_t*)malloc(
-            (size_t)lda*n*sizeof(plasma_complex64_t));
-        assert(Aref != NULL);
-
-        memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
+        for (int i = j+kl+1; i < m; i++)
+            A[i + j*lda] = 0.0;
     }
 
     int nb = param[PARAM_NB].i;
@@ -114,17 +108,10 @@ void test_zlangb(param_value_t param[], bool run)
     for (int j = 0; j < n; j++) {
         int i_kl = imax(0,   j-ku);
         int i_ku = imin(m-1, j+kl);
-        for (int i = 0; i < ldab; i++) AB[i + j*ldab] = 0.0;
-        for (int i = i_kl; i <= i_ku; i++) AB[kl + i-(j-ku) + j*ldab] = A[i + j*lda];
-    }
-
-    plasma_complex64_t *ABref = NULL;
-    if (test) {
-        ABref = (plasma_complex64_t*)malloc(
-            (size_t)ldab*n*sizeof(plasma_complex64_t));
-        assert(ABref != NULL);
-
-        memcpy(ABref, AB, (size_t)ldab*n*sizeof(plasma_complex64_t));
+        for (int i = 0; i < ldab; ++i)
+            AB[i + j*ldab] = 0.0;
+        for (int i = i_kl; i <= i_ku; ++i)
+            AB[kl + i-(j-ku) + j*ldab] = A[i + j*lda];
     }
 
     //================================================================
@@ -136,19 +123,28 @@ void test_zlangb(param_value_t param[], bool run)
     plasma_time_t time = stop-start;
 
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = flops_zlange(m, n, norm) / time / 1e9;
+    param[PARAM_GFLOPS].d = 0.0;
+    // Formula wrong for langb: flops_zlange(m, n, norm) / time / 1e9;
 
     //================================================================
     // Test results by comparing to a reference implementation.
     //================================================================
     if (test) {
-        int lwork = (norm == PlasmaInfNorm ? n : 1);
-        double *work = (double*) malloc(n*sizeof(double));
+        int lwork = (norm == PlasmaInfNorm ? m : 1);
+        double *work = (double*) malloc(lwork*sizeof(double));
         assert(work != NULL);
         char normc = lapack_const(norm);
 
-        double valueRef =
-            LAPACK_zlangb(&normc, &n, &kl, &ku, ABref+kl, &ldab, work);
+        // LAPACK zlangb assumes square n x n matrix.
+        double valueRef;
+        if (m == n) {
+            valueRef = LAPACKE_zlangb(
+                LAPACK_COL_MAJOR, normc, n, kl, ku, AB+kl, ldab);
+        }
+        else {
+            valueRef = LAPACKE_zlange_work(
+                LAPACK_COL_MAJOR, normc, m, n, A, lda, work);
+        }
 
         // Calculate relative error
         double error = fabs(value-valueRef);
@@ -159,7 +155,7 @@ void test_zlangb(param_value_t param[], bool run)
         double normalize = 1;
         switch (norm) {
             case PlasmaInfNorm:
-                // Sum order on the line can differ
+                // Sum order on the row can differ
                 normalize = n;
                 break;
 
@@ -185,8 +181,4 @@ void test_zlangb(param_value_t param[], bool run)
     //================================================================
     free(A);
     free(AB);
-    if (test) {
-        free(Aref);
-        free(ABref);
-    }
 }

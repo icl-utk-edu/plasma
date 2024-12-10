@@ -95,7 +95,7 @@ void test_ztrsm(param_value_t param[], bool run)
     // Allocate and initialize arrays.
     //================================================================
     plasma_complex64_t *A =
-        (plasma_complex64_t*)malloc((size_t)lda*n*sizeof(plasma_complex64_t));
+        (plasma_complex64_t*)malloc((size_t)lda*Am*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
     plasma_complex64_t *B =
@@ -118,7 +118,7 @@ void test_ztrsm(param_value_t param[], bool run)
     // than L or U, but in practice it seems okay.
     // See Higham, Accuracy and Stability of Numerical Algorithms, ch 8.)
     //=================================================================
-    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
+    retval = LAPACKE_zlarnv(1, seed, (size_t)lda*Am, A);
     assert(retval == 0);
 
     LAPACKE_zgetrf(CblasColMajor, Am, Am, A, lda, ipiv);
@@ -176,24 +176,12 @@ void test_ztrsm(param_value_t param[], bool run)
     //================================================================
     if (test) {
         plasma_complex64_t zone  =  1.0;
-        plasma_complex64_t zmone = -1.0;
+        plasma_complex64_t neg_alpha = -alpha;
         double work[1];
 
-        // LAPACKE_[ds]lantr_work has a bug (returns 0)
-        // in MKL <= 11.3.3 (at least). Fixed in LAPACK 3.6.1.
-        // For now, call LAPACK directly.
-        // LAPACK_zlantr is a macro for correct name mangling (e.g.
-        // adding _ at the end) of the Fortran symbol.
-        // The macro is either defined in lapacke.h, or in the file
-        // plasma_core_lapack_z.h for the use with MKL.
-        char normc = 'F';
-        char uploc = lapack_const(uplo);
-        char diagc = lapack_const(diag);
-        double Anorm = LAPACK_zlantr(&normc, &uploc, &diagc,
-                                     &Am, &Am, A, &lda, work);
-        //double Anorm = LAPACKE_zlantr_work(
-        //                   LAPACK_COL_MAJOR, 'F', lapack_const(uplo),
-        //                   lapack_const(diag), Am, Am, A, lda, work);
+        double Anorm = LAPACKE_zlantr_work(
+                           LAPACK_COL_MAJOR, 'F', lapack_const(uplo),
+                           lapack_const(diag), Am, Am, A, lda, work);
 
         double Xnorm = LAPACKE_zlange_work(
                            LAPACK_COL_MAJOR, 'F', m, n, B, ldb, work);
@@ -208,8 +196,7 @@ void test_ztrsm(param_value_t param[], bool run)
             B, ldb);
 
         // B -= alpha*Bref
-        cblas_zscal((size_t)ldb*n, CBLAS_SADDR(alpha), Bref, 1);
-        cblas_zaxpy((size_t)ldb*n, CBLAS_SADDR(zmone), Bref, 1, B, 1);
+        cblas_zaxpy((size_t)ldb*n, CBLAS_SADDR(neg_alpha), Bref, 1, B, 1);
 
         double error = LAPACKE_zlange_work(
                            LAPACK_COL_MAJOR, 'F', m, n, B, ldb, work);

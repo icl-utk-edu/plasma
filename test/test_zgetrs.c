@@ -151,19 +151,12 @@ void test_zgetrs(param_value_t param[], bool run)
         double Xnorm = LAPACKE_zlange_work(
             LAPACK_COL_MAJOR, 'I', n, nrhs, B, ldb, work);
 
-        if (trans == PlasmaNoTrans) {
-            // Bref -= Aref*B
-            cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, nrhs, n,
-                        CBLAS_SADDR(zmone), Aref, lda,
-                        B,    ldb,
-                        CBLAS_SADDR(zone),  Bref, ldb);
-        }
-        else {
-            cblas_zgemm(CblasColMajor, CblasTrans, CblasNoTrans, n, nrhs, n,
-                        CBLAS_SADDR(zmone), Aref, lda,
-                        B,    ldb,
-                        CBLAS_SADDR(zone),  Bref, ldb);
-        }
+        // Bref -= op(Aref)*B
+        cblas_zgemm(CblasColMajor, (CBLAS_TRANSPOSE)trans, CblasNoTrans,
+                    n, nrhs, n,
+                    CBLAS_SADDR(zmone), Aref, lda,
+                    B,    ldb,
+                    CBLAS_SADDR(zone),  Bref, ldb);
 
         double Rnorm = LAPACKE_zlange_work(
             LAPACK_COL_MAJOR, 'I', n, nrhs, Bref, ldb, work);
