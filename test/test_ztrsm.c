@@ -176,7 +176,7 @@ void test_ztrsm(param_value_t param[], bool run)
     //================================================================
     if (test) {
         plasma_complex64_t zone  =  1.0;
-        plasma_complex64_t zmone = -1.0;
+        plasma_complex64_t neg_alpha = -alpha;
         double work[1];
 
         // LAPACKE_[ds]lantr_work has a bug (returns 0)
@@ -208,8 +208,7 @@ void test_ztrsm(param_value_t param[], bool run)
             B, ldb);
 
         // B -= alpha*Bref
-        cblas_zscal((size_t)ldb*n, CBLAS_SADDR(alpha), Bref, 1);
-        cblas_zaxpy((size_t)ldb*n, CBLAS_SADDR(zmone), Bref, 1, B, 1);
+        cblas_zaxpy((size_t)ldb*n, CBLAS_SADDR(neg_alpha), Bref, 1, B, 1);
 
         double error = LAPACKE_zlange_work(
                            LAPACK_COL_MAJOR, 'F', m, n, B, ldb, work);
