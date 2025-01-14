@@ -22,11 +22,13 @@ extern "C" {
 #endif
 
 /******************************************************************************/
-void plasma_pzlag2c(plasma_desc_t A, plasma_desc_t As,
-                    plasma_sequence_t *sequence, plasma_request_t *request);
+void plasma_pzlag2c(
+    plasma_desc_t A, plasma_desc_t As,
+    plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_pclag2z(plasma_desc_t As, plasma_desc_t A,
-                    plasma_sequence_t *sequence, plasma_request_t *request);
+void plasma_pclag2z(
+    plasma_desc_t As, plasma_desc_t A,
+    plasma_sequence_t *sequence, plasma_request_t *request);
 
 #ifdef __cplusplus
 }  // extern "C"

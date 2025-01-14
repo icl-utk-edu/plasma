@@ -246,33 +246,39 @@ static inline int plasma_tile_mmain_band(plasma_desc_t A, int m, int n)
 }
 
 /******************************************************************************/
-int plasma_desc_general_create(plasma_enum_t dtyp, int mb, int nb,
-                               int lm, int ln, int i, int j, int m, int n,
-                               plasma_desc_t *A);
+int plasma_desc_general_create(
+    plasma_enum_t dtyp, int mb, int nb,
+    int lm, int ln, int i, int j, int m, int n,
+    plasma_desc_t *A);
 
-int plasma_desc_general_band_create(plasma_enum_t dtyp, plasma_enum_t uplo,
-                                    int mb, int nb, int lm, int ln,
-                                    int i, int j, int m, int n, int kl, int ku,
-                                    plasma_desc_t *A);
+int plasma_desc_general_band_create(
+    plasma_enum_t dtyp, plasma_enum_t uplo,
+    int mb, int nb, int lm, int ln,
+    int i, int j, int m, int n, int kl, int ku,
+    plasma_desc_t *A);
 
-int plasma_desc_triangular_create(plasma_enum_t dtyp, plasma_enum_t uplo, int mb, int nb,
-                                  int lm, int ln, int i, int j, int m, int n,
-                                  plasma_desc_t *A);
+int plasma_desc_triangular_create(
+    plasma_enum_t dtyp, plasma_enum_t uplo, int mb, int nb,
+    int lm, int ln, int i, int j, int m, int n,
+    plasma_desc_t *A);
 
 int plasma_desc_destroy(plasma_desc_t *A);
 
-int plasma_desc_general_init(plasma_enum_t precision, void *matrix,
-                             int mb, int nb, int lm, int ln, int i, int j,
-                             int m, int n, plasma_desc_t *A);
+int plasma_desc_general_init(
+    plasma_enum_t precision, void *matrix,
+    int mb, int nb, int lm, int ln, int i, int j,
+    int m, int n, plasma_desc_t *A);
 
-int plasma_desc_general_band_init(plasma_enum_t precision, plasma_enum_t uplo,
-                                  void *matrix, int mb, int nb, int lm, int ln,
-                                  int i, int j, int m, int n, int kl, int ku,
-                                  plasma_desc_t *A);
+int plasma_desc_general_band_init(
+    plasma_enum_t precision, plasma_enum_t uplo,
+    void *matrix, int mb, int nb, int lm, int ln,
+    int i, int j, int m, int n, int kl, int ku,
+    plasma_desc_t *A);
 
-int plasma_desc_triangular_init(plasma_enum_t precision, plasma_enum_t uplo, void *matrix,
-                                int mb, int nb, int lm, int ln, int i, int j,
-                                int m, int n, plasma_desc_t *A);
+int plasma_desc_triangular_init(
+    plasma_enum_t precision, plasma_enum_t uplo, void *matrix,
+    int mb, int nb, int lm, int ln, int i, int j,
+    int m, int n, plasma_desc_t *A);
 
 int plasma_desc_check(plasma_desc_t A);
 int plasma_desc_general_check(plasma_desc_t A);
@@ -280,8 +286,9 @@ int plasma_desc_general_band_check(plasma_desc_t A);
 
 plasma_desc_t plasma_desc_view(plasma_desc_t A, int i, int j, int m, int n);
 
-int plasma_descT_create(plasma_desc_t A, int ib, plasma_enum_t householder_mode,
-                        plasma_desc_t *T);
+int plasma_descT_create(
+    plasma_desc_t A, int ib, plasma_enum_t householder_mode,
+    plasma_desc_t *T);
 
 #ifdef __cplusplus
 }  // extern "C"
