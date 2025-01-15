@@ -38,19 +38,15 @@ General Guidelines
 * If you spot inconsistencies, fix them.
 * Break rules if it helps readability. This is only a guide.
 
-> Established ICL projects (PLASMA, MAGMA, PaRSEC, PAPI) already have their
-> conventions. In most cases, existing project conventions override conventions
-> in this guide. Unless, you can fix bad practices in an existing project by consistently
-> applying a better convention across the entire source code, a task which can sometimes
-> be automated.
->
-> Definitely follow this guide if starting a new project or a prototype.
+> This guide was written for PLASMA. Other ICL projects have their own
+> conventions. A few differences with SLATE's style are noted here.
 
-Standard Compliance
-===================
+Standards Compliance
+====================
 
 C codes should be C99 compliant and compiled with the `-std=c99` flag,
-and C++ codes should be C++11 compliant and compiled with the `-std=c++11` flag.
+and C++ codes should be C++11 compliant and compiled with the `-std=c++11` flag
+(or later).
 
 Avoid features present only in C but not in C++. That is, C code should compile with either C or C++ compiler.
 
@@ -70,32 +66,31 @@ Files that are meant for textual inclusion, but are not headers, should end in `
 > Therefore, we use `.c` and `.h` for C and `.cc` and `.hh` for C++.
 >
 > Trilinos uses another common convention of `.cpp` and `.hpp`.
-> However, in a long list of files, this puts a lot of <p>s on the screen.
+> However, in a long list of files, this puts a lot of p's on the screen.
 > The `.cc` and `.hh` endings are shorter and cleaner.
 
 \#define Guards
 --------------
 
 All header files should have `#define` guards to prevent multiple inclusion.
-The format of the symbol name should be `<ICL>_<PROJECT>_<FILE>_H` for C
-and `<ICL>_<PROJECT>_<FILE>_HH` for C++.
+The format of the symbol name should be `<PROJECT>_<FILE>_H` for C
+and `<PROJECT>_<FILE>_HH` for C++.
 
 ```
 #!cpp
 
-#ifndef ICL_MAGMA_BLAS_H
-#define ICL_MAGMA_BLAS_H
+#ifndef PLASMA_BLAS_H
+#define PLASMA_BLAS_H
 
 ...
 
-#endif // ICL_MAGMA_BLAS_H
+#endif // PLASMA_BLAS_H
 ```
 
 > Google uses an underscore at the end.
-> Some projects use an underscore at the beginning and an underscore at the end.
 > Trilinos does not use underscores.
 > In the case of header guards, beginning/ending underscores seem pointless.
-> Underscores in front of a name are used for system-level hacking.
+> Underscores in front of a name are reserved for system-level headers.
 
 extern C
 --------
@@ -131,7 +126,7 @@ Inline Functions
 
 Mark small functions as inline, specifically those that serve as macro replacements.
 Although the compiler will identify on its own functions
-suitable for inlining, it is a good idea hint it directly.
+suitable for inlining, it is a good idea to hint it directly.
 Define as inline member accessors and functions that would otherwise be macros,
 e.g., address arithmetic functions and alike.
 Check [Google Style Guide](https://google.github.io/styleguide/cppguide.html#Inline_Functions)
@@ -190,7 +185,6 @@ Keep your system-specific code small and localized.
 #include <libkern/OSAtomic.h>
 
 ...
-
 #endif // __APPLE__
 ```
 
@@ -200,13 +194,14 @@ Scoping
 Namespaces
 ----------
 
-With few exceptions, place code in a namespace.
+With few exceptions, place C++ code in a namespace.
 Use named namespaces as follows:
 
 * Namespaces wrap the entire source file after includes.
-* Do not declare anything in namespace std, including forward declarations
-  of standard library classes. Declaring entities in namespace std is undefined
-  behavior. To declare entities from the standard library, include the appropriate
+* Do not declare anything in namespace `std`, including forward declarations
+  of standard library classes. Declaring entities in namespace `std` is undefined
+  behavior (unless specifically allowed in the C++ standard).
+  To declare entities from the standard library, include the appropriate
   header file.
 * Do not use a `using` directive to make all names from a namespace available.
 * Do not use `using` declarations in `.hh` files, because anything imported
@@ -218,30 +213,28 @@ Use named namespaces as follows:
 * Use Pascal case for namespace components.
 
 Namespaces should have unique names based on the project name.
-Generic components, that may be shared among multiple projects, such as, e.g.,
+Generic components, that may be shared among multiple projects, such as
 an efficient implementation of a thread-safe hash table, may be placed in
-a namespace `Icl`, while project-specific components may be placed
-in a namespace, e.g., `Icl::Magma`.
+a namespace `icl`, while project-specific components must be placed
+in a namespace, e.g., `plasma`.
 
 Format namespaces in `.hh` files as follows:
 
 ```
 #!cpp
 
-#ifndef ICL_MAGMA_HH
-#define ICL_MAGMA_HH
+#ifndef PLASMA_HH
+#define PLASMA_HH
 
 #include <cuda.h>
 
-namespace Icl {
-namespace Magma {
+namespace plasma {
 
 ...
 
-} // namespace Magma
-} // namespace Icl
+} // namespace plasma
 
-#endif // ICL_MAGMA_HH
+#endif // PLASMA_HH
 ```
 
 Nonmember, Static Member, and Global Functions
@@ -358,7 +351,7 @@ should be handled as follows:
 
 * Be self-contained, i.e., contain all memory pointers.
 
-* Set all memory pointers to NULL at the time of initialization
+* Set all memory pointers to `NULL` (`nullptr` in C++) at the time of initialization
   (in the constructor in C++).
   Rely on constructors or factory methods or `Init()` methods to perform
   allocations and initializations.
@@ -419,6 +412,11 @@ Other C++ Features
   of the space.
   And also, the proper name of `long` is `long int`, which also includes the space.
 
+> SLATE uses C++ style casts, which are clearer about what expression
+> the cast applies to, e.g., `(int) x * y` is the same as `int( x ) * y`,
+> not `int( x * y )`. For `long long`, SLATE has a typedef `llong` so that
+> `llong( x )` works. Otherwise, `(long long)( x )` works.
+
 * Do not use C++ streams.
   Use C standard IO functions instead.
   C++ streams are cumbersome and the
@@ -426,7 +424,8 @@ Other C++ Features
   provides a long list of reasons why.
 
 * Use preincrement/predecrement (`++i`) as opposed to postincrement/postdecrement (`i++`).
-  This is a common C++ convention.
+  This is a common C++ convention since postincrement introduces a
+  needless temporary return value that can be expensive for C++ classes.
 
 * Use the following notations when initializing variables:
   `1` for integers, `1.0` for doubles, `1.0f` for floats, `0x01` for bit patterns.
@@ -482,7 +481,7 @@ Pick one way or the other and stick to it.
 
 If you use exceptions, list exceptions in function comments, but not in signatures.
 Listing in signatures is a bad idea (http://www.gotw.ca/publications/mill22.htm),
-and it is deprected in C++11.
+and it is deprecated in C++11.
 
 Integer Types
 -------------
@@ -513,7 +512,8 @@ required, e.g., to minimize the memory footprint of a large array.
 NULL, nullptr, 0
 ----------------
 
-In C++ use nullptr - removes ambiguity. You can take sizeof(nullptr).
+In C++ use `nullptr`, which removes ambiguity. `NULL` is an integer (0);
+`nullptr` is a pointer. You can take `sizeof(nullptr)`.
 
 64-bit Addressing
 -----------------
@@ -564,6 +564,7 @@ This code summarizes the legitimate uses of macros:
 ...
 
 #endif // __APPLE__
+
 #endif // ICL_PTHREAD_H
 ```
 
@@ -585,17 +586,29 @@ Concurrency
   to implement low-level synchronization mechanisms.
   They are supported by all major compilers (GNU, Intel).
 
-* Declare all synchronization variables as `volatile`, even if you are
+> SLATE uses C++ `std::atomic`.
+
+* <strike> Declare all synchronization variables as `volatile`, even if you are
   only accessing them using atomic builtins.
   If a variable can be accessed by more than one thread, it needs to be
   `volatile` to prevent compiler from applying optimizations that might result
-  in incorrect code.
+  in incorrect code. </strike>
+
+> This misunderstands `volatile`. Read Scott Meyers, "Effective Modern C++",
+> Item 40: Use `std::atomic` for concurrency, `volatile` for special memory
+> (e.g. memory-mapped I/O).
 
 * If you find yourself considering the use of memory barriers,
   you went too low-level. Use atomic builtins or spinlocks instead.
 
 Building with Missing Dependencies
 ==================================
+
+> !!! This section violates xSDK policies such as (M9) using a
+> well-defined name space and (M12) linking with external dependencies.
+> Consider a library linked with stub MPI or OpenMP functions; it cannot
+> be used in an application that links with real MPI or OpenMP due to
+> name collisions. !!!
 
 If a certain environment is missing a mainstream component,
 e.g., Pthread spinlocks on OSX, do not create a new abstraction layer,
@@ -648,7 +661,7 @@ In C++ the file name should match the class name.
 Consider using the Trilinos convention:
 `<NameSpace>_<ClassName>`, i.e., namespace using Pascal case,
 underscore, class name using Pascal case,
-e.g., `IclMagma_SomeClass.hh`, `IclMagma_SomeClass.cc`.
+e.g., `Magma_SomeClass.hh`, `Magma_SomeClass.cc`.
 
 Use `.h` and `.c` extensions for C files, and `.hh` and `.cc` for C++ files.
 
@@ -693,10 +706,15 @@ Function Names
 Use snake case for C function names and C++ method names,
 e.g., `my_awesome_c_function`, `my_awesome_cpp_method`.
 
+> SLATE used lowerCamelCase for methods, but there has been discussion
+> to make them snake_case.
+
 Namespace Names
 ---------------
 
 Namespace names are Pascal case (Trilinos, Microsoft).
+
+> SLATE uses lowercase for namespaces.
 
 Enumerator Names
 ----------------
@@ -773,6 +791,8 @@ This is the convention of Google, and also LAPACK.
 
 If the function does something trivial, just skip the comment.
 It is quite common for destructors not to have header comments.
+
+> SLATE skips `@brief` in favor of Doxygen's autobrief feature.
 
 Variable Comments
 -----------------
@@ -1010,10 +1030,10 @@ The boilerplates for loops are:
 ```
 #!cpp
 
-for (int i = 0; i < SomeNumber; i++)
+for (int i = 0; i < SomeNumber; ++i)
     ...
 
-for (int i = 0; i < SomeNumber; i++) {
+for (int i = 0; i < SomeNumber; ++i) {
     ...
 }
 ```
@@ -1055,6 +1075,8 @@ default:
 
 If the default case should never execute, simply assert false.
 
+> SLATE indents `case` statements one level, since they're inside a block.
+
 Pointer and Reference Expressions
 ---------------------------------
 
@@ -1085,6 +1107,8 @@ char *c;
 const string &str;
 ```
 
+> SLATE places * and & next to the type, since it is part of the type.
+
 Boolean Expressions
 -------------------
 
@@ -1105,6 +1129,11 @@ Note that when the code wraps in this example, both of the && operators
 are at the end of the line.
 Also note that you should always use the punctuation operators,
 such as && and ~, rather than the word operators, such as `and` and `compl`.
+
+> SLATE places operators at the beginning of the line for clarity,
+> consistent with math typesetting conventions.
+> (Although older SLATE code doesn't.)
+> See AMS "Mathematics into Type", section 3.3.5.
 
 Return Values
 -------------
@@ -1128,6 +1157,9 @@ at the beginning of the line.
 Even when preprocessor directives are within the body of indented code,
 the directives should start at the beginning of the line.
 
+> SLATE indents preprocessor directives and code inside #if ... #else ... #endif
+> for improved readability (excluding header guards).
+
 Class Format
 ------------
 
@@ -1140,18 +1172,18 @@ class MyClass {
     friend class FriendClass;
 
 public:
-    MyClass(int value) : value_(value), pointer_(NULL) {}
+    MyClass(int value) : value_(value), pointer_(nullptr) {}
     ~MyClass();
 
-    int getValue() { return value_; }
-    int getPointer() { return pointer_; }
+    int get_value() { return value_; }
+    int get_pointer() { return pointer_; }
 
-    void awesomePublicMethod();
-    void anotherPublicMethod();
+    void awesome_public_method();
+    void another_public_method();
 
 private:
-    void awesomeSecretMethod();
-    void anotherSecretMethod();
+    void awesome_secret_method();
+    void another_secret_method();
 
     int value_;
     int *poiter_;
@@ -1188,14 +1220,14 @@ The acceptable formats for initializer lists are:
 #!cpp
 
     MyClass(int value)
-        : value_(value), pointer_(NULL)
+        : value_(value), pointer_(nullptr)
     {
         ...
     }
 
     MyClass(int value)
         : value_(value),
-          pointer_(NULL)
+          pointer_(nullptr)
     {
         ...
     }
@@ -1217,13 +1249,13 @@ When declaring nested namespaces, put each namespace on its own line.
 ```
 #!cpp
 
-namespace Icl {
-namespace Magma {
+namespace plasma {
+namespace internal {
 
 ...
 
-} // namespace Magma
-} // namespace Icl
+} // namespace internal
+} // namespace plasma
 ```
 
 Horizontal Whitespace
@@ -1245,7 +1277,7 @@ Horizontal Whitespace
 
 * No spaces inside empty parentheses and curly braces.
 
-* Put space after the keyword in conditions and loops.
+* Put space after the keyword in conditionals and loops.
 
 * `for` loops always have a space after the semicolon,
   and never a space before the semicolon.
