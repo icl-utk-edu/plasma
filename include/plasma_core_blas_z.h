@@ -91,6 +91,27 @@ void plasma_core_zgetrf(
     volatile int *max_idx, volatile plasma_complex64_t *max_val,
     volatile int *info, plasma_barrier_t *barrier);
 
+void plasma_core_zhbtype1cb(
+    int n, int nb,
+    plasma_complex64_t *A, int lda,
+    plasma_complex64_t *V, plasma_complex64_t *tau,
+    int st, int ed, int sweep, int Vblksiz, int wantz,
+    plasma_complex64_t *work);
+
+void plasma_core_zhbtype2cb(
+    int n, int nb,
+    plasma_complex64_t *A, int lda,
+    plasma_complex64_t *V, plasma_complex64_t *tau,
+    int st, int ed, int sweep, int vblksiz, int wantz,
+    plasma_complex64_t *work);
+
+void plasma_core_zhbtype3cb(
+    int n, int nb,
+    plasma_complex64_t *A, int lda,
+    const plasma_complex64_t *V, const plasma_complex64_t *tau,
+    int st, int ed, int sweep, int vblksiz, int wantz,
+    plasma_complex64_t *work);
+
 int plasma_core_zhegst(
     int itype, plasma_enum_t uplo,
     int n,
@@ -180,6 +201,13 @@ int plasma_core_zlarfb_gemm(
     const plasma_complex64_t *T, int LDT,
     plasma_complex64_t *C, int LDC,
     plasma_complex64_t *WORK, int LDWORK);
+
+void plasma_core_zlarfy(
+    int n,
+    plasma_complex64_t *A, int lda,
+    const plasma_complex64_t *V,
+    const plasma_complex64_t *tau,
+    plasma_complex64_t *work);
 
 void plasma_core_zlascl(
     plasma_enum_t uplo,
@@ -446,6 +474,15 @@ void plasma_core_omp_zher2k(
     double beta,                    plasma_complex64_t *C, int ldc,
     plasma_sequence_t *sequence, plasma_request_t *request);
 
+void plasma_core_omp_zherfb(
+    plasma_enum_t uplo,
+    int n, int k, int ib,
+    const plasma_complex64_t *A, int lda,
+    const plasma_complex64_t *T, int ldt,
+    plasma_complex64_t *C, int ldc,
+    plasma_workspace_t work,
+    plasma_sequence_t *sequence, plasma_request_t *request);
+
 void plasma_core_omp_zherk(
     plasma_enum_t uplo, plasma_enum_t trans,
     int n, int k,
@@ -662,6 +699,27 @@ void plasma_core_omp_ztsmlq(
     plasma_workspace_t work,
     plasma_sequence_t *sequence, plasma_request_t *request);
 
+void plasma_core_omp_ztsmlq_hetra1(
+    plasma_enum_t side, plasma_enum_t trans,
+    int m1, int n1, int m2, int n2, int k, int ib,
+          plasma_complex64_t *A1, int lda1,
+          plasma_complex64_t *A2, int lda2,
+    const plasma_complex64_t *V,  int ldv,
+    const plasma_complex64_t *T,  int ldt,
+    plasma_workspace_t work,
+    plasma_sequence_t *sequence, plasma_request_t *request);
+
+void plasma_core_omp_ztsmlq_corner(
+    int m1, int n1, int m2, int n2,
+    int m3, int n3, int k, int ib,
+          plasma_complex64_t *A1, int lda1,
+          plasma_complex64_t *A2, int lda2,
+          plasma_complex64_t *A3, int lda3,
+    const plasma_complex64_t *V,  int ldv,
+    const plasma_complex64_t *T,  int ldt,
+    plasma_workspace_t work,
+    plasma_sequence_t *sequence, plasma_request_t *request);
+
 void plasma_core_omp_ztsmqr(
     plasma_enum_t side, plasma_enum_t trans,
     int m1, int n1, int m2, int n2, int k, int ib,
@@ -669,6 +727,27 @@ void plasma_core_omp_ztsmqr(
     plasma_complex64_t *A2, int lda2,
     const plasma_complex64_t *V, int ldv,
     const plasma_complex64_t *T, int ldt,
+    plasma_workspace_t work,
+    plasma_sequence_t *sequence, plasma_request_t *request);
+
+void plasma_core_omp_ztsmqr_corner(
+    int m1, int n1, int m2, int n2,
+    int m3, int n3, int k, int ib,
+          plasma_complex64_t *A1, int lda1,
+          plasma_complex64_t *A2, int lda2,
+          plasma_complex64_t *A3, int lda3,
+    const plasma_complex64_t *V,  int ldv,
+    const plasma_complex64_t *T,  int ldt,
+    plasma_workspace_t work,
+    plasma_sequence_t *sequence, plasma_request_t *request);
+
+void plasma_core_omp_ztsmqr_hetra1(
+    plasma_enum_t side, plasma_enum_t trans,
+    int m1, int n1, int m2, int n2, int k, int ib,
+          plasma_complex64_t *A1, int lda1,
+          plasma_complex64_t *A2, int lda2,
+    const plasma_complex64_t *V,  int ldv,
+    const plasma_complex64_t *T,  int ldt,
     plasma_workspace_t work,
     plasma_sequence_t *sequence, plasma_request_t *request);
 
