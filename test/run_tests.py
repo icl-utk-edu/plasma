@@ -113,7 +113,7 @@ group_opt.add_argument( '--repeat', action='store', help='times to repeat each t
 #group_opt.add_argument( '--storev', action='store', help='default=%(default)s', default='c,r' )
 group_opt.add_argument( '--norm',   action='store', help='default=%(default)s', default='m,o,i,f' )  # PLASMA supports only "o" spelling, not "1" spelling
 #group_opt.add_argument( '--ijob',   action='store', help='default=%(default)s', default='0:5:1' )
-#group_opt.add_argument( '--jobz',   action='store', help='default=%(default)s', default='n,v' )
+group_opt.add_argument( '--jobz',   action='store', help='default=%(default)s', default='n,v' )
 #group_opt.add_argument( '--jobvl',  action='store', help='default=%(default)s', default='n,v' )
 #group_opt.add_argument( '--jobvr',  action='store', help='default=%(default)s', default='n,v' )
 #group_opt.add_argument( '--jobvs',  action='store', help='default=%(default)s', default='n,v' )
@@ -294,7 +294,7 @@ repeat  = ' --repeat='  + opts.repeat  if (opts.repeat)  else ''
 #storev = ' --storev=' + opts.storev if (opts.storev) else ''
 norm   = ' --norm='   + opts.norm   if (opts.norm)   else ''
 #ijob   = ' --ijob='   + opts.ijob   if (opts.ijob)   else ''
-#jobz   = ' --jobz='   + opts.jobz   if (opts.jobz)   else ''
+jobz   = ' --job='    + opts.jobz   if (opts.jobz)   else ''
 job    = ' --job='    + opts.job    if (opts.job)    else ''
 #jobu   = ' --jobu='   + opts.jobu   if (opts.jobu)   else ''
 #jobvt  = ' --jobvt='  + opts.jobvt  if (opts.jobvt)  else ''
@@ -562,7 +562,13 @@ if (opts.heev):
     #['heev',  dtype, gen + n + jobz + uplo ],
     #['heevx', dtype, gen + n + jobz + uplo + vl + vu ],
     #['heevx', dtype, gen + n + jobz + uplo + il + iu ],
-    #['heevd', dtype, gen + n + jobz + uplo ],
+
+    ['heevd', dtype_complex, gen + n + ' --job=n' + uplo ],
+    ['syevd', dtype_real,    gen + n + ' --job=n' + uplo ],
+
+    ['heevd', dtype_complex, gen + n + ' --job=v' + uplo ],
+    ['syevd', dtype_real,    gen + n + ' --job=v' + uplo ],
+
     #['heevr', dtype, gen + n + jobz + uplo + vl + vu ],
     #['heevr', dtype, gen + n + jobz + uplo + il + iu ],
     #['hetrd', dtype, gen + n + uplo ],

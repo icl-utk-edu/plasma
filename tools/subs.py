@@ -320,6 +320,7 @@ lapack = [
     ('ssteqr',               'dsteqr',               'csteqr',               'zsteqr'              ),
     ('ssterf',               'dsterf',               'ssterf',               'dsterf'              ),
     ('ssterm',               'dsterm',               'csterm',               'zsterm'              ),
+    ('sstev',                'dstev',                'sstev',                'dstev'               ),
     ('sstevx2',              'dstevx2',              'cstevx2',              'zstevx2'             ), # No complex; z is just a template.
     ('sstelg',               'dstelg',               'cstelg',               'zstelg'              ), # No complex; z is just a template.
     ('sstmv',                'dstmv',                'cstmv',                'zstmv'               ), # No complex; z is just a template.
@@ -511,11 +512,10 @@ subs = {
     ('float',                'double',               'float',                'double'              ),
 
     # ----- PLASMA / MAGMA functions, alphabetic order
-    ('sy2sb',                'sy2sb',                'he2hb',                'he2hb'               ),
+    ('ssy2sb',               'dsy2sb',               'che2hb',               'zhe2hb'              ),
+    ('sgbtype',              'dgbtype',              'cgbtype',              'zgbtype'             ),
 
-    ('sgbtype1cb',           'dgbtype1cb',           'cgbtype1cb',           'zgbtype1cb'          ),
-    ('sgbtype2cb',           'dgbtype2cb',           'cgbtype2cb',           'zgbtype2cb'          ),
-    ('sgbtype3cb',           'dgbtype3cb',           'cgbtype3cb',           'zgbtype3cb'          ),
+    ('ssbtype',              'dsbtype',              'chbtype',              'zhbtype'             ),
 
     ('psdesc2ge',            'pddesc2ge',            'pcdesc2ge',            'pzdesc2ge'           ),
     ('psge2desc',            'pdge2desc',            'pcge2desc',            'pzge2desc'           ),

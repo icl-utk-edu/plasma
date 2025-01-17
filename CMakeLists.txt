@@ -293,6 +293,9 @@ set( plasma_src
     compute/pzgeswp.c
     compute/pzgetrf.c
     compute/pzgetri_aux.c
+    compute/pzhbtrd_static.c
+    compute/pzhe2hb.c
+    compute/pzhecpy_tile2lapack_band.c
     compute/pzhemm.c
     compute/pzher2k.c
     compute/pzherk.c
@@ -357,6 +360,7 @@ set( plasma_src
     compute/zgetri.c
     compute/zgetri_aux.c
     compute/zgetrs.c
+    compute/zheevd.c
     compute/zhemm.c
     compute/zher2k.c
     compute/zherk.c
@@ -441,9 +445,13 @@ set( plasma_core_blas_src
     core_blas/core_zgessq.c
     core_blas/core_zgeswp.c
     core_blas/core_zgetrf.c
+    core_blas/core_zhbtype1cb.c
+    core_blas/core_zhbtype2cb.c
+    core_blas/core_zhbtype3cb.c
     core_blas/core_zhegst.c
     core_blas/core_zhemm.c
     core_blas/core_zher2k.c
+    core_blas/core_zherfb.c
     core_blas/core_zherk.c
     core_blas/core_zhessq.c
     core_blas/core_zheswp.c
@@ -455,6 +463,7 @@ set( plasma_core_blas_src
     core_blas/core_zlansy.c
     core_blas/core_zlantr.c
     core_blas/core_zlarfb_gemm.c
+    core_blas/core_zlarfy.c
     core_blas/core_zlascl.c
     core_blas/core_zlaset.c
     core_blas/core_zlauum.c
@@ -473,7 +482,11 @@ set( plasma_core_blas_src
     core_blas/core_ztrtri.c
     core_blas/core_ztslqt.c
     core_blas/core_ztsmlq.c
+    core_blas/core_ztsmlq_corner.c
+    core_blas/core_ztsmlq_hetra1.c
     core_blas/core_ztsmqr.c
+    core_blas/core_ztsmqr_corner.c
+    core_blas/core_ztsmqr_hetra1.c
     core_blas/core_ztsqrt.c
     core_blas/core_zttlqt.c
     core_blas/core_zttmlq.c
@@ -535,6 +548,7 @@ set( plasma_test_src
     test/test_zgetri.c
     test/test_zgetri_aux.c
     test/test_zgetrs.c
+    test/test_zheevd.c
     test/test_zhemm.c
     test/test_zher2k.c
     test/test_zherk.c

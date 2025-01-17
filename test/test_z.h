@@ -35,6 +35,7 @@ void test_zgetrf(param_value_t param[], bool run);
 void test_zgetri(param_value_t param[], bool run);
 void test_zgetri_aux(param_value_t param[], bool run);
 void test_zgetrs(param_value_t param[], bool run);
+void test_zheevd(param_value_t param[], bool run);
 void test_zhemm(param_value_t param[], bool run);
 void test_zher2k(param_value_t param[], bool run);
 void test_zherk(param_value_t param[], bool run);

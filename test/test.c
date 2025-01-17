@@ -142,6 +142,11 @@ struct routines_t routines[] =
     { "cgetrs", test_cgetrs },
     { "sgetrs", test_sgetrs },
 
+    { "zheevd", test_zheevd },
+    { "dsyevd", test_dsyevd },
+    { "cheevd", test_cheevd },
+    { "ssyevd", test_ssyevd },
+
     { "zhemm", test_zhemm },
     { "", NULL },
     { "chemm", test_chemm },

@@ -123,6 +123,20 @@ void plasma_pzgecpy_tile2lapack_band(
     plasma_complex64_t *pA_band, int lda_band,
     plasma_sequence_t *sequence, plasma_request_t *request);
 
+void plasma_pzhbtrd_static(
+    plasma_enum_t uplo, int n, int nb, int Vblksiz,
+    plasma_complex64_t *A, int lda,
+    plasma_complex64_t *V, plasma_complex64_t *tau,
+    double *d, double *e, int wantz,
+    plasma_workspace_t work,
+    plasma_sequence_t *sequence, plasma_request_t *request);
+
+void plasma_pzhe2hb(
+    plasma_enum_t uplo,
+    plasma_desc_t A, plasma_desc_t T,
+    plasma_workspace_t work,
+    plasma_sequence_t *sequence, plasma_request_t *request);
+
 void plasma_pzhecpy_tile2lapack_band(
     plasma_enum_t uplo, plasma_desc_t A,
     plasma_complex64_t *AB, int ldab,
