@@ -63,7 +63,7 @@ ifneq ($(filter-out $(blas_generated),$(blas_src)),$(blas_templates))
 Makefile.blas.gen: force_gen
 endif
 endif
-							
+
 force_gen: ;
 
 ----------------------------------------------------------------------
@@ -97,6 +97,7 @@ parser = argparse.ArgumentParser(
     epilog=help )
 parser.add_argument( '-v', '--verbose',   action='store_true', help='Print verbose output to stderr' )
 parser.add_argument( '-o', '--output',    action='store_true', help='Generate list of output files' )
+parser.add_argument( '-d', '--depend',    action='store_true', help='Generate list of dependencies (output1 output2: input)' )
 parser.add_argument( '-m', '--make',      action='store_true', help='Generate Makefile rules' )
 parser.add_argument(       '--prefix',    action='store',      help='Prefix for variables in Makefile', default='src')
 parser.add_argument( '-p', '--precision', action='append',     help='Generate only given precision (s d c z ds zc ...). Repeatable.' )
@@ -343,6 +344,15 @@ def main():
             generated += files
         # end
         print( " ".join( generated ) )
+
+    elif opts.depend:
+        depends = ''
+        for filename in opts.args:
+            src = SourceFile( filename )
+            (files, precs) = src.get_filenames( opts.precision )
+            if (files):
+                print( " ".join( files ) + ": " + filename )
+        # end
 
     else:
         # default is to generate files
