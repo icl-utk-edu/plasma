@@ -6,7 +6,7 @@
  *  University of Tennessee, US,
  *  University of Manchester, UK.
  *
- * @precisions normal z -> s d 
+ * @precisions normal d -> s
  *
  **/
 #include "test.h"
@@ -23,34 +23,32 @@
 
 #include <omp.h>
 
-#define COMPLEX
+#define REAL
 
 /******************************************************************************
- * Matrix detailed in Kahan; et al. 
+ * Matrix detailed in Kahan; et al.
  * Matrix Test: diag=[+x,-x,+x,-x,...+x,-x] for any real x, but Kahan chooses
  *                                          a tiny x.
  *              offd=[1,1,...1]
- * Dimension: n. 
+ * Dimension: n.
  * Computed eigenvalues:
- * evalue[k] = [ x*x + 4*cos(k/(n+1))^2 ] ^(1/2), 
+ * evalue[k] = [ x*x + 4*cos(k/(n+1))^2 ] ^(1/2),
  * evalue[n+1-k] = -evalue[k], for k=1,[n/2],
  * evalue[(n+1)/2] = 0 if n is odd.
  * Note k is 1-relative in these formulations.
  * The eigenvalues range from (-2,+2).
  * Note: This routine verified to match documentation for n=4,8,12,24.
- * Note: This code is a template, it is not intended to work in complex
- *       arithmetic, it is only to be translated to either single or double.
  *****************************************************************************/
 
-static void testMatrix_Kahan(plasma_complex64_t* diag, plasma_complex64_t *offd, 
-            plasma_complex64_t* evalue, lapack_int n, plasma_complex64_t myDiag) {
+static void testMatrix_Kahan(double* diag, double *offd,
+            double* evalue, lapack_int n, double myDiag) {
    lapack_int i,k;
    for (k=1; k<=(n/2); k++) {
-      plasma_complex64_t ev;
+      double ev;
       ev = (M_PI*k+0.)/(n+1.0); /* angle in radians.                       */
       ev = cos(ev);             /* cos(angle)                              */
       ev *= 4.*ev;              /* 4*cos^2(angle)                          */
-      ev += myDiag*myDiag;      /* x^2 + 4*cos^2(angle)                    */ 
+      ev += myDiag*myDiag;      /* x^2 + 4*cos^2(angle)                    */
       ev = sqrt(ev);            /* (x^2 + 4*cos^2(angle))^(0.5)            */
       /* we reverse the -ev and ev here, to get in ascending sorted order. */
       evalue[k-1] = -ev;
@@ -72,40 +70,40 @@ static void testMatrix_Kahan(plasma_complex64_t* diag, plasma_complex64_t *offd,
 
 /******************************************************************************
  * This tests an eigenvector X for the eigenvalue lambda.
- * We should have A*X = lambda*X. Thus, (A*X)/lambda = X. 
+ * We should have A*X = lambda*X. Thus, (A*X)/lambda = X.
  * We perform the matrix multiply for each element X[i], and divide the result
  * by lambda, yielding mmRes[i] which should equal X[i]. We sum the squares of
  * these results, and the squares of X[i], to compute the Frobenious Norm. We
  * return the absolute difference of these norms as the error in the vector.
  *
  * Matrix multiply; A * X = Y.
- * A = [diag[0], offd[0], 
+ * A = [diag[0], offd[0],
  *     [offd[0], diag[1], offd[1]
  *     [      0, offd[1], diag[2], offd[2],
  *     ...
  *     [ 0...0                     offd[n-2], diag[n-1] ]
  *****************************************************************************/
 
-static double testEVec(plasma_complex64_t *diag, plasma_complex64_t *offd, 
-              int n, plasma_complex64_t *X, plasma_complex64_t lambda) {
+static double testEVec(double *diag, double *offd,
+              int n, double *X, double lambda) {
     int i;
     double mmRes, vmRes, error, sumMM=0., sumVec=0., invLambda = 1.0/lambda;
 
     mmRes = (diag[0]*X[0] + offd[0]*X[1])*invLambda;
     vmRes = X[0];
     sumMM += mmRes*mmRes;
-    sumVec += vmRes*vmRes; 
+    sumVec += vmRes*vmRes;
 
     mmRes = (offd[n-2]*X[n-2] + diag[n-1]*X[n-1])*invLambda;
     vmRes = X[n-1];
     sumMM += mmRes*mmRes;
-    sumVec += vmRes*vmRes; 
- 
+    sumVec += vmRes*vmRes;
+
     for (i=1; i<(n-1); i++) {
         mmRes = (offd[i-1]*X[i-1] + diag[i]*X[i] + offd[i]*X[i+1])*invLambda;
         vmRes = X[i];
         sumMM += mmRes*mmRes;
-        sumVec += vmRes*vmRes; 
+        sumVec += vmRes*vmRes;
     }
 
     sumMM = sqrt(sumMM);
@@ -116,7 +114,7 @@ static double testEVec(plasma_complex64_t *diag, plasma_complex64_t *offd,
 
 
 /***************************************************************************//**
- * @brief Tests ZSTEVX2.
+ * @brief Tests DSTEVX2.
  *
  * @param[in,out] param - array of parameters
  * @param[in]     run - whether to run test
@@ -124,7 +122,7 @@ static double testEVec(plasma_complex64_t *diag, plasma_complex64_t *offd,
  * Sets used flags in param indicating parameters that are used.
  * If run is true, also runs test and stores output parameters.
  ******************************************************************************/
-void test_zstevx2(param_value_t param[], bool run)
+void test_dstevx2(param_value_t param[], bool run)
 {
     int i,j;
     /*****************************************************************
@@ -149,34 +147,34 @@ void test_zstevx2(param_value_t param[], bool run)
     /*****************************************************************
      * Allocate and initialize arrays.
      ****************************************************************/
-    plasma_complex64_t *Diag =
-        (plasma_complex64_t*)malloc((size_t)m*sizeof(plasma_complex64_t));
+    double *Diag =
+        (double*)malloc((size_t)m*sizeof(double));
     assert(Diag != NULL);
 
-    plasma_complex64_t *Offd =
-        (plasma_complex64_t*)malloc((size_t)(m-1)*sizeof(plasma_complex64_t));
+    double *Offd =
+        (double*)malloc((size_t)(m-1)*sizeof(double));
     assert(Offd != NULL);
 
-    plasma_complex64_t *eigenvalues =
-        (plasma_complex64_t*)malloc((size_t)m*sizeof(plasma_complex64_t));
+    double *eigenvalues =
+        (double*)malloc((size_t)m*sizeof(double));
     assert(eigenvalues != NULL);
 
-    plasma_complex64_t *pVal = 
-        (plasma_complex64_t*)malloc((size_t)m*sizeof(plasma_complex64_t));
+    double *pVal =
+        (double*)malloc((size_t)m*sizeof(double));
     assert(pVal != NULL);
 
     int *pMul = (int*)malloc((size_t)m*sizeof(int));
     assert(pMul != NULL);
 
     /**************************************************************************
-     * Kahan has eigenvalues from [-2.0 to +2.0]. However, eigenvalues are 
+     * Kahan has eigenvalues from [-2.0 to +2.0]. However, eigenvalues are
      * dense near -2.0 and +2.0, so for large matrices, the density may cause
      * eigenvalues separated by less than machine precision, which causes us
      * multiplicity (eigenvalues are identical at machine precision). We first
-     * see this in single precision at m=14734, with a multiplicity of 2. 
+     * see this in single precision at m=14734, with a multiplicity of 2.
      *************************************************************************/
 
-    plasma_complex64_t myDiag=1.e-5;
+    double myDiag=1.e-5;
     testMatrix_Kahan(Diag, Offd, eigenvalues, m, myDiag);
     double minAbsEV=__DBL_MAX__, maxAbsEV=0., Kond;
     for (i=0; i<m; i++) {
@@ -187,17 +185,17 @@ void test_zstevx2(param_value_t param[], bool run)
 
     lapack_int nEigVals=0, vectorsFound=0;
     lapack_int il=0, iu=500;
-    plasma_complex64_t vl=1.5, vu=2.01;
-    plasma_complex64_t *pVec = NULL;
+    double vl=1.5, vu=2.01;
+    double *pVec = NULL;
 
     /**************************************************************************
-     * Get the number of eigenvalues in a value range. Note these can include 
-     * multiplicity; the number of unique eigenvectors will be discovered by 
+     * Get the number of eigenvalues in a value range. Note these can include
+     * multiplicity; the number of unique eigenvectors will be discovered by
      * plasma_dstevx2.
      *************************************************************************/
 
     lapack_int ret;
-    ret=plasma_zstevx2(
+    ret=plasma_dstevx2(
             PlasmaCount,    /* Type of call (1)         */
             PlasmaRangeV,   /* Range type (2)           */
             m, 0,           /* N, k (3,4)               */
@@ -208,9 +206,9 @@ void test_zstevx2(param_value_t param[], bool run)
             pVal,           /* p eigenvals array. (12)  */
             pMul,           /* p eigenMult array  (13)  */
             pVec);          /* p eigenVec  array  (14)  */
-    
+
     if (nEigVals < 1) {
-        plasma_error("plasma_zstevx2() found no eigenvalues for test matrix.");
+        plasma_error("plasma_dstevx2() found no eigenvalues for test matrix.");
         param[PARAM_TIME].d    = 0.0;
         param[PARAM_GFLOPS].d  = 0.0;
         param[PARAM_ERROR].d   = 1.0;
@@ -220,16 +218,16 @@ void test_zstevx2(param_value_t param[], bool run)
 
     /**************************************************************************
      * We allocate pVec late, we cannot afford to allocate m*m entries
-     * (to cover every possibility) when m is huge. 
+     * (to cover every possibility) when m is huge.
      *************************************************************************/
 
-    pVec = (plasma_complex64_t*)malloc((size_t)m*nEigVals*sizeof(plasma_complex64_t));
+    pVec = (double*)malloc((size_t)m*nEigVals*sizeof(double));
     assert(pVec != NULL);
 
     /* Run and time plasma_dstevx2, range based on values. */
     plasma_time_t start = omp_get_wtime();
 
-    ret=plasma_zstevx2(
+    ret=plasma_dstevx2(
             PlasmaVec,     /* Type of call (1)          */
             PlasmaRangeV,  /* Range type (2)            */
             m, nEigVals,   /* N, k (3,4)                */
@@ -246,7 +244,7 @@ void test_zstevx2(param_value_t param[], bool run)
 
     if (ret != 0) {
         char errstr[128];
-        sprintf(errstr, "plasma_zstevx2() failed returned %i", ret);
+        sprintf(errstr, "plasma_dstevx2() failed returned %i", ret);
         plasma_error(errstr);
         param[PARAM_TIME].d    = 0.0;
         param[PARAM_GFLOPS].d  = 0.0;
@@ -271,13 +269,13 @@ void test_zstevx2(param_value_t param[], bool run)
          * Find worst eigenvalue error. However, we must worry about
          * multiplicity. In single precision this first occurs at m=14734, with
          * vl=1.5, vu=2.01; mpcity=2. At m=75000, vl=1.5, vu=2.01, mpcity=10.
-         * We must also worry about the magnitude of eigenvalues; machine 
+         * We must also worry about the magnitude of eigenvalues; machine
          * epsilon for large eigenvalues is much greater than for small ones.
          *********************************************************************/
 
-        plasma_complex64_t worstEigenvalue_error = 0, worstEigenvalue_eps;
+        double worstEigenvalue_error = 0, worstEigenvalue_eps;
         lapack_int worstEigenvalue_index = 0, worstEigenvalue_mpcty = 0, max_mpcty = 0;
-        plasma_complex64_t worstEigenvector_error = 0;
+        double worstEigenvector_error = 0;
         lapack_int worstEigenvector_index = 0;
         i=0;
         lapack_int evIdx=m-nEigVals;
@@ -286,19 +284,19 @@ void test_zstevx2(param_value_t param[], bool run)
 
             for (j=0; j<pMul[i]; j++) {
                 double ev_eps = nexttoward(fabs(eigenvalues[evIdx]), __DBL_MAX__) - fabs(eigenvalues[evIdx]);
-                plasma_complex64_t error = fabs(pVal[i]-eigenvalues[evIdx]) / ev_eps;
+                double error = fabs(pVal[i]-eigenvalues[evIdx]) / ev_eps;
                 if (error > worstEigenvalue_error) {
                     worstEigenvalue_index = i;
                     worstEigenvalue_error = error;
-                    worstEigenvalue_eps = ev_eps; 
+                    worstEigenvalue_eps = ev_eps;
                     worstEigenvalue_mpcty = pMul[i];
                 }
 
                 evIdx++; /* advance known eigenvalue index for a multiplicity. */
                 if (evIdx == m) break;
             }
-           
-            i++; /* advance to next discovered eigenvalue. */         
+
+            i++; /* advance to next discovered eigenvalue. */
         }
 
         /**********************************************************************
@@ -320,14 +318,14 @@ void test_zstevx2(param_value_t param[], bool run)
          * being too liberal. Obviously this is related to the number of bits
          * of error in the result. The condition number (Kond) of the Kahan
          * matrix also grows nearly linearly with m; Kond is computed above.
-         *********************************************************************/ 
+         *********************************************************************/
 
         for (i=0; i<vectorsFound; i++) {
             double vErr;
             vErr=testEVec(Diag, Offd, m, &pVec[m*i], pVal[i]);
 
             if (vErr > worstEigenvector_error) {
-                worstEigenvector_error = vErr; 
+                worstEigenvector_error = vErr;
                 worstEigenvector_index = i;
             }
         }
@@ -342,7 +340,7 @@ void test_zstevx2(param_value_t param[], bool run)
     /*****************************************************************
      * Free arrays.
      ****************************************************************/
-TestingDone: 
+TestingDone:
     if (Diag != NULL) free(Diag);
     if (Offd != NULL) free(Offd);
     if (eigenvalues != NULL) free(eigenvalues);
@@ -352,5 +350,5 @@ TestingDone:
 
     if (test) {
         /* free any test specific matrices; currently none. */
-    }  
+    }
 }

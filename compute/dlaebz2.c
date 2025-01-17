@@ -1,17 +1,17 @@
 /**
  *
- * @file 
+ * @file
  *
  *  PLASMA is a software package provided by:
  *  University of Tennessee, US,
  *
- * @precisions normal z -> s d 
+ * @precisions normal d -> s
  *
  **/
 
 #include "plasma.h"
 #include "plasma_internal.h"     /* needed for imin, imax. */
-#include "plasma_zlaebz2_work.h" /* work areas. */
+#include "plasma_dlaebz2_work.h" /* work areas. */
 
 #include <string.h>
 #include <omp.h>
@@ -22,29 +22,26 @@
  *
  * @ingroup plasma_gemm
  *
- *
- * This file is a z-template to generate s and d code.
- * Only s and d are compiled; not c or z. 
  * This code is not designed to be called directly by users; it is a subroutine
- * for zstevx2.c. 
+ * for dstevx2.c.
  *
  * Specifically, this is a task-based parallel algorithm, the parameters are
- * contained in the already initialized and populated zlaebz2_Control_t; For 
- * example, from zstevx2:
+ * contained in the already initialized and populated dlaebz2_Control_t; For
+ * example, from dstevx2:
  *
  *  #pragma omp parallel
  *  {
  *      #pragma omp single
  *      {
- *          plasma_zlaebz2(&Control, ...etc...);
+ *          plasma_dlaebz2(&Control, ...etc...);
  *      }
  *  }
  *
- *  
+ *
  *******************************************************************************
- *  
+ *
  * @param[in] *Control
- *          A pointer to the global variables needed. 
+ *          A pointer to the global variables needed.
  *
  * @param[in] Control->N
  *          int number of rows in the matrix.
@@ -66,20 +63,20 @@
  *              PlasmaVec if user desires eigenvectors computed.
  *
  * @param[in] Control->il
- *          int enum. The lowerBound of an index range if range is 
- *          PlasmaRangeI. 
+ *          int enum. The lowerBound of an index range if range is
+ *          PlasmaRangeI.
  *
  * @param[in] Control->iu
- *          int enum. The upperBound of an index range, if range is 
+ *          int enum. The upperBound of an index range, if range is
  *          PlasmaRangeI.
  *
  * @param[in] Control->stein_arrays
- *          array of [max_threads], type zlaebz2_Stein_Array_t, contains work
+ *          array of [max_threads], type dlaebz2_Stein_Array_t, contains work
  *          areas per thread for invoking _stein (inverse iteration to find
  *          eigenvectors).
  *
  * @param[in] Control->baseIdx
- *          The index of the least eigenvalue to be found in the bracket, 
+ *          The index of the least eigenvalue to be found in the bracket,
  *          used to calculate the offset into the return vectors/arrays.
  *
  * @param[out] Control->error
@@ -130,7 +127,7 @@
  *
  *
  * This algorithm uses Bisection by the Scaled Sturm Sequence, implemented in
- * plasma_zlaebz2, followed by the LAPACK routine _STEIN, which uses inverse
+ * plasma_dlaebz2, followed by the LAPACK routine _STEIN, which uses inverse
  * iteration to find the eigenvalue.  The initial 'bracket' parameters should
  * contain the full range for the eigenvalues we are to discover. The algorithm
  * is recursively task based, at each division the bracket is divided into two
@@ -151,7 +148,7 @@
  *****************************************************************************/
 
 /*******************************************************************************
- * Use LAPACK zstein to find a single eigenvector.  We may use this routine
+ * Use LAPACK dstein to find a single eigenvector.  We may use this routine
  * multiple times, so instead of allocating/freeing the work spaces repeatedly,
  * we have an array of pointers, per thread, to workspaces we allocate if not
  * already allocated for this thread. So we don't allocate more than once per
@@ -160,9 +157,9 @@
  * to converge.
 *******************************************************************************/
 
-int plasma_zstein( plasma_complex64_t *diag, plasma_complex64_t *offd, 
-        plasma_complex64_t u,     plasma_complex64_t *v, int N, 
-        zlaebz2_Stein_Array_t *myArrays) {
+int plasma_dstein( double *diag, double *offd,
+        double u,     double *v, int N,
+        dlaebz2_Stein_Array_t *myArrays) {
     int M=1, LDZ=N, INFO;
     int thread = omp_get_thread_num();
 
@@ -176,22 +173,22 @@ int plasma_zstein( plasma_complex64_t *diag, plasma_complex64_t *offd,
         if (myArrays[thread].ISPLIT != NULL) myArrays[thread].ISPLIT[0]=N;
     }
 
-    if (myArrays[thread].WORK   == NULL) myArrays[thread].WORK   = (plasma_complex64_t*) calloc(5*N, sizeof(plasma_complex64_t));
+    if (myArrays[thread].WORK   == NULL) myArrays[thread].WORK   = (double*) calloc(5*N, sizeof(double));
     if (myArrays[thread].IWORK  == NULL) myArrays[thread].IWORK  = (int*) calloc(N, sizeof(int));
     if (myArrays[thread].IFAIL  == NULL) myArrays[thread].IFAIL  = (int*) calloc(N, sizeof(int));
-    if (myArrays[thread].IBLOCK == NULL || 
-        myArrays[thread].ISPLIT == NULL || 
-        myArrays[thread].WORK   == NULL || 
-        myArrays[thread].IWORK  == NULL || 
+    if (myArrays[thread].IBLOCK == NULL ||
+        myArrays[thread].ISPLIT == NULL ||
+        myArrays[thread].WORK   == NULL ||
+        myArrays[thread].IWORK  == NULL ||
         myArrays[thread].IFAIL  == NULL) {
         return(PlasmaErrorOutOfMemory);
     }
 
-    plasma_complex64_t W = u;
+    double W = u;
 
-    /* We use the 'work' version so we can re-use our work arrays; using LAPACKE_zstein() */
-    /* would re-allocate and release work areas on every call.                            */ 
-    INFO = LAPACKE_zstein_work(LAPACK_COL_MAJOR, N, diag, offd, M, &W, myArrays[thread].IBLOCK, 
+    /* We use the 'work' version so we can re-use our work arrays; using LAPACKE_dstein() */
+    /* would re-allocate and release work areas on every call.                            */
+    INFO = LAPACKE_dstein_work(LAPACK_COL_MAJOR, N, diag, offd, M, &W, myArrays[thread].IBLOCK,
             myArrays[thread].ISPLIT, v, LDZ, myArrays[thread].WORK, myArrays[thread].IWORK,
             myArrays[thread].IFAIL);
     return(INFO);
@@ -213,23 +210,23 @@ int plasma_zstein( plasma_complex64_t *diag, plasma_complex64_t *offd,
  *                  nLT_Low or nLT_hi is computed.
  * ***************************************************************************/
 
-void plasma_zlaebz2(zlaebz2_Control_t *Control, plasma_complex64_t lowerBound,
-        plasma_complex64_t upperBound, int nLT_low, int nLT_hi, int numEV) {
+void plasma_dlaebz2(dlaebz2_Control_t *Control, double lowerBound,
+        double upperBound, int nLT_low, int nLT_hi, int numEV) {
 
-    plasma_complex64_t *diag = Control->diag;
-    plasma_complex64_t *offd = Control->offd;
+    double *diag = Control->diag;
+    double *offd = Control->offd;
     int    N = Control->N;
- 
-    plasma_complex64_t cp;
+
+    double cp;
     int flag=0, evLess;
 
     if (nLT_low < 0) {
-        nLT_low = plasma_zlaneg2(diag, offd, N, lowerBound);
+        nLT_low = plasma_dlaneg2(diag, offd, N, lowerBound);
         flag=1;
     }
 
     if (nLT_hi < 0) {
-        nLT_hi =  plasma_zlaneg2(diag, offd, N, upperBound);
+        nLT_hi =  plasma_dlaneg2(diag, offd, N, upperBound);
         flag=1;
     }
 
@@ -243,17 +240,17 @@ void plasma_zlaebz2(zlaebz2_Control_t *Control, plasma_complex64_t lowerBound,
     if (Control->range == PlasmaRangeI) {
         if (nLT_hi  < Control->il ||    /* e.g if il=500, and nLT_hi=499, this bracket is under range of interest. */
             nLT_low > Control->iu) {    /* e.g if iu=1000, and nLT_low=1001, this bracket is above range of interest. */
-            return; 
+            return;
         }
-    } 
-                
+    }
+
     /* Bisect the bracket until we can't anymore. */
-               
+
     flag = 0;
     for (;;) {
         cp = (lowerBound+upperBound)*0.5;
         if (cp == lowerBound || cp == upperBound) {
-            /* Our bracket has been narrowed to machine epsilon for this magnitude (=ulp). 
+            /* Our bracket has been narrowed to machine epsilon for this magnitude (=ulp).
              * We are done; the bracket is always [low,high). 'high' is not included, so
              * we have numEV eigenvalues at low, whether it == 1 or is > 1. We find
              * the eigenvector. (We can test multiplicity with GluedWilk).
@@ -261,13 +258,13 @@ void plasma_zlaebz2(zlaebz2_Control_t *Control, plasma_complex64_t lowerBound,
             break; /* exit for(;;). */
         } else {
             /* we have a new cutpoint. */
-            evLess = plasma_zlaneg2(diag, offd, N, cp);
+            evLess = plasma_dlaneg2(diag, offd, N, cp);
             if (evLess < 0) {
                 /* We could not compute the Sturm sequence for it. */
                 flag = -1; /* indicate an error. */
                 break; /* exit for (;;). */
             }
-        
+
             /* Discard empty halves in both PlasmaRangeV and PlasmaRangeI.
              * If #EV < cutpoint is the same as the #EV < high, it means
              * no EV are in [cutpoint, hi]. We can discard that range.
@@ -277,16 +274,16 @@ void plasma_zlaebz2(zlaebz2_Control_t *Control, plasma_complex64_t lowerBound,
                 upperBound = cp;
                 continue;
             }
-        
+
             /* If #EV < cutpoint is the same as #EV < low, it means no
-             * EV are in [low, cutpoint]. We can discard that range. 
+             * EV are in [low, cutpoint]. We can discard that range.
              */
 
             if (evLess == nLT_low) {
                 lowerBound = cp;
                 continue;
             }
-        
+
             /* Note: If we were PlasmaRangeV, the initial bounds given by the user are the ranges,
              * so we have nothing further to do. In PlasmaRangeI; the initial bounds are Gerschgorin
              * limits and not enough: We must further narrow to the desired indices.
@@ -295,8 +292,8 @@ void plasma_zlaebz2(zlaebz2_Control_t *Control, plasma_complex64_t lowerBound,
             if (Control->range == PlasmaRangeI) {
                 /* For PlasmaRangeI:
                  * Recall that il, iu are 1-relative; while evLess is zero-relative; i.e.
-                 * if [il,iu]=[1,2], evless must be 0, or 1. 
-                 * when evLess<cp == il-1, or just <il, cp is a good boundary and 
+                 * if [il,iu]=[1,2], evless must be 0, or 1.
+                 * when evLess<cp == il-1, or just <il, cp is a good boundary and
                  * we can discard the lower half.
                  *
                  * To judge the upper half, the cutpoint must be < iu, so if it is >= iu,
@@ -311,7 +308,7 @@ void plasma_zlaebz2(zlaebz2_Control_t *Control, plasma_complex64_t lowerBound,
                     numEV = (nLT_hi-nLT_low);
                     continue;
                 }
-        
+
                 if (evLess >= Control->iu) {
                     /* The upper half [cp, upperBound) is not needed, it has no indices > iu; */
                     upperBound = cp;
@@ -320,24 +317,24 @@ void plasma_zlaebz2(zlaebz2_Control_t *Control, plasma_complex64_t lowerBound,
                     continue;
                 }
             } /*end if index search. */
-        
+
             /* Here, the cutpoint has EV on both left right. We push off the right bracket.
-             * The new lowerBound is the cp, the upperBound is unchanged, the number of 
+             * The new lowerBound is the cp, the upperBound is unchanged, the number of
              * eigenvalues changes. */
             #pragma omp task
-                plasma_zlaebz2(Control, cp, upperBound, evLess, nLT_hi, (nLT_hi-evLess));
+                plasma_dlaebz2(Control, cp, upperBound, evLess, nLT_hi, (nLT_hi-evLess));
 
             /* Update the Left side I kept. The new number of EV less than upperBound
-             * is evLess, recompute number of EV in the bracket. */               
+             * is evLess, recompute number of EV in the bracket. */
             upperBound = cp;
             nLT_hi = evLess;
-            numEV =( evLess - nLT_low); 
-            continue; 
+            numEV =( evLess - nLT_low);
+            continue;
          }
     } /* end for (;;) for Bisection. */
-                
+
     /* Okay, count this eigenpair done, add to the Done list.
-     * NOTE: nLT_low is the global zero-relative index of 
+     * NOTE: nLT_low is the global zero-relative index of
      *       this set of mpcity eigenvalues.
      *       No other brackets can change our entry, so we
      *       don't need any thread block or atomicity.
@@ -349,24 +346,24 @@ void plasma_zlaebz2(zlaebz2_Control_t *Control, plasma_complex64_t lowerBound,
     } else { /* range == PlasmaRangeV */
         myIdx = nLT_low - Control->baseIdx;
     }
-    
+
     if (Control->jobtype == PlasmaVec) {
         /* get the eigenvector. */
-        int ret=plasma_zstein(diag, offd, lowerBound, &(Control->pVec[myIdx*N]), N, Control->stein_arrays);
+        int ret=plasma_dstein(diag, offd, lowerBound, &(Control->pVec[myIdx*N]), N, Control->stein_arrays);
         if (ret != 0) {
             #pragma omp critical (UpdateStack)
             {
-                /* Only store first error we encounter */ 
+                /* Only store first error we encounter */
                 if (Control->error == 0) Control->error = ret;
             }
         }
     }
-    
+
     /* Add eigenvalue and multiplicity. */
     Control->pVal[myIdx]=lowerBound;
     Control->pMul[myIdx]=numEV;
-    
-//    #pragma omp atomic 
+
+//    #pragma omp atomic
 //        Control->finished += numEV;
 }
 
