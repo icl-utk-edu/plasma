@@ -437,8 +437,8 @@ subs = {
     #('plasma_s',             'plasma_c'            ),
 
     # ----- Fortran examples
-    ('real\(',               'complex\(',          ),
-    ('\(transpose\(',        'conjg\(transpose\('  ),
+    (r'real\(',             r'complex\(',          ),
+    (r'\(transpose\(',      r'conjg\(transpose\('  ),
 
   ],  # end mixed
 
@@ -463,7 +463,7 @@ subs = {
     ('symmetric',            'symmetric',            'hermitian',            'hermitian'           ),
     ('symmetric',            'symmetric',            'Hermitian',            'Hermitian'           ),
     ('orthogonal',           'orthogonal',           'unitary',              'unitary'             ),
-    ('\^T',                  '\^T',                  '\^H',                  '\^H'                 ),
+    (r'\^T',                r'\^T',                 r'\^H',                 r'\^H'                 ),
     ('%f',                   '%lf',                  '%f',                   '%lf'                 ),  # for scanf
 
     # ----- CBLAS
@@ -509,11 +509,15 @@ subs = {
     ('float',                'double',               'float',                'double'              ),
 
     # ----- PLASMA / MAGMA functions, alphabetic order
-    ('sy2sb',                'sy2sb',                'he2hb',                'he2hb'               ),
+    ('ssy2sb',               'dsy2sb',               'che2hb',               'zhe2hb'              ),
+    ('ssyb2trd',             'dsyb2trd',             'cheb2trd',             'zheb2trd'            ),  # todo sb/hb
 
-    ('sgbtype1cb',           'dgbtype1cb',           'cgbtype1cb',           'zgbtype1cb'          ),
-    ('sgbtype2cb',           'dgbtype2cb',           'cgbtype2cb',           'zgbtype2cb'          ),
-    ('sgbtype3cb',           'dgbtype3cb',           'cgbtype3cb',           'zgbtype3cb'          ),
+    ('sgbtype',              'dgbtype',              'cgbtype',              'zgbtype'             ),
+    ('sbrd',                 'dbrd',                 'cbrd',                 'zbrd'                ),
+    ('psgb2lapack_band',     'pdgb2lapack_band',     'pcgb2lapack_band',     'pzgb2lapack_band'    ),
+
+    ('ssbtype',              'dsbtype',              'chbtype',              'zhbtype'             ),
+    ('strd',                 'dtrd',                 'ctrd',                 'ztrd'                ),
 
     ('psdesc2ge',            'pddesc2ge',            'pcdesc2ge',            'pzdesc2ge'           ),
     ('psge2desc',            'pdge2desc',            'pcge2desc',            'pzge2desc'           ),
@@ -551,8 +555,8 @@ subs = {
 
     # ----- Fortran examples
     ('wp = sp',              'wp = dp',              'wp = sp',              'wp = dp'             ),
-    ('real\(wp\)',           'real\(wp\)',           'complex\(wp\)',        'complex\(wp\)'       ),
-    ('\(transpose\(',        '\(transpose\(',        'conjg\(transpose\(',   'conjg\(transpose\('  ),
+    (r'real\(wp\)',         r'real\(wp\)',          r'complex\(wp\)',       r'complex\(wp\)'       ),
+    (r'\(transpose\(',      r'\(transpose\(',       r'conjg\(transpose\(',  r'conjg\(transpose\('  ),
 
   ],  # end normal
 } # end subs
