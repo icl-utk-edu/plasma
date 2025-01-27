@@ -530,7 +530,13 @@ int main(int argc, char **argv)
         }
     } while (outer ? param_step_outer(param, 0) : param_step_inner(param));
     plasma_finalize();
-    printf("\n");
+
+    if (err) {
+        printf( "%% %d tests failed\n", err );
+    }
+    else {
+        printf( "%% All tests passed\n" );
+    }
     return err;
 }
 
@@ -819,6 +825,8 @@ void param_init(param_t param[])
         param[i].val->used = false;
         param[i].size = InitValArraySize;
     }
+    // If test=n, consider tests successful.
+    param[ PARAM_SUCCESS ].val[ 0 ].i = 1;
 }
 
 /***************************************************************************//**
