@@ -118,9 +118,6 @@ typedef struct {
     param_value_t *val; // array of values for a parameter
 } param_t;
 
-// hiding double from precision translation when used for taking time
-typedef double plasma_time_t;
-
 // initial size of values array
 static const int InitValArraySize = 1024;
 
