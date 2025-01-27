@@ -15,6 +15,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <omp.h>
+
+#if defined( PLASMA_WITH_BLIS )
+    #include <blis/blis.h>
+#elif defined( PLASMA_WITH_MKL )
+    #include <mkl.h>
+#elif defined( PLASMA_WITH_OPENBLAS )
+    #include <cblas.h>
+#endif
 
 /******************************************************************************/
 typedef void (*test_func_ptr)(param_value_t param[], bool run);
@@ -515,7 +524,7 @@ int main(int argc, char **argv)
 
     // Print labels.
     param_snap(param, pval);
-    print_header(routine, pval);
+    print_header(argc, argv, routine, pval);
 
     // Iterate over parameters and run tests
     plasma_init();
@@ -530,6 +539,10 @@ int main(int argc, char **argv)
         }
     } while (outer ? param_step_outer(param, 0) : param_step_inner(param));
     plasma_finalize();
+
+    if (repeat == 1) {
+        printf( "\n" );
+    }
 
     if (err) {
         printf( "%% %d tests failed\n", err );
@@ -637,15 +650,57 @@ void print_usage(int label)
  *
  * @brief Prints column headers.
  *
+ * @param[in]     argc - args from main
+ * @param[in]     argv - args from main
  * @param[in]     name - routine name
- * @param[in,out] pval - array of parameter values
+ * @param[in]     pval - array of parameter values
  *
  ******************************************************************************/
-void print_header(const char *name, param_value_t pval[])
+void print_header(int argc, char* const* argv, const char *name, param_value_t pval[])
 {
     run_routine(name, pval, false);
 
-    printf("\n");
+    printf( "%% PLASMA %d.%d.%d, OpenMP num threads %d",
+            PLASMA_VERSION_MAJOR,
+            PLASMA_VERSION_MINOR,
+            PLASMA_VERSION_PATCH,
+            omp_get_max_threads() );
+
+    // Print CPU BLAS library and version, if known.
+    #if defined( PLASMA_WITH_ACCELERATE )
+        printf( ", Apple Accelerate" );
+    #elif defined( PLASMA_WITH_BLIS )
+        printf( ", %s", bli_info_get_version_str() );
+    #elif defined( PLASMA_WITH_ESSL )
+        printf( ", IBM ESSL" );
+    #elif defined( PLASMA_WITH_MKL )
+        MKLVersion mkl_version;
+        mkl_get_version( &mkl_version );
+        printf( ", Intel MKL %d.%d.%d",
+                mkl_version.MajorVersion,
+                mkl_version.MinorVersion,
+                mkl_version.UpdateVersion );
+    #elif defined( PLASMA_WITH_OPENBLAS )
+        printf( ", %s", OPENBLAS_VERSION );
+    #else
+        printf( ", unknown BLAS" );
+    #endif
+
+    // Print date and time.
+    char buf[ 1024 ];
+    time_t now = time( NULL );
+    strftime( buf, sizeof(buf), "%F %T", localtime( &now ) );
+    printf( ", %s\n", buf );
+
+    // Print input line.
+    int len = sizeof( buf );
+    int i = snprintf( buf, len, "%% input:" );
+    for (int arg = 0; arg < argc; ++arg) {
+        i += snprintf( &buf[ i ], len - i, " %s", argv[ arg ] );
+    }
+    printf( "%s\n\n", buf );
+
+    // Print column headers.
     for (int i = 0; i < PARAM_SIZEOF; ++i) {
         if (pval[i].used) {
             switch (i) {
@@ -840,7 +895,7 @@ void param_init(param_t param[])
  * @param[in,out] param - array of parameter iterators
  *
  ******************************************************************************/
-void param_read(int argc, char **argv, param_t param[])
+void param_read(int argc, char* const* argv, param_t param[])
 {
     int err = 0;
     const char *routine = argv[1];
