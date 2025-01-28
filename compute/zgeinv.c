@@ -148,15 +148,13 @@ int plasma_zgeinv(int m, int n, plasma_complex64_t *pA, int lda, int *ipiv)
  *
  * @ingroup plasma_geinv
  *
- *  Computes the inverse of a complex Hermitian
- *  positive definite matrix A using the Cholesky factorization.
+ *  Computes the inverse of a general matrix A using the LU factorization.
  *
  *******************************************************************************
  *
  * @param[in] A
- *          On entry, the Hermitian positive definite matrix A.
- *          On exit, the upper or lower triangle of the (Hermitian)
- *          inverse of A, overwriting the input factor U or L.
+ *          On entry, the general matrix A.
+ *          On exit, the inverse of A.
  *
  * @param[out] ipiv
  *          The pivot indices; for 1 <= i <= min(m,n), row i of the

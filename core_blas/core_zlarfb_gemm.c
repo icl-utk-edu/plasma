@@ -16,7 +16,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup CORE_plasma_Complex64_t
+ * @ingroup core_larfb
  *
  *  CORE_zlarfb_gemm applies a complex block reflector H or its transpose H'
  *  to a complex M-by-N matrix C, from either the left or the right.

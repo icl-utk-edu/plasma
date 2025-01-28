@@ -23,15 +23,24 @@
     @brief    Solves \f$ Ax = b \f$ using LU factorization for general matrices
     @{
         @defgroup plasma_gesv       gesv:  Solves Ax = b using LU factorization (driver)
+        @defgroup plasma_geinv      geinv: LU inverse
         @defgroup plasma_getrf      getrf: LU factorization
         @defgroup plasma_getrs      getrs: LU forward and back solves
-        @defgroup plasma_getri      getri: LU inverse
+        @defgroup plasma_getri      getri: LU inverse using factorization
         @defgroup plasma_gerfs      gerfs: Refine solution
         @defgroup group_gesv_aux    Auxiliary routines
         @{
             @defgroup plasma_getf2  getf2: LU panel factorization
             @defgroup plasma_laswp  laswp: Swap rows
         @}
+    @}
+
+    @defgroup group_gesv            General band matrices: LU
+    @brief    Solves \f$ Ax = b \f$ using LU factorization for general band matrices
+    @{
+        @defgroup plasma_gbsv       gbsv:  Solves Ax = b using LU factorization (driver)
+        @defgroup plasma_gbtrf      gbtrf: LU factorization
+        @defgroup plasma_gbtrs      gbtrs: LU forward and back solves
     @}
 
     @defgroup group_gels            General matrices: least squares
@@ -47,15 +56,25 @@
     @brief    Solves \f$ Ax = b \f$ using Cholesky factorization for SPD/HPD matrices
     @{
         @defgroup plasma_posv       posv:  Solves Ax = b using Cholesky factorization (driver)
+        @defgroup plasma_poinv      poinv: Cholesky inverse
         @defgroup plasma_potrf      potrf: Cholesky factorization
         @defgroup plasma_potrs      potrs: Cholesky forward and back solves
-        @defgroup plasma_potri      potri: Cholesky inverse
+        @defgroup plasma_potri      potri: Cholesky inverse using factorization
         @defgroup plasma_porfs      porfs: Refine solution
         @defgroup group_posv_aux    Auxiliary routines
         @{
             @defgroup plasma_potf2  potf2: Cholesky panel factorization
             @defgroup plasma_lauum  lauum: Multiplies triangular matrices; used in potri
+            @defgroup core_lauum    core_lauum
         @}
+    @}
+
+    @defgroup group_pbsv            Symmetric/Hermitian positive definite band: Cholesky
+    @brief    Solves \f$ Ax = b \f$ using Cholesky factorization for SPD/HPD matrices
+    @{
+        @defgroup plasma_pbsv       pbsv:  Solves Ax = b using Cholesky factorization (driver)
+        @defgroup plasma_pbtrf      pbtrf: Cholesky factorization
+        @defgroup plasma_pbtrs      pbtrs: Cholesky forward and back solves
     @}
 
     @defgroup group_hesv            Symmetric/Hermitian indefinite
@@ -133,12 +152,15 @@
         @defgroup plasma_heev       sy/heev:   Solves using QR iteration (driver)
         @defgroup plasma_heevd      sy/heevd:  Solves using divide-and-conquer (driver)
         @defgroup plasma_heevr      sy/heevr:  Solves using MRRR (driver)
+        @defgroup plasma_stevx      stevx:     Solves tridiagonal using bisection
+        @defgroup plasma_stevx2     stevx2:    Solves tridiagonal using bisection
 
         @defgroup plasma_hetrd      sy/hetrd: Tridiagonal reduction
         @defgroup plasma_unmtr      or/unmtr: Multiplies by Q from tridiagonal reduction
         @defgroup plasma_ungtr      or/ungtr: Generates     Q from tridiagonal reduction
         @defgroup group_heev_aux    Auxiliary routines
         @{
+            @defgroup plasma_laebz  laebz: Subdivides bracket in bisection.
         @}
     @}
 
@@ -247,6 +269,9 @@
         @defgroup plasma_syr2       syr2:   Symmetric rank 2 update
         @brief    \f$ A = \alpha xy^T + \alpha yx^T + A \f$
 
+        @defgroup plasma_tradd      tradd: Add triangular matrices
+        @brief    \f$ B = \alpha A + \beta B \f$
+
         @defgroup plasma_trmv       trmv:   Triangular matrix-vector multiply
         @brief    \f$ x = Ax \f$
 
@@ -273,6 +298,9 @@
               performed for every read from main memory.
     @{
         @defgroup plasma_gemm       gemm:  General matrix multiply: C = AB + C
+        @brief    \f$ C = \alpha \;op(A) \;op(B) + \beta C \f$
+
+        @defgroup plasma_gbmm       gbmm:  General band matrix multiply: C = AB + C
         @brief    \f$ C = \alpha \;op(A) \;op(B) + \beta C \f$
 
         @defgroup plasma_hemm       hemm:  Hermitian matrix multiply
@@ -323,13 +351,19 @@
 
     @defgroup group_norms           Matrix norms
     @{
-        @defgroup plasma_lange      lange:    General matrix norm
+        @defgroup plasma_lange      lange: General matrix norm
         @brief 1, Frobenius, or Infinity norm; or largest element
 
-        @defgroup plasma_lanhe      lansy/he: Symmetric/Hermitian matrix norm
+        @defgroup plasma_langb      langb: General band matrix norm
         @brief 1, Frobenius, or Infinity norm; or largest element
 
-        @defgroup plasma_lantr      lantr:    Triangular matrix norm
+        @defgroup plasma_lanhe      lanhe: Hermitian matrix norm
+        @brief 1, Frobenius, or Infinity norm; or largest element
+
+        @defgroup plasma_lansy      lansy: Symmetric matrix norm
+        @brief 1, Frobenius, or Infinity norm; or largest element
+
+        @defgroup plasma_lantr      lantr: Triangular matrix norm
         @brief 1, Frobenius, or Infinity norm; or largest element
     @}
 @}
@@ -415,6 +449,9 @@
         @defgroup core_syr2         syr2:    Symmetric rank 2 update
         @brief    \f$ A = \alpha xy^T + \alpha yx^T + A \f$
 
+        @defgroup core_tradd        tradd: Add triangular matrices
+        @brief    \f$ B = \alpha A + \beta B \f$
+
         @defgroup core_trmv         trmv:       Triangular matrix-vector multiply
         @brief    \f$ x = Ax \f$
 
@@ -433,6 +470,12 @@
         @defgroup core_laset        laset:  Set matrix to constants
         @brief    \f$ A_{ij} = \f$ diag    if \f$ i=j \f$;
                   \f$ A_{ij} = \f$ offdiag otherwise.
+
+        @defgroup core_laswp        laswp:  Swap rows of general matrix
+        @brief    \f$ A = P A \f$
+
+        @defgroup core_heswp        heswp:  Swap rows of Hermitian matrix
+        @brief    \f$ A = P A P^T \f$
     @}
 
     @defgroup core_blas3            Level 3: matrix-matrix operations, O(n^3) work
@@ -478,9 +521,14 @@
     @defgroup core_group_larf       Householder reflectors
     @{
         @defgroup core_larf         larf:  Apply Householder reflector to general matrix
+
         @defgroup core_larfy        larfy: Apply Householder reflector to symmetric/Hermitian matrix
+
         @defgroup core_larfg        larfg: Generate Householder reflector
+
         @defgroup core_larfb        larfb: Apply block of Householder reflectors (Level 3)
+
+        @defgroup core_herfb        herfb: Apply block of Householder reflectors (Level 3) to Hermitian matrix, 2-sided
     @}
 
     @defgroup core_mixed            Precision conversion
@@ -506,17 +554,53 @@
 
     @defgroup core_solvers          Linear system solvers
     @{
-        @defgroup core_potrf        potrf: Cholesky factorization
+        @defgroup core_potrf        potrf: Cholesky factorization of a tile
+    @}
+
+    @defgroup core_orthogonal       Orthogonal/unitary factorizations
+    @{
         @defgroup core_geqrt        geqrt: QR factorization of a tile
-        @defgroup core_tsqrt        tsqrt: QR factorization of a rectangular matrix of two tiles
-        @defgroup core_unmqr        unmqr: Apply Householder reflectors from QR to a tile
-        @defgroup core_tsmqr        tsmqr: Apply Householder reflectors from QR to a rectangular matrix of two tiles
         @defgroup core_gelqt        gelqt: LQ factorization of a tile
-        @defgroup core_tslqt        tslqt: LQ factorization of a rectangular matrix of two tiles
+
+        @defgroup core_unmqr        unmqr: Apply Householder reflectors from QR to a tile
         @defgroup core_unmlq        unmlq: Apply Householder reflectors from LQ to a tile
-        @defgroup core_tsmlq        tsmlq: Apply Householder reflectors from LQ to a rectangular matrix of two tiles
-        @defgroup core_pamm         pamm: Updating a matrix using two tiles
-        @defgroup core_parfb        parfb: Apply Householder reflectors to a rectangular matrix of two tiles
+
+        @defgroup core_tsqrt        tsqrt: QR factorization of triangle-square tiles
+        @defgroup core_tslqt        tslqt: LQ factorization of triangle-square tiles
+
+        @defgroup core_tsmqr        tsmqr: Apply Householder reflectors from QR of triangle-square tiles
+        @defgroup core_tsmlq        tsmlq: Apply Householder reflectors from LQ of triangle-square tiles
+
+        @defgroup core_tsmqr_2sided core_tsmqr_2sided: Apply Householder reflectors, 2-sided
+        @defgroup core_tsmlq_2sided core_tsmlq_2sided: Apply Householder reflectors, 2-sided
+
+        @defgroup core_tsmqr_conj_trans core_tsmqr_conj_trans: Apply Householder reflectors, where A1 is conj-trans
+        @defgroup core_tsmlq_conj_trans core_tsmlq_conj_trans: Apply Householder reflectors, where A1 is conj-trans
+
+        @defgroup core_ttqrt        ttqrt: QR factorization of triangle-triangle tiles
+        @defgroup core_ttlqt        ttlqt: LQ factorization of triangle-triangle tiles
+
+        @defgroup core_ttmqr        ttmqr: Apply Householder reflectors from QR of triangle-triangle tiles
+        @defgroup core_ttmlq        ttmlq: Apply Householder reflectors from LQ of triangle-triangle tiles
+
+        @defgroup core_parfb        parfb: Apply Householder reflectors to two tiles
+        @defgroup core_pamm         pamm:  pentagonal matrix-matrix multiply
+        @defgroup core_pemv         pemv:  pentagonal matrix-vector multiply
+    @}
+
+    @defgroup core_eig              Eigenvalue routines
+    @{
+        @defgroup core_hegst        hegst: Hermitian generalized to standard problem
+        @defgroup core_hbtrd_type1  hbtrd_type1: eig bulge-chasing, first diag tile
+        @defgroup core_hbtrd_type2  hbtrd_type2: eig bulge-chasing, off-diag tiles
+        @defgroup core_hbtrd_type3  hbtrd_type3: eig bulge-chasing, diag tiles
+    @}
+
+    @defgroup core_svd              SVD routines
+    @{
+        @defgroup core_tbbrd_type1  tbbrd_type1: SVD bulge-chasing, first diag tile
+        @defgroup core_tbbrd_type2  tbbrd_type2: SVD bulge-chasing, off-diag tiles
+        @defgroup core_tbbrd_type3  tbbrd_type3: SVD bulge-chasing, diag tiles
     @}
 @}
 
