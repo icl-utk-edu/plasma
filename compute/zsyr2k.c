@@ -266,7 +266,7 @@ int plasma_zsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
  * @param[in] A
  *          Descriptor of matrix A.
  *
- *@param[in] B
+ * @param[in] B
  *          Descriptor of matrix B.
  *
  * @param[in] beta

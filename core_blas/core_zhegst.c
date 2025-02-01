@@ -59,7 +59,7 @@
  *
  * @param[in,out] B
  *          The triangular factor from the Cholesky factorization of B,
- *          as returned by ZPOTRF.
+ *          as returned by plasma_core_zpotrf.
  *
  * @param[in] ldb
  *          The leading dimension of the array B.  LDB >= max(1,N).
