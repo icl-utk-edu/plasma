@@ -572,6 +572,18 @@ generate_files( plasma_test_src )
 add_executable( plasmatest ${plasma_test_src} )
 
 #-------------------------------------------------------------------------------
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.15)
+    # Conditionally add -Wall. See CMake tutorial.
+    set( gcc_like "$<COMPILE_LANG_AND_ID:C,ARMClang,AppleClang,Clang,GNU>" )
+    target_compile_options(
+        plasma           PRIVATE $<${gcc_like}:$<BUILD_INTERFACE:-Wall -Wno-unused-function>> )
+    target_compile_options(
+        plasma_core_blas PRIVATE $<${gcc_like}:$<BUILD_INTERFACE:-Wall -Wno-unused-function>> )
+    target_compile_options(
+        plasmatest       PRIVATE $<${gcc_like}:$<BUILD_INTERFACE:-Wall -Wno-unused-function>> )
+endif()
+
+#-------------------------------------------------------------------------------
 find_library(MATH_LIBRARY m)
 if( MATH_LIBRARY )
   # OpenBLAS needs to link C math library (usually -lm) but MKL doesn't
