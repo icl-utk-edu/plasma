@@ -102,6 +102,7 @@ group_opt.add_argument( '--check',  action='store', help='default=y', default=''
 group_opt.add_argument( '--ref',    action='store', help='default=y', default='' )  # default in test.cc
 group_opt.add_argument( '--tol',    action='store', help='default=%(default)s', default='' )
 group_opt.add_argument( '--verbose', action='store', help='default=0', default='' )  # default in test.cc
+group_opt.add_argument( '--repeat', action='store', help='times to repeat each test', default='' )
 
 # LAPACK only
 #group_opt.add_argument( '--itype',  action='store', help='default=%(default)s', default='1,2,3' )
@@ -136,6 +137,8 @@ group_opt.add_argument( '--ku',     action='store', help='default=%(default)s', 
 #group_opt.add_argument( '--iu',     action='store', help='default=%(default)s', default='-1,100' )
 group_opt.add_argument( '--nb',     action='store', help='default=%(default)s', default='64' )
 #group_opt.add_argument( '--matrixtype', action='store', help='default=%(default)s', default='g,l,u' )
+
+# PLASMA specific
 
 parser.add_argument( 'tests', nargs=argparse.REMAINDER )
 opts = parser.parse_args()
@@ -277,9 +280,10 @@ ab     = a+' --beta=' + opts.beta   if (opts.beta)   else a
 incx   = ' --incx='   + opts.incx   if (opts.incx)   else ''
 #incy   = ' --incy='   + opts.incy   if (opts.incy)   else ''
 #align  = ' --align='  + opts.align  if (opts.align)  else ''
-check  = ' --check='  + opts.check  if (opts.check)  else ''
+check  = ' --test='   + opts.check  if (opts.check)  else ''  # todo: PLASMA uses `test`, others use `check`
 ref    = ' --ref='    + opts.ref    if (opts.ref)    else ''
 verbose = ' --verbose=' + opts.verbose if (opts.verbose) else ''
+repeat  = ' --repeat='  + opts.repeat  if (opts.repeat)  else ''
 
 # LAPACK only
 #itype  = ' --itype='  + opts.itype  if (opts.itype)  else ''
@@ -317,7 +321,7 @@ kd     = kl + ku  # todo: add kd to PLASMA tester
 
 # general options for all routines
 # todo: + tol + repeat (see SLATE)
-gen = check + ref + verbose + nb
+gen = check + ref + verbose + repeat + nb
 
 #-------------------------------------------------------------------------------
 # Filters a comma separated list csv based on items in list values.
