@@ -35,11 +35,12 @@ typedef enum {
     //------------------------------------------------------
     // tester parameters
     //------------------------------------------------------
-    PARAM_ITER,    // number of iterations
+    PARAM_REPEAT,  // number of times to repeat each test
     PARAM_OUTER,   // outer product iteration?
     PARAM_DIM_OUTER, // outer product iteration for dimensions M, N, K?
     PARAM_TEST,    // test the solution?
     PARAM_TOL,     // tolerance
+    PARAM_VERBOSE, // verbosity level
 
     //------------------------------------------------------
     // function input parameters

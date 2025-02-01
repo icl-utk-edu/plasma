@@ -352,8 +352,8 @@ static param_desc_t ParamDesc[] = {
     // tester parameters
     //------------------------------------------------------
     // argument            header          width  is_list  help
-    {"--iter=",            "iter",         0,     false,
-     "number of iterations per set of parameters [default: 1]"},
+    {"--repeat=",          "repeat",       0,     false,
+     "number of times to repeat each test [default: 1]"},
 
     {"--outer=[y|n]",      "outer",        0,     false,
      "outer product iteration [default: y]"},
@@ -366,6 +366,9 @@ static param_desc_t ParamDesc[] = {
 
     {"--tol=",             "tol",          0,     false,
      "tolerance [default: 50.0]"},
+
+    {"--verbose=",         "verbose",      0,     false,
+     "verbosity level [default: 0]"},
 
     //------------------------------------------------------
     // function input parameters
@@ -505,9 +508,9 @@ int main(int argc, char **argv)
 
     param_init(param);
     param_read(argc, argv, param);
-    int  iter  = param[PARAM_ITER].val[0].i;
-    bool outer = param[PARAM_OUTER].val[0].c == 'y';
-    bool test  = param[PARAM_TEST].val[0].c == 'y';
+    int  repeat = param[PARAM_REPEAT].val[0].i;
+    bool outer  = param[PARAM_OUTER].val[0].c == 'y';
+    bool test   = param[PARAM_TEST].val[0].c == 'y';
     int err = 0;
 
     // Print labels.
@@ -518,10 +521,11 @@ int main(int argc, char **argv)
     plasma_init();
     do {
         param_snap(param, pval);
-        for (int i = 0; i < iter; ++i) {
+        for (int i = 0; i < repeat; ++i) {
             err += test_routine(routine, pval, test);
+            fflush( stdout );
         }
-        if (iter > 1) {
+        if (repeat > 1) {
             printf("\n");
         }
     } while (outer ? param_step_outer(param, 0) : param_step_inner(param));
@@ -575,11 +579,12 @@ void print_routine_usage(const char *program_name, const char *name, param_value
            program_name, name,
            program_name, name,
            DescriptionIndent, "-h --help");
-    print_usage(PARAM_ITER);
+    print_usage(PARAM_REPEAT);
     print_usage(PARAM_OUTER);
     print_usage(PARAM_DIM_OUTER);
     print_usage(PARAM_TEST);
     print_usage(PARAM_TOL);
+    print_usage(PARAM_VERBOSE);
 
     printf("\n"
            "Options below accept multiple values separated by commas\n"
@@ -652,7 +657,7 @@ void print_header(const char *name, param_value_t pval[])
             }
         }
     }
-    printf("\n\n");
+    printf("\n");
 }
 
 /***************************************************************************//**
@@ -835,11 +840,12 @@ void param_read(int argc, char **argv, param_t param[])
     //================================================================
     // Set default values for singleton parameters before scanning.
     //================================================================
-    param_add_int(1, &param[PARAM_ITER]);
+    param_add_int(1, &param[PARAM_REPEAT]);
     param_add_char('y', &param[PARAM_OUTER]);
     param_add_char('n', &param[PARAM_DIM_OUTER]);
     param_add_char('y', &param[PARAM_TEST]);
     param_add_double(50.0, &param[PARAM_TOL]);
+    param_add_int(0, &param[PARAM_VERBOSE]);
 
     //================================================================
     // Initialize parameters from the command line.
@@ -889,8 +895,10 @@ void param_read(int argc, char **argv, param_t param[])
         //--------------------------------------------------
         // Scan integer parameters.
         //--------------------------------------------------
-        else if (param_starts_with(argv[i], "--iter="))
-            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_ITER]);
+        else if (param_starts_with(argv[i], "--repeat="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_REPEAT]);
+        else if (param_starts_with(argv[i], "--verbose="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_VERBOSE]);
 
         else if (param_starts_with(argv[i], "--dim=")) {
             bool outer = param[PARAM_DIM_OUTER].val[0].c == 'y';
