@@ -557,6 +557,7 @@ set( plasma_test_src
     test/test_zpotrf.c
     test/test_zpotri.c
     test/test_zpotrs.c
+    test/test_zprint.c
     test/test_zsymm.c
     test/test_zsyr2k.c
     test/test_zsyrk.c
