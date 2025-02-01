@@ -303,6 +303,8 @@ lapack = [
     ('spotrf',               'dpotrf',               'cpotrf',               'zpotrf'              ),
     ('spotri',               'dpotri',               'cpotri',               'zpotri'              ),
     ('spotrs',               'dpotrs',               'cpotrs',               'zpotrs'              ),
+    ('sprint',               'dprint',               'sprint',               'dprint'              ),
+    ('sprint',               'dprint',               'cprint',               'zprint'              ),
     ('sqpt01',               'dqpt01',               'cqpt01',               'zqpt01'              ),
     ('sqrt02',               'dqrt02',               'cqrt02',               'zqrt02'              ),
     ('ssbtrd',               'dsbtrd',               'chbtrd',               'zhbtrd'              ),

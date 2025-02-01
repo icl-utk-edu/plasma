@@ -69,4 +69,13 @@ void test_ztrtri(param_value_t param[], bool run);
 void test_zunmlq(param_value_t param[], bool run);
 void test_zunmqr(param_value_t param[], bool run);
 
+//==============================================================================
+// utilities
+//==============================================================================
+void plasma_zprint_matrix(
+    const char* label, int m, int n, plasma_complex64_t* A, int lda );
+
+void plasma_zprint_vector(
+    const char* label, int n, plasma_complex64_t* x, int incx );
+
 #endif // TEST_Z_H
