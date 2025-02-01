@@ -15,6 +15,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <omp.h>
+
+#if defined( PLASMA_WITH_BLIS )
+    #include <blis/blis.h>
+#elif defined( PLASMA_WITH_MKL )
+    #include <mkl.h>
+#elif defined( PLASMA_WITH_OPENBLAS )
+    #include <cblas.h>
+#endif
 
 /******************************************************************************/
 typedef void (*test_func_ptr)(param_value_t param[], bool run);
@@ -352,8 +361,8 @@ static param_desc_t ParamDesc[] = {
     // tester parameters
     //------------------------------------------------------
     // argument            header          width  is_list  help
-    {"--iter=",            "iter",         0,     false,
-     "number of iterations per set of parameters [default: 1]"},
+    {"--repeat=",          "repeat",       0,     false,
+     "number of times to repeat each test [default: 1]"},
 
     {"--outer=[y|n]",      "outer",        0,     false,
      "outer product iteration [default: y]"},
@@ -366,6 +375,9 @@ static param_desc_t ParamDesc[] = {
 
     {"--tol=",             "tol",          0,     false,
      "tolerance [default: 50.0]"},
+
+    {"--verbose=",         "verbose",      0,     false,
+     "verbosity level [default: 0]"},
 
     //------------------------------------------------------
     // function input parameters
@@ -505,28 +517,39 @@ int main(int argc, char **argv)
 
     param_init(param);
     param_read(argc, argv, param);
-    int  iter  = param[PARAM_ITER].val[0].i;
-    bool outer = param[PARAM_OUTER].val[0].c == 'y';
-    bool test  = param[PARAM_TEST].val[0].c == 'y';
+    int  repeat = param[PARAM_REPEAT].val[0].i;
+    bool outer  = param[PARAM_OUTER].val[0].c == 'y';
+    bool test   = param[PARAM_TEST].val[0].c == 'y';
     int err = 0;
 
     // Print labels.
     param_snap(param, pval);
-    print_header(routine, pval);
+    print_header(argc, argv, routine, pval);
 
     // Iterate over parameters and run tests
     plasma_init();
     do {
         param_snap(param, pval);
-        for (int i = 0; i < iter; ++i) {
+        for (int i = 0; i < repeat; ++i) {
             err += test_routine(routine, pval, test);
+            fflush( stdout );
         }
-        if (iter > 1) {
+        if (repeat > 1) {
             printf("\n");
         }
     } while (outer ? param_step_outer(param, 0) : param_step_inner(param));
     plasma_finalize();
-    printf("\n");
+
+    if (repeat == 1) {
+        printf( "\n" );
+    }
+
+    if (err) {
+        printf( "%% %d tests failed\n", err );
+    }
+    else {
+        printf( "%% All tests passed\n" );
+    }
     return err;
 }
 
@@ -575,11 +598,12 @@ void print_routine_usage(const char *program_name, const char *name, param_value
            program_name, name,
            program_name, name,
            DescriptionIndent, "-h --help");
-    print_usage(PARAM_ITER);
+    print_usage(PARAM_REPEAT);
     print_usage(PARAM_OUTER);
     print_usage(PARAM_DIM_OUTER);
     print_usage(PARAM_TEST);
     print_usage(PARAM_TOL);
+    print_usage(PARAM_VERBOSE);
 
     printf("\n"
            "Options below accept multiple values separated by commas\n"
@@ -626,15 +650,57 @@ void print_usage(int label)
  *
  * @brief Prints column headers.
  *
+ * @param[in]     argc - args from main
+ * @param[in]     argv - args from main
  * @param[in]     name - routine name
- * @param[in,out] pval - array of parameter values
+ * @param[in]     pval - array of parameter values
  *
  ******************************************************************************/
-void print_header(const char *name, param_value_t pval[])
+void print_header(int argc, char* const* argv, const char *name, param_value_t pval[])
 {
     run_routine(name, pval, false);
 
-    printf("\n");
+    printf( "%% PLASMA %d.%d.%d, OpenMP num threads %d",
+            PLASMA_VERSION_MAJOR,
+            PLASMA_VERSION_MINOR,
+            PLASMA_VERSION_PATCH,
+            omp_get_max_threads() );
+
+    // Print CPU BLAS library and version, if known.
+    #if defined( PLASMA_WITH_ACCELERATE )
+        printf( ", Apple Accelerate" );
+    #elif defined( PLASMA_WITH_BLIS )
+        printf( ", %s", bli_info_get_version_str() );
+    #elif defined( PLASMA_WITH_ESSL )
+        printf( ", IBM ESSL" );
+    #elif defined( PLASMA_WITH_MKL )
+        MKLVersion mkl_version;
+        mkl_get_version( &mkl_version );
+        printf( ", Intel MKL %d.%d.%d",
+                mkl_version.MajorVersion,
+                mkl_version.MinorVersion,
+                mkl_version.UpdateVersion );
+    #elif defined( PLASMA_WITH_OPENBLAS )
+        printf( ", %s", OPENBLAS_VERSION );
+    #else
+        printf( ", unknown BLAS" );
+    #endif
+
+    // Print date and time.
+    char buf[ 1024 ];
+    time_t now = time( NULL );
+    strftime( buf, sizeof(buf), "%F %T", localtime( &now ) );
+    printf( ", %s\n", buf );
+
+    // Print input line.
+    int len = sizeof( buf );
+    int i = snprintf( buf, len, "%% input:" );
+    for (int arg = 0; arg < argc; ++arg) {
+        i += snprintf( &buf[ i ], len - i, " %s", argv[ arg ] );
+    }
+    printf( "%s\n\n", buf );
+
+    // Print column headers.
     for (int i = 0; i < PARAM_SIZEOF; ++i) {
         if (pval[i].used) {
             switch (i) {
@@ -652,7 +718,7 @@ void print_header(const char *name, param_value_t pval[])
             }
         }
     }
-    printf("\n\n");
+    printf("\n");
 }
 
 /***************************************************************************//**
@@ -814,6 +880,8 @@ void param_init(param_t param[])
         param[i].val->used = false;
         param[i].size = InitValArraySize;
     }
+    // If test=n, consider tests successful.
+    param[ PARAM_SUCCESS ].val[ 0 ].i = 1;
 }
 
 /***************************************************************************//**
@@ -827,7 +895,7 @@ void param_init(param_t param[])
  * @param[in,out] param - array of parameter iterators
  *
  ******************************************************************************/
-void param_read(int argc, char **argv, param_t param[])
+void param_read(int argc, char* const* argv, param_t param[])
 {
     int err = 0;
     const char *routine = argv[1];
@@ -835,11 +903,12 @@ void param_read(int argc, char **argv, param_t param[])
     //================================================================
     // Set default values for singleton parameters before scanning.
     //================================================================
-    param_add_int(1, &param[PARAM_ITER]);
+    param_add_int(1, &param[PARAM_REPEAT]);
     param_add_char('y', &param[PARAM_OUTER]);
     param_add_char('n', &param[PARAM_DIM_OUTER]);
     param_add_char('y', &param[PARAM_TEST]);
     param_add_double(50.0, &param[PARAM_TOL]);
+    param_add_int(0, &param[PARAM_VERBOSE]);
 
     //================================================================
     // Initialize parameters from the command line.
@@ -889,8 +958,10 @@ void param_read(int argc, char **argv, param_t param[])
         //--------------------------------------------------
         // Scan integer parameters.
         //--------------------------------------------------
-        else if (param_starts_with(argv[i], "--iter="))
-            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_ITER]);
+        else if (param_starts_with(argv[i], "--repeat="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_REPEAT]);
+        else if (param_starts_with(argv[i], "--verbose="))
+            err = param_scan_int(strchr(argv[i], '=')+1, &param[PARAM_VERBOSE]);
 
         else if (param_starts_with(argv[i], "--dim=")) {
             bool outer = param[PARAM_DIM_OUTER].val[0].c == 'y';

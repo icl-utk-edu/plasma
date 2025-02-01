@@ -96,9 +96,7 @@ compute/dgetri.c
 compute/dgetri_aux.c
 compute/dgetrs.c
 compute/dlacpy.c
-compute/dlaebz2.c
 compute/dlag2s.c
-compute/dlaneg2.c
 compute/dlangb.c
 compute/dlange.c
 compute/dlansy.c
@@ -122,7 +120,6 @@ compute/dpotrs.c
 compute/dsgbsv.c
 compute/dsgesv.c
 compute/dsposv.c
-compute/dstevx2.c
 compute/dsymm.c
 compute/dsyr2k.c
 compute/dsyrk.c
@@ -606,7 +603,6 @@ test/test_ds.h
 test/test_dsgbsv.c
 test/test_dsgesv.c
 test/test_dsposv.c
-test/test_dstevx2.c
 test/test_dsymm.c
 test/test_dsyr2k.c
 test/test_dsyrk.c
