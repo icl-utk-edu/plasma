@@ -170,6 +170,9 @@ typedef int plasma_enum_t;
 typedef float  _Complex plasma_complex32_t;
 typedef double _Complex plasma_complex64_t;
 
+// Define type that the precision generator will not change, for timing.
+typedef double plasma_time_t;
+
 /******************************************************************************/
 plasma_enum_t plasma_eigt_const(char lapack_char);
 plasma_enum_t plasma_job_const(char lapack_char);

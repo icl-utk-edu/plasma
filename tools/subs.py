@@ -303,6 +303,8 @@ lapack = [
     ('spotrf',               'dpotrf',               'cpotrf',               'zpotrf'              ),
     ('spotri',               'dpotri',               'cpotri',               'zpotri'              ),
     ('spotrs',               'dpotrs',               'cpotrs',               'zpotrs'              ),
+    ('sprint',               'dprint',               'sprint',               'dprint'              ),
+    ('sprint',               'dprint',               'cprint',               'zprint'              ),
     ('sqpt01',               'dqpt01',               'cqpt01',               'zqpt01'              ),
     ('sqrt02',               'dqrt02',               'cqrt02',               'zqrt02'              ),
     ('ssbtrd',               'dsbtrd',               'chbtrd',               'zhbtrd'              ),
@@ -437,8 +439,8 @@ subs = {
     #('plasma_s',             'plasma_c'            ),
 
     # ----- Fortran examples
-    ('real\(',               'complex\(',          ),
-    ('\(transpose\(',        'conjg\(transpose\('  ),
+    (r'real\(',             r'complex\(',          ),
+    (r'\(transpose\(',      r'conjg\(transpose\('  ),
 
   ],  # end mixed
 
@@ -463,7 +465,7 @@ subs = {
     ('symmetric',            'symmetric',            'hermitian',            'hermitian'           ),
     ('symmetric',            'symmetric',            'Hermitian',            'Hermitian'           ),
     ('orthogonal',           'orthogonal',           'unitary',              'unitary'             ),
-    ('\^T',                  '\^T',                  '\^H',                  '\^H'                 ),
+    (r'\^T',                r'\^T',                 r'\^H',                 r'\^H'                 ),
     ('%f',                   '%lf',                  '%f',                   '%lf'                 ),  # for scanf
 
     # ----- CBLAS
@@ -551,8 +553,8 @@ subs = {
 
     # ----- Fortran examples
     ('wp = sp',              'wp = dp',              'wp = sp',              'wp = dp'             ),
-    ('real\(wp\)',           'real\(wp\)',           'complex\(wp\)',        'complex\(wp\)'       ),
-    ('\(transpose\(',        '\(transpose\(',        'conjg\(transpose\(',   'conjg\(transpose\('  ),
+    (r'real\(wp\)',         r'real\(wp\)',          r'complex\(wp\)',       r'complex\(wp\)'       ),
+    (r'\(transpose\(',      r'\(transpose\(',       r'conjg\(transpose\(',  r'conjg\(transpose\('  ),
 
   ],  # end normal
 } # end subs

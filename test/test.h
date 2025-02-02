@@ -35,11 +35,12 @@ typedef enum {
     //------------------------------------------------------
     // tester parameters
     //------------------------------------------------------
-    PARAM_ITER,    // number of iterations
+    PARAM_REPEAT,  // number of times to repeat each test
     PARAM_OUTER,   // outer product iteration?
     PARAM_DIM_OUTER, // outer product iteration for dimensions M, N, K?
     PARAM_TEST,    // test the solution?
     PARAM_TOL,     // tolerance
+    PARAM_VERBOSE, // verbosity level
 
     //------------------------------------------------------
     // function input parameters
@@ -118,9 +119,6 @@ typedef struct {
     param_value_t *val; // array of values for a parameter
 } param_t;
 
-// hiding double from precision translation when used for taking time
-typedef double plasma_time_t;
-
 // initial size of values array
 static const int InitValArraySize = 1024;
 
@@ -138,11 +136,11 @@ static const int InfoSpacing = 11;
 void print_main_usage(const char *program_name);
 void print_routine_usage(const char *program_name, const char *name, param_value_t pval[]);
 void print_usage(int label);
-void print_header(const char *name, param_value_t param[]);
+void print_header(int argc, char* const* argv, const char *name, param_value_t param[]);
 int  test_routine(const char *name, param_value_t param[], bool test);
 void run_routine(const char *name, param_value_t pval[], bool run);
 void param_init(param_t param[]);
-void param_read(int argc, char **argv, param_t param[]);
+void param_read(int argc, char* const* argv, param_t param[]);
 int  param_starts_with(const char *str, const char *prefix);
 int  scan_irange(const char **strp, int *start, int *end, int *step);
 int  scan_drange(const char **strp, double *start, double *end, double *step);
