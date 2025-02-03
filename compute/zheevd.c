@@ -71,7 +71,7 @@
  * @param[out] Lambda
  *          On exit, if info = 0, the eigenvalues.
  *
- * @param[in, out] T
+ * @param[in,out] T
  *          On exit, auxiliary factorization data, required by plasma_zheevd.
  *          Matrix in T is allocated inside this function and needs to be
  *          destroyed by plasma_desc_destroy.
@@ -316,13 +316,13 @@ void plasma_omp_zheevd(
         return;
 
     int n  = A.m;
-    int nb   = imin(A.mb, A.m);
+    int nb = imin(A.mb, A.m);
     int lda_band = 2*nb + 1;
 
     // Allocate workspace for band storage of the band matrix A
     // and for the off-diagonal after tridiagonalisation.
-    plasma_complex64_t *A_band =
-        (plasma_complex64_t *)calloc((size_t)lda_band*n, sizeof(plasma_complex64_t));
+    plasma_complex64_t *A_band = (plasma_complex64_t *)
+        calloc((size_t)lda_band*n, sizeof(plasma_complex64_t));
     memset( A_band, 0, lda_band*n*sizeof(plasma_complex64_t) );
     if (A_band == NULL) {
         plasma_error("memory allocation(A_band) failed");
@@ -382,9 +382,9 @@ void plasma_omp_zheevd(
         findVTsiz(n, nb, Vblksiz, &blkcnt, &ldv);
         TAU2 = (plasma_complex64_t *)
             calloc((size_t)blkcnt*Vblksiz, sizeof(plasma_complex64_t));
-        V2  = (plasma_complex64_t *)
+        V2 = (plasma_complex64_t *)
             calloc((size_t)ldv*blkcnt*Vblksiz, sizeof(plasma_complex64_t));
-        T2  = (plasma_complex64_t *)
+        T2 = (plasma_complex64_t *)
             calloc((size_t)ldt*blkcnt*Vblksiz, sizeof(plasma_complex64_t));
         if (TAU2 == NULL || V2 == NULL || T2 == NULL) {
             plasma_error("calloc() failed");
@@ -398,9 +398,9 @@ void plasma_omp_zheevd(
         memset(T2,   0, ldt*blkcnt*Vblksiz*sizeof(plasma_complex64_t));
     }
     else {
-        TAU2   = (plasma_complex64_t *)
+        TAU2 = (plasma_complex64_t *)
             calloc((size_t)2*n, sizeof(plasma_complex64_t));
-        V2     = (plasma_complex64_t *)
+        V2 = (plasma_complex64_t *)
             calloc((size_t)2*n, sizeof(plasma_complex64_t ));
         if (TAU2 == NULL || V2 == NULL) {
             plasma_error("calloc() failed");

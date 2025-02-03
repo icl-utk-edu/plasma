@@ -19,7 +19,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup core_tsmqr_hetra1
+ * @ingroup core_tsmqr_conj_trans
  *
  *  This kernel applies a left transformation on | A1^H |
  *                                               | A2   |
@@ -80,7 +80,7 @@
  *          plasma_core_ztsqrt in the first k columns of its array argument V.
  *
  * @param[in] ldv
- *          The leading dimension of the array V. ldv >= max( 1, K ).
+ *          The leading dimension of the array V. ldv >= max( 1, k ).
  *
  * @param[in] T
  *          The ib-by-n1 triangular factor T of the block reflector.
@@ -106,7 +106,7 @@
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int plasma_core_ztsmqr_hetra1(
+int plasma_core_ztsmqr_conj_trans(
     plasma_enum_t side, plasma_enum_t trans,
     int m1, int n1, int m2, int n2, int k, int ib,
           plasma_complex64_t *A1, int lda1,
@@ -156,7 +156,7 @@ int plasma_core_ztsmqr_hetra1(
 }
 
 /******************************************************************************/
-void plasma_core_omp_ztsmqr_hetra1(
+void plasma_core_omp_ztsmqr_conj_trans(
     plasma_enum_t side, plasma_enum_t trans,
     int m1, int n1, int m2, int n2, int k, int ib,
           plasma_complex64_t *A1, int lda1,
@@ -181,7 +181,7 @@ void plasma_core_omp_ztsmqr_hetra1(
             int ldwork = side == PlasmaLeft ? ib : nb;
 
             // Call the kernel.
-            int info = plasma_core_ztsmqr_hetra1(
+            int info = plasma_core_ztsmqr_conj_trans(
                 side, trans,
                 m1, n1, m2, n2, k, ib,
                 A1, lda1,

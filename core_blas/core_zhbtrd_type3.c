@@ -21,7 +21,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup CORE_plasma_complex64_t
+ * @ingroup core_hbtrd_type3
  *
  *  CORE_zhbtype3cb is a kernel that will operate on a region (triangle) of data
  *  bounded by st and ed. This kernel apply a left+right update on the hermitian
@@ -89,7 +89,7 @@
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-void plasma_core_zhbtype3cb(
+void plasma_core_zhbtrd_type3(
     int n, int nb,
     plasma_complex64_t *A, int lda,
     const plasma_complex64_t *V, const plasma_complex64_t *tau,

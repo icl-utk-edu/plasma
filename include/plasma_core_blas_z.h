@@ -91,21 +91,21 @@ void plasma_core_zgetrf(
     volatile int *max_idx, volatile plasma_complex64_t *max_val,
     volatile int *info, plasma_barrier_t *barrier);
 
-void plasma_core_zhbtype1cb(
+void plasma_core_zhbtrd_type1(
     int n, int nb,
     plasma_complex64_t *A, int lda,
     plasma_complex64_t *V, plasma_complex64_t *tau,
     int st, int ed, int sweep, int Vblksiz, int wantz,
     plasma_complex64_t *work);
 
-void plasma_core_zhbtype2cb(
+void plasma_core_zhbtrd_type2(
     int n, int nb,
     plasma_complex64_t *A, int lda,
     plasma_complex64_t *V, plasma_complex64_t *tau,
     int st, int ed, int sweep, int vblksiz, int wantz,
     plasma_complex64_t *work);
 
-void plasma_core_zhbtype3cb(
+void plasma_core_zhbtrd_type3(
     int n, int nb,
     plasma_complex64_t *A, int lda,
     const plasma_complex64_t *V, const plasma_complex64_t *tau,
@@ -699,7 +699,7 @@ void plasma_core_omp_ztsmlq(
     plasma_workspace_t work,
     plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_core_omp_ztsmlq_hetra1(
+void plasma_core_omp_ztsmlq_conj_trans(
     plasma_enum_t side, plasma_enum_t trans,
     int m1, int n1, int m2, int n2, int k, int ib,
           plasma_complex64_t *A1, int lda1,
@@ -709,7 +709,7 @@ void plasma_core_omp_ztsmlq_hetra1(
     plasma_workspace_t work,
     plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_core_omp_ztsmlq_corner(
+void plasma_core_omp_ztsmlq_2sided(
     int m1, int n1, int m2, int n2,
     int m3, int n3, int k, int ib,
           plasma_complex64_t *A1, int lda1,
@@ -730,7 +730,7 @@ void plasma_core_omp_ztsmqr(
     plasma_workspace_t work,
     plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_core_omp_ztsmqr_corner(
+void plasma_core_omp_ztsmqr_2sided(
     int m1, int n1, int m2, int n2,
     int m3, int n3, int k, int ib,
           plasma_complex64_t *A1, int lda1,
@@ -741,7 +741,7 @@ void plasma_core_omp_ztsmqr_corner(
     plasma_workspace_t work,
     plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_core_omp_ztsmqr_hetra1(
+void plasma_core_omp_ztsmqr_conj_trans(
     plasma_enum_t side, plasma_enum_t trans,
     int m1, int n1, int m2, int n2, int k, int ib,
           plasma_complex64_t *A1, int lda1,
