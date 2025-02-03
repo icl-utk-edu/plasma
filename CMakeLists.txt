@@ -445,9 +445,9 @@ set( plasma_core_blas_src
     core_blas/core_zgessq.c
     core_blas/core_zgeswp.c
     core_blas/core_zgetrf.c
-    core_blas/core_zhbtype1cb.c
-    core_blas/core_zhbtype2cb.c
-    core_blas/core_zhbtype3cb.c
+    core_blas/core_zhbtrd_type1.c
+    core_blas/core_zhbtrd_type2.c
+    core_blas/core_zhbtrd_type3.c
     core_blas/core_zhegst.c
     core_blas/core_zhemm.c
     core_blas/core_zher2k.c
@@ -482,11 +482,11 @@ set( plasma_core_blas_src
     core_blas/core_ztrtri.c
     core_blas/core_ztslqt.c
     core_blas/core_ztsmlq.c
-    core_blas/core_ztsmlq_corner.c
-    core_blas/core_ztsmlq_hetra1.c
+    core_blas/core_ztsmlq_2sided.c
+    core_blas/core_ztsmlq_conj_trans.c
     core_blas/core_ztsmqr.c
-    core_blas/core_ztsmqr_corner.c
-    core_blas/core_ztsmqr_hetra1.c
+    core_blas/core_ztsmqr_2sided.c
+    core_blas/core_ztsmqr_conj_trans.c
     core_blas/core_ztsqrt.c
     core_blas/core_zttlqt.c
     core_blas/core_zttmlq.c

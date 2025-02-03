@@ -12,6 +12,7 @@
 
 #include "plasma_core_blas.h"
 #include "plasma_types.h"
+#include "plasma_internal.h"
 #include "core_lapack.h"
 #include "bulge.h"
 
@@ -23,12 +24,12 @@
 
 /***************************************************************************//**
  *
- * @ingroup core_hbtype1cb
+ * @ingroup core_hbtrd_type2
  *
- *  Is a kernel that will operate on a region (triangle) of data
- *  bounded by st and ed. This kernel eliminate a column by an column-wise
- *  annihiliation, then it apply a left+right update on the hermitian triangle.
- *  Note that the column to be eliminated is located at st-1.
+ *  CORE_zhbtype2cb is a kernel that will operate on a region (triangle) of data
+ *  bounded by st and ed. This kernel apply the right update remaining from the
+ *  type1 and this later will create a bulge so it eliminate the first column of
+ *  the created bulge and do the corresponding Left update.
  *
  *  All details are available in the technical report or SC11 paper.
  *  Azzam Haidar, Hatem Ltaief, and Jack Dongarra. 2011.
@@ -53,15 +54,18 @@
  * @param[in] lda
  *          The leading dimension of the matrix A. lda >= max( 1, 2*nb + 1 )
  *
- * @param[out] V
- *          PLASMA_Complex64_t array, dimension n if eigenvalue only
+ * @param[in,out] V
+ *          plasma_complex64_t array, dimension n if eigenvalue only
  *          requested or (ldv*blkcnt*Vblksiz) if Eigenvectors requested
- *          The Householder reflectors are stored in this array.
+ *          The Householder reflectors of the previous type 1 are used here
+ *          to continue update then new one are generated to eliminate the
+ *          bulge and stored in this array.
  *
- * @param[out] tau
- *          PLASMA_Complex64_t array, dimension (n).
- *          The scalar factors of the Householder reflectors are stored
- *          in this array.
+ * @param[in,out] tau
+ *          plasma_complex64_t array, dimension (n).
+ *          The scalar factors of the Householder reflectors of the previous
+ *          type 1 are used here to continue update then new one are generated
+ *          to eliminate the bulge and stored in this array.
  *
  * @param[in] first
  *          A pointer to the start index where this kernel will operate.
@@ -91,19 +95,17 @@
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-void plasma_core_zhbtype1cb(
+void plasma_core_zhbtrd_type2(
     int n, int nb,
     plasma_complex64_t *A, int lda,
     plasma_complex64_t *V, plasma_complex64_t *tau,
     int first, int last, int sweep, int Vblksiz, int wantz,
     plasma_complex64_t *work)
 {
-    int len, ldx;
+    plasma_complex64_t ctmp;
+    int J1, J2, len, lem, ldx;
     int blkid, vpos, taupos, tpos;
 
-    // Find the pointer to the Vs and Ts as stored by the bulge chasing.
-    // Note that in case no eigenvector required V and T are stored
-    // on a vector of size n
     if (wantz == 0) {
         vpos   = ((sweep + 1)%2)*n + first;
         taupos = ((sweep + 1)%2)*n + first;
@@ -114,21 +116,54 @@ void plasma_core_zhbtype1cb(
     }
 
     ldx = lda - 1;
+    J1  = last + 1;
+    J2  = imin( last + nb, n - 1 );
     len = last - first + 1;
-    *V( vpos ) = 1.;
+    lem = J2 - J1 + 1;
 
-    assert( len > 0 );
+    //assert( len > 0 );
+    //if (lem == 0) {
+    //    printf( "%s: begin %d, last %d, len %d, lem %d\n",
+    //            __func__, first, last, len, lem );
+    //}
+    //assert( lem > 0 );
 
-    memcpy( V( vpos+1 ), A( first+1, first-1 ), (len-1)*sizeof(plasma_complex64_t) );
-    memset( A( first+1, first-1 ), 0,           (len-1)*sizeof(plasma_complex64_t) );
+    if (lem > 0) {
+        // Apply remaining right coming from the top block.
+        LAPACKE_zlarfx_work( LAPACK_COL_MAJOR, lapack_const( PlasmaRight ),
+                             lem, len, V( vpos ), *(tau( taupos )),
+                             A( J1, first ), ldx, work );
+    }
 
-    // Eliminate the col at first-1.
-    LAPACKE_zlarfg_work( len, A( first, first-1 ),
-                         V( vpos+1 ), 1, tau( taupos ) );
+    if (lem > 1) {
+        if (wantz == 0 ) {
+            vpos   = ((sweep + 1)%2)*n + J1;
+            taupos = ((sweep + 1)%2)*n + J1;
+        }
+        else {
+            findVTpos( n, nb, Vblksiz, sweep, J1,
+                       &vpos, &taupos, &tpos, &blkid );
+        }
 
-    // Apply left and right on A( first:last, first:last ).
-    plasma_core_zlarfy( len, A( first, first ), ldx,
-                        V( vpos ), tau( taupos ), work );
+        // Remove the first column of the created bulge
+        *V( vpos ) = 1.;
+
+        memcpy( V( vpos+1 ), A( J1+1, first ), (lem-1)*sizeof(plasma_complex64_t) );
+        memset( A( J1+1, first ), 0,           (lem-1)*sizeof(plasma_complex64_t) );
+
+        // Eliminate first col.
+        LAPACKE_zlarfg_work( lem, A( J1, first ), V( vpos+1 ), 1, tau( taupos ) );
+
+        // Apply left on A( J1:J2, first+1:last )
+        // We decrease len because we start at col first+1 instead of first.
+        // Col first is the col that has been eliminated.
+        len = len - 1;
+
+        ctmp = conj( *tau( taupos ) );
+        LAPACKE_zlarfx_work( LAPACK_COL_MAJOR, lapack_const( PlasmaLeft ),
+                             lem, len, V( vpos ), ctmp,
+                             A( J1, first+1 ), ldx, work );
+    }
 }
 
 #undef A

@@ -95,7 +95,7 @@ void plasma_pzhe2hb(
                 // LEFT
                 for (int j = k+2; j < i; ++j) {
                     int ldaj = plasma_tile_mmain(A, j);
-                    plasma_core_omp_ztsmqr_hetra1(
+                    plasma_core_omp_ztsmqr_conj_trans(
                         PlasmaLeft, Plasma_ConjTrans,
                         A.mb, A.nb, mvai, A.nb, A.nb, ib,
                         A(j, k+1), ldaj,  // conj-trans of A(k+1, j)
@@ -186,7 +186,7 @@ void plasma_pzhe2hb(
                 for (int i = k+2; i < n; ++i) {
                     int ldai = plasma_tile_nmain(A, i);
 
-                    plasma_core_omp_ztsmlq_hetra1(
+                    plasma_core_omp_ztsmlq_conj_trans(
                         PlasmaRight, Plasma_ConjTrans,
                         A.mb, A.nb, A.nb, nvaj, A.nb, ib,
                         A(k+1, i), ldak1,  // conj-trans of A(i, k+1)
@@ -212,7 +212,7 @@ void plasma_pzhe2hb(
                 }
 
                 // RIGHT->LEFT
-                plasma_core_omp_ztsmlq_corner(
+                plasma_core_omp_ztsmlq_2sided(
                     A.nb, A.nb, A.nb, nvaj,
                     nvaj, nvaj, A.nb, ib,
                     A(k+1, k+1), ldak1,

@@ -19,9 +19,9 @@
 
 /***************************************************************************//**
  *
- * @ingroup CORE_plasma_complex64_t
+ * @ingroup core_larfy
  *
- *  CORE_zlarfy applies an elementary reflector, or Householder matrix, H,
+ *  Applies an elementary reflector, or Householder matrix, H,
  *  to a n-by-n Hermitian matrix C, from both the left and the right.
  *
  *  H is represented in the form

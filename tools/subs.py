@@ -515,8 +515,6 @@ subs = {
     ('ssy2sb',               'dsy2sb',               'che2hb',               'zhe2hb'              ),
     ('sgbtype',              'dgbtype',              'cgbtype',              'zgbtype'             ),
 
-    ('ssbtype',              'dsbtype',              'chbtype',              'zhbtype'             ),
-
     ('psdesc2ge',            'pddesc2ge',            'pcdesc2ge',            'pzdesc2ge'           ),
     ('psge2desc',            'pdge2desc',            'pcge2desc',            'pzge2desc'           ),
     ('psgb2desc',            'pdgb2desc',            'pcgb2desc',            'pzgb2desc'           ),

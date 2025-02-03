@@ -19,7 +19,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup core_tsmlq_hetra1
+ * @ingroup core_tsmlq_conj_trans
  *
  * This kernel applies a Right transformation on | A1^H A2 |
  * and does not handle the transpose of A1.
@@ -105,7 +105,7 @@
  * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-int plasma_core_ztsmlq_hetra1(
+int plasma_core_ztsmlq_conj_trans(
     plasma_enum_t side, plasma_enum_t trans,
     int m1, int n1, int m2, int n2, int k, int ib,
           plasma_complex64_t *A1, int lda1,
@@ -152,7 +152,7 @@ int plasma_core_ztsmlq_hetra1(
 }
 
 /******************************************************************************/
-void plasma_core_omp_ztsmlq_hetra1(
+void plasma_core_omp_ztsmlq_conj_trans(
     plasma_enum_t side, plasma_enum_t trans,
     int m1, int n1, int m2, int n2, int k, int ib,
           plasma_complex64_t *A1, int lda1,
@@ -177,7 +177,7 @@ void plasma_core_omp_ztsmlq_hetra1(
             int ldwork = side == PlasmaLeft ? ib : nb;
 
             // Call the kernel.
-            int info = plasma_core_ztsmlq_hetra1(
+            int info = plasma_core_ztsmlq_conj_trans(
                 side, trans,
                 m1, n1, m2, n2, k, ib,
                 A1, lda1,

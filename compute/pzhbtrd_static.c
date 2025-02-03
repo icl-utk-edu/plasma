@@ -32,7 +32,7 @@
 ///
 /// Atomically set progress[ i ] = val, indicating sweep val, task i can start.
 ///
-static inline void ss_cond_set_( plasma_context_t* plasma, int i, int val )
+static inline void ss_cond_set_( plasma_context_t *plasma, int i, int val )
 {
     #pragma omp atomic write
     plasma->ss_progress[ i ] = val;
@@ -46,7 +46,7 @@ static inline void ss_cond_set_( plasma_context_t* plasma, int i, int val )
 ///
 /// Atomically read progress[ i ].
 ///
-static inline int ss_cond_read_( plasma_context_t* plasma, int i )
+static inline int ss_cond_read_( plasma_context_t *plasma, int i )
 {
     int val;
     #pragma omp atomic read
@@ -65,7 +65,7 @@ static inline int ss_cond_read_( plasma_context_t* plasma, int i )
 /// This uses sched_yield(). It works without sched_yield(), but bulge
 /// chasing is slower.
 ///
-static inline void ss_cond_wait_( plasma_context_t* plasma, int i, int val )
+static inline void ss_cond_wait_( plasma_context_t *plasma, int i, int val )
 {
     while (ss_cond_read_( plasma, i ) != val) {
         sched_yield();
@@ -212,19 +212,19 @@ void plasma_pzhbtrd_static(
                         ss_cond_wait( task + shift - 1, sweep );
 
                         if (type == 1) {
-                            plasma_core_zhbtype1cb(
+                            plasma_core_zhbtrd_type1(
                                 n, nb, A, lda, V, tau,
                                 j_first, j_last, sweep,
                                 Vblksiz, wantz, my_work);
                         }
                         else if (type == 2) {
-                            plasma_core_zhbtype2cb(
+                            plasma_core_zhbtrd_type2(
                                 n, nb, A, lda, V, tau,
                                 j_first, j_last, sweep,
                                 Vblksiz, wantz, my_work);
                         }
                         else {
-                            plasma_core_zhbtype3cb(
+                            plasma_core_zhbtrd_type3(
                                 n, nb, A, lda, V, tau,
                                 j_first, j_last, sweep,
                                 Vblksiz, wantz, my_work);
