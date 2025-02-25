@@ -147,6 +147,11 @@ struct routines_t routines[] =
     { "cheevd", test_cheevd },
     { "ssyevd", test_ssyevd },
 
+    { "zhbtrd", test_zhbtrd },
+    { "dsbtrd", test_dsbtrd },
+    { "chbtrd", test_chbtrd },
+    { "ssbtrd", test_ssbtrd },
+
     { "zhemm", test_zhemm },
     { "", NULL },
     { "chemm", test_chemm },
