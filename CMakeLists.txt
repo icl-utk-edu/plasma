@@ -548,6 +548,7 @@ set( plasma_test_src
     test/test_zgetri.c
     test/test_zgetri_aux.c
     test/test_zgetrs.c
+    test/test_zhbtrd.c
     test/test_zheevd.c
     test/test_zhemm.c
     test/test_zher2k.c

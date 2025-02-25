@@ -577,13 +577,16 @@ if (opts.heev):
     #['unmtr', dtype_complex, gen + mn + uplo + side + trans_nc ],  # complex does trans = N, C, not T
 
     # Banded
+    # Only lower supported.
+    ['hbtrd', dtype_complex, gen + n + ' --uplo=l' ],
+    ['sbtrd', dtype_real,    gen + n + ' --uplo=l' ],
+
     #['hbev',  dtype, gen + n + jobz + uplo ],
     #['hbevx', dtype, gen + n + jobz + uplo + vl + vu ],
     #['hbevx', dtype, gen + n + jobz + uplo + il + iu ],
     #['hbevd', dtype, gen + n + jobz + uplo ],
     #['hbevr', dtype, gen + n + jobz + uplo + vl + vu ],
     #['hbevr', dtype, gen + n + jobz + uplo + il + iu ],
-    #['hbtrd', dtype, gen + n + uplo ],
     #['ubgtr', dtype, gen + n + uplo ],
     #['ubmtr', dtype_real,    gen + la + mn + uplo + side + trans    ],
     #['ubmtr', dtype_complex, gen + la + mn + uplo + side + trans_nc ],
