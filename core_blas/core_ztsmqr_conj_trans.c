@@ -21,13 +21,24 @@
  *
  * @ingroup core_tsmqr_conj_trans
  *
- *  This kernel applies a left transformation on | A1^H |
- *                                               | A2   |
+ *  Overwrites the general m1-by-n1 tile A1 and m2-by-n2 tile A2 with
  *
- * Needs therefore to make the explicit transpose of A1 before
- * and after the application of the block of reflectors
- * Can be further optimized by changing accordingly the underneath
- * kernel ztsrfb!
+ *                          PlasmaLeft        PlasmaRight
+ *      PlasmaNoTrans       Q * | A1^H |      | A1^H A2 | * Q
+ *                              | A2   |
+ *
+ *      Plasma_ConjTrans    Q^H * | A1^H |    | A1^H A2 | * Q^H
+ *                                | A2   |
+ *
+ *  where Q is a complex unitary matrix defined as the product of k
+ *  elementary reflectors, and A1 is conjugate transposed.
+ *
+ *  In the current implementation, A1 is explicitly conjugate transposed
+ *  before multiplying, and explicitly conjugate transposed after multiplying.
+ *  Can be optimized by changing according to the underlying tsrfb kernel.
+ *
+ *  @todo Original docs said "left transform", but side seems to be supported.
+ *        Are both left and right supported?
  *
  *******************************************************************************
  *
@@ -36,8 +47,8 @@
  *          - PlasmaRight: apply Q or Q^H from the Right.
  *
  * @param[in] trans
- *          - PlasmaNoTrans:   apply Q;
- *          - PlasmaConjTrans: apply Q^H.
+ *          - PlasmaNoTrans:    apply Q;
+ *          - Plasma_ConjTrans: apply Q^H.
  *
  * @param[in] m1
  *          The number of rows of the tile A1. m1 >= 0.
@@ -75,9 +86,11 @@
  *          The leading dimension of the tile A2. lda2 >= max( 1, m2 ).
  *
  * @param[in] V
+ *          The k-by-k matrix V of Householder vectors in an ldv-by-k array.
  *          The i-th row must contain the vector which defines the
  *          elementary reflector H(i), for i = 1, 2, ..., k, as returned by
  *          plasma_core_ztsqrt in the first k columns of its array argument V.
+ *          @todo verify dimensions
  *
  * @param[in] ldv
  *          The leading dimension of the array V. ldv >= max( 1, k ).
@@ -86,6 +99,7 @@
  *          The ib-by-n1 triangular factor T of the block reflector.
  *          T is upper triangular by block (economic storage);
  *          The rest of the array is not referenced.
+ *          @todo ib-by-k? Cf. tsmqr
  *
  * @param[in] ldt
  *          The leading dimension of the array T. ldt >= ib.

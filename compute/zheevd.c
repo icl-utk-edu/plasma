@@ -32,7 +32,7 @@
  *  eigenvectors of a complex Hermitian matrix A. The matrix A is
  *  preliminary reduced to tridiagonal form using a two-stage
  *  approach:
- *  First stage: reduction to band tridiagonal form;
+ *  First  stage: reduction to band form;
  *  Second stage: reduction from band to tridiagonal form.
  *
  *******************************************************************************
@@ -208,10 +208,9 @@ int plasma_zheevd(
  *
  * @ingroup plasma_heevd
  *
- *  Computes all eigenvalues and,
- *  optionally, eigenvectors of a complex Hermitian matrix A using a
- *  two-stage approach:
- *  First stage: reduction to band tridiagonal form;
+ *  Computes all eigenvalues and, optionally, eigenvectors of a complex
+ *  Hermitian matrix A using a two-stage approach:
+ *  First stage:  reduction to band form;
  *  Second stage: reduction from band to tridiagonal form.
  *
  *  May return before the computation is finished.

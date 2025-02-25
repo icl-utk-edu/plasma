@@ -29,15 +29,13 @@
 
 /***************************************************************************//**
  *
- * @brief Tests ZHEEVD.
+ * @brief Tests zheevd.
  *
- * @param[in]  param - array of parameters
- * @param[out] info  - string of column labels or column values; length InfoLen
+ * @param[in,out] param - array of parameters
+ * @param[in]     run - whether to run test
  *
- * If param is NULL and info is NULL,     print usage and return.
- * If param is NULL and info is non-NULL, set info to column labels and return.
- * If param is non-NULL and info is non-NULL, set info to column values
- * and run test.
+ * Sets flags in param indicating which parameters are used.
+ * If run is true, also runs test and stores output parameters.
  ******************************************************************************/
 void test_zheevd(param_value_t param[], bool run)
 {
@@ -49,8 +47,6 @@ void test_zheevd(param_value_t param[], bool run)
     param[PARAM_DIM   ].used = PARAM_USE_N;
     param[PARAM_PADA  ].used = true;
     param[PARAM_NB    ].used = true;
-    param[PARAM_IB    ].used = true;
-    param[PARAM_HMODE ].used = true;
     if (! run)
         return;
 
@@ -77,7 +73,7 @@ void test_zheevd(param_value_t param[], bool run)
     // Allocate and initialize arrays.
     //================================================================
     plasma_complex64_t *A = (plasma_complex64_t *)malloc(
-        (size_t)n*lda*sizeof(plasma_complex64_t));
+        (size_t)lda*n*sizeof(plasma_complex64_t));
 
     plasma_complex64_t *Aref = NULL;
     plasma_complex64_t *Q    = NULL;
@@ -108,7 +104,7 @@ void test_zheevd(param_value_t param[], bool run)
 
         // Copy A into Aref
         Aref = (plasma_complex64_t *)malloc(
-            (size_t)n*lda*sizeof(plasma_complex64_t));
+            (size_t)lda*n*sizeof(plasma_complex64_t));
         LAPACKE_zlacpy_work(LAPACK_COL_MAJOR,
                             'A', n, n, A, lda, Aref, lda);
     }
@@ -119,7 +115,7 @@ void test_zheevd(param_value_t param[], bool run)
     int ldq = lda;
     if (job == PlasmaVec) {
         Q = (plasma_complex64_t *)malloc(
-            (size_t)n*ldq*sizeof(plasma_complex64_t));
+            (size_t)ldq*n*sizeof(plasma_complex64_t));
     }
 
     //================================================================
@@ -139,7 +135,7 @@ void test_zheevd(param_value_t param[], bool run)
     plasma_time_t time = stop - start;
 
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = flops_zgeqrf(n, n) / time / 1e9;
+    param[PARAM_GFLOPS].d = 0.0 / time / 1e9;
 
     if (test) {
         // Check the correctness of the eigenvalues values.
@@ -151,8 +147,7 @@ void test_zheevd(param_value_t param[], bool run)
 
         error /= n*40;
         // Othorgonality test
-        double done  =  1.0;
-        double mdone = -1.0;
+        double r_one = 1.0;
 
         // Build the idendity matrix
         plasma_complex64_t *Id
@@ -164,7 +159,7 @@ void test_zheevd(param_value_t param[], bool run)
             // Perform Id - Q^H Q
             cblas_zherk(
                 CblasColMajor, CblasUpper, CblasConjTrans,
-                n, n, done, Q, n, mdone, Id, n);
+                n, n, r_one, Q, n, -r_one, Id, n);
             double normQ = LAPACKE_zlanhe_work(
                 LAPACK_COL_MAJOR, 'I', 'U', n, Id, n, (double*)work);
             ortho = normQ/n;

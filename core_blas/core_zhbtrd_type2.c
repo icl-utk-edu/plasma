@@ -26,10 +26,12 @@
  *
  * @ingroup core_hbtrd_type2
  *
- *  CORE_zhbtype2cb is a kernel that will operate on a region (triangle) of data
- *  bounded by st and ed. This kernel apply the right update remaining from the
- *  type1 and this later will create a bulge so it eliminate the first column of
- *  the created bulge and do the corresponding Left update.
+ *  Updates the off-diagonal tiles in the Hermitian eigenvalue
+ *  bulge-chasing algorithm. Applies the reflector from the previous
+ *  type 1 or 2 kernel on the right to update an off-diagonal tile,
+ *  represented by an upper triangular region bounded by [first, last] inclusive,
+ *  to create a bulge. Then eliminates entries below the band in column first
+ *  using a Householder reflector, and applies the reflector on the left.
  *
  *  All details are available in the technical report or SC11 paper.
  *  Azzam Haidar, Hatem Ltaief, and Jack Dongarra. 2011.
@@ -55,23 +57,24 @@
  *          The leading dimension of the matrix A. lda >= max( 1, 2*nb + 1 )
  *
  * @param[in,out] V
- *          plasma_complex64_t array, dimension n if eigenvalue only
- *          requested or (ldv*blkcnt*Vblksiz) if Eigenvectors requested
- *          The Householder reflectors of the previous type 1 are used here
- *          to continue update then new one are generated to eliminate the
- *          bulge and stored in this array.
+ *          Array of dimension 2*n if only eigenvalues are requested (wantz = 0),
+ *          or (ldv*blkcnt*Vblksiz) if eigenvectors are requested (wantz != 0).
+ *          Stores the Householder vectors.
+ *          Uses one Householder reflector from the previous type 1 or 2
+ *          kernel to continue an update.
+ *          Adds one Householder vector to eliminate a column of the bulge.
  *
  * @param[in,out] tau
- *          plasma_complex64_t array, dimension (n).
- *          The scalar factors of the Householder reflectors of the previous
- *          type 1 are used here to continue update then new one are generated
- *          to eliminate the bulge and stored in this array.
+ *          Array of dimension 2*n.
+ *          Stores the scalar factors of the Householder reflectors.
+ *          Uses one scalar factor to continue an update.
+ *          Adds one scalar factor.
  *
  * @param[in] first
- *          A pointer to the start index where this kernel will operate.
+ *          The first index to update.
  *
  * @param[in] last
- *          A pointer to the end index where this kernel will operate.
+ *          The last index to update, inclusive.
  *
  * @param[in] sweep
  *          The sweep number that is eliminated. It serves to calculate the
@@ -145,7 +148,7 @@ void plasma_core_zhbtrd_type2(
                        &vpos, &taupos, &tpos, &blkid );
         }
 
-        // Remove the first column of the created bulge
+        // Eliminate the first column of the created bulge.
         *V( vpos ) = 1.;
 
         memcpy( V( vpos+1 ), A( J1+1, first ), (lem-1)*sizeof(plasma_complex64_t) );

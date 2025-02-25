@@ -25,10 +25,12 @@
  *
  * @ingroup core_hbtrd_type1
  *
- *  Is a kernel that will operate on a region (triangle) of data
- *  bounded by st and ed. This kernel eliminate a column by an column-wise
- *  annihiliation, then it apply a left+right update on the hermitian triangle.
- *  Note that the column to be eliminated is located at st-1.
+ *  First kernel for each sweep in the Hermitian eigenvalue
+ *  bulge-chasing algorithm, which updates the first diagonal tile.
+ *  Eliminates entries below the sub-diagonal of column first-1 using a
+ *  Householder reflector. Then applies the reflector on the left and
+ *  right to update the Hermitian matrix, represented by a lower
+ *  triangular region bounded by [first, last] inclusive.
  *
  *  All details are available in the technical report or SC11 paper.
  *  Azzam Haidar, Hatem Ltaief, and Jack Dongarra. 2011.
@@ -54,20 +56,21 @@
  *          The leading dimension of the matrix A. lda >= max( 1, 2*nb + 1 )
  *
  * @param[out] V
- *          PLASMA_Complex64_t array, dimension n if eigenvalue only
- *          requested or (ldv*blkcnt*Vblksiz) if Eigenvectors requested
- *          The Householder reflectors are stored in this array.
+ *          Array of dimension 2*n if only eigenvalues are requested (wantz = 0),
+ *          or (ldv*blkcnt*Vblksiz) if eigenvectors are requested (wantz != 0).
+ *          Stores the Householder vectors.
+ *          Adds one Householder vector to eliminate a column of the band.
  *
  * @param[out] tau
- *          PLASMA_Complex64_t array, dimension (n).
- *          The scalar factors of the Householder reflectors are stored
- *          in this array.
+ *          Array of dimension 2*n.
+ *          Stores the scalar factors of the Householder reflectors.
+ *          Adds one scalar factor.
  *
  * @param[in] first
- *          A pointer to the start index where this kernel will operate.
+ *          The first index to update, after eliminating column first-1.
  *
  * @param[in] last
- *          A pointer to the end index where this kernel will operate.
+ *          The last index to update, inclusive.
  *
  * @param[in] sweep
  *          The sweep number that is eliminated. It serves to calculate the
@@ -102,8 +105,8 @@ void plasma_core_zhbtrd_type1(
     int blkid, vpos, taupos, tpos;
 
     // Find the pointer to the Vs and Ts as stored by the bulge chasing.
-    // Note that in case no eigenvector required V and T are stored
-    // on a vector of size n
+    // Note that in case no eigenvectors are required, V and T are stored
+    // in a vector of size 2*n.
     if (wantz == 0) {
         vpos   = ((sweep + 1)%2)*n + first;
         taupos = ((sweep + 1)%2)*n + first;
