@@ -22,18 +22,18 @@
  * @ingroup core_herfb
  *
  *  Overwrites the Hermitian complex n-by-n tile C with
- *
- *    Q^H*C*Q
- *
+ *  \[
+ *      C = Q^H C Q
+ *  \]
  *  where Q is a complex unitary matrix defined as the product of k
  *  elementary reflectors
- *
- *    Q = H( 1 ) H( 2 ) . . . H( k )
- *
- *  as returned by CORE_zgeqrt.
+ *  \[
+ *      Q = H( 1 ) H( 2 ) ... H( k )
+ *  \]
+ *  as returned by plasma_core_zgeqrt.
  *
  *  Only PlasmaLower supported!
- *  @todo Out-dated coment? Upper seems to be implemented.
+ *  @todo Out-dated comment? Upper seems to be implemented.
  *
  *******************************************************************************
  *
@@ -42,6 +42,8 @@
  *                         is not referenced.
  *          - PlasmaUpper: the lower part of the Hermitian matrix C
  *                         is not referenced (not supported).
+ *                         @todo out-dated comment?
+ *
  * @param[in] n
  *          The number of rows/columns of the tile C. n >= 0.
  *
@@ -53,9 +55,10 @@
  *          The inner-blocking size. ib >= 0.
 
  * @param[in] A
+ *          The n-by-k matrix A of Householder vectors in an lda-by-n array.
  *          The i-th column must contain the vector which defines the
  *          elementary reflector H( i ), for i = 1, 2, ..., k, as returned by
- *          CORE_zgeqrt in the first k columns of its array argument A.
+ *          plasma_core_zgeqrt in the first k columns of its array argument A.
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max( 1, n ).
@@ -70,17 +73,16 @@
  *
  * @param[in,out] C
  *          On entry, the Hermitian n-by-n tile C.
- *          On exit, C is overwritten by Q^H*C*Q.
+ *          On exit, C is overwritten by Q^H C Q.
  *
  * @param[in] ldc
  *          The leading dimension of the array C. ldc >= max( 1, m ).
  *
  * @param[in,out] work
- *
- *          On exit, if INFO = 0, work( 1 ) returns the optimal ldwork.
+ *          Workspace of size ldwork * n.
  *
  * @param[in] ldwork
- *          The dimension of the array work. ldwork >= max( 1, n );
+ *          The leading dimension of the array work. ldwork >= max( 1, n );
  *
  *******************************************************************************
  *

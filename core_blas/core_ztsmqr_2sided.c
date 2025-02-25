@@ -21,12 +21,12 @@
  *
  * @ingroup core_tsmqr_2sided
  *
- * This kernel applies left and right transformations as depicted below:
+ * Applies left and right transformations as depicted below:
  *     (I - V T^H V^H) * | A1 A2^H | * (I - V T V^H)
  *                       | A2 A3   |
  * where A1 and A3 are Hermitian matrices.
  * Only the lower part is referenced.
- * This is an ad hoc implementation, can be further optimized...
+ * This is an ad hoc implementation that can be further optimized.
  *
  *******************************************************************************
  *
@@ -34,19 +34,19 @@
  *          The number of rows of the tile A1. m1 >= 0.
  *
  * @param[in] n1
- *          The number of columns of the tile A1. n1 >= 0.
+ *          The number of columns of the tile A1. n1 == m1.
  *
  * @param[in] m2
  *          The number of rows of the tile A2. m2 >= 0.
  *
  * @param[in] n2
- *          The number of columns of the tile A2. n2 >= 0.
+ *          The number of columns of the tile A2. n2 == n1.
  *
  * @param[in] m3
- *          The number of rows of the tile A3. m3 >= 0.
+ *          The number of rows of the tile A3. m3 == m2.
  *
  * @param[in] n3
- *          The number of columns of the tile A3. n3 >= 0.
+ *          The number of columns of the tile A3. n3 == m2.
  *
  * @param[in] k
  *          The number of elementary reflectors whose product defines

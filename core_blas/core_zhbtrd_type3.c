@@ -23,10 +23,11 @@
  *
  * @ingroup core_hbtrd_type3
  *
- *  CORE_zhbtype3cb is a kernel that will operate on a region (triangle) of data
- *  bounded by st and ed. This kernel apply a left+right update on the hermitian
- *  triangle.  Note that this kernel is very similar to type1 but does not do an
- *  elimination.
+ *  Updates diagonal tiles after the first one in each sweep. Applies
+ *  the reflector from the previous type 2 kernel on the left and right
+ *  to update the Hermitian matrix, represented by a lower triangular
+ *  region bounded by [first, last] inclusive.
+ *  This kernel is very similar to type 1 but does not do an elimination.
  *
  *  All details are available in the technical report or SC11 paper.
  *  Azzam Haidar, Hatem Ltaief, and Jack Dongarra. 2011.
@@ -52,20 +53,22 @@
  *          The leading dimension of the matrix A. lda >= max( 1, 2*nb + 1 )
  *
  * @param[in] V
- *          plasma_complex64_t array, dimension n if only eigenvalues are
- *          requested, or (ldv*blkcnt*Vblksiz) if eigenvectors are requested.
- *          The Householder reflectors are stored in this array.
+ *          Array of dimension 2*n if only eigenvalues are requested (wantz = 0),
+ *          or (ldv*blkcnt*Vblksiz) if eigenvectors are requested (wantz != 0).
+ *          Stores the Householder vectors.
+ *          Uses one Householder reflector from the previous type 1 or 2
+ *          kernel to continue an update.
  *
  * @param[in] tau
- *          plasma_complex64_t array, dimension (n).
- *          The scalar factors of the Householder reflectors are stored
- *          in this array.
+ *          Array of dimension 2*n.
+ *          Stores the scalar factors of the Householder reflectors.
+ *          Uses one scalar factor to continue an update.
  *
  * @param[in] first
- *          A pointer to the start index where this kernel will operate.
+ *          The first index to update.
  *
  * @param[in] last
- *          A pointer to the end index where this kernel will operate.
+ *          The last index to update, inclusive.
  *
  * @param[in] sweep
  *          The sweep number that is eliminated. It serves to calculate the

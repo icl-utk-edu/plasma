@@ -21,13 +21,15 @@
  *
  * @ingroup core_larfy
  *
- *  Applies an elementary reflector, or Householder matrix, H,
- *  to a n-by-n Hermitian matrix C, from both the left and the right.
- *
+ *  Applies an elementary reflector, or Householder reflector, H,
+ *  to a n-by-n Hermitian matrix A, from both the left and the right:
+ *  \[
+ *      A = H A H^H
+ *  \]
  *  H is represented in the form
- *
- *     H = I - tau v v^H
- *
+ *  \[
+ *      H = I - tau v v^H
+ *  \]
  *  where tau is a scalar and v is a vector.
  *
  *  If tau is zero, then H is taken to be the unit matrix.
@@ -38,8 +40,7 @@
  *          The number of rows and columns of the matrix C. n >= 0.
  *
  * @param[in,out] A
- *          COMPLEX*16 array, dimension (lda, n)
- *          On entry, the Hermetian matrix A.
+ *          On entry, the n-by-n Hermitian matrix A in an lda-by-n array.
  *          On exit, A is overwritten by H A H^H.
  *
  * @param[in] lda

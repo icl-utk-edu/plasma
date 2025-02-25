@@ -25,8 +25,8 @@
  *     (I - V T V^H) * | A1   A2 | * (I - V T^H V^H)
  *                     | A2^H A3 |
  * where A1 and A3 are Hermitian matrices.
- * Only the lower part is referenced.
- * This is an adhoc implementation, can be further optimized...
+ * Only the upper part is referenced.
+ * This is an ad hoc implementation that can be further optimized.
  *
  *******************************************************************************
  *
@@ -34,19 +34,19 @@
  *          The number of rows of the tile A1. m1 >= 0.
  *
  * @param[in] n1
- *          The number of columns of the tile A1. n1 >= 0.
+ *          The number of columns of the tile A1. n1 == m1.
  *
  * @param[in] m2
- *          The number of rows of the tile A2. m2 >= 0.
+ *          The number of rows of the tile A2. m2 == m1.
  *
  * @param[in] n2
  *          The number of columns of the tile A2. n2 >= 0.
  *
  * @param[in] m3
- *          The number of rows of the tile A3. m3 >= 0.
+ *          The number of rows of the tile A3. m3 == n2.
  *
  * @param[in] n3
- *          The number of columns of the tile A3. n3 >= 0.
+ *          The number of columns of the tile A3. n3 == n2.
  *
  * @param[in] k
  *          The number of elementary reflectors whose product defines
@@ -78,7 +78,7 @@
  * @param[in] V
  *          The i-th row must contain the vector which defines the
  *          elementary reflector H(i), for i = 1, 2, ..., k, as returned by
- *          CORE_ZTSLQT in the first k rows of its array argument V.
+ *          plasma_core_ztslqt in the first k rows of its array argument V.
  *
  * @param[in] ldv
  *          The leading dimension of the array V. ldv >= max( 1, K ).
@@ -120,7 +120,7 @@ int plasma_core_ztsmlq_2sided(
     plasma_enum_t side;
     plasma_enum_t trans;
 
-    // Check input arguments
+    // Check input arguments.
     if (m1 != n1) {
         plasma_coreblas_error("illegal value of m1, n1");
         return -1;
@@ -216,6 +216,7 @@ int plasma_core_ztsmlq_2sided(
     return PlasmaSuccess;
 }
 
+/******************************************************************************/
 void plasma_core_omp_ztsmlq_2sided(
     int m1, int n1, int m2, int n2,
     int m3, int n3, int k, int ib,

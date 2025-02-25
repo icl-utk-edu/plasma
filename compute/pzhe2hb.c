@@ -50,6 +50,8 @@ void plasma_pzhe2hb(
         for (int k = 0; k < A.nt-1; ++k) {
             int nvak = plasma_tile_nview(A, k+1);
             int ldak = plasma_tile_mmain(A, k+1);
+
+            // Factor 1st off-diag tile in col k, A(k+1, k).
             plasma_core_omp_zgeqrt(
                 nvak, A.nb, ib,
                 A(k+1, k), ldak,
@@ -57,7 +59,7 @@ void plasma_pzhe2hb(
                 work,
                 sequence, request);
 
-            // LEFT and RIGHT on the Hermitian diagonal block
+            // Apply Q on left and right of Hermitian diag block, A(k+1, k+1).
             plasma_core_omp_zherfb(
                 PlasmaLower,
                 nvak, nvak, ib,
@@ -67,7 +69,7 @@ void plasma_pzhe2hb(
                 work,
                 sequence, request);
 
-            // RIGHT on the remaining tiles until the bottom
+            // Apply Q on right of the remaining tiles in col k+1.
             for (int i = k+2; i < A.mt; ++i) {
                 int mvai = plasma_tile_mview(A, i);
                 int ldai = plasma_tile_mmain(A, i);
@@ -84,6 +86,11 @@ void plasma_pzhe2hb(
             for (int i = k+2; i < A.mt; ++i) {
                 int mvai = plasma_tile_mview(A, i);
                 int ldai = plasma_tile_mmain(A, i);
+
+                // Factor triangular A(k+1, k) with next square, A(i, k).
+                //     [ A(k+1, k) ]  triangle
+                //     [    ...    ]
+                //     [ A(i,   k) ]  square (or rectangle)
                 plasma_core_omp_ztsqrt(
                     mvai, A.nb, ib,
                     A(k+1, k), ldak,
@@ -92,7 +99,14 @@ void plasma_pzhe2hb(
                     work,
                     sequence, request);
 
-                // LEFT
+                // Apply Q from [ A(k+1, k) ;;; A(i, k) ] on left and right:
+
+                // On left of tiles in rows k+1 and i,
+                // between cols k+1 and i in Hermitian sub-matrix (see below).
+                // Row k+1 is taken as conj-trans of col k+1.
+                //     [ A(k+1, j) ]    [                       ]
+                //     [    ...    ] => [ A(j, k+1)^H           ]
+                //     [ A(i,   j) ]    [     ...       A(i, j) ]
                 for (int j = k+2; j < i; ++j) {
                     int ldaj = plasma_tile_mmain(A, j);
                     plasma_core_omp_ztsmqr_conj_trans(
@@ -106,7 +120,8 @@ void plasma_pzhe2hb(
                         sequence, request);
                 }
 
-                // RIGHT
+                // On right of tiles in cols k+1 and i,
+                // below row i in Hermitian sub-matrix (see below).
                 for (int j = i+1; j < A.mt; ++j) {
                     int mvaj = plasma_tile_mview(A, j);
                     int ldaj = plasma_tile_mmain(A, j);
@@ -121,8 +136,10 @@ void plasma_pzhe2hb(
                         sequence, request);
                 }
 
-                // LEFT->RIGHT
-                plasma_core_omp_ztsmqr_corner(
+                // On left and right of the Hermitian sub-matrix:
+                //     [ A( k+1, k+1 )    symmetric ]
+                //     [ A( i,   k+1 )    A( i, i ) ]
+                plasma_core_omp_ztsmqr_2sided(
                     A.nb, A.nb, mvai, A.nb,
                     mvai, mvai, A.nb, ib,
                     A(k+1, k+1), ldak,
@@ -140,6 +157,8 @@ void plasma_pzhe2hb(
             int nvak = plasma_tile_nview(A, k+1);
             int ldak  = plasma_tile_mmain(A, k);
             int ldak1 = plasma_tile_mmain(A, k+1);
+
+            // Factor 1st off-diag tile in row k, A(k, k+1).
             plasma_core_omp_zgelqt(
                 A.nb, nvak, ib,
                 A(k, k+1), ldak,
@@ -147,7 +166,7 @@ void plasma_pzhe2hb(
                 work,
                 sequence, request);
 
-            // RIGHT and LEFT on the Hermitian diagonal block
+            // Apply Q on right and left of Hermitian diag block, A(k+1, k+1).
             plasma_core_omp_zherfb(
                 PlasmaUpper,
                 nvak, nvak, ib,
@@ -157,7 +176,7 @@ void plasma_pzhe2hb(
                 work,
                 sequence, request);
 
-            // LEFT on the remaining tiles until the left side
+            // Apply Q on left of the remaining tiles in row k+1.
             for (int j = k+2; j < A.nt; ++j) {
                 int nvaj = plasma_tile_nview(A, j);
                 plasma_core_omp_zunmlq(
@@ -174,6 +193,7 @@ void plasma_pzhe2hb(
                 int nvaj = plasma_tile_nview(A, j);
                 int ldaj = plasma_tile_nmain(A, j);
 
+                // Factor triangular A(k, k+1) with next square, A(k, j).
                 plasma_core_omp_ztslqt(
                     A.nb, nvaj, ib,
                     A(k, k+1), ldak,
@@ -182,8 +202,12 @@ void plasma_pzhe2hb(
                     work,
                     sequence, request);
 
-                // RIGHT
-                for (int i = k+2; i < n; ++i) {
+                // Apply Q from [ A(k, k+1) ... A(k, j) ] on left and right:
+
+                // On right of tiles in cols k+1 and i,
+                // between rows k+1 and j in Hermitian sub-matrix (see below).
+                // Col k+1 is taken as conj-trans of row k+1.
+                for (int i = k+2; i < j; ++i) {
                     int ldai = plasma_tile_nmain(A, i);
 
                     plasma_core_omp_ztsmlq_conj_trans(
@@ -197,7 +221,8 @@ void plasma_pzhe2hb(
                         sequence, request);
                 }
 
-                // LEFT
+                // On left of tiles in rows k+1 and i,
+                // right of col j in Hermitian sub-matrix (see below).
                 for (int i = j+1; i < A.nt; ++i) {
                     int nvai = plasma_tile_nview(A, i);
                     plasma_core_omp_ztsmlq(
@@ -211,7 +236,9 @@ void plasma_pzhe2hb(
                         sequence, request);
                 }
 
-                // RIGHT->LEFT
+                // On left and right of the Hermitian sub-matrix:
+                //     [ A( k+1, k+1 )    A( k+1, j ) ]
+                //     [ symmetric        A( j,   j ) ]
                 plasma_core_omp_ztsmlq_2sided(
                     A.nb, A.nb, A.nb, nvaj,
                     nvaj, nvaj, A.nb, ib,
