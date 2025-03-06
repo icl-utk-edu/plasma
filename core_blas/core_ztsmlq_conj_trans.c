@@ -129,6 +129,8 @@ int plasma_core_ztsmlq_conj_trans(
     const plasma_complex64_t *T,  int ldt,
           plasma_complex64_t *work, int ldwork)
 {
+    plasma_complex64_t tmp;
+
     // Check input arguments.
     if (m1 != n1) {
         plasma_coreblas_error("illegal value of m1, n1");
@@ -137,12 +139,12 @@ int plasma_core_ztsmlq_conj_trans(
 
     // in-place transposition of A1
     for (int j = 0; j < n1; ++j) {
-        A1[j + j*lda1] = conj(A1[j + j*lda1]);
+        A1[ j + j*lda1 ] = conj( A1[ j + j*lda1 ] );
 
         for (int i = j+1; i < m1; ++i) {
-            *work = *(A1 + i + j*lda1);
-            *(A1 + i + j*lda1) = conj(*(A1 + j + i*lda1));
-            *(A1 + j + i*lda1) = conj(*work);
+            tmp = A1[ i + j*lda1 ];
+            A1[ i + j*lda1 ] = conj( A1[ j + i*lda1 ] );
+            A1[ j + i*lda1 ] = conj( tmp );
         }
     }
 
@@ -154,12 +156,12 @@ int plasma_core_ztsmlq_conj_trans(
 
     // in-place transposition of A1
     for (int j = 0; j < n1; ++j) {
-        A1[j + j*lda1] = conj(A1[j + j*lda1]);
+        A1[ j + j*lda1 ] = conj( A1[ j + j*lda1 ] );
 
         for (int i = j+1; i < m1; ++i) {
-            *work = *(A1 + i + j*lda1);
-            *(A1 + i + j*lda1) = conj(*(A1 + j + i*lda1));
-            *(A1 + j + i*lda1) = conj(*work);
+            tmp = A1[ i + j*lda1 ];
+            A1[ i + j*lda1 ] = conj( A1[ j + i*lda1 ] );
+            A1[ j + i*lda1 ] = conj( tmp );
         }
     }
 
