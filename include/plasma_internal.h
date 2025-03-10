@@ -39,6 +39,9 @@ static inline int imax(int a, int b)
         return b;
 }
 
+/// Use to silence compiler warning of unused variable.
+#define plasma_unused( var ) ((void) var)
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif
