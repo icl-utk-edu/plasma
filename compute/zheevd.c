@@ -318,20 +318,27 @@ void plasma_omp_zheevd(
     int nb = imin(A.mb, A.m);
     int lda_band = 2*nb + 1;
 
+    // Declare pointers and set NULL before first goto cleanup.
+    plasma_complex64_t *A_band = NULL;
+    plasma_complex64_t *TAU2 = NULL;
+    plasma_complex64_t *V2 = NULL;
+    plasma_complex64_t *T2 = NULL;
+    double *E = NULL;
+
     // Allocate workspace for band storage of the band matrix A
     // and for the off-diagonal after tridiagonalisation.
-    plasma_complex64_t *A_band = (plasma_complex64_t *)
+    A_band = (plasma_complex64_t *)
         calloc((size_t)lda_band*n, sizeof(plasma_complex64_t));
-    memset( A_band, 0, lda_band*n*sizeof(plasma_complex64_t) );
     if (A_band == NULL) {
         plasma_error("memory allocation(A_band) failed");
-        return;
+        goto cleanup;
     }
-    double *E = (double *)calloc((size_t)n, sizeof(double));
+    memset( A_band, 0, (size_t) lda_band*n*sizeof(plasma_complex64_t) );
+
+    E = (double *)calloc((size_t)n, sizeof(double));
     if (E == NULL) {
         plasma_error("malloc(E) failed");
-        free(A_band);
-        return;
+        goto cleanup;
     }
 
     //===================
@@ -356,14 +363,12 @@ void plasma_omp_zheevd(
     }
     double stop = omp_get_wtime();
     double time = stop - start;
+    (void) time;  // mark as unused
     //printf("\n n=%d:  1-stage time = %lf\t", n, time);
 
     //====================
     //  Bulge chasing
     //====================
-    plasma_complex64_t *TAU2 = NULL;
-    plasma_complex64_t *V2 = NULL;
-    plasma_complex64_t *T2 = NULL;
     int Vblksiz;  // Blocking used when applying V2 to the matrix Q
     int blkcnt;   // Number of diamond tile or tile of Vs
     int ldt, ldv;
@@ -387,28 +392,23 @@ void plasma_omp_zheevd(
             calloc((size_t)ldt*blkcnt*Vblksiz, sizeof(plasma_complex64_t));
         if (TAU2 == NULL || V2 == NULL || T2 == NULL) {
             plasma_error("calloc() failed");
-            free(TAU2);
-            free(V2);
-            free(T2);
-            return;
+            goto cleanup;
         }
-        memset(TAU2, 0,     blkcnt*Vblksiz*sizeof(plasma_complex64_t));
-        memset(V2,   0, ldv*blkcnt*Vblksiz*sizeof(plasma_complex64_t));
-        memset(T2,   0, ldt*blkcnt*Vblksiz*sizeof(plasma_complex64_t));
+        memset(TAU2, 0, (size_t)     blkcnt*Vblksiz*sizeof(plasma_complex64_t));
+        memset(V2,   0, (size_t) ldv*blkcnt*Vblksiz*sizeof(plasma_complex64_t));
+        memset(T2,   0, (size_t) ldt*blkcnt*Vblksiz*sizeof(plasma_complex64_t));
     }
     else {
         TAU2 = (plasma_complex64_t *)
             calloc((size_t)2*n, sizeof(plasma_complex64_t));
         V2 = (plasma_complex64_t *)
-            calloc((size_t)2*n, sizeof(plasma_complex64_t ));
+            calloc((size_t)2*n, sizeof(plasma_complex64_t));
         if (TAU2 == NULL || V2 == NULL) {
             plasma_error("calloc() failed");
-            free(TAU2);
-            free(V2);
-            return;
+            goto cleanup;
         }
-        memset(TAU2, 0, 2*n*sizeof(plasma_complex64_t));
-        memset(V2,   0, 2*n*sizeof(plasma_complex64_t));
+        memset(TAU2, 0, (size_t) 2*n*sizeof(plasma_complex64_t));
+        memset(V2,   0, (size_t) 2*n*sizeof(plasma_complex64_t));
     }
 
     // Main bulge chasing kernel.
@@ -470,7 +470,7 @@ void plasma_omp_zheevd(
         }
 
         //=======================================
-        // Apply Q1 from the first stage .
+        // Apply Q1 from the first stage.
         //=======================================
         // If nb > n, Q1 doesn't need to be applied,
         // only bulge chasing has been done
@@ -517,6 +517,8 @@ void plasma_omp_zheevd(
     time = stop - start;
     //printf("Eigenvector timing = %lf\n", time);
 
+cleanup:
+    // If a pointer is NULL, free does nothing.
     free(T2);
     free(V2);
     free(TAU2);
