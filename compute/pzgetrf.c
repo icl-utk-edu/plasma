@@ -46,6 +46,7 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
         // doing any useful work.
         for (int m = k+1; m < A.mt-1; m++) {
             plasma_complex64_t *amk = A(m, k);
+            plasma_unused( amk );
             #pragma omp task depend (in:amk[0]) \
                              depend (inout:a00[0]) \
                              priority(1)
@@ -220,6 +221,7 @@ void plasma_pzgetrf(plasma_desc_t A, int *ipiv,
         // Multidependency of individual tiles on the whole panel.
         for (int m = k+2; m < A.mt-1; m++) {
             plasma_complex64_t *amk = A(m, k);
+            plasma_unused( amk );
             #pragma omp task depend (in:a10[0]) \
                              depend (inout:amk[0])
             {

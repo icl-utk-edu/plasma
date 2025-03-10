@@ -87,7 +87,7 @@ static void testMatrix_Kahan(double* diag, double *offd,
 static double testEVec(double *diag, double *offd,
               int n, double *X, double lambda) {
     int i;
-    double mmRes, vmRes, error, sumMM=0., sumVec=0., invLambda = 1.0/lambda;
+    double mmRes, vmRes, sumMM=0., sumVec=0., invLambda = 1.0/lambda;
 
     mmRes = (diag[0]*X[0] + offd[0]*X[1])*invLambda;
     vmRes = X[0];
@@ -176,12 +176,12 @@ void test_dstevx2(param_value_t param[], bool run)
 
     double myDiag=1.e-5;
     testMatrix_Kahan(Diag, Offd, eigenvalues, m, myDiag);
-    double minAbsEV=__DBL_MAX__, maxAbsEV=0., Kond;
+    double minAbsEV=__DBL_MAX__, maxAbsEV=0.;
     for (i=0; i<m; i++) {
         if (fabs(eigenvalues[i]) < minAbsEV) minAbsEV=fabs(eigenvalues[i]);
         if (fabs(eigenvalues[i]) > maxAbsEV) maxAbsEV=fabs(eigenvalues[i]);
     }
-    Kond = maxAbsEV / minAbsEV;
+    //double Kond = maxAbsEV / minAbsEV;
 
     lapack_int nEigVals=0, vectorsFound=0;
     lapack_int il=0, iu=500;
@@ -274,9 +274,11 @@ void test_dstevx2(param_value_t param[], bool run)
          *********************************************************************/
 
         double worstEigenvalue_error = 0, worstEigenvalue_eps;
-        lapack_int worstEigenvalue_index = 0, worstEigenvalue_mpcty = 0, max_mpcty = 0;
+        lapack_int max_mpcty = 0;
+        //lapack_int worstEigenvalue_index = 0;
+        //lapack_int worstEigenvalue_mpcty = 0;
+        //lapack_int worstEigenvector_index = 0;
         double worstEigenvector_error = 0;
-        lapack_int worstEigenvector_index = 0;
         i=0;
         lapack_int evIdx=m-nEigVals;
         while (evIdx < m) {
@@ -286,10 +288,10 @@ void test_dstevx2(param_value_t param[], bool run)
                 double ev_eps = nexttoward(fabs(eigenvalues[evIdx]), __DBL_MAX__) - fabs(eigenvalues[evIdx]);
                 double error = fabs(pVal[i]-eigenvalues[evIdx]) / ev_eps;
                 if (error > worstEigenvalue_error) {
-                    worstEigenvalue_index = i;
+                    //worstEigenvalue_index = i;
                     worstEigenvalue_error = error;
                     worstEigenvalue_eps = ev_eps;
-                    worstEigenvalue_mpcty = pMul[i];
+                    //worstEigenvalue_mpcty = pMul[i];
                 }
 
                 evIdx++; /* advance known eigenvalue index for a multiplicity. */
@@ -326,7 +328,7 @@ void test_dstevx2(param_value_t param[], bool run)
 
             if (vErr > worstEigenvector_error) {
                 worstEigenvector_error = vErr;
-                worstEigenvector_index = i;
+                //worstEigenvector_index = i;
             }
         }
 
