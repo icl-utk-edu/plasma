@@ -113,66 +113,72 @@ int plasma_core_ztsmqr_2sided(
           plasma_complex64_t *A1, int lda1,
           plasma_complex64_t *A2, int lda2,
           plasma_complex64_t *A3, int lda3,
-    const plasma_complex64_t *V, int ldv,
-    const plasma_complex64_t *T, int ldt,
+    const plasma_complex64_t *V,  int ldv,
+    const plasma_complex64_t *T,  int ldt,
     plasma_complex64_t *work, int ldwork)
 {
-    plasma_enum_t side, trans;
+    plasma_enum_t side;
+    plasma_enum_t trans;
 
     // Check input arguments.
     if (m1 != n1) {
         plasma_coreblas_error("illegal value of m1, n1");
         return -1;
     }
+    assert( n2 == n1 );
+    assert( m3 == m2 );
+    assert( n3 == m2 );
+
     int nb = n1;
-    // Rebuild the Hermitian block: work <- A1
+
+    // Copy and symmetrize the Hermitian block:
+    // work <- tril( A1 ) + tril( A1, -1 )^H.
+    // Assumes A1 is stored lower.
     for (int j = 0; j < n1; ++j) {
         for (int i = j; i < m1; ++i) {
-            *(work + i + j*ldwork) = *(A1 + i + j*lda1);
+            work[ i + j*ldwork ] = A1[ i + j*lda1 ];
             if (i > j) {
-                *(work + j + i*ldwork) =  conj( *(work + i + j*ldwork) );
+                work[ j + i*ldwork ] =  conj( work[ i + j*ldwork ] );
             }
         }
     }
 
-    // Copy the transpose of A2: work+nb*ldwork <- A2^H
+    // Copy the transpose of A2: work + nb*ldwork <- A2^H
     for (int j = 0; j < n2; ++j) {
         for (int i = 0; i < m2; ++i) {
-            *(work + j + (i + nb) * ldwork) = conj( *(A2 + i + j*lda2) );
+            work[ j + (i + nb)*ldwork ] = conj( A2[ i + j*lda2 ] );
         }
     }
 
     side  = PlasmaLeft;
     trans = Plasma_ConjTrans;
 
-    //==============================================
     // Left application on | A1 |
     //                     | A2 |
-    //=============================================
     plasma_core_ztsmqr(
         side, trans, m1, n1, m2, n2, k, ib,
         work, ldwork, A2, lda2,
         V, ldv, T, ldt,
         work + 3*nb*ldwork, ldwork);
 
-    // Rebuild the Hermitian block: work+2*nb*ldwork <- A3
+    // Copy and symmetrize the Hermitian block:
+    // work + 2*nb*ldwork <- tril( A3 ) + tril( A3, -1 )^H.
+    // Assumes A3 is stored lower.
     for (int j = 0; j < n3; ++j) {
         for (int i = j; i < m3; ++i) {
-            *(work + i + (j + 2*nb) * ldwork) = *(A3 + i + j*lda3);
-            if (i != j) {
-                *(work + j + (i + 2*nb) * ldwork)
-                    = conj( *(work + i + (j + 2*nb) * ldwork) );
+            work[ i + (j + 2*nb)* ldwork ] = A3[ i + j*lda3 ];
+            if (i > j) {
+                work[ j + (i + 2*nb)*ldwork ]
+                    = conj( work[ i + (j + 2*nb)*ldwork ] );
             }
         }
     }
 
-    //===========================================
     // Left application on | A2^H |
     //                     | A3   |
-    //==========================================
     plasma_core_ztsmqr(
         side, trans, n2, m2, m3, n3, k, ib,
-        work+nb*ldwork, ldwork, work+2*nb*ldwork, ldwork,
+        work + nb*ldwork, ldwork, work + 2*nb*ldwork, ldwork,
         V, ldv, T, ldt,
         work + 3*nb*ldwork, ldwork);
 
@@ -182,32 +188,30 @@ int plasma_core_ztsmqr_2sided(
     // Right application on | A1 A2^H |
     plasma_core_ztsmqr(
         side, trans, m1, n1, n2, m2, k, ib,
-        work, ldwork, work+nb*ldwork, ldwork,
+        work, ldwork, work + nb*ldwork, ldwork,
         V, ldv, T, ldt,
         work + 3*nb*ldwork, ldwork);
 
     // Copy back the final result to the lower part of A1
-    // A1 = work
+    // A1 = tril( work )
     for (int j = 0; j < n1; ++j) {
         for (int i = j; i < m1; ++i) {
-            *(A1 + i + j*lda1) = *(work + i + j*ldwork);
+            A1[ i + j*lda1 ] = work[ i + j*ldwork ];
         }
     }
 
     // Right application on | A2 A3 |
     plasma_core_ztsmqr(
         side, trans, m2, n2, m3, n3, k, ib,
-        A2, lda2, work+2*nb*ldwork, ldwork,
-        V,  ldv,  T, ldt,
+        A2, lda2, work + 2*nb*ldwork, ldwork,
+        V, ldv, T, ldt,
         work + 3*nb*ldwork, ldwork);
 
-    //=======================================================
     // Copy back the final result to the lower part of A3
-    // A3 = work+2*nb*ldwork
-    //=======================================================
+    // A3 = tril( work + 2*nb*ldwork )
     for (int j = 0; j < n3; ++j) {
         for (int i = j; i < m3; ++i) {
-            *(A3 + i + j*lda3) = *(work + i + (j + 2*nb) * ldwork);
+            A3[ i + j*lda3 ] = work[ i + (j + 2*nb)*ldwork ];
         }
     }
 
@@ -251,6 +255,7 @@ void plasma_core_omp_ztsmqr_2sided(
                 V, ldv,
                 T, ldt,
                 W, ldwork);
+
             if (info != PlasmaSuccess) {
                 plasma_error_with_code("core_ztsmqr_2sided failed", -info);
                 plasma_request_fail(sequence, request,

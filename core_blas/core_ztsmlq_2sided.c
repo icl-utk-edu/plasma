@@ -125,25 +125,33 @@ int plasma_core_ztsmlq_2sided(
         plasma_coreblas_error("illegal value of m1, n1");
         return -1;
     }
+    assert( m2 == m1 );
+    assert( m3 == n2 );
+    assert( n3 == n2 );
+
     int nb = n1;
-    // Rebuild the Hermitian block: work <- A1
+
+    // Copy and symmetrize the Hermitian block:
+    // work <- triu( A1 ) + triu( A1, 1 )^H.
+    // Assumes A1 is stored upper.
+    // @todo: swap i, j loops for cache efficiency.
     for (int i = 0; i < m1; ++i) {
         for (int j = i; j < n1; ++j) {
-            *(work + i + j*ldwork) = *(A1 + i + j*lda1);
+            work[ i + j*ldwork ] = A1[ i + j*lda1 ];
             if (j > i) {
-                *(work + j + i*ldwork) =  conj( *(work + i + j*ldwork) );
+                work[ j + i*ldwork ] =  conj( work[ i + j*ldwork ] );
             }
         }
     }
 
-    // Copy the transpose of A2: work+nb*ldwork <- A2^H
+    // Copy the transpose of A2: work + nb*ldwork <- A2^H
     for (int j = 0; j < n2; ++j) {
         for (int i = 0; i < m2; ++i) {
-            *(work + j + (i + nb) * ldwork) = conj( *(A2 + i + j*lda2) );
+            work[ j + (i + nb)*ldwork ] = conj( A2[ i + j*lda2 ] );
         }
     }
 
-    side = PlasmaRight;
+    side  = PlasmaRight;
     trans = Plasma_ConjTrans;
 
     // Right application on | A1 A2 |
@@ -151,14 +159,18 @@ int plasma_core_ztsmlq_2sided(
         side, trans, m1, n1, m2, n2, k, ib,
         work, ldwork, A2, lda2,
         V, ldv, T, ldt,
-        work+3*nb*ldwork, ldwork);
+        work + 3*nb*ldwork, ldwork);
 
-    // Rebuild the Hermitian block: work+2*nb*ldwork <- A3
+    // Copy and symmetrize the Hermitian block:
+    // work + 2*nb*ldwork <- triu( A3 ) + triu( A3, 1 )^H.
+    // Assumes A3 is stored upper.
+    // @todo: swap i, j loops for cache efficiency.
     for (int i = 0; i < m3; ++i) {
         for (int j = i; j < n3; ++j) {
-            *(work + i + (j + 2*nb) * ldwork) = *(A3 + i + j*lda3);
+            work[ i + (j + 2*nb) * ldwork ] = A3[ i + j*lda3 ];
             if (j > i) {
-                *(work + j + (i + 2*nb) * ldwork) =  conj ( *(work + i + (j + 2*nb) * ldwork) );
+                work[ j + (i + 2*nb)*ldwork ]
+                    = conj( work[ i + (j + 2*nb)*ldwork ] );
             }
         }
     }
@@ -166,50 +178,42 @@ int plasma_core_ztsmlq_2sided(
     // Right application on | A2^H A3 |
     plasma_core_ztsmlq(
         side, trans, n2, m2, m3, n3, k, ib,
-        work+nb*ldwork, ldwork, work+2*nb*ldwork, ldwork,
+        work + nb*ldwork, ldwork, work + 2*nb*ldwork, ldwork,
         V, ldv, T, ldt,
         work + 3*nb*ldwork, ldwork);
 
-    side = PlasmaLeft;
+    side  = PlasmaLeft;
     trans = PlasmaNoTrans;
 
-    //========================================================
     // Left application on | A1   |
     //                     | A2^H |
-    //========================================================
     plasma_core_ztsmlq(
         side, trans, m1, n1, n2, m2, k, ib,
-        work, ldwork, work+nb*ldwork, ldwork,
+        work, ldwork, work + nb*ldwork, ldwork,
         V, ldv, T, ldt,
         work + 3*nb*ldwork, ldwork);
 
-    //========================================================
     // Copy back the final result to the upper part of A1
-    // A1 = work
-    //========================================================
+    // A1 = triu( work )
     for (int i = 0; i < m1; ++i) {
         for (int j = i; j < n1; ++j) {
-            *(A1 + i + j*lda1) = *(work + i + j*ldwork);
+            A1[ i + j*lda1 ] = work[ i + j*ldwork ];
         }
     }
 
-    //========================================================
     // Left application on | A2 |
     //                     | A3 |
-    //========================================================
     plasma_core_ztsmlq(
         side, trans, m2, n2, m3, n3, k, ib,
         A2, lda2, work + 2*nb*ldwork, ldwork,
         V, ldv, T, ldt,
         work + 3*nb*ldwork, ldwork);
 
-    //========================================================
     // Copy back the final result to the upper part of A3
-    // A3 = work+2*nb*ldwork
-    //========================================================
+    // A3 = triu( work + 2*nb*ldwork )
     for (int i = 0; i < m3; ++i) {
         for (int j = i; j < n3; ++j) {
-            *(A3 + i + j*lda3) = *(work + i + (j + 2*nb) * ldwork);
+            A3[ i + j*lda3 ] = work[ i + (j + 2*nb)*ldwork ];
         }
     }
 
