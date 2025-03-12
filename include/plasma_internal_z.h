@@ -43,7 +43,7 @@ void plasma_pzdesc2pb(
     plasma_sequence_t *sequence,
     plasma_request_t *request);
 
-void plasma_pzgbbrd_static(
+void plasma_pztbbrd_static(
     plasma_enum_t uplo, int minmn, int nb, int Vblksiz,
     plasma_complex64_t *A, int lda,
     plasma_complex64_t *VQ, plasma_complex64_t *TAUQ,
@@ -113,7 +113,7 @@ void plasma_pzgetrf(
     plasma_desc_t A, int *ipiv,
     plasma_sequence_t *sequence, plasma_request_t *request);
 
-void plasma_pzge2gb(
+void plasma_pzge2tb(
     plasma_desc_t A, plasma_desc_t T,
     plasma_workspace_t work,
                     plasma_sequence_t *sequence, plasma_request_t *request);

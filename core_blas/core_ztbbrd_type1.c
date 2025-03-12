@@ -29,9 +29,9 @@
 /**
  *****************************************************************************
  *
- * @ingroup core_zgbtype1cb
+ * @ingroup core_tbbrd_type1
  *
- *  core_zgbtype1cb is a kernel that will operate on a region (triangle) of data
+ *  core_ztbbrd_type1 is a kernel that will operate on a region (triangle) of data
  *  bounded by st and ed. This kernel eliminate a column by an column-wise
  *  annihiliation, then it apply a left+right update on the hermitian triangle.
  *  Note that the column to be eliminated is located at st-1.
@@ -120,7 +120,8 @@
  *          TYPE 1-BAND-bidiag Lower/Upper columnwise-Householder
  ***************************************************************************/
 
-void plasma_core_zgbtype1cb (plasma_enum_t uplo, int n, int nb,
+void plasma_core_ztbbrd_type1(
+    plasma_enum_t uplo, int n, int nb,
                      plasma_complex64_t *A, int lda,
                      plasma_complex64_t *VQ, plasma_complex64_t *TAUQ,
                      plasma_complex64_t *VP, plasma_complex64_t *TAUP,
@@ -149,7 +150,7 @@ void plasma_core_zgbtype1cb (plasma_enum_t uplo, int n, int nb,
         /* ========================
          *       UPPER CASE
          * ========================*/
-        // Eliminate the row  at st-1 
+        // Eliminate the row  at st-1
         *VP(vpos) = 1.;
         for(i=1; i<len; i++){
             *VP(vpos+i)     = conj(*AU(st-1, st+i));
@@ -158,12 +159,12 @@ void plasma_core_zgbtype1cb (plasma_enum_t uplo, int n, int nb,
         ctmp = conj(*AU(st-1, st));
         LAPACKE_zlarfg_work(len, &ctmp, VP(vpos+1), 1, TAUP(taupos) );
         *AU(st-1, st) = ctmp;
-        // Apply right on A(st:ed,st:ed) 
+        // Apply right on A(st:ed,st:ed)
         ctmp = *TAUP(taupos);
         LAPACKE_zlarfx_work(LAPACK_COL_MAJOR, 'R',
                             len, len, VP(vpos), ctmp, AU(st, st), LDX, WORK);
 
-        // Eliminate the created col at st 
+        // Eliminate the created col at st
         *VQ(vpos) = 1.;
         memcpy( VQ(vpos+1), AU(st+1, st), (len-1)*sizeof(plasma_complex64_t) );
         memset( AU(st+1, st), 0, (len-1)*sizeof(plasma_complex64_t) );
@@ -176,16 +177,16 @@ void plasma_core_zgbtype1cb (plasma_enum_t uplo, int n, int nb,
         /* ========================
          *       LOWER CASE
          * ========================*/
-        // Eliminate the col  at st-1 
+        // Eliminate the col  at st-1
         *VQ(vpos) = 1.;
         memcpy( VQ(vpos+1), AL(st+1, st-1), (len-1)*sizeof(plasma_complex64_t) );
         memset( AL(st+1, st-1), 0, (len-1)*sizeof(plasma_complex64_t) );
         LAPACKE_zlarfg_work(len, AL(st, st-1), VQ(vpos+1), 1, TAUQ(taupos) );
-        // Apply left on A(st:ed,st:ed) 
+        // Apply left on A(st:ed,st:ed)
         ctmp = conj(*TAUQ(taupos));
         LAPACKE_zlarfx_work(LAPACK_COL_MAJOR, 'L',
                             len, len, VQ(vpos), ctmp, AL(st, st), LDX, WORK);
-        // Eliminate the created row at st 
+        // Eliminate the created row at st
         *VP(vpos) = 1.;
         for(i=1; i<len; i++){
             *VP(vpos+i)     = conj(*AL(st, st+i));

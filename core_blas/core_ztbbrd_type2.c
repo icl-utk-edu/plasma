@@ -28,9 +28,9 @@
 
 /***************************************************************************//**
  *
- * @ingroup core_zgbtype2cb
+ * @ingroup core_tbbrd_type2
  *
- *  core_zgbtype2cb is a kernel that will operate on a region (triangle) of data
+ *  core_ztbbrd_type2 is a kernel that will operate on a region (triangle) of data
  *  bounded by st and ed. This kernel apply the right update remaining from the
  *  type1 and this later will create a bulge so it eliminate the first column of
  *  the created bulge and do the corresponding Left update.
@@ -125,7 +125,8 @@
  *          TYPE 2-BAND-bidiag Lower/Upper columnwise-Householder
  ***************************************************************************/
 
-void plasma_core_zgbtype2cb (plasma_enum_t uplo, int n, int nb,
+void plasma_core_ztbbrd_type2(
+    plasma_enum_t uplo, int n, int nb,
                      plasma_complex64_t *A, int lda,
                      plasma_complex64_t *VQ, plasma_complex64_t *TAUQ,
                      plasma_complex64_t *VP, plasma_complex64_t *TAUP,
@@ -154,7 +155,7 @@ void plasma_core_zgbtype2cb (plasma_enum_t uplo, int n, int nb,
                 findVTpos(n, nb, Vblksiz, sweep, st,
                           &vpos, &taupos, &tpos, &blkid);
             }
-            // Apply remaining Left commming from type1/3_upper 
+            // Apply remaining Left commming from type1/3_upper
             ctmp = conj(*TAUQ(taupos));
             LAPACKE_zlarfx_work(LAPACK_COL_MAJOR, 'L',
                                 lem, len, VQ(vpos), ctmp, AU(st, J1), LDX, WORK);
@@ -168,13 +169,13 @@ void plasma_core_zgbtype2cb (plasma_enum_t uplo, int n, int nb,
                 findVTpos(n,nb,Vblksiz,sweep,J1, &vpos, &taupos, &tpos, &blkid);
             }
 
-            // Remove the top row of the created bulge 
+            // Remove the top row of the created bulge
             *VP(vpos) = 1.;
             for(i=1; i<len; i++){
                 *VP(vpos+i)     = conj(*AU(st, J1+i));
                 *AU(st, J1+i) = 0.;
             }
-            // Eliminate the row  at st 
+            // Eliminate the row  at st
             ctmp = conj(*AU(st, J1));
             LAPACKE_zlarfg_work(len, &ctmp, VP(vpos+1), 1, TAUP(taupos) );
             *AU(st, J1) = ctmp;
@@ -200,7 +201,7 @@ void plasma_core_zgbtype2cb (plasma_enum_t uplo, int n, int nb,
                 findVTpos(n, nb, Vblksiz, sweep, st,
                           &vpos, &taupos, &tpos, &blkid);
             }
-            // Apply remaining Right commming from type1/3_lower 
+            // Apply remaining Right commming from type1/3_lower
             ctmp = (*TAUP(taupos));
             LAPACKE_zlarfx_work(LAPACK_COL_MAJOR, 'R',
                                 len, lem, VP(vpos), ctmp, AL(J1, st), LDX, WORK);
@@ -217,7 +218,7 @@ void plasma_core_zgbtype2cb (plasma_enum_t uplo, int n, int nb,
             *VQ(vpos) = 1.;
             memcpy(VQ(vpos+1), AL(J1+1, st), (len-1)*sizeof(plasma_complex64_t));
             memset(AL(J1+1, st), 0, (len-1)*sizeof(plasma_complex64_t));
-            // Eliminate the col  at st 
+            // Eliminate the col  at st
             LAPACKE_zlarfg_work(len, AL(J1, st), VQ(vpos+1), 1, TAUQ(taupos) );
             /*
              * Apply left on A(J1:J2,st+1:ed)

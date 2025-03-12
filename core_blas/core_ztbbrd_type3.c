@@ -28,9 +28,9 @@
 
 /***************************************************************************//**
  *
- * @ingroup core_zgbtype3cb
+ * @ingroup core_tbbrd_type3
  *
- *  core_zgbtype3cb is a kernel that will operate on a region (triangle) of data
+ *  core_ztbbrd_type3 is a kernel that will operate on a region (triangle) of data
  *  bounded by st and ed. This kernel apply a left+right update on the hermitian
  *  triangle.  Note that this kernel is very similar to type1 but does not do an
  *  elimination.
@@ -119,7 +119,8 @@
 /***************************************************************************
  *          TYPE 3-BAND-bidiag Lower/Upper columnwise-Householder
  ***************************************************************************/
-void plasma_core_zgbtype3cb(plasma_enum_t uplo, int n, int nb,
+void plasma_core_ztbbrd_type3(
+    plasma_enum_t uplo, int n, int nb,
                      plasma_complex64_t *A, int lda,
                      plasma_complex64_t *VQ, plasma_complex64_t *TAUQ,
                      plasma_complex64_t *VP, plasma_complex64_t *TAUP,
@@ -144,12 +145,12 @@ void plasma_core_zgbtype3cb(plasma_enum_t uplo, int n, int nb,
         /* ========================
          *       UPPER CASE
          * ========================*/
-        // Apply right on A(st:ed,st:ed) 
+        // Apply right on A(st:ed,st:ed)
         ctmp = *TAUP(taupos);
         LAPACKE_zlarfx_work(LAPACK_COL_MAJOR, 'R',
                             len, len, VP(vpos), ctmp, AU(st, st), LDX, WORK);
 
-        // Eliminate the created col at st 
+        // Eliminate the created col at st
         *VQ(vpos) = 1.;
         memcpy( VQ(vpos+1), AU(st+1, st), (len-1)*sizeof(plasma_complex64_t) );
         memset( AU(st+1, st), 0, (len-1)*sizeof(plasma_complex64_t) );
@@ -162,7 +163,7 @@ void plasma_core_zgbtype3cb(plasma_enum_t uplo, int n, int nb,
         /* ========================
          *       LOWER CASE
          * ========================*/
-        // Apply left on A(st:ed,st:ed) 
+        // Apply left on A(st:ed,st:ed)
         ctmp = conj(*TAUQ(taupos));
         LAPACKE_zlarfx_work(LAPACK_COL_MAJOR, 'L',
                             len, len, VQ(vpos), ctmp, AL(st, st), LDX, WORK);
@@ -180,7 +181,7 @@ void plasma_core_zgbtype3cb(plasma_enum_t uplo, int n, int nb,
         LAPACKE_zlarfx_work(LAPACK_COL_MAJOR, 'R',
                             lenj, len, VP(vpos), ctmp, AL(st+1, st), LDX, WORK);
     }
-    // end of uplo case 
+    // end of uplo case
     return;
 }
 /***************************************************************************/

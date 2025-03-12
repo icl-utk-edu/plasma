@@ -45,7 +45,8 @@
 
 //  Parallel bulge chasing column-wise - static scheduling
 
-void plasma_pzgbbrd_static (plasma_enum_t uplo, int minmn, int nb, int Vblksiz,
+void plasma_pztbbrd_static(
+    plasma_enum_t uplo, int minmn, int nb, int Vblksiz,
                                    plasma_complex64_t *A, int lda,
                                    plasma_complex64_t *VQ, plasma_complex64_t *TAUQ,
                                    plasma_complex64_t *VP, plasma_complex64_t *TAUP,
@@ -59,15 +60,15 @@ void plasma_pzgbbrd_static (plasma_enum_t uplo, int minmn, int nb, int Vblksiz,
     if (plasma == NULL) {
         plasma_error("PLASMA not initialized");
         return;
-    }    
-    
+    }
+
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail(sequence, request, PlasmaErrorSequence);
         return;
     }
 
-   // Quick return 
+   // Quick return
     if (minmn == 0){
         return;
     }
@@ -89,7 +90,7 @@ void plasma_pzgbbrd_static (plasma_enum_t uplo, int minmn, int nb, int Vblksiz,
     plasma->ss_progress = (volatile int *)malloc(size*sizeof(int));
     for(int index = 0; index < size; index++) plasma->ss_progress[index] = 0;
     plasma->ss_ld = (size);
-    
+
     // main bulge chasing code
     int allcoresnb = cores_num;
     int  ii = shift/grsiz;
@@ -97,17 +98,17 @@ void plasma_pzgbbrd_static (plasma_enum_t uplo, int minmn, int nb, int Vblksiz,
     ii       = (minmn-1)/thgrsiz;
     int  thgrnb  = ii*thgrsiz == (minmn-1) ? ii:ii+1;
     allcoresnb = imin( allcoresnb, maxrequiredcores );
-    
+
     #pragma omp parallel
     {
         int coreid, sweepid, myid, stt, st, ed, stind, edind;
         int blklastind, colpt,  thgrid, thed;
         int i,j,m,k;
-        
+
         int my_core_id = omp_get_thread_num();
         plasma_complex64_t  *WORK = work.spaces[my_core_id];
-        
-        
+
+
         for (thgrid = 1; thgrid<=thgrnb; thgrid++){
             stt  = (thgrid-1)*thgrsiz+1;
             thed = imin( (stt + thgrsiz -1), (minmn-1));
@@ -117,7 +118,7 @@ void plasma_pzgbbrd_static (plasma_enum_t uplo, int minmn, int nb, int Vblksiz,
                 for (m = 1; m <=stepercol; m++){
                     st=stt;
                     for (sweepid = st; sweepid <=ed; sweepid++){
-                        
+
                         for (k = 1; k <=grsiz; k++){
                             myid = (i-sweepid)*(stepercol*grsiz) +(m-1)*grsiz + k;
                             if(myid%2 ==0){
@@ -135,14 +136,14 @@ void plasma_pzgbbrd_static (plasma_enum_t uplo, int minmn, int nb, int Vblksiz,
                                     blklastind=0;
                             }
                             coreid = (stind/colpercore)%allcoresnb;
-                            
+
                             if(my_core_id==coreid) {
                                 if(myid==1) {
-                                    
+
                                     ss_cond_wait(myid+shift-1, 0, sweepid-1);
-                                    plasma_core_zgbtype1cb(uplo, minmn, nb, A, lda, VQ, TAUQ, VP, TAUP, stind-1, edind-1, sweepid-1, Vblksiz, wantz, WORK);
+                                    plasma_core_ztbbrd_type1(uplo, minmn, nb, A, lda, VQ, TAUQ, VP, TAUP, stind-1, edind-1, sweepid-1, Vblksiz, wantz, WORK);
                                     ss_cond_set(myid, 0, sweepid);
-                                    
+
                                     if(blklastind >= (minmn-1)) {
                                         for (j = 1; j <= shift; j++)
                                             ss_cond_set(myid+j, 0, sweepid);
@@ -151,9 +152,9 @@ void plasma_pzgbbrd_static (plasma_enum_t uplo, int minmn, int nb, int Vblksiz,
                                     ss_cond_wait(myid-1,       0, sweepid);
                                     ss_cond_wait(myid+shift-1, 0, sweepid-1);
                                     if(myid%2 == 0){
-                                        plasma_core_zgbtype2cb(uplo, minmn, nb, A, lda, VQ, TAUQ, VP, TAUP, stind-1, edind-1, sweepid-1, Vblksiz, wantz, WORK);
+                                        plasma_core_ztbbrd_type2(uplo, minmn, nb, A, lda, VQ, TAUQ, VP, TAUP, stind-1, edind-1, sweepid-1, Vblksiz, wantz, WORK);
                                     }else{
-                                        plasma_core_zgbtype3cb(uplo, minmn, nb, A, lda, VQ, TAUQ, VP, TAUP, stind-1, edind-1, sweepid-1, Vblksiz, wantz, WORK);
+                                        plasma_core_ztbbrd_type3(uplo, minmn, nb, A, lda, VQ, TAUQ, VP, TAUP, stind-1, edind-1, sweepid-1, Vblksiz, wantz, WORK);
                                     }
                                     ss_cond_set(myid, 0, sweepid);
                                     if(blklastind >= (minmn-1)) {
@@ -162,12 +163,12 @@ void plasma_pzgbbrd_static (plasma_enum_t uplo, int minmn, int nb, int Vblksiz,
                                     }
                                 } // if myid==1
                             } //if my_core_id==coreid
-                            
+
                             if(blklastind >= (minmn-1)) {
                                 stt++;
                                 break;
                             }
-                        } // for k=1:grsiz 
+                        } // for k=1:grsiz
                     } // for sweepid=st:ed
                 } // for m=1:stepercol
             } // for i=1:minmn-1
@@ -180,9 +181,9 @@ void plasma_pzgbbrd_static (plasma_enum_t uplo, int minmn, int nb, int Vblksiz,
     //  store resulting diag and lower diag D and E
     //  note that D and E are always real after the bulgechasing
     //===========================================================
-    
-    // sequential code here so only core 0 will work 
-    
+
+    // sequential code here so only core 0 will work
+
     if( uplo == PlasmaLower ){
         for (int i=0; i < minmn-1; i++) {
             D[i] = creal(*AL(i,i));

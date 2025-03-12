@@ -428,8 +428,8 @@ void plasma_omp_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
     // else
     //     Ahat = A
     //
-    // Q1 Band   P1^H = Ahat    // reduction to band (ge2gb)
-    // Q2 Bidiag P2^H = Band    // bulge chasing (gbbrd)
+    // Q1 Band   P1^H = Ahat    // reduction to band (ge2tb)
+    // Q2 Bidiag P2^H = Band    // bulge chasing (tbbrd)
     // U0 Sigma  V0^H = Bidiag  // bidiagonal SVD (bdsdc)
     // U   = Q0 Q1 Q2 U0        // various unmqr
     // V^H = V0^H P2^H P1^H P0  // various unmlq
@@ -474,7 +474,7 @@ void plasma_omp_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
     #pragma omp parallel
     #pragma omp master
     {
-        plasma_pzge2gb(A, T, work, sequence, request);
+        plasma_pzge2tb(A, T, work, sequence, request);
 
         // Copy tile band to lapack band
         plasma_pzgecpy_tile2lapack_band(uplo, A,
@@ -565,7 +565,7 @@ void plasma_omp_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
     //=======================================
     // Bulge chasing
     //=======================================
-    plasma_pzgbbrd_static(uplo, minmn, nb, vblksiz,
+    plasma_pztbbrd_static(uplo, minmn, nb, vblksiz,
                           pA_band, lda_band,
                           VQ2, tauQ2, VP2, tauP2,
                           S, E, wantz,

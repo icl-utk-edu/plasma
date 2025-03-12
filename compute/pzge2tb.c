@@ -23,26 +23,27 @@
 /***************************************************************************//**
  *  Parallel tile BAND Bidiagonal Reduction - panel-based version
  **/
-void plasma_pzge2gb(plasma_desc_t A, plasma_desc_t T,
+void plasma_pzge2tb(
+    plasma_desc_t A, plasma_desc_t T,
                     plasma_workspace_t work,
                     plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Return if failed sequence.
     if (sequence->status != PlasmaSuccess)
         return;
-    
+
     if (A.m >= A.n) {
         for (int k = 0; k < A.nt; k++) {
             int mvak = plasma_tile_mview(A, k);
             int nvak = plasma_tile_nview(A, k);
-            
+
             // QR factorization of the k-th tile-column
             plasma_pzgeqrf(
                 plasma_desc_view(A, k*A.mb, k*A.nb, A.m-k*A.mb, nvak),
                 plasma_desc_view(T, k*T.mb, k*T.nb, T.m-k*T.mb, nvak),
                 work,
                 sequence, request);
-            
+
             if (k+1 < A.nt) {
                 // do not apply update in the last tile-column
                 plasma_pzunmqr(
@@ -54,7 +55,7 @@ void plasma_pzge2gb(plasma_desc_t A, plasma_desc_t T,
                     work,
                     sequence, request);
             }
-                
+
             if (k+1 < A.nt) {
                 // LQ factorization of the k-th tile-row, shifted by 1 tile to the right
                 plasma_pzgelqf(
@@ -62,7 +63,7 @@ void plasma_pzge2gb(plasma_desc_t A, plasma_desc_t T,
                     plasma_desc_view(T, k*T.mb, (k+1)*T.nb, T.mb, T.n-(k+1)*T.nb),
                     work,
                     sequence, request);
-                
+
                 // update of the (k+1:mt-1) tile-rows
                 plasma_pzunmlq(
                     PlasmaRight, Plasma_ConjTrans,
@@ -78,7 +79,7 @@ void plasma_pzge2gb(plasma_desc_t A, plasma_desc_t T,
         for (int k = 0; k < A.mt; k++) {
             int mvak = plasma_tile_mview(A, k);
             int nvak = plasma_tile_nview(A, k);
-            
+
             // LQ factorization of the k-th tile-row
             plasma_pzgelqf(
                 plasma_desc_view(A, k*A.mb, k*A.nb, mvak, A.n-k*A.nb),
@@ -97,7 +98,7 @@ void plasma_pzge2gb(plasma_desc_t A, plasma_desc_t T,
                     work,
                     sequence, request);
             }
-            
+
             if (k+1 < A.mt) {
                 // QR factorization of the k-th tile-column, shifted by 1 tile to the bottom
                 plasma_pzgeqrf(
