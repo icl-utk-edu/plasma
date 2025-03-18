@@ -329,7 +329,6 @@ int plasma_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
- * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values. The sequence->status and
  *          request->status should never be set to PlasmaSuccess (the

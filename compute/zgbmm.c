@@ -319,7 +319,6 @@ int plasma_zgbmm(plasma_enum_t transa, plasma_enum_t transb,
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
- * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
  *          request->status should never be set to PlasmaSuccess (the
