@@ -24,11 +24,13 @@
  * @ingroup plasma_symm
  *
  *  Performs one of the matrix-matrix operations
- *
- *     \f[ C = \alpha \times A \times B + \beta \times C \f]
+ *  \[
+ *      C = \alpha A B + \beta C,
+ *  \]
  *  or
- *     \f[ C = \alpha \times B \times A + \beta \times C \f]
- *
+ *  \[
+ *      C = \alpha B A + \beta C,
+ *  \]
  *  where alpha and beta are scalars, A is a symmetric matrix and B and
  *  C are m-by-n matrices.
  *
@@ -37,8 +39,8 @@
  * @param[in] side
  *          Specifies whether the symmetric matrix A appears on the
  *          left or right in the operation as follows:
- *          - PlasmaLeft:  \f[ C = \alpha \times A \times B + \beta \times C \f]
- *          - PlasmaRight: \f[ C = \alpha \times B \times A + \beta \times C \f]
+ *          - PlasmaLeft:  \[ C = \alpha A B + \beta C  \]
+ *          - PlasmaRight: \[ C = \alpha B A + \beta C  \]
  *
  * @param[in] uplo
  *          Specifies whether the upper or lower triangular part of
@@ -235,8 +237,8 @@ int plasma_zsymm(plasma_enum_t side, plasma_enum_t uplo,
  * @param[in] side
  *          Specifies whether the symmetric matrix A appears on the
  *          left or right in the operation as follows:
- *          - PlasmaLeft:  \f[ C = \alpha \times A \times B + \beta \times C \f]
- *          - PlasmaRight: \f[ C = \alpha \times B \times A + \beta \times C \f]
+ *          - PlasmaLeft:  \[ C = \alpha A B + \beta C  \]
+ *          - PlasmaRight: \[ C = \alpha B A + \beta C  \]
  *
  * @param[in] uplo
  *          Specifies whether the upper or lower triangular part of

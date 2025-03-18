@@ -26,11 +26,13 @@
  *
  *  Factorize a Hermitian matrix A using a 'communication avoiding' Aasen's
  *  algorithm, followed by band LU factorization. The factorization has the form
- *
- *    \f[ A = P \times L \times T \times L^H \times P^H, \f]
+ *  \[
+ *      A = P L T L^H P^H,
+ *  \]
  *    or
- *    \f[ A = P \times U^H \times T \times U \times P^H, \f]
- *
+ *  \[
+ *      A = P U^H T U P^H,
+ *  \]
  *  where U is a unit-diagonal upper triangular matrix and L is a unit-diagonal
  *  lower triangular matrix, T is a band matrix, and P is a permutation matrix.
  *

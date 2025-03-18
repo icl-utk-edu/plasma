@@ -25,7 +25,9 @@
  *
  *  Computes a tile QR factorization of a real or complex m-by-n matrix A.
  *  The factorization has the form
- *    \f[ A = Q \times R \f],
+ *  \[
+ *      A = Q R,
+ *  \]
  *  where Q is a matrix with orthonormal columns and R is an upper triangular
  *  with positive diagonal.
  *

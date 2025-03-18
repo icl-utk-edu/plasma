@@ -24,11 +24,13 @@
  * @ingroup plasma_syr2k
  *
  *  Performs one of the symmetric rank 2k operations
- *
- *    \f[ C = \alpha A \times B^T + \alpha B \times A^T + \beta C, \f]
- *    or
- *    \f[ C = \alpha A^T \times B + \alpha B^T \times A + \beta C, \f]
- *
+ *  \[
+ *      C = \alpha A B^T + \alpha B A^T + \beta C,
+ *  \]
+ *  or
+ *  \[
+ *      C = \alpha A^T B + \alpha B^T A + \beta C,
+ *  \]
  *  where alpha and beta are scalars,
  *  C is an n-by-n symmetric matrix, and A and B are n-by-k matrices
  *  in the first case and k-by-n matrices in the second case.
@@ -41,9 +43,9 @@
  *
  * @param[in] trans
  *          - PlasmaNoTrans:
- *            \f[ C = \alpha A \times B^T + \alpha B \times A^T + \beta C; \f]
+ *            \[ C = \alpha A B^T + \alpha B A^T + \beta C;  \]
  *          - PlasmaTrans:
- *            \f[ C = \alpha A^T \times B + \alpha B^T \times A + \beta C. \f]
+ *            \[ C = \alpha A^T B + \alpha B^T A + \beta C.  \]
  *
  * @param[in] n
  *          The order of the matrix C. n >= zero.
@@ -256,9 +258,9 @@ int plasma_zsyr2k(plasma_enum_t uplo, plasma_enum_t trans,
  *
  * @param[in] trans
  *          - PlasmaNoTrans:
- *            \f[ C = \alpha A \times B^T + \alpha B \times A^T + \beta C; \f]
+ *            \[ C = \alpha A B^T + \alpha B A^T + \beta C;  \]
  *          - PlasmaTrans:
- *            \f[ C = \alpha A^T \times B + \alpha B^T \times A + \beta C. \f]
+ *            \[ C = \alpha A^T B + \alpha B^T A + \beta C.  \]
  *
  * @param[in] alpha
  *          The scalar alpha.

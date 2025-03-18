@@ -19,11 +19,13 @@
  * @ingroup core_syrk
  *
  *  Performs one of the symmetric rank k operations
- *
- *    \f[ C = \alpha A \times A^T + \beta C, \f]
- *    or
- *    \f[ C = \alpha A^T \times A + \beta C, \f]
- *
+ *  \[
+ *      C = \alpha A A^T + \beta C,
+ *  \]
+ *  or
+ *  \[
+ *      C = \alpha A^T A + \beta C,
+ *  \]
  *  where alpha and beta are scalars, C is an n-by-n symmetric
  *  matrix, and A is an n-by-k matrix in the first case and a k-by-n
  *  matrix in the second case.
@@ -35,8 +37,8 @@
  *          - PlasmaLower: Lower triangle of C is stored.
  *
  * @param[in] trans
- *          - PlasmaNoTrans: \f[ C = \alpha A \times A^T + \beta C; \f]
- *          - PlasmaTrans:   \f[ C = \alpha A^T \times A + \beta C. \f]
+ *          - PlasmaNoTrans: \[ C = \alpha A A^T + \beta C; \]
+ *          - PlasmaTrans:   \[ C = \alpha A^T A + \beta C. \]
  *
  * @param[in] n
  *          The order of the matrix C. n >= 0.

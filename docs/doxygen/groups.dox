@@ -17,10 +17,10 @@
 
 ------------------------------------------------------------
 @defgroup group_solvers             Linear system solvers
-@brief    Solves \f$ Ax = b \f$
+@brief    Solves $Ax = b$
 @{
     @defgroup group_gesv            General matrices: LU
-    @brief    Solves \f$ Ax = b \f$ using LU factorization for general matrices
+    @brief    Solves $Ax = b$ using LU factorization for general matrices
     @{
         @defgroup plasma_gesv       gesv:  Solves Ax = b using LU factorization (driver)
         @defgroup plasma_geinv      geinv: LU inverse
@@ -35,8 +35,8 @@
         @}
     @}
 
-    @defgroup group_gesv            General band matrices: LU
-    @brief    Solves \f$ Ax = b \f$ using LU factorization for general band matrices
+    @defgroup group_gbsv            General band matrices: LU
+    @brief    Solves $Ax = b$ using LU factorization for general band matrices
     @{
         @defgroup plasma_gbsv       gbsv:  Solves Ax = b using LU factorization (driver)
         @defgroup plasma_gbtrf      gbtrf: LU factorization
@@ -44,7 +44,7 @@
     @}
 
     @defgroup group_gels            General matrices: least squares
-    @brief    Solves \f$ Ax \approx b \f$ where \f$ A \f$ is rectangular
+    @brief    Solves $Ax \approx b$ where $A$ is rectangular
     @see group_orthogonal
     @{
         @defgroup plasma_gels       gels: Least squares solve of Ax = b using QR or LQ factorization (driver)
@@ -53,7 +53,7 @@
     @}
 
     @defgroup group_posv            Symmetric/Hermitian positive definite: Cholesky
-    @brief    Solves \f$ Ax = b \f$ using Cholesky factorization for SPD/HPD matrices
+    @brief    Solves $Ax = b$ using Cholesky factorization for SPD/HPD matrices
     @{
         @defgroup plasma_posv       posv:  Solves Ax = b using Cholesky factorization (driver)
         @defgroup plasma_poinv      poinv: Cholesky inverse
@@ -70,7 +70,7 @@
     @}
 
     @defgroup group_pbsv            Symmetric/Hermitian positive definite band: Cholesky
-    @brief    Solves \f$ Ax = b \f$ using Cholesky factorization for SPD/HPD matrices
+    @brief    Solves $Ax = b$ using Cholesky factorization for SPD/HPD matrices
     @{
         @defgroup plasma_pbsv       pbsv:  Solves Ax = b using Cholesky factorization (driver)
         @defgroup plasma_pbtrf      pbtrf: Cholesky factorization
@@ -78,7 +78,7 @@
     @}
 
     @defgroup group_hesv            Symmetric/Hermitian indefinite
-    @brief    Solves \f$ Ax = b \f$ using indefinite factorization for symmetric/Hermitian matrices
+    @brief    Solves $Ax = b$ using indefinite factorization for symmetric/Hermitian matrices
     @{
         @defgroup plasma_hesv       sy/hesv:  Solves Ax = b using symmetric indefinite factorization (driver)
         @defgroup plasma_hetrf      sy/hetrf: Symmetric indefinite factorization
@@ -91,10 +91,10 @@
 
 ------------------------------------------------------------
 @defgroup group_orthogonal          Orthogonal/unitary factorizations
-@brief    Factor \f$ A \f$ using \f$ QR, RQ, QL, LQ \f$
+@brief    Factor $A$ using $QR, RQ, QL, LQ$
 @{
     @defgroup group_qr              QR factorization
-    @brief    Factor \f$ A = QR \f$
+    @brief    Factor $A = QR$
     @{
         @defgroup plasma_geqrf      geqrf: QR factorization
         @defgroup plasma_unmqr      or/unmqr: Multiplies by Q from QR factorization
@@ -106,7 +106,7 @@
     @}
 
     @defgroup group_rq              RQ factorization
-    @brief    Factor \f$ A = RQ \f$
+    @brief    Factor $A = RQ$
     @{
         @defgroup plasma_gerqf      gerqf: RQ factorization
         @defgroup plasma_unmrq      or/unmrq: Multiplies by Q from RQ factorization
@@ -114,7 +114,7 @@
     @}
 
     @defgroup group_ql              QL factorization
-    @brief    Factor \f$ A = QL \f$
+    @brief    Factor $A = QL$
     @{
         @defgroup plasma_geqlf      geqlf: QL factorization
         @defgroup plasma_unmql      or/unmql: Multiplies by Q from QL factorization
@@ -122,7 +122,7 @@
     @}
 
     @defgroup group_lq              LQ factorization
-    @brief    Factor \f$ A = LQ \f$
+    @brief    Factor $A = LQ$
     @{
         @defgroup plasma_gelqf      gelqf: LQ factorization
         @defgroup plasma_unmlq      or/unmlq: Multiplies by Q from LQ factorization
@@ -132,10 +132,10 @@
 
 ------------------------------------------------------------
 @defgroup group_eigenvalue          Eigenvalues
-@brief    Solves \f$ Ax = \lambda x \f$
+@brief    Solves $Ax = \lambda x$
 @{
     @defgroup group_geev            Non-symmetric eigenvalues
-    @brief    Solves \f$ Ax = \lambda x \f$ where \f$ A \f$ is general
+    @brief    Solves $Ax = \lambda x$ where $A$ is general
     @{
         @defgroup plasma_geev       geev:  Non-symmetric eigenvalues (driver)
         @defgroup plasma_gehrd      gehrd: Hessenberg reduction
@@ -147,7 +147,7 @@
     @}
 
     @defgroup group_heev            Symmetric/Hermitian eigenvalues
-    @brief    Solves \f$ Ax = \lambda x \f$ where \f$ A \f$ is symmetric/Hermitian
+    @brief    Solves $Ax = \lambda x$ where $A$ is symmetric/Hermitian
     @{
         @defgroup plasma_heev       sy/heev:   Solves using QR iteration (driver)
         @defgroup plasma_heevd      sy/heevd:  Solves using divide-and-conquer (driver)
@@ -165,11 +165,11 @@
     @}
 
     @defgroup group_hegv            Generalized Symmetric/Hermitian eigenvalues
-    @brief    Solves \f$ Ax  = \lambda B x \f$,
-                     \f$ ABx = \lambda   x \f$, or
-                     \f$ BAx = \lambda   x \f$
-              where \f$ A, B \f$ are symmetric/Hermitian
-              and \f$ B \f$ is positive definite.
+    @brief    Solves $Ax  = \lambda B x$,
+                     $ABx = \lambda   x$, or
+                     $BAx = \lambda   x$
+              where $A, B$ are symmetric/Hermitian
+              and $B$ is positive definite.
     @{
         @defgroup plasma_hegv       sy/hegv:   Solves using QR iteration (driver)
         @defgroup plasma_hegvd      sy/hegvd:  Solves using divide-and-conquer (driver)
@@ -183,7 +183,7 @@
 
 ------------------------------------------------------------
 @defgroup group_svd                 Singular Value Decomposition (SVD)
-@brief    Factor \f$ A = U \Sigma V^T \f$
+@brief    Factor $A = U \Sigma V^T$
 @{
     @defgroup plasma_gesvd          gesvd: SVD using QR iteration
     @defgroup plasma_gesdd          gesdd: SVD using divide-and-conquer
@@ -202,137 +202,137 @@
           amount of work into Level 1, 2, 3.
 @{
     @defgroup group_blas1           Level 1: vectors operations, O(n) work
-    @brief    Vector operations that perform \f$ O(n) \f$ work on \f$ O(n) \f$ data.
+    @brief    Vector operations that perform $O(n)$ work on $O(n)$ data.
               These are memory bound, since every operation requires a memory read or write.
     @{
         @defgroup plasma_asum       asum:  Sum vector
-        @brief    \f$ \sum_i |x_i| \f$
+        @brief    $\sum_i |x_i|$
 
         @defgroup plasma_axpy       axpy:  Add vectors
-        @brief    \f$ y = \alpha x + y \f$
+        @brief    $y = \alpha x + y$
 
         @defgroup plasma_copy       copy:  Copy vector
-        @brief    \f$ y = x \f$
+        @brief    $y = x$
 
         @defgroup plasma__dot       dot:   Dot (inner) product
-        @brief    \f$ x^T y \f$
-               or \f$ x^H y \f$
+        @brief    $x^T y$
+               or $x^H y$
 
         @defgroup plasma_iamax      iamax: Find max element
-        @brief    \f$ \text{argmax}_i\; |x_i| \f$
+        @brief    $\text{argmax}_i\; |x_i|$
 
         @defgroup plasma_iamin      iamin: Find min element
-        @brief    \f$ \text{argmin}_i\; |x_i| \f$
+        @brief    $\text{argmin}_i\; |x_i|$
 
         @defgroup plasma_nrm2       nrm2:  Vector 2 norm
-        @brief    \f$ ||x||_2 \f$
+        @brief    $||x||_2$
 
         @defgroup plasma_rot        rot:   Apply Givens rotation
 
         @defgroup plasma_rotg       rotg:  Generate Givens rotation
 
         @defgroup plasma_scal       scal:  Scale vector
-        @brief    \f$ x = \alpha x \f$
+        @brief    $x = \alpha x$
 
         @defgroup plasma_swap       swap:  Swap vectors
-        @brief    \f$ x <=> y \f$
+        @brief    $x <=> y$
     @}
 
     @defgroup group_blas2           Level 2: matrix-vector operations, O(n^2) work
-    @brief    Matrix operations that perform \f$ O(n^2) \f$ work on \f$ O(n^2) \f$ data.
+    @brief    Matrix operations that perform $O(n^2)$ work on $O(n^2)$ data.
               These are memory bound, since every operation requires a memory read or write.
     @{
         @defgroup plasma_geadd      geadd: Add matrices
-        @brief    \f$ B = \alpha A + \beta B \f$
+        @brief    $B = \alpha A + \beta B$
 
         @defgroup plasma_gemv       gemv:   General matrix-vector multiply
-        @brief    \f$ y = \alpha Ax + \beta y \f$
+        @brief    $y = \alpha Ax + \beta y$
 
         @defgroup plasma_ger        ger:    General matrix rank 1 update
-        @brief    \f$ A = \alpha xy^T + A \f$
+        @brief    $A = \alpha xy^T + A$
 
         @defgroup plasma_hemv       hemv:   Hermitian matrix-vector multiply
-        @brief    \f$ y = \alpha Ax + \beta y \f$
+        @brief    $y = \alpha Ax + \beta y$
 
         @defgroup plasma_her        her:    Hermitian rank 1 update
-        @brief    \f$ A = \alpha xx^T + A \f$
+        @brief    $A = \alpha xx^T + A$
 
         @defgroup plasma_her2       her2:   Hermitian rank 2 update
-        @brief    \f$ A = \alpha xy^T + \alpha yx^T + A \f$
+        @brief    $A = \alpha xy^T + \alpha yx^T + A$
 
         @defgroup plasma_symv       symv:   Symmetric matrix-vector multiply
-        @brief    \f$ y = \alpha Ax + \beta y \f$
+        @brief    $y = \alpha Ax + \beta y$
 
         @defgroup plasma_syr        syr:    Symmetric rank 1 update
-        @brief    \f$ A = \alpha xx^T + A \f$
+        @brief    $A = \alpha xx^T + A$
 
         @defgroup plasma_syr2       syr2:   Symmetric rank 2 update
-        @brief    \f$ A = \alpha xy^T + \alpha yx^T + A \f$
+        @brief    $A = \alpha xy^T + \alpha yx^T + A$
 
         @defgroup plasma_tradd      tradd: Add triangular matrices
-        @brief    \f$ B = \alpha A + \beta B \f$
+        @brief    $B = \alpha A + \beta B$
 
         @defgroup plasma_trmv       trmv:   Triangular matrix-vector multiply
-        @brief    \f$ x = Ax \f$
+        @brief    $x = Ax$
 
         @defgroup plasma_trsv       trsv:   Triangular matrix-vector solve
-        @brief    \f$ x = op(A^{-1})\; b \f$
+        @brief    $x = op(A^{-1})\; b$
 
         @defgroup plasma_lacpy      lacpy:  Copy matrix
-        @brief    \f$ B = A \f$
+        @brief    $B = A$
 
         @defgroup plasma_lascl      lascl:  Scale matrix by scalar
-        @brief    \f$ A = \alpha A \f$
+        @brief    $A = \alpha A$
 
         @defgroup plasma_lascl2     lascl2: Scale matrix by diagonal
-        @brief    \f$ A = D A \f$
+        @brief    $A = D A$
 
         @defgroup plasma_laset      laset:  Set matrix to constants
-        @brief    \f$ A_{ij} = \f$ diag    if \f$ i=j \f$;
-                  \f$ A_{ij} = \f$ offdiag otherwise.
+        @brief    $A_{ij} =$ diag    if $i=j$;
+                  $A_{ij} =$ offdiag otherwise.
     @}
 
     @defgroup group_blas3           Level 3: matrix-matrix operations, O(n^3) work
-    @brief    Matrix-matrix operations that perform \f$ O(n^3) \f$ work on \f$ O(n^2) \f$ data.
+    @brief    Matrix-matrix operations that perform $O(n^3)$ work on $O(n^2)$ data.
               These benefit from cache reuse, since many operations can be
               performed for every read from main memory.
     @{
         @defgroup plasma_gemm       gemm:  General matrix multiply: C = AB + C
-        @brief    \f$ C = \alpha \;op(A) \;op(B) + \beta C \f$
+        @brief    $C = \alpha \;op(A) \;op(B) + \beta C$
 
         @defgroup plasma_gbmm       gbmm:  General band matrix multiply: C = AB + C
-        @brief    \f$ C = \alpha \;op(A) \;op(B) + \beta C \f$
+        @brief    $C = \alpha \;op(A) \;op(B) + \beta C$
 
         @defgroup plasma_hemm       hemm:  Hermitian matrix multiply
-        @brief    \f$ C = \alpha A B + \beta C \f$
-               or \f$ C = \alpha B A + \beta C \f$ where \f$ A \f$ is Hermitian
+        @brief    $C = \alpha A B + \beta C$
+               or $C = \alpha B A + \beta C$ where $A$ is Hermitian
 
         @defgroup plasma_herk       herk:  Hermitian rank k update
-        @brief    \f$ C = \alpha A A^T + \beta C \f$ where \f$ C \f$ is Hermitian
+        @brief    $C = \alpha A A^T + \beta C$ where $C$ is Hermitian
 
         @defgroup plasma_her2k      her2k: Hermitian rank 2k update
-        @brief    \f$ C = \alpha A B^T + \alpha B A^T + \beta C \f$ where \f$ C \f$ is Hermitian
+        @brief    $C = \alpha A B^T + \alpha B A^T + \beta C$ where $C$ is Hermitian
 
         @defgroup plasma_symm       symm:  Symmetric matrix multiply
-        @brief    \f$ C = \alpha A B + \beta C \f$
-               or \f$ C = \alpha B A + \beta C \f$ where \f$ A \f$ is symmetric
+        @brief    $C = \alpha A B + \beta C$
+               or $C = \alpha B A + \beta C$ where $A$ is symmetric
 
         @defgroup plasma_syrk       syrk:  Symmetric rank k update
-        @brief    \f$ C = \alpha A A^T + \beta C \f$ where \f$ C \f$ is symmetric
+        @brief    $C = \alpha A A^T + \beta C$ where $C$ is symmetric
 
         @defgroup plasma_syr2k      syr2k: Symmetric rank 2k update
-        @brief    \f$ C = \alpha A B^T + \alpha B A^T + \beta C \f$ where \f$ C \f$ is symmetric
+        @brief    $C = \alpha A B^T + \alpha B A^T + \beta C$ where $C$ is symmetric
 
         @defgroup plasma_trmm       trmm:  Triangular matrix multiply
-        @brief    \f$ B = \alpha \;op(A)\; B \f$
-               or \f$ B = \alpha B \;op(A)   \f$ where \f$ A \f$ is triangular
+        @brief    $B = \alpha \;op(A)\; B$
+               or $B = \alpha B \;op(A)$ where $A$ is triangular
 
         @defgroup plasma_trsm       trsm:  Triangular solve matrix
-        @brief    \f$ C = op(A)^{-1} B   \f$
-               or \f$ C = B \;op(A)^{-1} \f$ where \f$ A \f$ is triangular
+        @brief    $C = op(A)^{-1} B$
+               or $C = B \;op(A)^{-1}$ where $A$ is triangular
 
         @defgroup plasma_trtri      trtri: Triangular inverse; used in getri, potri
-        @brief    \f$ A = A^{-1} \f$ where \f$ A \f$ is triangular
+        @brief    $A = A^{-1}$ where $A$ is triangular
     @}
 
     @defgroup group_larf            Householder reflectors
@@ -378,144 +378,144 @@
     @brief    Operations on single elements.
     @{
         @defgroup core_cabs1        cabs1: Complex 1-norm absolute value
-        @brief    \f$ |real(alpha)| + |imag(alpha)| \f$
+        @brief    $|real(alpha)| + |imag(alpha)|$
     @}
 
     @defgroup core_blas1            Level 1: vectors operations, O(n) work
-    @brief    Vector operations that perform \f$ O(n) \f$ work on \f$ O(n) \f$ data.
+    @brief    Vector operations that perform $O(n)$ work on $O(n)$ data.
               These are memory bound, since every operation requires a memory read or write.
     @{
         @defgroup core_asum         asum:  Sum vector
-        @brief    \f$ \sum_i |x_i| \f$
+        @brief    $\sum_i |x_i|$
 
         @defgroup core_axpy         axpy:  Add vectors
-        @brief    \f$ y = \alpha x + y \f$
+        @brief    $y = \alpha x + y$
 
         @defgroup core_copy         copy:  Copy vector
-        @brief    \f$ y = x \f$
+        @brief    $y = x$
 
         @defgroup core__dot         dot:   Dot (inner) product
-        @brief    \f$ x^T y \f$
-               or \f$ x^H y \f$
+        @brief    $x^T y$
+               or $x^H y$
 
         @defgroup core_iamax        iamax: Find max element
-        @brief    \f$ \text{argmax}_i\; |x_i| \f$
+        @brief    $\text{argmax}_i\; |x_i|$
 
         @defgroup core_iamin        iamin: Find min element
-        @brief    \f$ \text{argmin}_i\; |x_i| \f$
+        @brief    $\text{argmin}_i\; |x_i|$
 
         @defgroup core_nrm2         nrm2:  Vector 2 norm
-        @brief    \f$ ||x||_2 \f$
+        @brief    $||x||_2$
 
         @defgroup core_rot          rot:   Apply Givens rotation
 
         @defgroup core_rotg         rotg:  Generate Givens rotation
 
         @defgroup core_scal         scal:  Scale vector
-        @brief    \f$ x = \alpha x \f$
+        @brief    $x = \alpha x$
 
         @defgroup core_swap         swap:  Swap vectors
-        @brief    \f$ x <=> y \f$
+        @brief    $x <=> y$
     @}
 
     @defgroup core_blas2            Level 2: matrix-vector operations, O(n^2) work
-    @brief    Matrix operations that perform \f$ O(n^2) \f$ work on \f$ O(n^2) \f$ data.
+    @brief    Matrix operations that perform $O(n^2)$ work on $O(n^2)$ data.
               These are memory bound, since every operation requires a memory read or write.
     @{
         @defgroup core_geadd        geadd: Add matrices
-        @brief    \f$ B = \alpha A + \beta B \f$
+        @brief    $B = \alpha A + \beta B$
 
         @defgroup core_gemv         gemv:       General matrix-vector multiply
-        @brief    \f$ y = \alpha Ax + \beta y \f$
+        @brief    $y = \alpha Ax + \beta y$
 
         @defgroup core_ger          ger:        General matrix rank 1 update
-        @brief    \f$ A = \alpha xy^T + A \f$
+        @brief    $A = \alpha xy^T + A$
 
         @defgroup core_hemv         hemv:    Hermitian matrix-vector multiply
-        @brief    \f$ y = \alpha Ax + \beta y \f$
+        @brief    $y = \alpha Ax + \beta y$
 
         @defgroup core_her          her:     Hermitian rank 1 update
-        @brief    \f$ A = \alpha xx^T + A \f$
+        @brief    $A = \alpha xx^T + A$
 
         @defgroup core_her2         her2:    Hermitian rank 2 update
-        @brief    \f$ A = \alpha xy^T + \alpha yx^T + A \f$
+        @brief    $A = \alpha xy^T + \alpha yx^T + A$
 
         @defgroup core_symv         symv:    Symmetric matrix-vector multiply
-        @brief    \f$ y = \alpha Ax + \beta y \f$
+        @brief    $y = \alpha Ax + \beta y$
 
         @defgroup core_syr          syr:     Symmetric rank 1 update
-        @brief    \f$ A = \alpha xx^T + A \f$
+        @brief    $A = \alpha xx^T + A$
 
         @defgroup core_syr2         syr2:    Symmetric rank 2 update
-        @brief    \f$ A = \alpha xy^T + \alpha yx^T + A \f$
+        @brief    $A = \alpha xy^T + \alpha yx^T + A$
 
         @defgroup core_tradd        tradd: Add triangular matrices
-        @brief    \f$ B = \alpha A + \beta B \f$
+        @brief    $B = \alpha A + \beta B$
 
         @defgroup core_trmv         trmv:       Triangular matrix-vector multiply
-        @brief    \f$ x = Ax \f$
+        @brief    $x = Ax$
 
         @defgroup core_trsv         trsv:       Triangular matrix-vector solve
-        @brief    \f$ x = op(A^{-1})\; b \f$
+        @brief    $x = op(A^{-1})\; b$
 
         @defgroup core_lacpy        lacpy:  Copy matrix
-        @brief    \f$ B = A \f$
+        @brief    $B = A$
 
         @defgroup core_lascl        lascl:  Scale matrix by scalar
-        @brief    \f$ A = \alpha A \f$
+        @brief    $A = \alpha A$
 
         @defgroup core_lascl2       lascl2: Scale matrix by diagonal
-        @brief    \f$ A = D A \f$
+        @brief    $A = D A$
 
         @defgroup core_laset        laset:  Set matrix to constants
-        @brief    \f$ A_{ij} = \f$ diag    if \f$ i=j \f$;
-                  \f$ A_{ij} = \f$ offdiag otherwise.
+        @brief    $A_{ij} =$ diag    if $i=j$;
+                  $A_{ij} =$ offdiag otherwise.
 
         @defgroup core_laswp        laswp:  Swap rows of general matrix
-        @brief    \f$ A = P A \f$
+        @brief    $A = P A$
 
         @defgroup core_heswp        heswp:  Swap rows of Hermitian matrix
-        @brief    \f$ A = P A P^T \f$
+        @brief    $A = P A P^T$
     @}
 
     @defgroup core_blas3            Level 3: matrix-matrix operations, O(n^3) work
-    @brief    Matrix-matrix operations that perform \f$ O(n^3) \f$ work on \f$ O(n^2) \f$ data.
+    @brief    Matrix-matrix operations that perform $O(n^3)$ work on $O(n^2)$ data.
               These benefit from cache reuse, since many operations can be
               performed for every read from main memory.
     @{
         @defgroup core_gemm         gemm:  General matrix multiply: C = AB + C
-        @brief    \f$ C = \alpha \;op(A) \;op(B) + \beta C \f$
+        @brief    $C = \alpha \;op(A) \;op(B) + \beta C$
 
         @defgroup core_hemm         hemm:  Hermitian matrix multiply
-        @brief    \f$ C = \alpha A B + \beta C \f$
-               or \f$ C = \alpha B A + \beta C \f$ where \f$ A \f$ is Hermitian
+        @brief    $C = \alpha A B + \beta C$
+               or $C = \alpha B A + \beta C$ where $A$ is Hermitian
 
         @defgroup core_herk         herk:  Hermitian rank k update
-        @brief    \f$ C = \alpha A A^T + \beta C \f$ where \f$ C \f$ is Hermitian
+        @brief    $C = \alpha A A^T + \beta C$ where $C$ is Hermitian
 
         @defgroup core_her2k        her2k: Hermitian rank 2k update
-        @brief    \f$ C = \alpha A B^T + \alpha B A^T + \beta C \f$ where \f$ C \f$ is Hermitian
+        @brief    $C = \alpha A B^T + \alpha B A^T + \beta C$ where $C$ is Hermitian
 
         @defgroup core_symm         symm:  Symmetric matrix multiply
-        @brief    \f$ C = \alpha A B + \beta C \f$
-               or \f$ C = \alpha B A + \beta C \f$ where \f$ A \f$ is symmetric
+        @brief    $C = \alpha A B + \beta C$
+               or $C = \alpha B A + \beta C$ where $A$ is symmetric
 
         @defgroup core_syrk         syrk:  Symmetric rank k update
-        @brief    \f$ C = \alpha A A^T + \beta C \f$ where \f$ C \f$ is symmetric
+        @brief    $C = \alpha A A^T + \beta C$ where $C$ is symmetric
 
         @defgroup core_syr2k        syr2k: Symmetric rank 2k update
-        @brief    \f$ C = \alpha A B^T + \alpha B A^T + \beta C \f$ where \f$ C \f$ is symmetric
+        @brief    $C = \alpha A B^T + \alpha B A^T + \beta C$ where $C$ is symmetric
 
         @defgroup core_trmm         trmm:  Triangular matrix multiply
-        @brief    \f$ B = \alpha \;op(A)\; B \f$
-               or \f$ B = \alpha B \;op(A)   \f$ where \f$ A \f$ is triangular
+        @brief    $B = \alpha \;op(A)\; B$
+               or $B = \alpha B \;op(A)$ where $A$ is triangular
 
         @defgroup core_trsm         trsm:  Triangular solve matrix
-        @brief    \f$ C = op(A)^{-1} B   \f$
-               or \f$ C = B \;op(A)^{-1} \f$ where \f$ A \f$ is triangular
+        @brief    $C = op(A)^{-1} B$
+               or $C = B \;op(A)^{-1}$ where $A$ is triangular
 
         @defgroup core_trtri        trtri: Triangular inverse; used in getri, potri
-        @brief    \f$ A = A^{-1} \f$ where \f$ A \f$ is triangular
+        @brief    $A = A^{-1}$ where $A$ is triangular
     @}
 
     @defgroup core_group_larf       Householder reflectors

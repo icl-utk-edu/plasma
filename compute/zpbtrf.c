@@ -24,9 +24,13 @@
  * @ingroup plasma_pbtrf
  *
  *  Performs the Cholesky factorization of an Hermitian positive matrix A,
- *
- *    \f[ A = L \times L^T \f] or \f[ A = U^T \times U \f]
- *
+ *  \[
+ *      A = L L^T
+ *  \]
+ *  or
+ *  \[
+ *      A = U^T U
+ *  \]
  *  if uplo = upper or lower, respectively, where L is lower triangular with
  *  positive diagonal elements, and U is upper triangular.
  *

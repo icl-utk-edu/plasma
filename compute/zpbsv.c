@@ -26,11 +26,15 @@
  *  Computes the solution to a system of linear equations A * X = B,
  *  where A is an n-by-n Hermitian positive definite band matrix, and X and B
  *  are n-by-nrhs matrices. The Cholesky decomposition is used to factor A as
- *
- *    \f[ A =  L\times L^H, \f] if uplo = PlasmaLower,
- *    or
- *    \f[ A =  U^H\times U, \f] if uplo = PlasmaUpper,
- *
+ *  \[
+ *      A = L L^H,
+ *  \]
+ *  if uplo = PlasmaLower,
+ *  or
+ *  \[
+ *      A = U^H U,
+ *  \]
+ *  if uplo = PlasmaUpper,
  *  where U is an upper triangular matrix and  L is a lower triangular matrix.
  *
  *******************************************************************************

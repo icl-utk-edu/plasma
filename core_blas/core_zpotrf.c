@@ -20,11 +20,13 @@
  *
  *  Performs the Cholesky factorization of a Hermitian positive definite
  *  matrix A. The factorization has the form
- *
- *    \f[ A = L \times L^H, \f]
- *    or
- *    \f[ A = U^H \times U, \f]
- *
+ *  \[
+ *      A = L L^H,
+ *  \]
+ *  or
+ *  \[
+ *      A = U^H U,
+ *  \]
  *  where U is an upper triangular matrix and L is a lower triangular matrix.
  *
  *******************************************************************************

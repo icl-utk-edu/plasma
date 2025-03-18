@@ -25,9 +25,13 @@
  *
  *  Computes the inverse of a Hermitian positive definite
  *  matrix A using the Cholesky factorization
- *  \f[ A = U^H  \times U, \f]
+ *  \[
+ *      A = U^H U,
+ *  \]
  *  or
- *  \f[ A = L \times L^H. \f]
+ *  \[
+ *      A = L L^H.
+ *  \]
  *
  *******************************************************************************
  *

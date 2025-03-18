@@ -25,7 +25,9 @@
  *
  *  Computes tile LQ factorization of a complex m-by-n matrix A.
  *  The factorization has the form
- *    \f[ A = L \times Q \f],
+ *  \[
+ *      A = L Q,
+ *  \]
  *  where L is a lower trapezoidal with positive diagonal and Q is a matrix with
  *  orthonormal rows.
  *

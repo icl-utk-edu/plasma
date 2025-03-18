@@ -32,12 +32,12 @@
  *  Computes the singular value decomposition (SVD) of a complex
  *  m-by-n matrix A, optionally computing the left and/or right singular
  *  vectors. The SVD is written
- *
- *    \f[ A = U \times \Sigma \times V^H \f],
- *
- *  where \f$ \Sigma \f$ is an m-by-n matrix which is zero except for its
+ *  \[
+ *      A = U \Sigma V^H
+ *  \]
+ *  where $\Sigma$ is an m-by-n matrix which is zero except for its
  *  min(m, n) diagonal elements, U is an m-by-m unitary matrix, and
- *  V is an n-by-n unitary matrix. The diagonal elements of \f$ \Sigma \f$
+ *  V is an n-by-n unitary matrix. The diagonal elements of $\Sigma$
  *  are the singular values of A; they are real and non-negative, and
  *  are returned in descending order. The first min(m, n) columns of
  *  U and V are the left and right singular vectors of A.
