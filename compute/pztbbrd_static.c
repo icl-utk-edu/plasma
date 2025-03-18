@@ -144,7 +144,7 @@ void plasma_pztbbrd_static(
     // (It seems 2*nt + shift - 2 works and is tight.)
     const int shift = 3;
     int progress_size = 2*num_tiles + shift - 1;
-    plasma->ss_progress = (volatile int*) malloc( progress_size*sizeof( int ) );
+    plasma->ss_progress = (int*) malloc( progress_size*sizeof( int ) );
     for (int t = 0; t < progress_size; ++t) {
         ss_cond_set( t, 0 );
     }
@@ -254,7 +254,7 @@ void plasma_pztbbrd_static(
         } // for i
     } // omp parallel
 
-    free( (void*) plasma->ss_progress );
+    free( plasma->ss_progress );
 
     //----------
     // Store resulting diag and sub-diag D and E.
