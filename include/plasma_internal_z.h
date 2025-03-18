@@ -44,11 +44,11 @@ void plasma_pzdesc2pb(
     plasma_request_t *request);
 
 void plasma_pztbbrd_static(
-    plasma_enum_t uplo, int minmn, int nb, int Vblksiz,
+    plasma_enum_t uplo, int n, int nb, int Vblksiz,
     plasma_complex64_t *A, int lda,
-    plasma_complex64_t *VQ, plasma_complex64_t *TAUQ,
-    plasma_complex64_t *VP, plasma_complex64_t *TAUP,
-    double *D, double *E, int WANTZ,
+    plasma_complex64_t *VQ, plasma_complex64_t *tauQ,
+    plasma_complex64_t *VP, plasma_complex64_t *tauP,
+    double *D, double *E, int wantz,
     plasma_workspace_t work,
     plasma_sequence_t *sequence, plasma_request_t *request);
 

@@ -18,50 +18,48 @@
 
 #include <string.h>
 
+#define AL( i_, j_ ) (A + nb + lda*(j_) + ((i_)-(j_)))
+#define AU( i_, j_ ) (A + nb + lda*(j_) + ((i_)-(j_)+nb))
+#define VQ( i_ )     (VQ + (i_))
+#define VP( i_ )     (VP + (i_))
+#define tauQ( i_ )   (tauQ + (i_))
+#define tauP( i_ )   (tauP + (i_))
 
-#define AL(m_, n_) (A + nb + lda * (n_) + ((m_)-(n_)))
-#define AU(m_, n_) (A + nb + lda * (n_) + ((m_)-(n_)+nb))
-#define VQ(m)     (VQ + (m))
-#define VP(m)     (VP + (m))
-#define TAUQ(m)   (TAUQ + (m))
-#define TAUP(m)   (TAUP + (m))
-
-/**
- *****************************************************************************
+/***************************************************************************//**
  *
  * @ingroup core_tbbrd_type1
  *
  *  core_ztbbrd_type1 is a kernel that will operate on a region (triangle) of data
- *  bounded by st and ed. This kernel eliminate a column by an column-wise
+ *  bounded by start and end. This kernel eliminate a column by an column-wise
  *  annihiliation, then it apply a left+right update on the hermitian triangle.
- *  Note that the column to be eliminated is located at st-1.
+ *  Note that the column to be eliminated is located at start-1.
  *
- *  All detail are available on technical report or SC11 paper.
+ *  All details are available in the technical report or SC11 paper.
  *  Azzam Haidar, Hatem Ltaief, and Jack Dongarra. 2011.
  *  Parallel reduction to condensed forms for symmetric eigenvalue problems
  *  using aggregated fine-grained and memory-aware kernels. In Proceedings
  *  of 2011 International Conference for High Performance Computing,
- *  Networking, Storage and Analysis (SC '11). ACM, New York, NY, USA, ,
- *  Article 8 , 11 pages.
+ *  Networking, Storage and Analysis (SC '11). ACM, New York, NY, USA,
+ *  Article 8, 11 pages.
  *  http://doi.acm.org/10.1145/2063384.2063394
  *
  *******************************************************************************
  *
  * @param[in] uplo
- *          = PlasmaUpper: Upper triangle of A is stored;
- *          = PlasmaLower: Lower triangle of A is stored.
+ *          - PlasmaUpper: Upper triangle of A is stored;
+ *          - PlasmaLower: Lower triangle of A is stored.
  *
- * @param[in] N
+ * @param[in] n
  *          The order of the matrix A.
  *
  * @param[in] nb
  *          The size of the band.
  *
- * @param[in, out] A
- *          A pointer to the matrix A of size (3*nb+1)-by-N.
+ * @param[in,out] A
+ *          A pointer to the matrix A of size (3*nb + 1)-by-n.
  *
  * @param[in] lda
- *          The leading dimension of the matrix A. lda >= max(1,3*nb+1)
+ *          The leading dimension of the matrix A. lda >= max( 1, 3*nb + 1 )
  *
  * @param[out] VP
  *          TODO: Check and fix doc
@@ -69,7 +67,7 @@
  *          requested or (LDV*blkcnt*Vblksiz) if Eigenvectors requested
  *          The Householder reflectors are stored in this array.
  *
- * @param[out] TAUP
+ * @param[out] tauP
  *          TODO: Check and fix doc
  *          PLASMA_Complex64_t array, dimension (n).
  *          The scalar factors of the Householder reflectors are stored
@@ -81,132 +79,150 @@
  *          requested or (LDV*blkcnt*Vblksiz) if Eigenvectors requested
  *          The Householder reflectors are stored in this array.
  *
- * @param[out] TAUQ
+ * @param[out] tauQ
  *          TODO: Check and fix doc
  *          PLASMA_Complex64_t array, dimension (n).
  *          The scalar factors of the Householder reflectors are stored
  *          in this array.
  *
- * @param[in] st
- *          A pointer to the start index where this kernel will operate.
+ * @param[in] first
+ *          The first index to update, after eliminating row or column first-1.
  *
- * @param[in] ed
- *          A pointer to the end index where this kernel will operate.
+ * @param[in] last
+ *          The last index to update, inclusive.
  *
  * @param[in] sweep
- *          The sweep number that is eliminated. it serve to calculate the
+ *          The sweep number that is eliminated. It serves to calculate the
  *          pointer to the position where to store the Vs and Ts.
  *
  * @param[in] Vblksiz
- *          constant which correspond to the blocking used when applying the Vs.
- *          it serve to calculate the pointer to the position where to store the
- *          Vs and Ts.
+ *          Constant that corresponds to the blocking used when applying the Vs.
+ *          It serves to calculate the pointer to the position where to store
+ *          the Vs and Ts.
  *
  * @param[in] wantz
- *          constant which indicate if Eigenvalue are requested or both
- *          Eigenvalue/Eigenvectors.
+ *          Specifies whether only eigenvalues are requested or both
+ *          eigenvalue and eigenvectors.
  *
- * @param[in] WORK
+ * @param[in] work
  *          Workspace of size nb.
  *
  *******************************************************************************
  *
- * @return
- *          \retval PLASMA_SUCCESS successful exit
- *          \retval <0 if -i, the i-th argument had an illegal value
+ * @retval PLASMA_SUCCESS successful exit
+ * @retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-/***************************************************************************
- *          TYPE 1-BAND-bidiag Lower/Upper columnwise-Householder
- ***************************************************************************/
-
 void plasma_core_ztbbrd_type1(
     plasma_enum_t uplo, int n, int nb,
-                     plasma_complex64_t *A, int lda,
-                     plasma_complex64_t *VQ, plasma_complex64_t *TAUQ,
-                     plasma_complex64_t *VP, plasma_complex64_t *TAUP,
-                     int st, int ed, int sweep, int Vblksiz, int wantz,
-                     plasma_complex64_t *WORK)
+    plasma_complex64_t *A, int lda,
+    plasma_complex64_t *VQ, plasma_complex64_t *tauQ,
+    plasma_complex64_t *VP, plasma_complex64_t *tauP,
+    int first, int last, int sweep, int Vblksiz, int wantz,
+    plasma_complex64_t *work)
 {
-    plasma_complex64_t ctmp;
-    int i, len, LDX, lenj;
+    plasma_complex64_t ctau;
+    int i, len, ldx;
     int blkid, vpos, taupos, tpos;
-    /* find the pointer to the Vs and Ts as stored by the bulgechasing
-     * note that in case no eigenvector required V and T are stored
-     * on a vector of size n
-     * */
-     if( wantz == 0 ) {
-         vpos   = ((sweep+1)%2)*n + st;
-         taupos = ((sweep+1)%2)*n + st;
-     } else {
-         findVTpos(n, nb, Vblksiz, sweep, st,
-                   &vpos, &taupos, &tpos, &blkid);
-     }
 
-    LDX = lda-1;
-    len = ed-st+1;
-
-    if( uplo == PlasmaUpper ) {
-        /* ========================
-         *       UPPER CASE
-         * ========================*/
-        // Eliminate the row  at st-1
-        *VP(vpos) = 1.;
-        for(i=1; i<len; i++){
-            *VP(vpos+i)     = conj(*AU(st-1, st+i));
-            *AU(st-1, st+i) = 0.;
-        }
-        ctmp = conj(*AU(st-1, st));
-        LAPACKE_zlarfg_work(len, &ctmp, VP(vpos+1), 1, TAUP(taupos) );
-        *AU(st-1, st) = ctmp;
-        // Apply right on A(st:ed,st:ed)
-        ctmp = *TAUP(taupos);
-        LAPACKE_zlarfx_work(LAPACK_COL_MAJOR, 'R',
-                            len, len, VP(vpos), ctmp, AU(st, st), LDX, WORK);
-
-        // Eliminate the created col at st
-        *VQ(vpos) = 1.;
-        memcpy( VQ(vpos+1), AU(st+1, st), (len-1)*sizeof(plasma_complex64_t) );
-        memset( AU(st+1, st), 0, (len-1)*sizeof(plasma_complex64_t) );
-        LAPACKE_zlarfg_work(len, AU(st, st), VQ(vpos+1), 1, TAUQ(taupos) );
-        lenj = len-1;
-        ctmp = conj(*TAUQ(taupos));
-        LAPACKE_zlarfx_work(LAPACK_COL_MAJOR, 'L',
-                            len, lenj, VQ(vpos), ctmp, AU(st, st+1), LDX, WORK);
-    }else{
-        /* ========================
-         *       LOWER CASE
-         * ========================*/
-        // Eliminate the col  at st-1
-        *VQ(vpos) = 1.;
-        memcpy( VQ(vpos+1), AL(st+1, st-1), (len-1)*sizeof(plasma_complex64_t) );
-        memset( AL(st+1, st-1), 0, (len-1)*sizeof(plasma_complex64_t) );
-        LAPACKE_zlarfg_work(len, AL(st, st-1), VQ(vpos+1), 1, TAUQ(taupos) );
-        // Apply left on A(st:ed,st:ed)
-        ctmp = conj(*TAUQ(taupos));
-        LAPACKE_zlarfx_work(LAPACK_COL_MAJOR, 'L',
-                            len, len, VQ(vpos), ctmp, AL(st, st), LDX, WORK);
-        // Eliminate the created row at st
-        *VP(vpos) = 1.;
-        for(i=1; i<len; i++){
-            *VP(vpos+i)     = conj(*AL(st, st+i));
-            *AL(st, st+i)   = 0.;
-        }
-        ctmp = conj(*AL(st, st));
-        LAPACKE_zlarfg_work(len, &ctmp, VP(vpos+1), 1, TAUP(taupos) );
-        *AL(st, st) = ctmp;
-        lenj = len-1;
-        ctmp = (*TAUP(taupos));
-        LAPACKE_zlarfx_work(LAPACK_COL_MAJOR, 'R',
-                            lenj, len, VP(vpos), ctmp, AL(st+1, st), LDX, WORK);
+    // Find the pointer to the Vs and Ts as stored by the bulge chasing.
+    // Note that in case no singular vectors are required, V and T are stored
+    // in a vector of size 2*n.
+    if (wantz == 0) {
+        vpos   = ((sweep + 1)%2)*n + first;
+        taupos = ((sweep + 1)%2)*n + first;
     }
-    // end of uplo case
-    return;
+    else {
+        findVTpos( n, nb, Vblksiz, sweep, first,
+                   &vpos, &taupos, &tpos, &blkid );
+    }
+
+    ldx = lda - 1;
+    len = last - first + 1;
+
+    if (uplo == PlasmaUpper) {
+        //========================
+        //      UPPER CASE
+        //========================
+        // Eliminate the row A( first-1, first:last ) right of bidiagonal,
+        // storing reflector Pi as a Householder vector in VP and tauP.
+        // todo: why is this conj?
+        *VP( vpos ) = 1.;
+        for (i = 1; i < len; ++i) {
+            *VP( vpos+i ) = conj( *AU( first-1, first+i ) );
+            *AU( first-1, first+i ) = 0.;
+        }
+        *AU( first-1, first ) = conj( *AU( first-1, first ) );
+        LAPACKE_zlarfg_work(
+            len, AU( first-1, first ), VP( vpos+1 ), 1, tauP( taupos ) );
+
+        // Apply Pi on right to A( first:last, first:last ).
+        LAPACKE_zlarfx_work(
+            LAPACK_COL_MAJOR, 'R', len, len,
+            VP( vpos ), *tauP( taupos ), AU( first, first ), ldx, work );
+
+        // Eliminate the created col A( first:last, first ) below diagonal,
+        // storing reflector Qi as a Householder vector in VQ and tauQ.
+        *VQ( vpos ) = 1.;
+        memcpy( VQ( vpos+1 ), AU( first+1, first ), (len-1)*sizeof( plasma_complex64_t ) );
+        memset( AU( first+1, first ), 0,            (len-1)*sizeof( plasma_complex64_t ) );
+        LAPACKE_zlarfg_work(
+            len, AU( first, first ), VQ( vpos+1 ), 1, tauQ( taupos ) );
+
+        // Apply Qi on left to A( first:last, first+1:last ).
+        ctau = conj( *tauQ( taupos ) );
+        LAPACKE_zlarfx_work(
+            LAPACK_COL_MAJOR, 'L', len, len-1,
+            VQ( vpos ), ctau, AU( first, first+1 ), ldx, work );
+    }
+    else {
+        //========================
+        //      LOWER CASE
+        //========================
+        // For nb = 3:          Apply left      Apply right
+        //        b             b               b
+        // first: b b          <B> {B F F}      b <B 0 0>
+        //        x b b     => <0> {B B F}   =>   {B B F}
+        // last:  x x b b      <0> {X B B}        {X B B}
+        //          x x b b         x x b b        X X B b
+        //            x x b           x x b        F X X b
+        //              x x             x x        F F X x
+
+        // Eliminate the col A( first:last, first-1) below bidiagonal,
+        // storing Householder vector in VQ.
+        *VQ( vpos ) = 1.;
+        memcpy( VQ( vpos+1 ), AL( first+1, first-1 ), (len-1)*sizeof( plasma_complex64_t ) );
+        memset( AL( first+1, first-1 ), 0,            (len-1)*sizeof( plasma_complex64_t ) );
+        LAPACKE_zlarfg_work(
+            len, AL( first, first-1 ), VQ( vpos+1 ), 1, tauQ( taupos ) );
+
+        // Apply left on A( first:last, first:last ).
+        ctau = conj( *tauQ( taupos ) );
+        LAPACKE_zlarfx_work(
+            LAPACK_COL_MAJOR, 'L',
+            len, len, VQ( vpos ), ctau, AL( first, first ), ldx, work );
+
+        // Eliminate the created row A( first, first:last ) right of diagonal,
+        // storing the Householder vector in VP.
+        *VP( vpos ) = 1.;
+        for (i = 1; i < len; ++i) {
+            *VP( vpos+i ) = conj( *AL( first, first+i ) );
+            *AL( first, first+i ) = 0.;
+        }
+        *AL( first, first ) = conj( *AL( first, first ) );
+        LAPACKE_zlarfg_work(
+            len, AL( first, first ), VP( vpos+1 ), 1, tauP( taupos ) );
+
+        // Apply right on A( first+1:last, first:last ).
+        LAPACKE_zlarfx_work(
+            LAPACK_COL_MAJOR, 'R', len-1, len,
+            VP( vpos ), *tauP( taupos ), AL( first+1, first ), ldx, work );
+    }
 }
-/***************************************************************************/
+
 #undef AU
 #undef AL
 #undef VQ
 #undef VP
-#undef TAUQ
-#undef TAUP
+#undef tauQ
+#undef tauP

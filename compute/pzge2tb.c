@@ -18,22 +18,24 @@
 #include "plasma_workspace.h"
 #include "plasma_core_blas.h"
 
-#define A(m, n) ((plasma_complex64_t*) plasma_tile_addr(A, m, n))
-#define T(m, n) ((plasma_complex64_t*) plasma_tile_addr(T, m, n))
+#define A( i_, j_ ) ((plasma_complex64_t*) plasma_tile_addr( A, i_, j_ ))
+#define T( i_, j_ ) ((plasma_complex64_t*) plasma_tile_addr( T, i_, j_ ))
+
 /***************************************************************************//**
  *  Parallel tile BAND Bidiagonal Reduction - panel-based version
  **/
 void plasma_pzge2tb(
     plasma_desc_t A, plasma_desc_t T,
-                    plasma_workspace_t work,
-                    plasma_sequence_t *sequence, plasma_request_t *request)
+    plasma_workspace_t work,
+    plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Return if failed sequence.
     if (sequence->status != PlasmaSuccess)
         return;
 
     if (A.m >= A.n) {
-        for (int k = 0; k < A.nt; k++) {
+        // Tall matrix, more tile-rows than tile-columns.
+        for (int k = 0; k < A.nt; ++k) {
             int mvak = plasma_tile_mview(A, k);
             int nvak = plasma_tile_nview(A, k);
 
@@ -75,8 +77,9 @@ void plasma_pzge2tb(
             }
         }
     }
-    else { // A.m < A.n (more tile-columns than tile-rows)
-        for (int k = 0; k < A.mt; k++) {
+    else { // A.m < A.n
+        // Wide matrix, more tile-columns than tile-rows.
+        for (int k = 0; k < A.mt; ++k) {
             int mvak = plasma_tile_mview(A, k);
             int nvak = plasma_tile_nview(A, k);
 

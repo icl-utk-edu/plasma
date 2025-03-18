@@ -74,9 +74,9 @@
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1, m).
  *
- * @param[out] S
+ * @param[out] Sigma
  *          The double precision singular values of A,
- *          sorted so that S(i) >= S(i + 1).
+ *          sorted so that Sigma(i) >= Sigma(i + 1).
  *
  * @param[in,out] T
  *          On exit, contains auxiliary factorization data.
@@ -120,13 +120,14 @@
  * @sa PLASMA_sgesdd
  *
  ******************************************************************************/
-int plasma_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
-                  int m, int n,
-                  plasma_complex64_t *pA, int lda,
-                  plasma_desc_t *T,
-                  double *S,
-                  plasma_complex64_t *pU,  int ldu,
-                  plasma_complex64_t *pVT, int ldvt)
+int plasma_zgesdd(
+    plasma_enum_t jobu, plasma_enum_t jobvt,
+    int m, int n,
+    plasma_complex64_t *pA, int lda,
+    plasma_desc_t *T,
+    double *Sigma,
+    plasma_complex64_t *pU,  int ldu,
+    plasma_complex64_t *pVT, int ldvt)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -228,7 +229,7 @@ int plasma_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
 
     // Warning !!! plasma_omp_zgesdd is not fully async function.
     // It contains both async and sync functions.
-    plasma_omp_zgesdd(jobu, jobvt, A, *T, S, pU, ldu, pVT, ldvt,
+    plasma_omp_zgesdd(jobu, jobvt, A, *T, Sigma, pU, ldu, pVT, ldvt,
                       work, &sequence, &request);
 
     #pragma omp parallel
@@ -288,9 +289,9 @@ int plasma_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
  *          Descriptor of matrix T.
  *          TODO
  *
- * @param[out] S
+ * @param[out] Sigma
  *          The double precision singular values of A,
- *          sorted so that S(i) >= S(i + 1).
+ *          sorted so that Sigma(i) >= Sigma(i + 1).
  *
  * @param[out] U
  *          Pointer to the left singular vectors matrix U.
@@ -344,13 +345,14 @@ int plasma_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
  * @sa plasma_omp_sgesdd
  *
  ******************************************************************************/
-void plasma_omp_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
-                       plasma_desc_t A, plasma_desc_t T,
-                       double *S,
-                       plasma_complex64_t *pU,  int ldu,
-                       plasma_complex64_t *pVT, int ldvt,
-                       plasma_workspace_t work,
-                       plasma_sequence_t *sequence, plasma_request_t *request)
+void plasma_omp_zgesdd(
+    plasma_enum_t jobu, plasma_enum_t jobvt,
+    plasma_desc_t A, plasma_desc_t T,
+    double *Sigma,
+    plasma_complex64_t *pU,  int ldu,
+    plasma_complex64_t *pVT, int ldvt,
+    plasma_workspace_t work,
+    plasma_sequence_t *sequence, plasma_request_t *request)
 {
     // Get PLASMA context.
     plasma_context_t *plasma = plasma_context_self();
@@ -568,19 +570,19 @@ void plasma_omp_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
     plasma_pztbbrd_static(uplo, minmn, nb, vblksiz,
                           pA_band, lda_band,
                           VQ2, tauQ2, VP2, tauP2,
-                          S, E, wantz,
+                          Sigma, E, wantz,
                           work,
                           sequence, request);
 
     //=======================================
-    // SVD solver
+    // SVD bi-diagonal solver
     //=======================================
-    // Use lapack D&C routine on the resulting bidiag [S E]
+    // Use lapack D&C routine on the resulting bidiag [Sigma E]
     double rdummy[1];
     int idummy[1];
     if (jobu == PlasmaNoVec && jobvt == PlasmaNoVec) {
         lapack_info = LAPACKE_dbdsdc(LAPACK_COL_MAJOR, lapack_uplo,
-                                     'N', minmn, S, E,
+                                     'N', minmn, Sigma, E,
                                      rdummy, ldu,
                                      rdummy, ldvt,
                                      rdummy, idummy);
@@ -604,12 +606,12 @@ void plasma_omp_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
 
         // Initialize pU(n+1:m, n+1:m) and pVT(m+1:n, m+1:n) to Identity
         if (jobu == PlasmaAllVec) {
-            for (int i = n; i < m; i++) {
+            for (int i = n; i < m; ++i) {
                 pU[i + (size_t)ldu*i] = 1.0;
             }
         }
         if (jobvt == PlasmaAllVec) {
-            for (int i = m; i < n; i++) {
+            for (int i = m; i < n; ++i) {
                 pVT[i + (size_t)ldvt*i] = 1.0;
             }
         }
@@ -627,18 +629,18 @@ void plasma_omp_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
 
             // Call D&C singular value kernel
             lapack_info = LAPACKE_dbdsdc(LAPACK_COL_MAJOR, lapack_uplo, 'I',
-                                         minmn, S, E, RU, minmn, RVT, minmn,
+                                         minmn, Sigma, E, RU, minmn, RVT, minmn,
                                          rdummy, idummy);
 
             // Copy real matrices RU and RVT to complex matrices pU and pVT.
             // TODO: use zlacp2
-            for (int j = 0; j < minmn; j++) {
-                for (int i = 0; i < minmn; i++) {
+            for (int j = 0; j < minmn; ++j) {
+                for (int i = 0; i < minmn; ++i) {
                     pU[i + (size_t)ldu*j] = RU[i + (size_t)minmn*j];
                 }
             }
-            for (int j = 0; j < minmn; j++) {
-                for (int i = 0; i < minmn; i++) {
+            for (int j = 0; j < minmn; ++j) {
+                for (int i = 0; i < minmn; ++i) {
                     pVT[i + (size_t)ldvt*j] = RVT[i + (size_t)minmn*j];
                 }
             }
@@ -647,7 +649,7 @@ void plasma_omp_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
         #else
             // Call D&C singular value kernel
             lapack_info = LAPACKE_dbdsdc(LAPACK_COL_MAJOR, lapack_uplo, 'I',
-                                         minmn, S, E, pU, ldu, pVT, ldvt,
+                                         minmn, Sigma, E, pU, ldu, pVT, ldvt,
                                          rdummy, idummy);
         #endif
     }
