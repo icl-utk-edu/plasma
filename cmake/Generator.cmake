@@ -37,7 +37,7 @@ function( generate_files src )
         message( DEBUG "depends is ${src}_depends = <<<\n${${src}_depends}>>>" )
 
         if (error)
-            message( STATUS "codegen returned error; cannot generate source files." )
+            message( FATAL_ERROR "codegen returned error; cannot generate source files." )
         else()
             # Cache src so we don't have to re-run codegen to get the
             # list of dependencies again if src doesn't change.
