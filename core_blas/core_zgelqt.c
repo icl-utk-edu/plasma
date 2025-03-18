@@ -76,9 +76,6 @@
  * @param work
  *         Auxiliary workspace array of length ib*m.
  *
- * @param[in] lwork
- *         Size of the array work. Should be at least ib*m.
- *
  *******************************************************************************
  *
  * @retval PlasmaSuccess successful exit

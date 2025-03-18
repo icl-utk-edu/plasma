@@ -83,7 +83,7 @@
  *          Matrix in T is allocated inside this function and needs to be
  *          destroyed by plasma_desc_destroy.
  *
- * @param[out] U
+ * @param[out] pU
  *          Pointer to the left singular vectors matrix U.
  *          - If jobu = PlasmaAllVec, U is ldu-by-m.
  *            On exit, U contains the m-by-m unitary matrix U.
@@ -95,7 +95,7 @@
  *          The leading dimension of the array U. ldu >= 1;
  *          if jobu = PlasmaAllVec or PlasmaSomeVec, ldu >= m.
  *
- * @param[out] VT
+ * @param[out] pVT
  *         Pointer to the right singular vectors matrix VT
  *         - If jobvt = PlasmaAllVec, VT is ldvt-by-n.
  *           On exit, VT contains the n-by-n unitary matrix V^H.
@@ -292,7 +292,7 @@ int plasma_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
  *          The double precision singular values of A,
  *          sorted so that S(i) >= S(i + 1).
  *
- * @param[out] U
+ * @param[out] pU
  *          Pointer to the left singular vectors matrix U.
  *          - If jobu = PlasmaAllVec, U is ldu-by-m.
  *            On exit, U contains the m-by-m unitary matrix U.
@@ -304,7 +304,7 @@ int plasma_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
  *          The leading dimension of the array U. ldu >= 1;
  *          if jobu = PlasmaAllVec or PlasmaSomeVec, ldu >= m.
  *
- * @param[out] VT
+ * @param[out] pVT
  *         Pointer to the right singular vectors matrix VT
  *         - If jobvt = PlasmaAllVec, VT is ldvt-by-n.
  *           On exit, VT contains the n-by-n unitary matrix V^H.

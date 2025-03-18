@@ -44,7 +44,7 @@
  *          The number of right hand sides, i.e., the number of
  *          columns of the matrix B. nrhs >= 0.
  *
- * @param[in,out] AB
+ * @param[in,out] pAB
  *          The triangular factor U or L from the Cholesky
  *          factorization A = U^H*U or A = L*L^H, computed by
  *          plasma_zpotrf.
@@ -57,7 +57,7 @@
  * @param[in] ldab
  *          The leading dimension of the array AB.
  *
- * @param[in,out] B
+ * @param[in,out] pB
  *          On entry, the n-by-nrhs right hand side matrix B.
  *          On exit, if return value = 0, the n-by-nrhs solution matrix X.
  *

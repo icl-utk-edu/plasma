@@ -40,14 +40,14 @@
  *          The number of right hand sides, i.e., the number of
  *          columns of the matrix B. nrhs >= 0.
  *
- * @param[in,out] A
+ * @param[in,out] pA
  *          Details of the LTL factorization of the Hermitian matrix A,
  *          as computed by plasma_zhetrf.
  *
  * @param[in] lda
  *          The leading dimension of the array A.
  *
- * @param[in,out] T
+ * @param[in,out] pT
  *          Details of the LU factorization of the band matrix A, as
  *          computed by plasma_zgbtrf.
  *
@@ -62,7 +62,7 @@
  *          The pivot indices used for zgbtrf; for 1 <= i <= min(m,n),
  *          row i of the matrix was interchanged with row ipiv(i).
  *
- * @param[in,out] B
+ * @param[in,out] pB
  *          On entry, the n-by-nrhs right hand side matrix B.
  *          On exit, if return value = 0, the n-by-nrhs solution matrix X.
  *
@@ -231,6 +231,18 @@ int plasma_zhetrs(plasma_enum_t uplo, int n, int nrhs,
  * @param[in,out] B
  *          On entry, the n-by-nrhs right hand side matrix B.
  *          On exit, if return value = 0, the n-by-nrhs solution matrix X.
+ *
+ * @param[in,out] T
+ *          Details of the LU factorization of the band matrix A, as
+ *          computed by plasma_zgbtrf.
+ *
+ * @param[in] ipiv
+ *          The pivot indices used for zhetrf; for 1 <= i <= min(m,n),
+ *          row i of the matrix was interchanged with row ipiv(i).
+ *
+ * @param[in] ipiv2
+ *          The pivot indices used for zgbtrf; for 1 <= i <= min(m,n),
+ *          row i of the matrix was interchanged with row ipiv(i).
  *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to

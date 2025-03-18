@@ -47,7 +47,7 @@
  *          The number of subdiagonals within the band of A if uplo=upper,
  *          or the number of superdiagonals if uplo=lower. kd >= 0.
  *
- * @param[in,out] AB
+ * @param[in,out] pAB
  *          On entry, the upper or lower triangle of the Hermitian band
  *          matrix A, stored in the first KD+1 rows of the array.  The
  *          j-th column of A is stored in the j-th column of the array AB
@@ -175,6 +175,10 @@ int plasma_zpbtrf(plasma_enum_t uplo,
  *  Allows for pipelining of operations at runtime.
  *
  *******************************************************************************
+ *
+ * @param[in] uplo
+ *          - PlasmaUpper: Upper triangle of A is stored;
+ *          - PlasmaLower: Lower triangle of A is stored.
  *
  * @param[in] AB
  *          Descriptor of matrix AB.

@@ -40,7 +40,7 @@
  * @param[in] ku
  *          The number of superdiagonals within the band of A. ku >= 0.
  *
- * @param[in,out] AB
+ * @param[in,out] pAB
  *          Details of the LU factorization of the band matrix A, as
  *          computed by plasma_zgbtrf.
  *

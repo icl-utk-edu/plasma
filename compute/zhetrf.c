@@ -48,10 +48,10 @@
  *
  * @param[in,out] pA
  *          On entry, the Hermitian matrix A.
- *          If uplo = PlasmaUpper, the leading N-by-N upper triangular part of A
+ *          If uplo = PlasmaUpper, the leading n-by-n upper triangular part of A
  *          contains the upper triangular part of the matrix A, and the strictly
  *          lower triangular part of A is not referenced.
- *          If uplo = PlasmaLower, the leading N-by-N lower triangular part of A
+ *          If uplo = PlasmaLower, the leading n-by-n lower triangular part of A
  *          contains the lower triangular part of the matrix A, and the strictly
  *          upper triangular part of A is not referenced.
  *          On exit, if return value = 0, the factor U or L from the Aasen's
@@ -238,22 +238,29 @@ int plasma_zhetrf(plasma_enum_t uplo,
  *
  * @param[in] A
  *          On entry, the Hermitian matrix A.
- *          If uplo = PlasmaUpper, the leading N-by-N upper triangular part of A
+ *          If uplo = PlasmaUpper, the leading n-by-n upper triangular part of A
  *          contains the upper triangular part of the matrix A, and the strictly
  *          lower triangular part of A is not referenced.
- *          If uplo = PlasmaLower, the leading N-by-N lower triangular part of A
+ *          If uplo = PlasmaLower, the leading n-by-n lower triangular part of A
  *          contains the lower triangular part of the matrix A, and the strictly
  *          upper triangular part of A is not referenced.
  *          On exit, if return value = 0, the factor U or L from the Cholesky
- *          factorization A = (P*U^H)*T(P*U^H)^H or A = (P*L)*T(P*L)^H.
+ *          factorization $A = (P U^H) T(P U^H)^H$ or $A = (P L) T (P L)^H$.
  *
  * @param[out] T
  *          On exit, if return value = 0, the band matrix T of the factorization
- *          factorization A = (P*U^H)*T*(P*U^H)^H or A = (P*L)*T*(P*L)^H.
+ *          factorization $A = (P U^H) T (P U^H)^H$ or $A = (P L) T (P L)^H$.
  *
  * @param[out] ipiv
  *          The pivot indices; for 1 <= i <= min(m,n), row and column i of the
  *          matrix was interchanged with row and column ipiv(i).
+ *
+ * @param[out] ipiv2
+ *          The pivot indices used by the band LU; for 1 <= i <= min(m,n),
+ *          row and column i of the matrix was interchanged with row and column ipiv(i).
+ *
+ * @param[out] W
+ *          Workspace.
  *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to

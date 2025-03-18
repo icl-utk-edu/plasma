@@ -55,7 +55,7 @@
  *          The number of right hand sides, i.e., the number of columns
  *          of the matrix B.  nrhs >= 0.
  *
- * @param[in,out] AB
+ * @param[in,out] pAB
  *          On entry, the upper or lower triangle of the Hermitian band
  *          matrix A, stored in the first KD+1 rows of the array.  The
  *          j-th column of A is stored in the j-th column of the array AB
@@ -70,7 +70,7 @@
  * @param[in] ldab
  *          The leading dimension of the array AB. ldab >= max(1,n).
  *
- * @param[in,out] B
+ * @param[in,out] pB
  *          On entry, the n-by-nrhs right hand side matrix B.
  *          On exit, if return value = 0, the n-by-nrhs solution matrix X.
  *
