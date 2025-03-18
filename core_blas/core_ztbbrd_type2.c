@@ -29,19 +29,43 @@
  *
  * @ingroup core_tbbrd_type2
  *
- *  core_ztbbrd_type2 is a kernel that will operate on a region (triangle) of data
- *  bounded by start and end. This kernel apply the right update remaining from the
- *  type1 and this later will create a bulge so it eliminate the first column of
- *  the created bulge and do the corresponding Left update.
+ *  Updates the off-diagonal tiles in the SVD bulge-chasing algorithm.
+ *  For an upper band matrix, continues to apply the reflector from the
+ *  previous type 1 or 3 kernel on the left to update an off-diagonal
+ *  tile, creating a bulge above the band. Then applies another
+ *  Householder reflector on the right to eliminate entries outside the
+ *  band in row first, limiting the update to columns [first, last]
+ *  inclusive, as shown below.
  *
- *  All details are available in the technical report or SC11 paper.
- *  Azzam Haidar, Hatem Ltaief, and Jack Dongarra. 2011.
- *  Parallel reduction to condensed forms for symmetric eigenvalue problems
- *  using aggregated fine-grained and memory-aware kernels. In Proceedings
- *  of 2011 International Conference for High Performance Computing,
- *  Networking, Storage and Analysis (SC '11). ACM, New York, NY, USA,
- *  Article 8, 11 pages.
- *  http://doi.acm.org/10.1145/2063384.2063394
+ *      For nb = 3:                Apply left           Apply right
+ *                                         J1   J2              J1   J2
+ *             b b                 b b                  b b
+ *      first:   b b x x             B B X {X F F}        b b x <X 0 0>
+ *               f b b x x     =>    0 B B {X X F}  =>      b b {X X F}
+ *      last:    f f b b x x         0 F B {B X X}          f b {B X X}
+ *                     b b x x              b b x x              B B X x
+ *                       b b x x              b b x x            F B B x x
+ *                         b b x x              b b x x          F F B b x x
+ *
+ *  For a lower band matrix, the symmetric process is used.
+ *
+ *  @see plasma_core_ztbbrd_type1 for legend.
+ *  @see plasma_core_ztbbrd_type3
+ *
+ *  All details are available in the SC13 paper:
+ *  Azzam Haidar, Jakub Kurzak, Piotr Luszczek. 2013.
+ *  An improved parallel singular value algorithm and its implementation
+ *  for multicore hardware. In Proceedings of the International
+ *  Conference on High Performance Computing, Networking, Storage and
+ *  Analysis (SC '13).
+ *  https://doi.org/10.1145/2503210.2503292
+ *
+ *  and the technical report:
+ *  SLATE Working Note 13:
+ *  Implementing Singular Value and Symmetric/Hermitian Eigenvalue Solvers.
+ *  Mark Gates, Kadir Akbudak, Mohammed Al Farhan, Ali Charara, Jakub Kurzak,
+ *  Dalal Sukkari, Asim YarKhan, Jack Dongarra. 2023.
+ *  https://icl.utk.edu/publications/swan-013
  *
  *******************************************************************************
  *
@@ -63,8 +87,8 @@
  *
  * @param[in,out] VP
  *          TODO: Check and fix doc
- *          PLASMA_Complex64_t array, dimension n if eigenvalue only
- *          requested or (LDV*blkcnt*Vblksiz) if Eigenvectors requested
+ *          PLASMA_Complex64_t array, dimension n if singular value only
+ *          requested or (LDV*blkcnt*Vblksiz) if singular vectors requested
  *          The Householder reflectors of the previous type 1 are used here
  *          to continue update then new one are generated to eliminate the
  *          bulge and stored in this array.
@@ -78,8 +102,8 @@
  *
  * @param[in,out] VQ
  *          TODO: Check and fix doc
- *          PLASMA_Complex64_t array, dimension n if eigenvalue only
- *          requested or (LDV*blkcnt*Vblksiz) if Eigenvectors requested
+ *          PLASMA_Complex64_t array, dimension n if singular value only
+ *          requested or (LDV*blkcnt*Vblksiz) if singular vectors requested
  *          The Householder reflectors of the previous type 1 are used here
  *          to continue update then new one are generated to eliminate the
  *          bulge and stored in this array.
@@ -107,8 +131,8 @@
  *          the Vs and Ts.
  *
  * @param[in] wantz
- *          Specifies whether only eigenvalues are requested or both
- *          eigenvalue and eigenvectors.
+ *          Specifies whether only singular values are requested or both
+ *          singular value and singular vectors.
  *
  * @param[in] work
  *          Workspace of size nb.

@@ -29,19 +29,47 @@
  *
  * @ingroup core_tbbrd_type1
  *
- *  core_ztbbrd_type1 is a kernel that will operate on a region (triangle) of data
- *  bounded by start and end. This kernel eliminate a column by an column-wise
- *  annihiliation, then it apply a left+right update on the hermitian triangle.
- *  Note that the column to be eliminated is located at start-1.
+ *  Updates the first diagonal tile for each sweep in the SVD
+ *  bulge-chasing algorithm. For an upper band matrix, applies a
+ *  Householder reflector on the right to eliminate entries right of the
+ *  bidiagonal of row first-1, creating a bulge below the diagonal. Then
+ *  applies another Householder reflector on the left to eliminate
+ *  entries below the diagonal in the first column of the bulge,
+ *  limiting the update to columns [first, last] inclusive, as shown below.
  *
- *  All details are available in the technical report or SC11 paper.
- *  Azzam Haidar, Hatem Ltaief, and Jack Dongarra. 2011.
- *  Parallel reduction to condensed forms for symmetric eigenvalue problems
- *  using aggregated fine-grained and memory-aware kernels. In Proceedings
- *  of 2011 International Conference for High Performance Computing,
- *  Networking, Storage and Analysis (SC '11). ACM, New York, NY, USA,
- *  Article 8, 11 pages.
- *  http://doi.acm.org/10.1145/2063384.2063394
+ *      For nb = 3:               Apply right          Apply left
+ *             b b x x            b <B 0 0>            b  b
+ *      first:   b b x x            {B B X} x            <B> {B X} X F F
+ *                 b b x x    =>    {F B B} x x    =>    <0> {B B} X X F
+ *      last:        b b x x        {F F B} b x x        <0> {F B} B X X
+ *                     b b x                b b x                  b b x
+ *
+ *      b are bidiagonal non-zeros, B are updated.
+ *      x are existing non-zeros for bulge-chasing to eliminate, X are updated.
+ *      F are fill created, 0 are zeros created.
+ *      Angles < > highlight vector eliminated by larfg in this kernel.
+ *      Braces { } highlight area updated by larfx in this kernel;
+ *      other elements are updated in another kernel (here, tbbrd_type2).
+ *
+ *  For a lower band matrix, the symmetric process is used.
+ *
+ *  @see plasma_core_ztbbrd_type2
+ *  @see plasma_core_ztbbrd_type3
+ *
+ *  All details are available in the SC13 paper:
+ *  Azzam Haidar, Jakub Kurzak, Piotr Luszczek. 2013.
+ *  An improved parallel singular value algorithm and its implementation
+ *  for multicore hardware. In Proceedings of the International
+ *  Conference on High Performance Computing, Networking, Storage and
+ *  Analysis (SC '13).
+ *  https://doi.org/10.1145/2503210.2503292
+ *
+ *  and the technical report:
+ *  SLATE Working Note 13:
+ *  Implementing Singular Value and Symmetric/Hermitian Eigenvalue Solvers.
+ *  Mark Gates, Kadir Akbudak, Mohammed Al Farhan, Ali Charara, Jakub Kurzak,
+ *  Dalal Sukkari, Asim YarKhan, Jack Dongarra. 2023.
+ *  https://icl.utk.edu/publications/swan-013
  *
  *******************************************************************************
  *
@@ -62,28 +90,26 @@
  *          The leading dimension of the matrix A. lda >= max( 1, 3*nb + 1 )
  *
  * @param[out] VP
- *          TODO: Check and fix doc
- *          PLASMA_Complex64_t array, dimension n if eigenvalue only
- *          requested or (LDV*blkcnt*Vblksiz) if Eigenvectors requested
- *          The Householder reflectors are stored in this array.
+ *          Array of dimension 2*n if only singular values are requested (wantz = 0),
+ *          or (ldv*blkcnt*Vblksiz) if singular vectors are requested (wantz != 0).
+ *          Stores the Householder vectors.
+ *          Adds one Householder vector to eliminate a column of the band.
  *
  * @param[out] tauP
- *          TODO: Check and fix doc
- *          PLASMA_Complex64_t array, dimension (n).
- *          The scalar factors of the Householder reflectors are stored
- *          in this array.
+ *          Array of dimension 2*n.
+ *          Stores the scalar factors of the Householder reflectors.
+ *          Adds one scalar factor.
  *
  * @param[out] VQ
- *          TODO: Check and fix doc
- *          PLASMA_Complex64_t array, dimension n if eigenvalue only
- *          requested or (LDV*blkcnt*Vblksiz) if Eigenvectors requested
- *          The Householder reflectors are stored in this array.
+ *          Array of dimension 2*n if only singular values are requested (wantz = 0),
+ *          or (ldv*blkcnt*Vblksiz) if singular vectors are requested (wantz != 0).
+ *          Stores the Householder vectors.
+ *          Adds one Householder vector to eliminate a column of the band.
  *
  * @param[out] tauQ
- *          TODO: Check and fix doc
- *          PLASMA_Complex64_t array, dimension (n).
- *          The scalar factors of the Householder reflectors are stored
- *          in this array.
+ *          Array of dimension 2*n.
+ *          Stores the scalar factors of the Householder reflectors.
+ *          Adds one scalar factor.
  *
  * @param[in] first
  *          The first index to update, after eliminating row or column first-1.
@@ -101,8 +127,8 @@
  *          the Vs and Ts.
  *
  * @param[in] wantz
- *          Specifies whether only eigenvalues are requested or both
- *          eigenvalue and eigenvectors.
+ *          Specifies whether only singular values are requested or both
+ *          singular values and singular vectors.
  *
  * @param[in] work
  *          Workspace of size nb.
