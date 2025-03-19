@@ -21,13 +21,13 @@
  *
  *  Performs an addition of two general matrices similarly to the
  *  pzgeadd() function from the PBLAS library:
- *
- *    \f[ B = \alpha * op( A ) + \beta * B, \f]
- *
+ *  \[
+ *      B = \alpha * op( A ) + \beta * B,
+ *  \]
  *  where op( X ) is one of:
- *    \f[ op( X ) = X,   \f]
- *    \f[ op( X ) = X^T, \f]
- *    \f[ op( X ) = X^H, \f]
+ *    \[ op( X ) = X,   \]
+ *    \[ op( X ) = X^T, \]
+ *    \[ op( X ) = X^H, \]
  *
  *  alpha and beta are scalars and A, B are matrices with op( A ) an m-by-n or
  *  n-by-m matrix depending on the value of transa and B an m-by-n matrix.

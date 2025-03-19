@@ -25,9 +25,13 @@
  *
  *  Computes the inverse of a Hermitian positive definite
  *  matrix A using the Cholesky factorization
- *  \f[ A = U^H  \times U, \f]
+ *  \[
+ *      A = U^H U,
+ *  \]
  *  or
- *  \f[ A = L \times L^H. \f]
+ *  \[
+ *      A = L L^H.
+ *  \]
  *
  *******************************************************************************
  *
@@ -168,7 +172,6 @@ int plasma_zpotri(plasma_enum_t uplo,
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
- * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
  *          request->status should never be set to PlasmaSuccess (the

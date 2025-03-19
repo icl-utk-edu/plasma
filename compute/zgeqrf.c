@@ -25,7 +25,9 @@
  *
  *  Computes a tile QR factorization of a real or complex m-by-n matrix A.
  *  The factorization has the form
- *    \f[ A = Q \times R \f],
+ *  \[
+ *      A = Q R,
+ *  \]
  *  where Q is a matrix with orthonormal columns and R is an upper triangular
  *  with positive diagonal.
  *
@@ -202,7 +204,6 @@ int plasma_zgeqrf(int m, int n,
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
- * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
  *          request->status should never be set to PlasmaSuccess (the

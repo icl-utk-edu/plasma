@@ -24,10 +24,14 @@
  * @ingroup plasma_trmm
  *
  *  Performs a triangular matrix-matrix multiply of the form
- *
- *          \f[B = \alpha [op(A) \times B] \f], if side = PlasmaLeft  or
- *          \f[B = \alpha [B \times op(A)] \f], if side = PlasmaRight
- *
+ *  \[
+ *      B = \alpha op(A) B
+ *  \]
+ *  if side = PlasmaLeft, or
+ *  \[
+ *      B = \alpha B op(A)
+ *  \]
+ *  if side = PlasmaRight,
  *  where op( X ) is one of:
  *
  *          - op(A) = A   or
@@ -276,7 +280,6 @@ int plasma_ztrmm(plasma_enum_t side, plasma_enum_t uplo,
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
- * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
  *          request->status should never be set to PlasmaSuccess (the
