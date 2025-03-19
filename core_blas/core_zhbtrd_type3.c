@@ -13,7 +13,7 @@
 #include "plasma_core_blas.h"
 #include "plasma_types.h"
 #include "core_lapack.h"
-#include "bulge.h"
+#include "plasma_bulge.h"
 
 #define A( i_, j_ ) (A + lda*(j_) + ((i_) - (j_)))
 #define V( i_ )     (V + (i_))

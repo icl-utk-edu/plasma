@@ -18,7 +18,7 @@
 #include "plasma_internal.h"
 #include "plasma_types.h"
 #include "plasma_workspace.h"
-#include "bulge.h"
+#include "plasma_bulge.h"
 
 #include <omp.h>
 #include <string.h>
