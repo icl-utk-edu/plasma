@@ -85,7 +85,7 @@ void test_zhbtrd(param_value_t param[], bool run)
     int info;
 
     plasma_complex64_t *Aband = (plasma_complex64_t *)
-        malloc((size_t)ldab*n*sizeof(plasma_complex64_t));
+        calloc((size_t)ldab*n, sizeof(plasma_complex64_t));
 
     plasma_complex64_t *Aband_ref = NULL;
     plasma_complex64_t *Z    = NULL;
@@ -103,10 +103,10 @@ void test_zhbtrd(param_value_t param[], bool run)
             Lambda_ref[i] = i + 1;
         }
 
-        // sym='H' for Hermitian, pack='B' for band, with kl = ku = nb.
-        int    mode  = 0;
-        double dmax  = 1.0;
-        double rcond = 1.0e6;
+        // sym='H' for Hermitian, pack='B' for lower-triangular band, with kl = ku = nb.
+        int    mode  = 0;       // D = Lambda_ref is input
+        double dmax  = 1.0;     // unused for mode = 0
+        double rcond = 1.0e6;   // unused for mode = 0
         LAPACKE_zlatms_work(LAPACK_COL_MAJOR, n, n,
                            'S', seed,
                            'H', Lambda_ref, mode, rcond,
@@ -127,6 +127,7 @@ void test_zhbtrd(param_value_t param[], bool run)
     }
 
     if (verbose) {
+        plasma_dprint_vector( "Lambda", n, Lambda_ref, 1 );
         plasma_zprint_matrix( "Aband", ldab, n, Aband, ldab );
     }
 
@@ -195,7 +196,7 @@ void test_zhbtrd(param_value_t param[], bool run)
     param[PARAM_GFLOPS].d = 0.0 / time / 1e9;
 
     if (test) {
-        // Check the correctness of the eigenvalues values.
+        // Check the correctness of the eigenvalues.
         double error = 0;
         for (int i = 0; i < n; ++i) {
             error += fabs( Lambda[i] - Lambda_ref[i] )
