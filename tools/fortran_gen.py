@@ -112,6 +112,11 @@ def polish_file(whole_file):
     clean_file = re.sub(r";", "\n", clean_file)
     clean_file = re.sub(r"}", "}\n", clean_file)
 
+    # Replace INT_MAX with c_intmax_t
+    clean_file = re.sub("INT_MAX", "c_intmax_t", clean_file)
+    # Replace -INT_MIN with -c_intmax_t
+    clean_file = re.sub("INT_MIN", "-c_intmax_t", clean_file)
+
     return clean_file
 
 def preprocess_list(initial_list):
