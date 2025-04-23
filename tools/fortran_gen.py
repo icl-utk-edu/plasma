@@ -68,6 +68,12 @@ return_variables_dict = {
     "lua_State":         ("lua_state"),
 }
 
+# translation table for macros defining constants
+MacroConsts = {
+    "INT_MAX": "c_intmax_t",
+    "INT_MIN": "-c_intmax_t",
+}
+
 # name arrays which will be translated to assumed-size arrays, e.g. pA(*)
 arrays_names_2D = ["pA", "pB", "pC", "pAB", "pQ", "pX", "pAs"]
 arrays_names_1D = ["ipiv", "values", "work", "W"]
@@ -111,6 +117,10 @@ def polish_file(whole_file):
     # Split the line based on ";" and "}"
     clean_file = re.sub(r";", "\n", clean_file)
     clean_file = re.sub(r"}", "}\n", clean_file)
+
+    # Replace macro constants with their closest equivalents
+    for name, repl in MacroConsts.items():
+        clean_file = re.sub(name, repl, clean_file)
 
     return clean_file
 
