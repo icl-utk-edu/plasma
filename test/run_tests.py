@@ -636,6 +636,7 @@ if (opts.svd):
     #['gesvd', dtype, gen + mn + " --jobu=n,a" + jobvt ],
     #['gesvd', dtype, gen + mn + " --jobu=o,s --jobvt=n" ],
     [ 'gesdd', dtype, gen + mn + job ],
+    [ 'tbbrd', dtype, gen + n + uplo ],
     #['gesvdx', dtype, gen + mn + jobz + jobvr + vl + vu ],
     #['gesvdx', dtype, gen + mn + jobz + jobvr + il + iu ],
     #['gesvd_2stage', dtype, gen + mn ],

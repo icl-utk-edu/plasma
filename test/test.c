@@ -287,6 +287,11 @@ struct routines_t routines[] =
     { "csyrk", test_csyrk },
     { "ssyrk", test_ssyrk },
 
+    { "ztbbrd", test_ztbbrd },
+    { "dtbbrd", test_dtbbrd },
+    { "ctbbrd", test_ctbbrd },
+    { "stbbrd", test_stbbrd },
+
     { "ztradd", test_ztradd },
     { "dtradd", test_dtradd },
     { "ctradd", test_ctradd },

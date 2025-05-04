@@ -74,6 +74,7 @@ void test_zheevd(param_value_t param[], bool run)
     //================================================================
     plasma_complex64_t *A = (plasma_complex64_t *)malloc(
         (size_t)lda*n*sizeof(plasma_complex64_t));
+    assert(A != NULL);
 
     plasma_complex64_t *Aref = NULL;
     plasma_complex64_t *Q    = NULL;
@@ -128,7 +129,8 @@ void test_zheevd(param_value_t param[], bool run)
     //================================================================
     plasma_time_t start = omp_get_wtime();
 
-    plasma_zheevd(job, uplo, n, A, lda, &T, Lambda, Q, ldq);
+    int info = plasma_zheevd(job, uplo, n, A, lda, &T, Lambda, Q, ldq);
+    assert( info == 0 );
     //LAPACKE_zheevd( LAPACK_COL_MAJOR,
     //               'N', 'L',  n, A, lda, Lambda);
     plasma_time_t stop = omp_get_wtime();
@@ -138,7 +140,7 @@ void test_zheevd(param_value_t param[], bool run)
     param[PARAM_GFLOPS].d = 0.0 / time / 1e9;
 
     if (test) {
-        // Check the correctness of the eigenvalues values.
+        // Check the correctness of the eigenvalues.
         double error = 0;
         for (int i = 0; i < n; ++i) {
             error += fabs( Lambda[i] - Lambda_ref[i] )

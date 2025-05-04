@@ -279,10 +279,10 @@ set( plasma_src
     compute/pzdesc2pb.c
     compute/pzdesc2tr.c
     compute/pzgb2desc.c
-    compute/pzgbbrd_static.c
+    compute/pztbbrd_static.c
     compute/pzgbtrf.c
     compute/pzge2desc.c
-    compute/pzge2gb.c
+    compute/pzge2tb.c
     compute/pzgeadd.c
     compute/pzgecpy_tile2lapack_band.c
     compute/pzgelqf.c
@@ -435,9 +435,9 @@ set( plasma_core_blas_src
     core_blas/core_clag2z.c
     core_blas/core_dcabs1.c
     core_blas/core_dzamax.c
-    core_blas/core_zgbtype1cb.c
-    core_blas/core_zgbtype2cb.c
-    core_blas/core_zgbtype3cb.c
+    core_blas/core_ztbbrd_type1.c
+    core_blas/core_ztbbrd_type2.c
+    core_blas/core_ztbbrd_type3.c
     core_blas/core_zgeadd.c
     core_blas/core_zgelqt.c
     core_blas/core_zgemm.c
@@ -577,6 +577,7 @@ set( plasma_test_src
     test/test_zsyr2k.c
     test/test_zsyrk.c
     test/test_ztradd.c
+    test/test_ztbbrd.c
     test/test_ztrmm.c
     test/test_ztrsm.c
     test/test_ztrtri.c
