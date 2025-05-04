@@ -24,9 +24,13 @@
  * @ingroup plasma_pbtrf
  *
  *  Performs the Cholesky factorization of an Hermitian positive matrix A,
- *
- *    \f[ A = L \times L^T \f] or \f[ A = U^T \times U \f]
- *
+ *  \[
+ *      A = L L^T
+ *  \]
+ *  or
+ *  \[
+ *      A = U^T U
+ *  \]
  *  if uplo = upper or lower, respectively, where L is lower triangular with
  *  positive diagonal elements, and U is upper triangular.
  *
@@ -43,7 +47,7 @@
  *          The number of subdiagonals within the band of A if uplo=upper,
  *          or the number of superdiagonals if uplo=lower. kd >= 0.
  *
- * @param[in,out] AB
+ * @param[in,out] pAB
  *          On entry, the upper or lower triangle of the Hermitian band
  *          matrix A, stored in the first KD+1 rows of the array.  The
  *          j-th column of A is stored in the j-th column of the array AB
@@ -172,6 +176,10 @@ int plasma_zpbtrf(plasma_enum_t uplo,
  *
  *******************************************************************************
  *
+ * @param[in] uplo
+ *          - PlasmaUpper: Upper triangle of A is stored;
+ *          - PlasmaLower: Lower triangle of A is stored.
+ *
  * @param[in] AB
  *          Descriptor of matrix AB.
  *
@@ -183,7 +191,6 @@ int plasma_zpbtrf(plasma_enum_t uplo,
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
- * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
  *          request->status should never be set to PlasmaSuccess (the

@@ -41,7 +41,7 @@
  *          The number of right hand sides, i.e., the number of
  *          columns of the matrix B. nrhs >= 0.
  *
- * @param[in,out] AB
+ * @param[in,out] pAB
  *          Details of the LU factorization of the band matrix A, as
  *          computed by plasma_zgbtrf.
  *
@@ -52,7 +52,7 @@
  *          The pivot indices; for 1 <= i <= min(m,n), row i of the
  *          matrix was interchanged with row ipiv(i).
  *
- * @param[in,out] B
+ * @param[in,out] pB
  *          On entry, the n-by-nrhs right hand side matrix B.
  *          On exit, if return value = 0, the n-by-nrhs solution matrix X.
  *
@@ -204,7 +204,6 @@ int plasma_zgbsv(int n, int kl, int ku, int nrhs,
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
- * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
  *          request->status should never be set to PlasmaSuccess (the

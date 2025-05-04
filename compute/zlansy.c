@@ -53,7 +53,7 @@
  * @param[in] n
  *          The order of the matrix A. n >= 0.
  *
- * @param[in,out] A
+ * @param[in,out] pA
  *          On entry, the symmetric matrix A.
  *          If uplo = PlasmaUpper, the leading N-by-N upper triangular part of A
  *          contains the upper triangular part of the matrix A, and the strictly
@@ -222,7 +222,6 @@ double plasma_zlansy(plasma_enum_t norm, plasma_enum_t uplo,
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
- * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values. The sequence->status and
  *          request->status should never be set to PlasmaSuccess (the

@@ -32,12 +32,12 @@
  *  Computes the singular value decomposition (SVD) of a complex
  *  m-by-n matrix A, optionally computing the left and/or right singular
  *  vectors. The SVD is written
- *
- *    \f[ A = U \times \Sigma \times V^H \f],
- *
- *  where \f$ \Sigma \f$ is an m-by-n matrix which is zero except for its
+ *  \[
+ *      A = U \Sigma V^H
+ *  \]
+ *  where $\Sigma$ is an m-by-n matrix which is zero except for its
  *  min(m, n) diagonal elements, U is an m-by-m unitary matrix, and
- *  V is an n-by-n unitary matrix. The diagonal elements of \f$ \Sigma \f$
+ *  V is an n-by-n unitary matrix. The diagonal elements of $\Sigma$
  *  are the singular values of A; they are real and non-negative, and
  *  are returned in descending order. The first min(m, n) columns of
  *  U and V are the left and right singular vectors of A.
@@ -83,7 +83,7 @@
  *          Matrix in T is allocated inside this function and needs to be
  *          destroyed by plasma_desc_destroy.
  *
- * @param[out] U
+ * @param[out] pU
  *          Pointer to the left singular vectors matrix U.
  *          - If jobu = PlasmaAllVec, U is ldu-by-m.
  *            On exit, U contains the m-by-m unitary matrix U.
@@ -95,7 +95,7 @@
  *          The leading dimension of the array U. ldu >= 1;
  *          if jobu = PlasmaAllVec or PlasmaSomeVec, ldu >= m.
  *
- * @param[out] VT
+ * @param[out] pVT
  *         Pointer to the right singular vectors matrix VT
  *         - If jobvt = PlasmaAllVec, VT is ldvt-by-n.
  *           On exit, VT contains the n-by-n unitary matrix V^H.
@@ -292,7 +292,7 @@ int plasma_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
  *          The double precision singular values of A,
  *          sorted so that S(i) >= S(i + 1).
  *
- * @param[out] U
+ * @param[out] pU
  *          Pointer to the left singular vectors matrix U.
  *          - If jobu = PlasmaAllVec, U is ldu-by-m.
  *            On exit, U contains the m-by-m unitary matrix U.
@@ -304,7 +304,7 @@ int plasma_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
  *          The leading dimension of the array U. ldu >= 1;
  *          if jobu = PlasmaAllVec or PlasmaSomeVec, ldu >= m.
  *
- * @param[out] VT
+ * @param[out] pVT
  *         Pointer to the right singular vectors matrix VT
  *         - If jobvt = PlasmaAllVec, VT is ldvt-by-n.
  *           On exit, VT contains the n-by-n unitary matrix V^H.
@@ -329,7 +329,6 @@ int plasma_zgesdd(plasma_enum_t jobu, plasma_enum_t jobvt,
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
- * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values. The sequence->status and
  *          request->status should never be set to PlasmaSuccess (the

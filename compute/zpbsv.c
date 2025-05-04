@@ -26,11 +26,15 @@
  *  Computes the solution to a system of linear equations A * X = B,
  *  where A is an n-by-n Hermitian positive definite band matrix, and X and B
  *  are n-by-nrhs matrices. The Cholesky decomposition is used to factor A as
- *
- *    \f[ A =  L\times L^H, \f] if uplo = PlasmaLower,
- *    or
- *    \f[ A =  U^H\times U, \f] if uplo = PlasmaUpper,
- *
+ *  \[
+ *      A = L L^H,
+ *  \]
+ *  if uplo = PlasmaLower,
+ *  or
+ *  \[
+ *      A = U^H U,
+ *  \]
+ *  if uplo = PlasmaUpper,
  *  where U is an upper triangular matrix and  L is a lower triangular matrix.
  *
  *******************************************************************************
@@ -51,7 +55,7 @@
  *          The number of right hand sides, i.e., the number of columns
  *          of the matrix B.  nrhs >= 0.
  *
- * @param[in,out] AB
+ * @param[in,out] pAB
  *          On entry, the upper or lower triangle of the Hermitian band
  *          matrix A, stored in the first KD+1 rows of the array.  The
  *          j-th column of A is stored in the j-th column of the array AB
@@ -66,7 +70,7 @@
  * @param[in] ldab
  *          The leading dimension of the array AB. ldab >= max(1,n).
  *
- * @param[in,out] B
+ * @param[in,out] pB
  *          On entry, the n-by-nrhs right hand side matrix B.
  *          On exit, if return value = 0, the n-by-nrhs solution matrix X.
  *
@@ -224,7 +228,6 @@ int plasma_zpbsv(plasma_enum_t uplo,
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
- * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
  *          request->status should never be set to PlasmaSuccess (the

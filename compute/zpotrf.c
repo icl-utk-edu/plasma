@@ -25,11 +25,13 @@
  *
  *  Performs the Cholesky factorization of a Hermitian positive definite
  *  matrix A. The factorization has the form
- *
- *    \f[ A = L \times L^H, \f]
- *    or
- *    \f[ A = U^H \times U, \f]
- *
+ *  \[
+ *      A = L L^H,
+ *  \]
+ *  or
+ *  \[
+ *      A = U^H U,
+ *  \]
  *  where U is an upper triangular matrix and L is a lower triangular matrix.
  *
  *******************************************************************************
@@ -187,7 +189,6 @@ int plasma_zpotrf(plasma_enum_t uplo,
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
- * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
  *          request->status should never be set to PlasmaSuccess (the

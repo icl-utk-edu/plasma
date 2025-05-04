@@ -18,10 +18,6 @@
 
 * * *
 
-[TOC]
-
-* * *
-
 About
 =====
 
@@ -36,11 +32,8 @@ eigenvalue problems, and singular value problems.
 PLASMA was ported from [QUARK](http://icl.cs.utk.edu/quark/)
 to [OpenMP](http://www.openmp.org/) using the modern features of the latter.
 At the same time, PLASMA was moved from its ICL SVN repository
-to this Bitbucket Mercurial repository (a move to Git is forthcoming).
+to Mercurial and later to GitHub.
 The content of this repository reflects the progress of the transition.
-Before the transition is complete, the last release of the old PLASMA
-is available here:
-https://bitbucket.org/icl/plasma/downloads/plasma-2.8.tar.gz
 
 More information about the old PLASMA based on QUARK is included below.
 
@@ -100,31 +93,39 @@ Citing
 
 Feel free to use the following publications to reference PLASMA:
 
-* Asim YarKhan, Jakub Kurzak, Piotr Luszczek, Jack Dongarra,
+* Jack Dongarra, Mark Gates, Azzam Haidar, Jakub Kurzak, Piotr Luszczek,
+  Panruo Wu, Ichitaro Yamazaki, Asim Yarkhan, Maksims Abalenkovs, Negin
+  Bagherpour, Sven Hammarling, Jakub Šístek, David Stevens, Mawussi
+  Zounon, Samuel D. Relton.
+  **PLASMA: Parallel linear algebra software for multicore using OpenMP.**
+  *ACM Transactions on Mathematical Software (TOMS)*,
+  [Volume 45, Issue 2, May 2019](https://doi.org/10.1145/3264491).
+
+* Asim YarKhan, Jakub Kurzak, Piotr Luszczek, Jack Dongarra.
   **Porting the PLASMA Numerical Library to the OpenMP Standard**,
   *International Journal of Parallel Programming*,
-  [First Online: 14 June 2016](http://dx.doi.org/10.1007/s10766-016-0441-6).
+  [Volume 45, June 2016](http://dx.doi.org/10.1007/s10766-016-0441-6).
 
 * Simplice Donfack, Jack Dongarra, Mathieu Faverge, Mark Gates,
-  Jakub Kurzak, Piotr Luszczek, Ichitaro Yamazaki,
+  Jakub Kurzak, Piotr Luszczek, Ichitaro Yamazaki.
   **A survey of recent developments in parallel implementations
   of Gaussian elimination**,
   *Concurrency and Computation: Practice and Experience*,
   [Volume 27, Issue 5, April 2015, Pages 1292–1309](http://dx.doi.org/10.1002/cpe.3306).
 
-* Azzam Haidar, Jakub Kurzak, Piotr Luszczek,
+* Azzam Haidar, Jakub Kurzak, Piotr Luszczek.
   **An improved parallel singular value algorithm and its implementation
   for multicore hardware**,
   *Proceedings of the International Conference on High Performance Computing,
   Networking, Storage and Analysis*
   [Article No. 90](http://dx.doi.org/10.1145/2503210.2503292), ACM, 2013.
 
-* Jakub Kurzak, Hatem Ltaief, Jack Dongarra, Rosa M. Badia,
+* Jakub Kurzak, Hatem Ltaief, Jack Dongarra, Rosa M. Badia.
   **Scheduling dense linear algebra operations on multicore processors**,
   *Concurrency and Computation: Practice and Experience*,
   [Volume 22, Issue 1, January 2010, Pages 15–44](http://dx.doi.org/10.1002/cpe.1467).
 
-* Alfredo Buttari, Julien Langou, Jakub Kurzak, Jack Dongarra,
+* Alfredo Buttari, Julien Langou, Jakub Kurzak, Jack Dongarra.
   **A class of parallel tiled linear algebra algorithms for multicore architectures**,
   *Parallel Computing*,
   [Volume 35, Issue 1, January 2009, Pages 38–53](http://dx.doi.org/10.1016/j.parco.2008.10.002).
@@ -141,8 +142,9 @@ Work on PLASMA was also partially funded by NSF grants:
 
 * [SI2-SSI: Collaborative Research: Sustained Innovation for Linear Algebra Software (SILAS)](http://www.nsf.gov/awardsearch/showAward?AWD_ID=1339822),
 * [SHF: Small: Empirical Autotuning of Parallel Computation for Scalable Hybrid Systems](http://nsf.gov/awardsearch/showAward?AWD_ID=1527706) (a.k.a. DARE).
+* [Collaborative Research: Frameworks: Basic ALgebra LIbraries for Sustainable Technology with Interdisciplinary Collaboration (BALLISTIC)](https://www.nsf.gov/awardsearch/showAward?AWD_ID=2004541&HistoricalAwards=false)
 
-Currently, PLASMA is being developed in collaboration with European Commission funded [Horizon 2020](https://ec.europa.eu/programmes/horizon2020/) projects:
+PLASMA was developed in collaboration with European Commission funded [Horizon 2020](https://ec.europa.eu/programmes/horizon2020/) projects:
 
 * [NLAFET: Parallel Numerical Linear Algebra for Future Extreme Scale Systems](http://www.nlafet.eu), Grant Agreement no. 671633,
 * [INTERTWinE: Programming Model INTERoperability ToWards Exascale](http://www.intertwine-project.eu), Grant Agreement no. 671602,
@@ -198,7 +200,7 @@ License
 
     -- Innovative Computing Laboratory
     -- University of Tennessee
-    -- (C) Copyright 2008-2017
+    -- (C) Copyright 2008-2025
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -229,6 +231,7 @@ Old PLASMA version based on QUARK
 =================================
 
 The old version PLASMA is still available for reference but is no longer maintained.
+https://bitbucket.org/icl/plasma/downloads/plasma-2.8.tar.gz
 
 * Old overview: https://icl.utk.edu/plasma/overview/
 * Old release news: https://icl.utk.edu/plasma/news/

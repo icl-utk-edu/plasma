@@ -24,13 +24,13 @@
  * @ingroup plasma_gemm
  *
  *  Performs one of the matrix-matrix operations
- *
- *          \f[ C = \alpha [op( A )\times op( B )] + \beta C, \f]
- *
+ *  \[
+ *      C = \alpha op( A ) op( B ) + \beta C,
+ *  \]
  *  where op( X ) is one of:
- *    \f[ op( X ) = X,   \f]
- *    \f[ op( X ) = X^T, \f]
- *    \f[ op( X ) = X^H, \f]
+ *    \[ op( X ) = X,   \]
+ *    \[ op( X ) = X^T, \]
+ *    \[ op( X ) = X^H, \]
  *
  *  alpha and beta are scalars, and A, B and C are matrices, with op( A )
  *  an m-by-k matrix, op( B ) a k-by-n matrix and C an m-by-n matrix.
@@ -297,7 +297,6 @@ int plasma_zgemm(plasma_enum_t transa, plasma_enum_t transb,
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
- * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
  *          request->status should never be set to PlasmaSuccess (the
