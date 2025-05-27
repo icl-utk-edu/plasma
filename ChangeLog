@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [25.5.27] - 2025-05-27
+### Added
+- Add computing of eigenvectors for symmetric and Hermitian matrices with 2-stage algorithm
+- Add invocation of code generator during CMake configuration
+- Add support for BLAS implementation in BLIS
+- Add comprehensive testing Python script
+- Add repetition of individual tests for a single function
+- Add style guide for code contributors
+- Add CI scripts for testing pull requests and commits
+
+### Fixed
+- Fix release tar-ball generator to use proper PkgConfig file name
+- Fix generation of Fortran wrappers from C constants
+- Fix time stamp type to avoid changes from the code generator
+- Fix source code formatting based on the style guide
+- Fix robustness of some of testers
+- Fix ignoring of intermediate files for Git
+
 ## [24.8.7] - 2024-08-07
 ### Added
 - Add an attempt to generate missing precision files if Python present during configuration
