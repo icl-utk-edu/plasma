@@ -214,7 +214,7 @@ lapack = [
     ('sgeswp',               'dgeswp',               'cgeswp',               'zgeswp'              ),
     ('sget22',               'dget22',               'cget22',               'zget22'              ),
     ('sgetf2',               'dgetf2',               'cgetf2',               'zgetf2'              ),
-    ('sge2gb',               'dge2gb',               'cge2gb',               'zge2gb'              ),
+    ('sge2tb',               'dge2tb',               'cge2tb',               'zge2tb'              ),
     ('sgetmi',               'dgetmi',               'cgetmi',               'zgetmi'              ),
     ('sgetmo',               'dgetmo',               'cgetmo',               'zgetmo'              ),
     ('sgetrf',               'dgetrf',               'cgetrf',               'zgetrf'              ),
@@ -513,7 +513,7 @@ subs = {
 
     # ----- PLASMA / MAGMA functions, alphabetic order
     ('ssy2sb',               'dsy2sb',               'che2hb',               'zhe2hb'              ),
-    ('sgbtype',              'dgbtype',              'cgbtype',              'zgbtype'             ),
+    ('stbbrd',               'dtbbrd',               'ctbbrd',               'ztbbrd'              ),
 
     ('psdesc2ge',            'pddesc2ge',            'pcdesc2ge',            'pzdesc2ge'           ),
     ('psge2desc',            'pdge2desc',            'pcge2desc',            'pzge2desc'           ),

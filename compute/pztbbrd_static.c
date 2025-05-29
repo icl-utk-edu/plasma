@@ -95,13 +95,18 @@ static void print_progress(
     printf( "%s ]\n", buf );
 }
 
+// Access matrix A as lower (AL) or upper (AU) band matrix.
+#define AL( i_, j_ ) (A + nb + lda*(j_) + ((i_) - (j_)))
+#define AU( i_, j_ ) (A + nb + lda*(j_) + ((i_) - (j_) + nb))
+
 //------------------------------------------------------------------------------
-/// Parallel Hermitian band bulge chasing, column-wise, static scheduling.
+/// Parallel SVD band bulge chasing, column-wise, static scheduling.
 ///
-void plasma_pzhbtrd_static(
+void plasma_pztbbrd_static(
     plasma_enum_t uplo, int n, int nb, int Vblksiz,
     plasma_complex64_t *A, int lda,
-    plasma_complex64_t *V, plasma_complex64_t *tau,
+    plasma_complex64_t *VQ, plasma_complex64_t *tauQ,
+    plasma_complex64_t *VP, plasma_complex64_t *tauP,
     double *D, double *E, int wantz,
     plasma_workspace_t work,
     plasma_sequence_t *sequence, plasma_request_t *request)
@@ -115,11 +120,6 @@ void plasma_pzhbtrd_static(
     // Check sequence status.
     if (sequence->status != PlasmaSuccess) {
         plasma_request_fail( sequence, request, PlasmaErrorSequence );
-        return;
-    }
-
-    if (uplo != PlasmaLower) {
-        plasma_request_fail( sequence, request, PlasmaErrorNotSupported );
         return;
     }
 
@@ -153,8 +153,8 @@ void plasma_pzhbtrd_static(
     #pragma omp parallel num_threads( num_threads ) \
             default( none ) \
             shared( plasma ) \
-            firstprivate( A, lda, n, nb, num_threads, shift, tau, uplo, \
-                          V, Vblksiz, wantz, work, progress_size )
+            firstprivate( A, lda, n, nb, num_threads, shift, tauP, tauQ, uplo, \
+                          VP, VQ, Vblksiz, wantz, work, progress_size )
     {
         int tid = omp_get_thread_num();
         plasma_complex64_t *my_work = work.spaces[ tid ];
@@ -212,20 +212,20 @@ void plasma_pzhbtrd_static(
                         ss_cond_wait( task + shift - 1, sweep );
 
                         if (type == 1) {
-                            plasma_core_zhbtrd_type1(
-                                n, nb, A, lda, V, tau,
+                            plasma_core_ztbbrd_type1(
+                                uplo, n, nb, A, lda, VQ, tauQ, VP, tauP,
                                 j_first, j_last, sweep,
                                 Vblksiz, wantz, my_work);
                         }
                         else if (type == 2) {
-                            plasma_core_zhbtrd_type2(
-                                n, nb, A, lda, V, tau,
+                            plasma_core_ztbbrd_type2(
+                                uplo, n, nb, A, lda, VQ, tauQ, VP, tauP,
                                 j_first, j_last, sweep,
                                 Vblksiz, wantz, my_work);
                         }
                         else {
-                            plasma_core_zhbtrd_type3(
-                                n, nb, A, lda, V, tau,
+                            plasma_core_ztbbrd_type3(
+                                uplo, n, nb, A, lda, VQ, tauQ, VP, tauP,
                                 j_first, j_last, sweep,
                                 Vblksiz, wantz, my_work);
                         }
@@ -259,23 +259,22 @@ void plasma_pzhbtrd_static(
     //----------
     // Store resulting diag and sub-diag D and E.
     // Note that D and E are always real.
-    // For lower, top row (i = 0) of band matrix A is diagonal D,
-    // row i = 1 is sub-diagonal E.
-    // For upper (untested), bottom row (i = nb) is diagonal D,
-    // row i = nb-1 is super-diagonal E.
     // Sequential code here so only core 0 will work.
     if (uplo == PlasmaLower) {
         for (int j = 0; j < n - 1; ++j) {
-            D[ j ] = creal( A[ j*lda ] );
-            E[ j ] = creal( A[ j*lda + 1 ] );
+            D[ j ] = creal( *AL( j,   j ) );
+            E[ j ] = creal( *AL( j+1, j ) );
         }
-        D[ n-1 ] = creal( A[ (n-1)*lda ] );
+        D[ n-1 ] = creal( *AL( n-1, n-1 ) );
     }
     else {
         for (int j = 0; j < n - 1; ++j) {
-            D[ j ] = creal( A[ j*lda + nb ] );
-            E[ j ] = creal( A[ j*lda + nb - 1 ] );
+            D[ j ] = creal( *AU( j, j   ) );
+            E[ j ] = creal( *AU( j, j+1 ) );
         }
-        D[ n-1 ] = creal( A[ (n-1)*lda + nb ] );
+        D[ n-1 ] = creal( *AU( n-1, n-1 ) );
     }
 }
+
+#undef AL
+#undef AU

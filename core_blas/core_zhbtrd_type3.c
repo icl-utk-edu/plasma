@@ -13,7 +13,7 @@
 #include "plasma_core_blas.h"
 #include "plasma_types.h"
 #include "core_lapack.h"
-#include "bulge.h"
+#include "plasma_bulge.h"
 
 #define A( i_, j_ ) (A + lda*(j_) + ((i_) - (j_)))
 #define V( i_ )     (V + (i_))
@@ -23,13 +23,29 @@
  *
  * @ingroup core_hbtrd_type3
  *
- *  Updates diagonal tiles after the first one in each sweep. Applies
- *  the reflector from the previous type 2 kernel on the left and right
- *  to update the Hermitian matrix, represented by a lower triangular
- *  region bounded by [first, last] inclusive.
+ *  Updates diagonal tiles after the first one of each sweep in the
+ *  Hermitian eigenvalue bulge-chasing algorithm. Applies the reflector
+ *  from the previous type 2 kernel on the left and right to update the
+ *  Hermitian diagonal tile, represented by a lower triangular region
+ *  bounded by [first, last] inclusive.
  *  This kernel is very similar to type 1 but does not do an elimination.
  *
- *  All details are available in the technical report or SC11 paper.
+ *      For nb = 3:                     Apply left and right
+ *             t .                      t .
+ *             t t . . . . .            t t . .  * 0 0
+ *               t t . . . .              t t .  * * *
+ *               x t t . . .              x t t  * * *
+ *      first:   x x t t . . .            X X T {T * *} * * *
+ *               f x x t t . . .    =>    0 X X {T T *} * * *
+ *      last:    f f x x t t . . .        0 F X {X T T} * * *
+ *                     x x t t . .               X X T  t . .
+ *                       x x t t .               F X X  t t .
+ *                         x x t t               F F X  x t t
+ *
+ *  @see plasma_core_zhbtrd_type1 for legend.
+ *  @see plasma_core_zhbtrd_type2
+ *
+ *  All details are available in the SC11 paper:
  *  Azzam Haidar, Hatem Ltaief, and Jack Dongarra. 2011.
  *  Parallel reduction to condensed forms for symmetric eigenvalue problems
  *  using aggregated fine-grained and memory-aware kernels. In Proceedings
@@ -37,6 +53,13 @@
  *  Networking, Storage and Analysis (SC '11). ACM, New York, NY, USA,
  *  Article 8, 11 pages.
  *  http://doi.acm.org/10.1145/2063384.2063394
+ *
+ *  and the technical report:
+ *  SLATE Working Note 13:
+ *  Implementing Singular Value and Symmetric/Hermitian Eigenvalue Solvers.
+ *  Mark Gates, Kadir Akbudak, Mohammed Al Farhan, Ali Charara, Jakub Kurzak,
+ *  Dalal Sukkari, Asim YarKhan, Jack Dongarra. 2023.
+ *  https://icl.utk.edu/publications/swan-013
  *
  *******************************************************************************
  *

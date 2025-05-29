@@ -18,7 +18,7 @@
 #include "plasma_workspace.h"
 #include "plasma_core_blas.h"
 #include "core_lapack.h"
-#include "bulge.h"
+#include "plasma_bulge.h"
 
 #include <omp.h>
 
