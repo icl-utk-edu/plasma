@@ -26,7 +26,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Add an attempt to generate missing precision files if Python present during configuration
 - Add generation of pkg-config files during installation
-- Add generation of CMake expored configuration during installation
+- Add generation of CMake exported configuration during installation
 - Add timeout to the basic testing script
 - Add SOVERSION to the installed libraries to track API changes
 - Add detection of CBLAS and LAPACKE headers and libraries based on CMake's FindBLAS() and FindLAPACK()
