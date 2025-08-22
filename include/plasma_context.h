@@ -18,7 +18,7 @@
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
-#else 
+#else
 #define lua_State void
 #endif
 
@@ -37,9 +37,7 @@ typedef struct {
     int max_panel_threads;          ///< max threads for panel factorization
     plasma_barrier_t barrier;       ///< thread barrier for multithreaded tasks
     plasma_enum_t householder_mode; ///< PlasmaHouseholderMode
-    int ss_ld;                  // static scheduler progress table leading dimension
-    volatile int ss_abort;      // static scheduler abort flag
-    volatile int *ss_progress;  // static scheduler progress table
+    int *ss_progress;               ///< static scheduler progress table
 } plasma_context_t;
 
 typedef struct {

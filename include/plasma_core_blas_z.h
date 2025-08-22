@@ -30,7 +30,7 @@ extern "C" {
 double plasma_core_dcabs1(plasma_complex64_t alpha);
 #endif
 
-void plasma_core_zgbtype1cb(
+void plasma_core_ztbbrd_type1(
     plasma_enum_t uplo, int n, int nb,
     plasma_complex64_t *A, int lda,
     plasma_complex64_t *VQ, plasma_complex64_t *TAUQ,
@@ -38,7 +38,7 @@ void plasma_core_zgbtype1cb(
     int st, int ed, int sweep, int Vblksiz, int WANTZ,
     plasma_complex64_t *work);
 
-void plasma_core_zgbtype2cb(
+void plasma_core_ztbbrd_type2(
     plasma_enum_t uplo, int n, int nb,
     plasma_complex64_t *A, int lda,
     plasma_complex64_t *VQ, plasma_complex64_t *TAUQ,
@@ -46,7 +46,7 @@ void plasma_core_zgbtype2cb(
     int st, int ed, int sweep, int Vblksiz, int WANTZ,
     plasma_complex64_t *work);
 
-void plasma_core_zgbtype3cb(
+void plasma_core_ztbbrd_type3(
     plasma_enum_t uplo, int n, int nb,
     plasma_complex64_t *A, int lda,
     plasma_complex64_t *VQ, plasma_complex64_t *TAUQ,

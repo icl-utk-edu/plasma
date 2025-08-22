@@ -13,7 +13,7 @@
 #include "plasma_core_blas.h"
 #include "plasma_types.h"
 #include "core_lapack.h"
-#include "bulge.h"
+#include "plasma_bulge.h"
 
 #include <string.h>
 
@@ -25,14 +25,34 @@
  *
  * @ingroup core_hbtrd_type1
  *
- *  First kernel for each sweep in the Hermitian eigenvalue
- *  bulge-chasing algorithm, which updates the first diagonal tile.
- *  Eliminates entries below the sub-diagonal of column first-1 using a
- *  Householder reflector. Then applies the reflector on the left and
- *  right to update the Hermitian matrix, represented by a lower
- *  triangular region bounded by [first, last] inclusive.
+ *  Updates the first diagonal tile for each sweep in the Hermitian
+ *  eigenvalue bulge-chasing algorithm. Applies a Householder reflector
+ *  on the left and right to eliminate entries below the sub-diagonal of
+ *  column first-1, updating the Hermitian diagonal tile represented by
+ *  a lower triangular region bounded by [first, last] inclusive,
+ *  as shown below.
  *
- *  All details are available in the technical report or SC11 paper.
+ *      For nb = 3:               Apply left and right
+ *             t . . .             t   * 0 0
+ *      first: t t . . .          <T> {T * *} * * *
+ *             x t t . . .    =>  <0> {T T *} * * *
+ *      last:  x x t t . . .      <0> {X T T} * * *
+ *               x x t t . .           X X T  t . .
+ *                 x x t t .           F X X  t t .
+ *                   x x t t           F F X  x t t
+ *
+ *      t are tridiagonal non-zeros, T are updated.
+ *      x are existing non-zeros for bulge-chasing to eliminate, X are updated.
+ *      F are fill created, 0 are zeros created.
+ *      . and * are implicit non-zeros known by symmetry, * are updated.
+ *      Angles < > highlight vector eliminated by larfg in this kernel.
+ *      Braces { } highlight area updated by larf[xy] in this kernel;
+ *      other elements are updated in another kernel (here, hbtrd_type2).
+ *
+ *  @see plasma_core_zhbtrd_type2
+ *  @see plasma_core_zhbtrd_type3
+ *
+ *  All details are available in the SC11 paper:
  *  Azzam Haidar, Hatem Ltaief, and Jack Dongarra. 2011.
  *  Parallel reduction to condensed forms for symmetric eigenvalue problems
  *  using aggregated fine-grained and memory-aware kernels. In Proceedings
@@ -40,6 +60,13 @@
  *  Networking, Storage and Analysis (SC '11). ACM, New York, NY, USA,
  *  Article 8, 11 pages.
  *  http://doi.acm.org/10.1145/2063384.2063394
+ *
+ *  and the technical report:
+ *  SLATE Working Note 13:
+ *  Implementing Singular Value and Symmetric/Hermitian Eigenvalue Solvers.
+ *  Mark Gates, Kadir Akbudak, Mohammed Al Farhan, Ali Charara, Jakub Kurzak,
+ *  Dalal Sukkari, Asim YarKhan, Jack Dongarra. 2023.
+ *  https://icl.utk.edu/publications/swan-013
  *
  *******************************************************************************
  *
@@ -83,7 +110,7 @@
  *
  * @param[in] wantz
  *          Specifies whether only eigenvalues are requested or both
- *          eigenvalue and eigenvectors.
+ *          eigenvalues and eigenvectors.
  *
  * @param[in] work
  *          Workspace of size nb.

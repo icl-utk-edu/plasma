@@ -6,7 +6,7 @@
  *  University of Tennessee, US,
  *  University of Manchester, UK.
  *
- * @precisions normal z -> d c s
+ * @precisions normal z -> s d c
  *
  **/
 #include "test.h"
@@ -26,7 +26,7 @@
 
 /***************************************************************************//**
  *
- * @brief Tests ZGESDD.
+ * @brief Tests zgesdd.
  *
  * @param[in,out] param - array of parameters
  * @param[in]     run - whether to run test
@@ -37,14 +37,13 @@
 void test_zgesdd(param_value_t param[], bool run)
 {
     //================================================================
-    // Print usage info or return column labels or values.
+    // Mark which parameters are used.
     //================================================================
     param[PARAM_JOB   ].used = true;
     param[PARAM_DIM   ].used = PARAM_USE_M | PARAM_USE_N;
     param[PARAM_PADA  ].used = true;
     param[PARAM_NB    ].used = true;
     param[PARAM_IB    ].used = true;
-    param[PARAM_HMODE ].used = true;
     param[PARAM_ERROR2].used = true;
     param[PARAM_ORTHO_U].used = true;
     param[PARAM_ORTHO_V].used = true;
@@ -73,30 +72,23 @@ void test_zgesdd(param_value_t param[], bool run)
     plasma_set(PlasmaNb, param[PARAM_NB].i);
     plasma_set(PlasmaIb, param[PARAM_IB].i);
 
-    if (param[PARAM_HMODE].c == 't') {
-        plasma_set(PlasmaHouseholderMode, PlasmaTreeHouseholder);
-    }
-    else {
-        plasma_set(PlasmaHouseholderMode, PlasmaFlatHouseholder);
-    }
-
     //================================================================
-    // Allocate and initialize matrix A.
+    // Allocate and initialize arrays.
     //================================================================
     plasma_complex64_t *A = (plasma_complex64_t*)
         malloc((size_t)lda*n*sizeof(plasma_complex64_t));
     assert(A != NULL);
 
     int seed[] = {0, 0, 0, 1};
-    double *Sref = NULL;
+    double *Sigma_ref = NULL;
     plasma_complex64_t *Aref = NULL;
 
     if (test) {
         // Allocate memory for the reference singular values vector.
-        // Only the Sref test requires using latms; orthogonality
+        // Only the Sigma_ref test requires using latms; orthogonality
         // and backwards error tests work for random matrices (larnv).
-        Sref = (double*) malloc(imin(m,n)*sizeof(double));
-        assert(Sref != NULL);
+        Sigma_ref = (double*) malloc(imin(m,n)*sizeof(double));
+        assert(Sigma_ref != NULL);
 
         int mode = 4;
         double cond = (double) imin(m,n);
@@ -107,20 +99,18 @@ void test_zgesdd(param_value_t param[], bool run)
 
         // Initialize A with specific singular values
         LAPACKE_zlatms_work(LAPACK_COL_MAJOR, m, n,
-                            'U', seed, 'N', Sref, mode, cond,
+                            'U', seed, 'N', Sigma_ref, mode, cond,
                             dmax, m, n,'N', A, lda, work);
         free(work);
-    }
-    else {
-        LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
-    }
 
-    if (test) {
         // Make a copy of A for backwards error test.
         Aref = (plasma_complex64_t*)
             malloc((size_t)lda*n*sizeof(plasma_complex64_t));
         assert(Aref != NULL);
         memcpy(Aref, A, (size_t)lda*n*sizeof(plasma_complex64_t));
+    }
+    else {
+        LAPACKE_zlarnv(1, seed, (size_t)lda*n, A);
     }
 
     //================================================================
@@ -132,8 +122,8 @@ void test_zgesdd(param_value_t param[], bool run)
     // Allocate the array of singular values
     //================================================================
     int minmn = imin(m,n);
-    double *S = (double*) malloc((size_t)minmn*sizeof(double));
-    assert(S != NULL);
+    double *Sigma = (double*) malloc((size_t)minmn*sizeof(double));
+    assert(Sigma != NULL);
 
     //================================================================
     // Allocate U and VT
@@ -164,13 +154,13 @@ void test_zgesdd(param_value_t param[], bool run)
     //================================================================
     plasma_time_t start = omp_get_wtime();
     int info = plasma_zgesdd(job, job, m, n,
-                             A, lda, &T, S, U, ldu, VT, ldvt);
+                             A, lda, &T, Sigma, U, ldu, VT, ldvt);
     assert(info == 0);
     plasma_time_t stop = omp_get_wtime();
-    plasma_time_t time = stop-start;
+    plasma_time_t time = stop - start;
 
     param[PARAM_TIME].d = time;
-    param[PARAM_GFLOPS].d = flops_zgebrd(m, n) / time / 1e9;
+    param[PARAM_GFLOPS].d = 0.0 / time / 1e9;
 
     //=================================================================
     // Test results by checking orthogonality of U, VT
@@ -188,10 +178,10 @@ void test_zgesdd(param_value_t param[], bool run)
         // Check the correctness of the singular values.
         // Should satisfy abs. error. See eqn (3) in Demmel et al., Computing
         // the singular value decomposition with high relative accuracy, 1999.
-        double Smax = Sref[0];
+        double Smax = Sigma_ref[0];
         double error_sval = 0;
         for (int i = 0; i < minmn; i++) {
-            double err = fabs(S[i] - Sref[i]) / Smax;
+            double err = fabs(Sigma[i] - Sigma_ref[i]) / Smax;
             if (err > error_sval || isnan(err))
                 error_sval = err;
         }
@@ -266,7 +256,7 @@ void test_zgesdd(param_value_t param[], bool run)
 
             // U = U Sigma
             for (int j = 0; j < minmn; j++) {
-                cblas_zdscal(m, S[j], &U[(size_t)ldu*j], 1);
+                cblas_zdscal(m, Sigma[j], &U[(size_t)ldu*j], 1);
             }
 
             // A = A - (U Sigma) VT
@@ -296,8 +286,8 @@ void test_zgesdd(param_value_t param[], bool run)
     //================================================================
     free(A);
     free(Aref);
-    free(S);
-    free(Sref);
+    free(Sigma);
+    free(Sigma_ref);
     free(U);
     free(VT);
     plasma_desc_destroy(&T);
