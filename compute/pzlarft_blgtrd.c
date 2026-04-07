@@ -27,7 +27,7 @@
 #define T(m)   &(T[(m)])
 /***************************************************************************/
 /**
- *  Parallel compute T2 from bulgechasing of Symetric matrix 
+ *  Parallel compute T2 from bulgechasing of Symetric matrix
  *  Lower case is supported
  **/
 /***************************************************************************/
@@ -64,6 +64,7 @@ void plasma_pzlarft_blgtrd(int N, int NB, int Vblksiz,
         return;
     }
 
+    printf( "%s findVTsiz\n", __func__ );
     findVTsiz(N, NB, Vblksiz, &blkcnt, &LDV);
     blkpercore = blkcnt/cores_num;
     blkpercore = blkpercore==0 ? 1:blkpercore;

@@ -30,24 +30,29 @@
 #define V(_m)     (V   + (_m))
 #define T(_m)     (T   + (_m))
 #define TAU(_m)   (TAU + (_m))
+
 /***************************************************************************
- *  Parallel apply Q2 from bulgechasing matrices - static scheduling
+ *  Parallel apply Q2 from bulge chasing matrices - static scheduling
  *  Lower case is treated
- **/
-    /*
-     * side == PlasmaLeft:
-     *     meaning apply E = Q*E = (q_1*q_2*.....*q_n) * E ==> so
-     *     traverse Vs in reverse order (forward) from q_n to q_1 Also
-     *     E is splitten by block of col over cores because each apply
-     *     consist in a block of row (horizontal block)
-     */
-    /*
-     * side == PlasmaRight:
-     *     meaning apply E = E*Q = E * (q_1*q_2*.....*q_n) ==> so
-     *     traverse Vs in normal order (forward) from q_1 to q_n Also
-     *     E is splitten by block of row over core because each apply
-     *     consist in a block of col (vertical block)
-     */
+ *
+ *  side == PlasmaLeft:
+ *      Apply E = Q*E = (q_1*q_2*.....*q_n) * E ==> so
+ *      traverse Vs in reverse order (forward (does he mean reverse?)) from q_n to q_1.
+ *      Also, E is split by block of col over cores because each application
+ *      consists of a block of row (horizontal block).
+ *
+ *  side == PlasmaRight:
+ *      Apply E = E*Q = E * (q_1*q_2*.....*q_n) ==> so
+ *      traverse Vs in normal order (forward) from q_1 to q_n.
+ *      Also, E is split by block of row over core because each application
+ *      consists of a block of col (vertical block).
+ *
+ *  wantz == 1:
+ *      E = Identity, so this forms Q. That is, it does ungqr.
+ *
+ *  wantz == 2:
+ *      E is full matrix (e.g., eigenvectors or singular vectors).
+ */
 /***************************************************************************/
 void plasma_pzunmqr_blgtrd(plasma_enum_t side, plasma_enum_t trans,
                            int N, int NB, int NE,
@@ -75,35 +80,33 @@ void plasma_pzunmqr_blgtrd(plasma_enum_t side, plasma_enum_t trans,
     int standalonework = 0 ;
     int versionL, versionR;
 
-
     // Quick return
-    if ( N == 0 ) {
+    if (N == 0) {
         return;
     }
-    if ( NB == 0 ) {
+    if (NB == 0) {
         return;
     }
-    if ( NE == 0 ) {
+    if (NE == 0) {
         return;
     }
     /* ==========================================
-     * some infor for developer
+     * some info for for developer
      * Initialisation and checking nb of cores
      * ==========================================*/
-    /* we have to 2 algo for left (113 114) and 2 algo for right (91 92)
-     * which correspond to versionL versionR.
-     * They ae very similar (detail explained in tech report and matlab code)
-     * however version 114 and 92 improve locality.
-     * while version 113 is used in case WNATZ=1 (construct Q2) which allow
+    /* we have to 2 algo for left (113 114) and 2 algo for right (91 92),
+     * which correspond to versionL and versionR, respectively.
+     * They ae very similar (detail explained in tech report and matlab code).
+     * Versions 114 and 92 improve locality,
+     * while version 113 is used in case WANTZ = 1 (construct Q2), which allows
      * the construction to be done in an optimized way taking into
-     * consideration that the matrix is Identity so making less flops.
-     *
+     * consideration that the matrix E is Identity, so using fewer flops.
      */
     versionL = 113;
     versionR = 92;
     LDT      = Vblksiz;
-    LDV      = NB+Vblksiz-1;
-    /* use colpercore =  N/cores_num; :if i want to split E into
+    LDV      = NB + Vblksiz - 1;
+    /* use colpercore = N/cores_num; :if i want to split E into
      * cores_num chunk so I will have large chunk for each core.
      * However I prefer to split E into chunk of small size where
      * I guarantee that blas3 occur and the size of chunk remain into
@@ -131,32 +134,32 @@ void plasma_pzunmqr_blgtrd(plasma_enum_t side, plasma_enum_t trans,
      *  THIS IS v1 CODE
      * */
 
-    if(WANTZ==1)
-        colpercore =  plasma_ceildiv(NE,2*cores_num);
+    if (WANTZ == 1)
+        colpercore = plasma_ceildiv( NE, 2*cores_num );
     else
-        colpercore =  plasma_ceildiv(NE,cores_num);
+        colpercore = plasma_ceildiv( NE, cores_num );
 
-    if(colpercore>1000)
-        colpercore =  plasma_ceildiv(colpercore,10);
-    else if(colpercore>800)
-        colpercore =  plasma_ceildiv(colpercore,8);
-    else if(colpercore>600)
-        colpercore =  plasma_ceildiv(colpercore,6);
-    else if(colpercore>400)
-        colpercore =  plasma_ceildiv(colpercore,4);
-    else if(colpercore>200)
-        colpercore =  plasma_ceildiv(colpercore,2);
-    if(colpercore>200)
-        colpercore=120;
-    if(colpercore<30)
-        colpercore=32;
-    /*colpercore = N make the code sequential running on thread=0;*/
-    nbchunk          =  plasma_ceildiv(NE, colpercore);
+    if (colpercore > 1000)
+        colpercore = plasma_ceildiv( colpercore, 10 );
+    else if (colpercore > 800)
+        colpercore = plasma_ceildiv( colpercore, 8 );
+    else if (colpercore > 600)
+        colpercore = plasma_ceildiv( colpercore, 6 );
+    else if (colpercore > 400)
+        colpercore = plasma_ceildiv( colpercore, 4 );
+    else if (colpercore > 200)
+        colpercore = plasma_ceildiv( colpercore, 2 );
+    if (colpercore > 200)
+        colpercore = 120;
+    if (colpercore < 30)
+        colpercore = 32;
+    /* colpercore = N make the code sequential running on thread = 0;*/
+    nbchunk          = plasma_ceildiv( NE, colpercore );
     allcoresnb       = cores_num;
     maxrequiredcores = nbchunk;
-    if( maxrequiredcores < 1 )
+    if (maxrequiredcores < 1)
         maxrequiredcores = 1;
-    if(allcoresnb > maxrequiredcores)
+    if (allcoresnb > maxrequiredcores)
         allcoresnb = maxrequiredcores;
 
     /* =========================================
@@ -164,7 +167,7 @@ void plasma_pzunmqr_blgtrd(plasma_enum_t side, plasma_enum_t trans,
      * just make the element real for complex
      * =========================================
      */
-    if ( NB == 1 ) {
+    if (NB == 1) {
         /* NOTE in CASE USED STANDALONE FUNCTION
          * In COMPLEX matrix Z need to be scaled by the TAU
          * generated during the make off-diagonal elements real
@@ -172,45 +175,43 @@ void plasma_pzunmqr_blgtrd(plasma_enum_t side, plasma_enum_t trans,
         /*
          * In case where the first stage has been done we are sure
          * that all element of E are real so no need to go through
-         * NB=1.  However in case where this function need to be used
+         * NB = 1.  However in case where this function need to be used
          * for only band matrices meaning only stage2 has been called
          * then it require to make all off-diagonal elements real and
          * so remove the return from here and from the bulgechasing
          * function
          */
-        if(WANTZ==1){
+        if (WANTZ == 1) {
             plasma_complex64_t zone = 1.0;
-            memset(E, 0, LDE*N*sizeof(plasma_complex64_t));
-            for(sw=0; sw<NE; sw++)
-                E[sw+sw*LDE] = zone;
+            memset( E, 0, LDE*N*sizeof(plasma_complex64_t) );
+            for (sw = 0; sw < NE; sw++)
+                E[sw + sw*LDE] = zone;
         }
-        if(standalonework==0){
-            return;
-        }
-        else{
-#ifdef COMPLEX
-            for (chunkid = 0; chunkid<nbchunk; chunkid++) {
-                coreid  = chunkid%allcoresnb;
-                corest  = chunkid*colpercore;
-                corelen = imin(colpercore, (NE-(chunkid*colpercore)));
-                if( my_core_id==coreid ){
-                    if( side==PlasmaLeft ){
-                        for (mycol =1; mycol<NE; mycol++){
-                            cblas_zscal(corelen, TAU(mycol), E(mycol, corest), LDE);
+        if (standalonework != 0) {
+            #ifdef COMPLEX
+                for (chunkid = 0; chunkid < nbchunk; chunkid++) {
+                    coreid  = chunkid%allcoresnb;
+                    corest  = chunkid*colpercore;
+                    corelen = imin( colpercore, NE - chunkid*colpercore );
+                    if (my_core_id == coreid) {
+                        if (side == PlasmaLeft) {
+                            for (mycol = 1; mycol < NE; mycol++) {
+                                cblas_zscal( corelen, TAU(mycol), E(mycol, corest), LDE );
+                            }
                         }
-                    }else{
-                        plasma_complex64_t ztmp;
-                        /*Upper case need to be checked*/
-                        for (mycol = corest; mycol<corest+corelen; mycol++){
-                            ztmp = conj(*TAU(mycol));
-                            cblas_zscal(N, &ztmp, E(0,mycol), 1);
+                        else {
+                            plasma_complex64_t ztmp;
+                            /* Upper case need to be checked*/
+                            for (mycol = corest; mycol < corest+corelen; mycol++) {
+                                ztmp = conj( *TAU(mycol) );
+                                cblas_zscal( N, &ztmp, E( 0, mycol ), 1 );
+                            }
                         }
                     }
                 }
-            }
-#endif
-            return;
+            #endif
         }
+        return;
     }
     /* =========================================
      *       case NB >1  main code
@@ -220,70 +221,71 @@ void plasma_pzunmqr_blgtrd(plasma_enum_t side, plasma_enum_t trans,
     /* WANTZ = 1 meaning E is IDENTITY so form Q using optimized update.
      *         So we use the reverse order from small q to large one,
      *         so from q_n to q_1 so Left update to Identity.
-     *         Use version 113 because in 114 we need to update the whole matrix and not in icreasing order.
+     *         Use version 113 because in 114 we need to update the whole matrix and not in increasing order.
      * WANTZ = 2 meaning E is a full matrix and need to be updated from Left or Right so use normal update
      * */
-    if ( WANTZ==1 ) {
+    if (WANTZ == 1) {
         versionL = 113;
-        halfchunk = plasma_ceildiv(nbchunk,2);
-        for (lchunkid = 0; lchunkid<halfchunk; lchunkid++) {
+        halfchunk = plasma_ceildiv( nbchunk, 2 );
+        for (lchunkid = 0; lchunkid < halfchunk; lchunkid++) {
             rchunkid  = (nbchunk-1) - lchunkid;
             nbportion = lchunkid == rchunkid ? 1 : 2;
             /* sw is the switch between left and right side chunk
              * it is used to have same load distribution of work */
 
-            for (sw = 0; sw<nbportion; sw++) {
+            for (sw = 0; sw < nbportion; sw++) {
                 chunkid = sw == 0 ? lchunkid : rchunkid;
                 coreid  = lchunkid%allcoresnb;
                 corest  = chunkid*colpercore;
-                corelen = imin(colpercore, (NE-(chunkid*colpercore)));
-                if( my_core_id == coreid ) {
+                corelen = imin( colpercore, NE - chunkid*colpercore );
+                if (my_core_id == coreid) {
                     /*
                      * Version 113:
                      * loop over the block_col (nt) and for each find the
                      * number of tiles (mt) in this block_col. then loop over mt, find
-                     * the size of the V's(Vm,Vn) and apply it to the corresponding
+                     * the size of the V's (Vm, Vn) and apply it to the corresponding
                      * portion of E.
                      */
-                    nt  = plasma_ceildiv((N-1),Vblksiz);
-                    for (blkj=nt-1; blkj>=0; blkj--) {
+                    nt  = plasma_ceildiv( N-1, Vblksiz );
+                    for (blkj = nt-1; blkj >= 0; blkj--) {
                         /* the index of the first row on the top of block (blkj) */
                         firstrow = blkj * Vblksiz + 1;
-                        /*find the number of tile for this block */
-                        if( blkj == nt-1 )
+                        /* find the number of tile for this block */
+                        if (blkj == nt-1)
                             mt = plasma_ceildiv( N -  firstrow,    NB);
                         else
                             mt = plasma_ceildiv( N - (firstrow+1), NB);
-                        /*loop over the tiles find the size of the Vs and apply it */
-                        for (blki=mt; blki>0; blki--) {
-                            /*calculate the size of each losange of Vs= (Vm,Vn)*/
+                        /* loop over the tiles find the size of the Vs and apply it */
+                        for (blki = mt; blki > 0; blki--) {
+                            /* calculate the size of each losange of Vs= (Vm, Vn)*/
                             myrow     = firstrow + (mt-blki)*NB;
                             mycol     = blkj*Vblksiz;
                             Vm = imin( NB+Vblksiz-1, N-myrow);
-                            if( ( blkj == nt-1 ) && ( blki == mt ) ){
+                            if (blkj == nt-1 && blki == mt) {
                                 Vn = imin (Vblksiz, Vm);
-                            } else {
+                            }
+                            else {
                                 Vn = imin (Vblksiz, Vm-1);
                             }
-                            /*calculate the pointer to the Vs and the Ts.
+                            /* calculate the pointer to the Vs and the Ts.
                              * Note that Vs and Ts have special storage done
                              * by the bulgechasing function*/
-                            findVTpos(N,NB,Vblksiz,mycol,myrow, &vpos, &taupos, &tpos, &blkid);
-                            if((Vm>0)&&(Vn>0)){
-                                col = imax(mycol,corest);
+                            findVTpos( N, NB, Vblksiz, mycol, myrow, &vpos, &taupos, &tpos, &blkid );
+                            if ((Vm > 0)&&(Vn > 0)) {
+                                col = imax( mycol, corest );
                                 len = corelen - (col-corest);
-                                if(side==PlasmaLeft){
-                                    if( len > 0 )
+                                if (side == PlasmaLeft) {
+                                    if (len > 0)
                                         plasma_core_zlarfb_gemm(
                                             side, trans,
                                             PlasmaForward, PlasmaColumnwise,
                                             Vm, len, Vn, V(vpos), LDV, T(tpos),
-                                            LDT, E(myrow,col), LDE,
+                                            LDT, E(myrow, col), LDE,
                                             ((plasma_complex64_t*)work.spaces[my_core_id]),
                                             len);
                                 }
-                                else{
-                                    if( len > 0 )
+                                else {
+                                    if (len > 0)
                                         plasma_core_zlarfb_gemm(
                                             side, trans,
                                             PlasmaForward, PlasmaColumnwise,
@@ -294,68 +296,70 @@ void plasma_pzunmqr_blgtrd(plasma_enum_t side, plasma_enum_t trans,
                             }
                         }
                     }
-                } /* END my_core_id=coreid */
+                } /* END my_core_id = coreid */
             } /* END of sw  */
         } /* END loop over the chunk */
-    } /* END if WANTZ=1 */
-    else{
+    } /* END if WANTZ = 1 */
+    else {
         /*
          * WANTZ != 1
          */
-        for (chunkid = 0; chunkid<nbchunk; chunkid++) {
+        for (chunkid = 0; chunkid < nbchunk; chunkid++) {
             coreid  = chunkid%allcoresnb;
             corest  = chunkid*colpercore;
-            corelen = imin(colpercore, (NE-(chunkid*colpercore)));
-            if(corelen < 0)
+            corelen = imin( colpercore, NE - chunkid*colpercore );
+            if (corelen < 0)
                 corelen = 0;
-            if( my_core_id == coreid ) {
+            if (my_core_id == coreid) {
                 /*
                  * PlasmaLeft
                  */
-                //if( side == PlasmaLeft ) {
-                if( versionL == 113 ) {
+                //if (side == PlasmaLeft) {
+                if (versionL == 113) {
                     /*
                      * Version 113:
                      * loop over the block_col (nt) and for each find the
                      * number of tiles (mt) in this block_col. then loop over mt, find
-                     * the size of the V's(Vm,Vn) and apply it to the corresponding
+                     * the size of the V's (Vm, Vn) and apply it to the corresponding
                      * portion of E.
                      */
-                    if( versionL == 113 ) {
-                        nt  = plasma_ceildiv((N-1),Vblksiz);
-                        for (blkj=nt-1; blkj>=0; blkj--) {
+                    if (versionL == 113) {
+                        nt  = plasma_ceildiv( N-1, Vblksiz );
+                        for (blkj = nt-1; blkj >= 0; blkj--) {
                             /* the index of the first row on the top of block (blkj) */
                             firstrow = blkj * Vblksiz + 1;
-                            /*find the number of tile for this block */
-                            if( blkj == nt-1 )
+                            /* find the number of tile for this block */
+                            if (blkj == nt-1)
                                 mt = plasma_ceildiv( N -  firstrow,    NB);
                             else
                                 mt = plasma_ceildiv( N - (firstrow+1), NB);
-                            /*loop over the tiles find the size of the Vs and apply it */
-                            for (blki=mt; blki>0; blki--) {
-                                /*calculate the size of each losange of Vs= (Vm,Vn)*/
+                            /* loop over the tiles find the size of the Vs and apply it */
+                            for (blki = mt; blki > 0; blki--) {
+                                /* calculate the size of each losange of Vs= (Vm, Vn)*/
                                 myrow     = firstrow + (mt-blki)*NB;
                                 mycol     = blkj*Vblksiz;
                                 Vm = imin( NB+Vblksiz-1, N-myrow);
-                                if( ( blkj == nt-1 ) && ( blki == mt ) ){
+                                if (blkj == nt-1 && blki == mt) {
                                     Vn = imin (Vblksiz, Vm);
-                                } else {
+                                }
+                                else {
                                     Vn = imin (Vblksiz, Vm-1);
                                 }
-                                /*calculate the pointer to the Vs and the Ts.
+                                /* calculate the pointer to the Vs and the Ts.
                                  * Note that Vs and Ts have special storage done
                                  * by the bulgechasing function*/
-                                findVTpos(N,NB,Vblksiz,mycol,myrow, &vpos, &taupos, &tpos, &blkid);
-                                if((Vm>0)&&(Vn>0)){
-                                    if( side == PlasmaLeft ){
+                                findVTpos( N, NB, Vblksiz, mycol, myrow, &vpos, &taupos, &tpos, &blkid );
+                                if ((Vm > 0)&&(Vn > 0)) {
+                                    if (side == PlasmaLeft) {
                                         plasma_core_zlarfb_gemm(
                                             PlasmaLeft, trans,
                                             PlasmaForward, PlasmaColumnwise,
-                                            Vm, corelen, Vn, V(vpos), LDV, T(tpos), LDT, E(myrow,corest), LDE,
+                                            Vm, corelen, Vn, V(vpos), LDV, T(tpos), LDT, E(myrow, corest), LDE,
                                             ((plasma_complex64_t*)work.spaces[my_core_id]),
                                             corelen);
 
-                                    }else{
+                                    }
+                                    else {
                                         plasma_core_zlarfb_gemm(
                                             PlasmaRight, trans,
                                             PlasmaForward, PlasmaColumnwise,
@@ -371,39 +375,40 @@ void plasma_pzunmqr_blgtrd(plasma_enum_t side, plasma_enum_t trans,
                      * Version 114:
                      * loop over the block_row (mt) and for each find diagonally the
                      * number of tiles (nt) in this block_row. then loop over nt, find
-                     * the size of the V's(Vm,Vn) and apply it to the corresponding
+                     * the size of the V's (Vm, Vn) and apply it to the corresponding
                      * portion of E.
                      */
                     else {
-                        mt    = plasma_ceildiv((N-1),NB);
-                        for (blki = mt; blki>0; blki--) {
+                        mt    = plasma_ceildiv( N-1, NB );
+                        for (blki = mt; blki > 0; blki--) {
                             /* nbcolinvolvd = number of column corresponding to this block_row (blki) */
-                            nbcolinvolvd = imin(N-1, blki*NB);
-                            /*find the number of tile for this block (diagonal row of tiles) */
-                            nt = plasma_ceildiv(nbcolinvolvd,Vblksiz);
-                            /*loop over the tiles find the size of the Vs and apply it */
-                            for (blkj = nt-1; blkj>=0; blkj--) {
+                            nbcolinvolvd = imin( N-1, blki*NB );
+                            /* find the number of tile for this block (diagonal row of tiles) */
+                            nt = plasma_ceildiv( nbcolinvolvd, Vblksiz );
+                            /* loop over the tiles find the size of the Vs and apply it */
+                            for (blkj = nt-1; blkj >= 0; blkj--) {
                                 /* the index of the first row of the first col meaning
                                  * the block on the top left (blki) */
                                 firstrow = (mt-blki)*NB+1;
-                                /*calculate the size of each losange of Vs= (Vm,Vn)*/
+                                /* calculate the size of each losange of Vs= (Vm, Vn)*/
                                 myrow    = firstrow + blkj*Vblksiz;
                                 mycol    = blkj*Vblksiz;
                                 Vm = imin( NB+Vblksiz-1, N-myrow);
-                                if( ( blkj == nt-1 ) && ( blki == mt ) ){
+                                if (( blkj == nt-1 ) && ( blki == mt )) {
                                     Vn = imin (Vblksiz, Vm);
-                                }else{
+                                }
+                                else {
                                     Vn = imin (Vblksiz, Vm-1);
                                 }
-                                /*calculate the pointer to the Vs and the Ts.
+                                /* calculate the pointer to the Vs and the Ts.
                                  * Note that Vs and Ts have special storage done
                                  * by the bulgechasing function*/
-                                findVTpos(N,NB,Vblksiz,mycol,myrow, &vpos, &taupos, &tpos, &blkid);
-                                if((Vm>0)&&(Vn>0)) {
+                                findVTpos( N, NB, Vblksiz, mycol, myrow, &vpos, &taupos, &tpos, &blkid );
+                                if ((Vm > 0)&&(Vn > 0)) {
                                     plasma_core_zlarfb_gemm(
                                         PlasmaLeft, trans,
                                         PlasmaForward, PlasmaColumnwise,
-                                        Vm, corelen, Vn, V(vpos), LDV, T(tpos), LDT, E(myrow,corest), LDE,
+                                        Vm, corelen, Vn, V(vpos), LDV, T(tpos), LDT, E(myrow, corest), LDE,
                                         ((plasma_complex64_t*)work.spaces[my_core_id]),
                                         corelen);
                                 }
@@ -418,78 +423,80 @@ void plasma_pzunmqr_blgtrd(plasma_enum_t side, plasma_enum_t trans,
                     /*
                      * Version 91:
                      */
-                    if( versionR == 91 ) {
-                        nt  = plasma_ceildiv((N-1),Vblksiz);
-                        for (blkj=0; blkj<nt; blkj++) {
+                    if (versionR == 91) {
+                        nt  = plasma_ceildiv( N-1, Vblksiz );
+                        for (blkj = 0; blkj < nt; blkj++) {
                             /* the index of the first myrow on the top of block (blkj) */
                             firstrow = blkj * Vblksiz + 1;
-                            /*find the number of tile for this block */
-                            if( blkj == nt-1 )
+                            /* find the number of tile for this block */
+                            if (blkj == nt-1)
                                 mt = plasma_ceildiv( N -  firstrow,    NB);
                             else
                                 mt = plasma_ceildiv( N - (firstrow+1), NB);
-                            /*loop over the tiles find the size of the Vs and apply it */
-                            for (blki=1; blki<=mt; blki++) {
-                                /*calculate the size of each losange of Vs= (Vm,Vn)*/
+                            /* loop over the tiles find the size of the Vs and apply it */
+                            for (blki = 1; blki <= mt; blki++) {
+                                /* calculate the size of each losange of Vs= (Vm, Vn)*/
                                 myrow  = firstrow + (mt-blki)*NB;
                                 Vm = imin( NB+Vblksiz-1, N-myrow);
-                                if( ( blkj == nt-1 ) && ( blki == mt ) )
+                                if (( blkj == nt-1 ) && ( blki == mt ))
                                 {
                                     Vn = imin (Vblksiz, Vm);
-                                }else{
+                                }
+                                else {
                                     Vn = imin (Vblksiz, Vm-1);
                                 }
-                                /*calculate the pointer to the Vs and the Ts.
+                                /* calculate the pointer to the Vs and the Ts.
                                  * Note that Vs and Ts have special storage done
                                  * by the bulgechasing function*/
                                 mycol     = blkj*Vblksiz;
-                                findVTpos(N,NB,Vblksiz,mycol,myrow, &vpos, &taupos, &tpos, &blkid);
-                                if((Vm>0)&&(Vn>0)){
+                                findVTpos( N, NB, Vblksiz, mycol, myrow, &vpos, &taupos, &tpos, &blkid );
+                                if ((Vm > 0)&&(Vn > 0)) {
                                     plasma_core_zlarfb_gemm(
                                         PlasmaRight,
                                         trans,
                                         PlasmaForward,
                                         PlasmaColumnwise,
-                                        corelen, Vm, Vn, V(vpos), LDV, T(tpos), LDT, E(corest,myrow), LDE,
+                                        corelen, Vm, Vn, V(vpos), LDV, T(tpos), LDT, E(corest, myrow), LDE,
                                         ((plasma_complex64_t*)work.spaces[my_core_id]),
                                         corelen);
                                 }
                             }
                         }
                     }
-                    /*trans
+                    /* trans
                      * Version 92:
                      */
                     else {
-                        mt    = plasma_ceildiv((N-1),NB);
-                        for (blki = 1; blki<=mt; blki++) {
+                        mt    = plasma_ceildiv( N-1, NB );
+                        for (blki = 1; blki <= mt; blki++) {
                             /* nbcolinvolvd = number of column corresponding to this block_row (blki) */
-                            nbcolinvolvd = imin(N-1, blki*NB);
-                            /*find the number of tile for this block (diagonal row of tiles) */
-                            nt = plasma_ceildiv(nbcolinvolvd,Vblksiz);
-                            /*loop over the tiles find the size of the Vs and apply it */
-                            for (blkj = 0; blkj<nt; blkj++) {
-                                /* the index of the first row of the first col meaning
-                                 * the block on the top left (blki) */
+                            nbcolinvolvd = imin( N-1, blki*NB );
+                            /* find the number of tile for this block (diagonal row of tiles) */
+                            nt = plasma_ceildiv( nbcolinvolvd, Vblksiz );
+                            /* loop over the tiles find the size of the Vs and apply it */
+                            for (blkj = 0; blkj < nt; blkj++) {
+                                /* the index of the first row of the first col,
+                                 * meaning the block on the top left (blki) */
                                 firstrow = (mt-blki)*NB+1;
-                                /*calculate the size of each losange of Vs= (Vm,Vn)*/
+                                /* calculate the size of each losange of Vs= (Vm, Vn)*/
                                 myrow    = firstrow + blkj*Vblksiz;
                                 mycol    = blkj*Vblksiz;
                                 Vm = imin( NB+Vblksiz-1, N-myrow);
-                                if( ( blkj == nt-1 ) && ( blki == mt ) ){
+                                if (( blkj == nt-1 ) && ( blki == mt )) {
                                     Vn = imin (Vblksiz, Vm);
-                                }else{
+                                }
+                                else {
                                     Vn = imin (Vblksiz, Vm-1);
                                 }
-                                /*calculate the pointer to the Vs and the Ts.
+                                /* Calculate the pointer to the Vs and the Ts.
                                  * Note that Vs and Ts have special storage done
-                                 * by the bulgechasing function*/
-                                findVTpos(N,NB,Vblksiz,mycol,myrow, &vpos, &taupos, &tpos, &blkid);
-                                if((Vm>0)&&(Vn>0)) {
+                                 * by the bulge chasing function. */
+                                findVTpos( N, NB, Vblksiz, mycol, myrow, &vpos, &taupos, &tpos, &blkid );
+                                if ((Vm > 0)&&(Vn > 0)) {
                                     plasma_core_zlarfb_gemm(
                                         PlasmaRight, trans,
                                         PlasmaForward, PlasmaColumnwise,
-                                        corelen, Vm, Vn, V(vpos), LDV, T(tpos), LDT, E(corest,myrow), LDE,
+                                        corelen, Vm, Vn, V(vpos), LDV, T(tpos), LDT, E(corest, myrow), LDE,
                                         ((plasma_complex64_t*)work.spaces[my_core_id]),
                                         corelen);
                                 }
@@ -497,7 +504,7 @@ void plasma_pzunmqr_blgtrd(plasma_enum_t side, plasma_enum_t trans,
                         }
                     }
                 }
-            } /* END my_core_id=coreid */
+            } /* END my_core_id = coreid */
         } /* END loop over the chunk */
     } /* END ELSE of WANTZ == 1 */
 }

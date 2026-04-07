@@ -211,6 +211,14 @@ void plasma_pzhbtrd_static(
                         // 1st task waits for 3rd task of prev sweep to finish.
                         ss_cond_wait( task + shift - 1, sweep );
 
+                        if (0) {
+                            int Vpos, taupos, Tpos, blk;
+                            findVTpos( n, nb, Vblksiz, sweep, j_first,
+                                       &Vpos, &taupos, &Tpos, &blk );
+                            printf( "sweep %3d, task %3d [%3d, %3d], blk %3d\n",
+                                    sweep, task, j_first, j_last, blk );
+                        }
+
                         if (type == 1) {
                             plasma_core_zhbtrd_type1(
                                 n, nb, A, lda, V, tau,

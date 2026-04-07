@@ -1,9 +1,9 @@
 cmake_minimum_required( VERSION 3.12 FATAL_ERROR )
 
 project( PLASMA VERSION 24.8.7 LANGUAGES C
-    HOMEPAGE_URL "https://github.com/icl-utk-edu/plasma" DESCRIPTION "Software library for solving dense linear algebra systems using OpenMP")
+        HOMEPAGE_URL "https://github.com/icl-utk-edu/plasma" DESCRIPTION "Software library for solving dense linear algebra systems using OpenMP")
 
-set(CMAKE_SUPPRESS_REGENERATION on)
+set( CMAKE_SUPPRESS_REGENERATION on )
 
 if (${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.31.0)
     cmake_policy( SET CMP0171 NEW ) # recognize CMake's `codegen` target
@@ -11,8 +11,8 @@ if (${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.31.0)
 endif()
 
 if (${CMAKE_VERSION} VERSION_GREATER 3.11.99)
-  cmake_policy(PUSH)
-  cmake_policy(SET CMP0074 NEW) # allows to use CBLAS_ROOT and LAPACKE_ROOT
+    cmake_policy( PUSH )
+    cmake_policy( SET CMP0074 NEW ) # allows to use CBLAS_ROOT and LAPACKE_ROOT
 endif()
 
 #set( CMAKE_THREAD_PREFER_PTHREAD 1 )
@@ -29,237 +29,251 @@ include( cmake/Generator.cmake )
 
 # PLASMA uses C99 features (in-loop definition of for loop variables)
 if (CMAKE_VERSION VERSION_LESS "3.1")
-  if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
-     set (CMAKE_C_FLAGS "-std=gnu99 ${CMAKE_C_FLAGS}")
-   endif ( CMAKE_C_COMPILER_ID )
-else ()
-   set ( CMAKE_C_STANDARD 99 )
-endif ()
+    if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+        set( CMAKE_C_FLAGS "-std=gnu99 ${CMAKE_C_FLAGS}" )
+    endif()
+else()
+    set( CMAKE_C_STANDARD 99 )
+endif()
 
-set(BLA_PREFER_PKGCONFIG ON)  # for CMake 3.11 or newer for BLAS and 3.20+ for LAPACK
+set( BLA_PREFER_PKGCONFIG ON )  # for CMake 3.11 or newer for BLAS and 3.20+ for LAPACK
 
 # use standard module to find BLAS (calls CMake's FindThreads.cmake if necessary)
 # typically succeeds when `sgemm' is found
 # use BLA_VENDOR (by default "All") "Intel" "Intel10_32" "Intel10_64lp" "Intel10_64p_seq" "IBMESSL" "Generic"
 find_package( BLAS )
 if (BLAS_FOUND)
-  message( STATUS "Found BLAS libraries ${BLAS_LIBRARIES}" )
-else ()
-  message( STATUS "BLAS not found. Set BLAS_LIBRARIES in command line with -D option or with GUI." )
-  find_package( BLAS REQUIRED ) # this is guaranteed to fail with more info for the user
-endif ()
+    message( STATUS "Found BLAS libraries ${BLAS_LIBRARIES}" )
+else()
+    message( STATUS "BLAS not found. Set BLAS_LIBRARIES in command line with -D option or with GUI." )
+    find_package( BLAS REQUIRED ) # this is guaranteed to fail with more info for the user
+endif()
+message( "51 ==== ${LAPACKE_LIBRARIES}" )
 
 # use standard module to find LAPACK (calls FindBLAS.cmake if necessary)
 # typically succeeds when `cheev' is found
 find_package( LAPACK REQUIRED )
 if (LAPACK_FOUND)
-  message( STATUS "Found LAPACK libraries ${LAPACK_LIBRARIES}" )
-else ()
-  message( STATUS "LAPACK not found. Set LAPACK_LIBRARIES in command line with -D option or with GUI." )
-  find_package( LAPACK REQUIRED ) # this is guaranteed to fail with more info for the user
-endif ()
+    message( STATUS "Found LAPACK libraries ${LAPACK_LIBRARIES}" )
+else()
+    message( STATUS "LAPACK not found. Set LAPACK_LIBRARIES in command line with -D option or with GUI." )
+    find_package( LAPACK REQUIRED ) # this is guaranteed to fail with more info for the user
+endif()
+message( "62 ==== ${LAPACKE_LIBRARIES}" )
 
-list(APPEND CMAKE_REQUIRED_LIBRARIES ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
+list( APPEND CMAKE_REQUIRED_LIBRARIES ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} )
 
 macro( plasma_found_openblas )
-  add_definitions( -DPLASMA_WITH_OPENBLAS )
-  set( PLASMA_WITH_OPENBLAS 1 )
-endmacro( plasma_found_openblas )
+    add_definitions( -DPLASMA_WITH_OPENBLAS )
+    set( PLASMA_WITH_OPENBLAS 1 )
+endmacro()
 
 find_package( OpenBLAS CONFIG ) # OpenBLAS 0.3.* provide CMake configuration file
 if (OpenBLAS_FOUND)
-  message( STATUS "Found OpenBLAS ${OpenBLAS_VERSION}")
-  find_path(OpenBLAS_INCLUDE_DIRS openblas_config.h PATHS ${OpenBLAS_DIR} ENV OPENBLAS_ROOT PATH_SUFFIXES include DOC "Path to OpenBLAS include directory")
-  find_library(OpenBLAS_LIBRARIES openblas PATHS ${OpenBLAS_DIR} ENV OpenBLAS_DIR)
+    message( STATUS "Found OpenBLAS ${OpenBLAS_VERSION}")
+    find_path( OpenBLAS_INCLUDE_DIRS openblas_config.h PATHS ${OpenBLAS_DIR} ENV OPENBLAS_ROOT PATH_SUFFIXES include DOC "Path to OpenBLAS include directory" )
+    find_library( OpenBLAS_LIBRARIES openblas PATHS ${OpenBLAS_DIR} ENV OpenBLAS_DIR )
 
-  # make sure OpenBLAS headers are visible to CMake tests, compiler, and linker
-  include_directories(${OpenBLAS_INCLUDE_DIRS})
-  list(APPEND CMAKE_REQUIRED_INCLUDES ${OpenBLAS_INCLUDE_DIRS})
-  list(APPEND CMAKE_REQUIRED_LIBRARIES ${OpenBLAS_LIBRARIES})
+    # make sure OpenBLAS headers are visible to CMake tests, compiler, and linker
+    include_directories( ${OpenBLAS_INCLUDE_DIRS} )
+    list( APPEND CMAKE_REQUIRED_INCLUDES ${OpenBLAS_INCLUDE_DIRS} )
+    list( APPEND CMAKE_REQUIRED_LIBRARIES ${OpenBLAS_LIBRARIES} )
 
-  set(CBLAS_PROVIDER openblas)
-  set(LAPACKE_PROVIDER openblas)
-  plasma_found_openblas()
-else ()
-  message( STATUS "OpenBLAS 0.3.* not found. Set OpenBLAS_DIR environment variable." )
-  message( STATUS "Either file OpenBLASConfig.cmake or openblas-config.cmake, should be inside OpenBLAS_DIR directory tree." )
-endif ()
+message( "==== Setting OpenBLAS as provider =====" )
+    set( CBLAS_PROVIDER openblas )
+    #set( LAPACKE_PROVIDER openblas )
+    plasma_found_openblas()
+else()
+    message( STATUS "OpenBLAS 0.3.* not found. Set OpenBLAS_DIR environment variable." )
+    message( STATUS "Either file OpenBLASConfig.cmake or openblas-config.cmake, should be inside OpenBLAS_DIR directory tree." )
+endif()
+message( "90 ==== ${LAPACKE_LIBRARIES}" )
 
-message( STATUS "BLAS(${BLAS_FOUND})" )  # linker flags `${BLA_LINKER_FLAGS}'" )
-message( STATUS "LAPACK(${LAPACK_FOUND})" )  # libraries: ${LAPACK_LIBRARIES}" )
+message( STATUS "BLAS(${BLAS_FOUND}), linker flags `${BLA_LINKER_FLAGS}'" )
+message( STATUS "LAPACK(${LAPACK_FOUND}), libraries: ${LAPACK_LIBRARIES}" )
 
 # finds new CBLAS/LAPACKE using paths and libraries for old BLAS/LAPACK
-macro(FindNewWithOld m_val m_old m_new m_inc m_lib m_dir m_root)
-  foreach( lib ${m_val} )
-    string(REPLACE "lib${m_old}" "lib${m_new}" librpl ${lib})  # Netlib has simply naming: lib$m_old and lib$m_new
-    if (EXISTS ${librpl})
-      message( STATUS "Found ${m_new} ${librpl}" )
-      list( INSERT ${m_lib} 0 "${librpl}" )  # add newly found library to $m_lib unconditionally at position 0
-      file( TO_CMAKE_PATH "${librpl}" libslh )  # turn back-slashes to slashes, even if not needed
-      string( FIND "${libslh}" "/" idx REVERSE )  # find last slash
-      if (${idx} GREATER 0)
-        string( SUBSTRING "${libslh}" 0 ${idx} dir)  # extract directory name
-        string( APPEND dir "/.." )  #  remove library directory: /path/to/blas/lib -> /path/to/blas/lib/..
-        find_path( m_header_dir "${m_new}.h" PATHS ${m_inc} ${dir} ENV ${m_dir} ${m_root} PATH_SUFFIXES include DOC "Path to ${m_new} include directory" )
-        if (m_header_dir)
-          list( INSERT ${m_inc} 0 "${m_header_dir}" )  # insert newly found header location
-          message( STATUS "Found ${m_new} header in ${m_header_dir}" )
-        endif ()
-      endif ()
-    endif ()
-  endforeach ()
-endmacro ()
+macro( FindNewWithOld m_val m_old m_new m_inc m_lib m_dir m_root )
+    message( "==== FindNewWithOld m_val ${m_val}, m_old ${m_old}, m_new ${m_new}, m_inc ${m_inc}, m_dir ${m_dir}, m_root ${m_root}" )
+    foreach( lib ${m_val} )
+        string( REPLACE "lib${m_old}" "lib${m_new}" librpl ${lib} )  # Netlib has simply naming: lib$m_old and lib$m_new
+        if (EXISTS ${librpl})
+            message( STATUS "Found ${m_new} ${librpl}" )
+            list( INSERT ${m_lib} 0 "${librpl}" )  # add newly found library to $m_lib unconditionally at position 0
+            file( TO_CMAKE_PATH "${librpl}" libslh )  # turn back-slashes to slashes, even if not needed
+            string( FIND "${libslh}" "/" idx REVERSE )  # find last slash
+            if (${idx} GREATER 0)
+                string( SUBSTRING "${libslh}" 0 ${idx} dir)  # extract directory name
+                string( APPEND dir "/.." )  #  remove library directory: /path/to/blas/lib -> /path/to/blas/lib/..
+                find_path( m_header_dir "${m_new}.h" PATHS ${m_inc} ${dir} ENV ${m_dir} ${m_root} PATH_SUFFIXES include DOC "Path to ${m_new} include directory" )
+                if (m_header_dir)
+                    list( INSERT ${m_inc} 0 "${m_header_dir}" )  # insert newly found header location
+                    message( STATUS "Found ${m_new} header in ${m_header_dir}" )
+                endif()
+            endif()
+        endif()
+    endforeach()
+endmacro()
 
 if (BLAS_FOUND)
-  # BLA_VENDOR is the input variable to allow only checks for specific vendor BLAS
-  #if ( BLA_VENDOR STREQUAL "Intel" OR BLA_VENDOR STREQUAL "Intel10_32" OR BLA_VENDOR STREQUAL "Intel10_64lp" OR BLA_VENDOR STREQUAL "Intel10_64p_seq" )
-  if ( BLAS_LIBRARIES MATCHES "mkl_core" )
+    # BLA_VENDOR is the input variable to allow only checks for specific vendor BLAS
+    #if (BLA_VENDOR STREQUAL "Intel" OR BLA_VENDOR STREQUAL "Intel10_32" OR BLA_VENDOR STREQUAL "Intel10_64lp" OR BLA_VENDOR STREQUAL "Intel10_64p_seq")
+    if (BLAS_LIBRARIES MATCHES "mkl_core")
 
-    message( STATUS "Found Intel MKL" )
-    add_definitions( -DPLASMA_WITH_MKL ) # this is command line only
-    set( PLASMA_HAVE_MKL 1 )
+        message( STATUS "Found Intel MKL" )
+        add_definitions( -DPLASMA_WITH_MKL ) # this is command line only
+        set( PLASMA_HAVE_MKL 1 )
 
-  elseif ( BLAS_LIBRARIES MATCHES "essl" )
-    message( STATUS "Found IBM ESSL" )
+    elseif (BLAS_LIBRARIES MATCHES "essl")
+        message( STATUS "Found IBM ESSL" )
 
-    set( PLASMA_HAVE_ESSL 1 )
-    set( PLASMA_WITH_ESSL 1 )
+        set( PLASMA_HAVE_ESSL 1 )
+        set( PLASMA_WITH_ESSL 1 )
 
-  elseif ( BLAS_LIBRARIES MATCHES "openblas" )
-    message( STATUS "Found OpenBLAS" )
-    plasma_found_openblas()
+    elseif (BLAS_LIBRARIES MATCHES "openblas")
+        message( STATUS "Found OpenBLAS" )
+        plasma_found_openblas()
 
-  elseif ( BLAS_LIBRARIES MATCHES "Accelerate" )
-    message( STATUS "Found Apple Accelerate Framework" )
-    add_definitions( -DPLASMA_WITH_ACCELERATE )
-    set( PLASMA_WITH_ACCELERATE 1 )
+    elseif (BLAS_LIBRARIES MATCHES "Accelerate")
+        message( STATUS "Found Apple Accelerate Framework" )
+        add_definitions( -DPLASMA_WITH_ACCELERATE )
+        set( PLASMA_WITH_ACCELERATE 1 )
 
-  else ()
-    message( STATUS "Found Generic BLAS" )
-    message( STATUS "Vendor `${BLA_VENDOR}', linker flags `${BLA_LINKER_FLAGS}', libs ${BLAS_LIBRARIES}" )
-    FindNewWithOld( "${BLAS_LIBRARIES}" blas cblas CBLAS_INCLUDE_DIRS CBLAS_LIBRARIES CBLAS_DIR CBLAS_ROOT)
+    else()
+        message( STATUS "Found Generic BLAS" )
+        message( STATUS "Vendor `${BLA_VENDOR}', linker flags `${BLA_LINKER_FLAGS}', libs ${BLAS_LIBRARIES}" )
+        FindNewWithOld( "${BLAS_LIBRARIES}" blas cblas CBLAS_INCLUDE_DIRS CBLAS_LIBRARIES CBLAS_DIR CBLAS_ROOT)
 
-    # save extra includes and set to generic CBLAS header
-    set(PLASMA_CMAKE_EXTRA_INCLUDE_FILES "$CMAKE_EXTRA_INCLUDE_FILES")
-    set(CMAKE_EXTRA_INCLUDE_FILES "cblas.h")
-    set( PLASMA_REQUIRED_INCLUDES "${CMAKE_REQUIRED_INCLUDES}" )  # save current value
-    set( CMAKE_REQUIRED_INCLUDES "${CBLAS_INCLUDE_DIRS}" )
+        # save extra includes and set to generic CBLAS header
+        set( PLASMA_CMAKE_EXTRA_INCLUDE_FILES "$CMAKE_EXTRA_INCLUDE_FILES" )
+        set( CMAKE_EXTRA_INCLUDE_FILES "cblas.h" )
+        set( PLASMA_REQUIRED_INCLUDES "${CMAKE_REQUIRED_INCLUDES}" )  # save current value
+        set( CMAKE_REQUIRED_INCLUDES "${CBLAS_INCLUDE_DIRS}" )
 
-    # check if CBLAS header defines types or enums
-    include(CheckTypeSize)
-    check_type_size( CBLAS_TRANSPOSE PLASMA_CBLAS_TRANSPOSE )
+        # check if CBLAS header defines types or enums
+        include( CheckTypeSize )
+        check_type_size( CBLAS_TRANSPOSE PLASMA_CBLAS_TRANSPOSE )
 
-    if ( NOT HAVE_PLASMA_CBLAS_TRANSPOSE )
-      check_type_size( "enum CBLAS_TRANSPOSE" PLASMA_ENUM_CBLAS_TRANSPOSE )
-      if ( HAVE_PLASMA_ENUM_CBLAS_TRANSPOSE )
-        set( PLASMA_CBLAS_ADD_TYPEDEF 1 )
-      else ()
-        message( FATAL_ERROR "CBLAS_TRANSPOSE missing as defined type or enumeration type" )
-      endif ()
-    endif ()
-    set(CMAKE_EXTRA_INCLUDE_FILES "$PLASMA_CMAKE_EXTRA_INCLUDE_FILES")
-    set( CMAKE_REQUIRED_INCLUDES "${PLASMA_REQUIRED_INCLUDES}" )  # restore old value
-  endif ()
+        if (NOT HAVE_PLASMA_CBLAS_TRANSPOSE)
+            check_type_size( "enum CBLAS_TRANSPOSE" PLASMA_ENUM_CBLAS_TRANSPOSE )
+            if (HAVE_PLASMA_ENUM_CBLAS_TRANSPOSE)
+                set( PLASMA_CBLAS_ADD_TYPEDEF 1 )
+            else()
+                message( FATAL_ERROR "CBLAS_TRANSPOSE missing as defined type or enumeration type" )
+            endif()
+        endif()
+        set( CMAKE_EXTRA_INCLUDE_FILES "$PLASMA_CMAKE_EXTRA_INCLUDE_FILES" )
+        set( CMAKE_REQUIRED_INCLUDES "${PLASMA_REQUIRED_INCLUDES}" )  # restore old value
+    endif()
+endif()
+message( "168 ==== ${LAPACKE_LIBRARIES}" )
 
-endif (BLAS_FOUND)
-
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+set( CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake" )
 
 if (CBLAS_INCLUDE_DIRS)  # save non-empty value found above
-  set( PLASMA_CBLAS_INCLUDE_DIRS "${CBLAS_INCLUDE_DIRS}" )
-endif ()
-
-if (CBLAS_LIBRARIES)  # save non-empty value found above
-  set( PLASMA_CBLAS_LIBRARIES "${CBLAS_LIBRARIES}" )
-endif ()
-
-find_package( CBLAS REQUIRED )
-
-if (NOT CBLAS_INCLUDE_DIRS)  # if the above package find failed to come up with anything
-  set( CBLAS_INCLUDE_DIRS "${PLASMA_CBLAS_INCLUDE_DIRS}" )  # restore old value
-endif ()
-
-if (NOT CBLAS_LIBRARIES)  # if the above package find failed to come up with anything
-  set( CBLAS_LIBRARIES "${PLASMA_CBLAS_LIBRARIES}" )  # restore old value
-endif ()
-include_directories(${CBLAS_INCLUDE_DIRS})
-
-if (CBLAS_PROVIDER STREQUAL "mkl")
-  add_definitions(-DPLASMA_WITH_MKL)
-  set(PLASMA_WITH_MKL TRUE)
-elseif (CBLAS_PROVIDER STREQUAL "netlib")
-  add_definitions(-DPLASMA_WITH_NETLIB)
-  set(PLASMA_WITH_NETLIB TRUE)
+    set( PLASMA_CBLAS_INCLUDE_DIRS "${CBLAS_INCLUDE_DIRS}" )
 endif()
 
-FindNewWithOld( "${LAPACK_LIBRARIES}" lapack lapacke LAPACKE_INCLUDE_DIRS LAPACKE_LIBRARIES LAPACKE_DIR LAPACKE_ROOT )
+if (CBLAS_LIBRARIES)  # save non-empty value found above
+    set( PLASMA_CBLAS_LIBRARIES "${CBLAS_LIBRARIES}" )
+endif()
+
+find_package( CBLAS REQUIRED )
+message( "178 ==== ${LAPACKE_LIBRARIES}" )
+
+if (NOT CBLAS_INCLUDE_DIRS)  # if the above package find failed to come up with anything
+    set( CBLAS_INCLUDE_DIRS "${PLASMA_CBLAS_INCLUDE_DIRS}" )  # restore old value
+endif()
+
+if (NOT CBLAS_LIBRARIES)  # if the above package find failed to come up with anything
+    set( CBLAS_LIBRARIES "${PLASMA_CBLAS_LIBRARIES}" )  # restore old value
+endif()
+include_directories( ${CBLAS_INCLUDE_DIRS} )
+
+if (CBLAS_PROVIDER STREQUAL "mkl")
+    add_definitions( -DPLASMA_WITH_MKL )
+    set( PLASMA_WITH_MKL TRUE )
+elseif (CBLAS_PROVIDER STREQUAL "netlib")
+    add_definitions( -DPLASMA_WITH_NETLIB )
+    set( PLASMA_WITH_NETLIB TRUE )
+endif()
+
+message( "200 ==== lapack=${LAPACKE_LIBRARIES}, lapacke=${LAPACKE_LIBRARIES}" )
+
+set( LAPACKE_LIBRARIES "/usr/lib/x86_64-linux-gnu/liblapacke.so" )
+#FindNewWithOld( "${LAPACK_LIBRARIES}" lapack lapacke LAPACKE_INCLUDE_DIRS LAPACKE_LIBRARIES LAPACKE_DIR LAPACKE_ROOT )
+message( "==== LAPACKE inc=${LAPACKE_INCLUDE_DIRS}, lib=${LAPACKE_LIBRARIES}" )
+
+message( "205 ==== lapack=${LAPACKE_LIBRARIES}, lapacke=${LAPACKE_LIBRARIES}" )
 
 if (LAPACKE_INCLUDE_DIRS)  # save non-empty value found above
-  set( PLASMA_LAPACKE_INCLUDE_DIRS "${LAPACKE_INCLUDE_DIRS}" )
-endif ()
+    set( PLASMA_LAPACKE_INCLUDE_DIRS "${LAPACKE_INCLUDE_DIRS}" )
+endif()
 
 if (LAPACKE_LIBRARIES)  # save non-empty value found above
-  set( PLASMA_LAPACKE_LIBRARIES "${LAPACKE_LIBRARIES}" )
-endif ()
+    set( PLASMA_LAPACKE_LIBRARIES "${LAPACKE_LIBRARIES}" )
+endif()
 
 find_package( LAPACKE REQUIRED )
 
+message( "217 ==== ${LAPACKE_LIBRARIES}" )
+
 if (NOT LAPACKE_INCLUDE_DIRS)  # if the above package find failed to come up with anything
-  set( LAPACKE_INCLUDE_DIRS "${PLASMA_LAPACKE_INCLUDE_DIRS}" )  # restore old value
-endif ()
-
-if (NOT LAPACKE_LIBRARIES)  # if the above package find failed to come up with anything
-  set( LAPACKE_LIBRARIES "${PLASMA_LAPACKE_LIBRARIES}" )  # restore old value
-endif ()
-
-include_directories(${LAPACKE_INCLUDE_DIRS})
-
-if (${CMAKE_VERSION} VERSION_GREATER 3.11.99)
-  cmake_policy(POP)
+    set( LAPACKE_INCLUDE_DIRS "${PLASMA_LAPACKE_INCLUDE_DIRS}" )  # restore old value
 endif()
 
-set(PLASMA_LINALG_LIBRARIES ${LAPACKE_LIBRARIES} ${LAPACK_LIBRARIES} ${CBLAS_LIBRARIES} ${BLAS_LIBRARIES})
+if (NOT LAPACKE_LIBRARIES)  # if the above package find failed to come up with anything
+    set( LAPACKE_LIBRARIES "${PLASMA_LAPACKE_LIBRARIES}" )  # restore old value
+endif()
+
+include_directories( ${LAPACKE_INCLUDE_DIRS} )
+
+if (${CMAKE_VERSION} VERSION_GREATER 3.11.99)
+    cmake_policy( POP )
+endif()
+
+set( PLASMA_LINALG_LIBRARIES ${LAPACKE_LIBRARIES} ${LAPACK_LIBRARIES} ${CBLAS_LIBRARIES} ${BLAS_LIBRARIES} )
 
 if (PLASMA_DETECT_LUA)
-  find_package( Lua )
+    find_package( Lua )
 
-  if ( LUA_FOUND )
-    include_directories( ${LUA_INCLUDE_DIR} )
-    add_definitions( -DPLASMA_USE_LUA ) # this is command line only
-    set( PLASMA_USE_LUA 1 ) # this will be substituted in the config file
-  endif()
+    if (LUA_FOUND)
+        include_directories( ${LUA_INCLUDE_DIR} )
+        add_definitions( -DPLASMA_USE_LUA ) # this is command line only
+        set( PLASMA_USE_LUA 1 ) # this will be substituted in the config file
+    endif()
 endif()
 
 if (PLASMA_DETECT_MAGMA)
-  find_package( CUDA ) # MAGMA requires CUDA
-  if (CUDA_FOUND)
-    include_directories( ${CUDA_INCLUDE_DIRS} )
+    find_package( CUDA ) # MAGMA requires CUDA
+    if (CUDA_FOUND)
+        include_directories( ${CUDA_INCLUDE_DIRS} )
 
-    message( STATUS "Looking for MAGMA" )
-    find_package( MAGMA )
+        message( STATUS "Looking for MAGMA" )
+        find_package( MAGMA )
 
-    if ( MAGMA_FOUND )
-      include_directories( ${MAGMA_INCLUDE_DIRS} )
-      add_definitions( -DPLASMA_USE_MAGMA ) # this is command line only
-      set( PLASMA_USE_MAGMA 1 ) # this will be substituted in the config file
-    else()
-      message( STATUS "MAGMA not found" )
+        if (MAGMA_FOUND)
+            include_directories( ${MAGMA_INCLUDE_DIRS} )
+            add_definitions( -DPLASMA_USE_MAGMA ) # this is command line only
+            set( PLASMA_USE_MAGMA 1 ) # this will be substituted in the config file
+        else()
+            message( STATUS "MAGMA not found" )
+        endif()
+
     endif()
-
-  endif()
 endif()
 
 # use standard module to find OpenMP
 find_package( OpenMP )
 if (OPENMP_FOUND)
-  if (OpenMP_C_VERSION  VERSION_LESS 4.5)
-    message(FATAL_ERROR "OpenMP C version ${OpenMP_C_VERSION} is too old. Version 4.5 or later is required.")
-  endif()
-  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-  # set C++ flags in case C++ compiler is used to compiler PLASMA
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    if (OpenMP_C_VERSION  VERSION_LESS 4.5)
+        message( FATAL_ERROR "OpenMP C version ${OpenMP_C_VERSION} is too old. Version 4.5 or later is required." )
+    endif()
+    set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}" )
+    # set C++ flags in case C++ compiler is used to compiler PLASMA
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
 else()
-  message(FATAL_ERROR "OpenMP not found.")
+    message( FATAL_ERROR "OpenMP not found." )
 endif()
 
 #-------------------------------------------------------------------------------
@@ -421,8 +435,8 @@ add_library( plasma SHARED ${plasma_src} )
 
 # CMake knows about "plasma" library at this point so inform CMake where the headers are
 target_include_directories(plasma PUBLIC
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-	$<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
 )
 
 #-------------------------------------------------------------------------------
@@ -504,14 +518,16 @@ set( plasma_core_blas_src
     include/plasma_internal_zc.h
     include/plasma_z.h
     include/plasma_zc.h
+
+    compute/test_zprint.c
 )
 
 generate_files( plasma_core_blas_src )
 add_library( plasma_core_blas SHARED ${plasma_core_blas_src} )
 
 target_include_directories(plasma_core_blas PUBLIC
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-	$<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
 )
 
 #-------------------------------------------------------------------------------
@@ -572,7 +588,6 @@ set( plasma_test_src
     test/test_zpotrf.c
     test/test_zpotri.c
     test/test_zpotrs.c
-    test/test_zprint.c
     test/test_zsymm.c
     test/test_zsyr2k.c
     test/test_zsyrk.c
@@ -601,60 +616,97 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.15)
 endif()
 
 #-------------------------------------------------------------------------------
-find_library(MATH_LIBRARY m)
+find_library( MATH_LIBRARY m )
 if( MATH_LIBRARY )
-  # OpenBLAS needs to link C math library (usually -lm) but MKL doesn't
-  set(PLASMA_LIBRARIES ${PLASMA_LINALG_LIBRARIES} ${LUA_LIBRARIES} ${MATH_LIBRARY})
+    # OpenBLAS needs to link C math library (usually -lm) but MKL doesn't
+    set( PLASMA_LIBRARIES ${PLASMA_LINALG_LIBRARIES} ${LUA_LIBRARIES} ${MATH_LIBRARY} )
 else( MATH_LIBRARY )
-  set(PLASMA_LIBRARIES ${PLASMA_LINALG_LIBRARIES} ${LUA_LIBRARIES})
-endif( MATH_LIBRARY )
+    set( PLASMA_LIBRARIES ${PLASMA_LINALG_LIBRARIES} ${LUA_LIBRARIES} )
+endif()
 
 target_link_libraries( plasmatest plasma plasma_core_blas ${PLASMA_LIBRARIES} )
-if ( MAGMA_FOUND )
+if (MAGMA_FOUND)
     target_link_libraries( plasma plasma_core_blas ${PLASMA_LIBRARIES} ${MAGMA_LIBRARIES} ${CUDA_LIBRARIES} )
 else()
-  target_link_libraries( plasma plasma_core_blas ${PLASMA_LIBRARIES} )
+    target_link_libraries( plasma plasma_core_blas ${PLASMA_LIBRARIES} )
 endif()
 target_link_libraries( plasma_core_blas ${PLASMA_LIBRARIES} )
 
 target_include_directories(plasmatest PUBLIC
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-	$<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
 )
 
 set_target_properties( plasma_core_blas plasma PROPERTIES VERSION ${CMAKE_PROJECT_VERSION} SOVERSION 1.0)
 
-configure_file( include/plasma_config.hin ${CMAKE_CURRENT_SOURCE_DIR}/include/plasma_config.h @ONLY NEWLINE_STYLE LF )
+configure_file(
+    include/plasma_config.hin
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/plasma_config.h
+    @ONLY NEWLINE_STYLE LF )
 
-include(GNUInstallDirs)
+include( GNUInstallDirs )
 
-install(TARGETS plasma plasma_core_blas EXPORT plasmaTargets LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(
+    TARGETS plasma plasma_core_blas
+    EXPORT plasmaTargets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} )
+
 file( GLOB plasma_headers include/plasma*.h)
-install(FILES ${plasma_headers} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(TARGETS plasmatest EXPORT plasmaTargets RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+install(
+    FILES ${plasma_headers}
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} )
+
+install(
+    TARGETS plasmatest EXPORT plasmaTargets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} )
 
 # generage config files for upstream CMake projects
-include(CMakePackageConfigHelpers)
+include( CMakePackageConfigHelpers )
 
-write_basic_package_version_file( "${CMAKE_CURRENT_BINARY_DIR}/plasmaExport/plasmaConfigVersion.cmake" VERSION ${PLASMA_VERSION} COMPATIBILITY AnyNewerVersion )
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/plasmaExport/plasmaConfigVersion.cmake"
+    VERSION ${PLASMA_VERSION}
+    COMPATIBILITY AnyNewerVersion )
 
-export(EXPORT plasmaTargets FILE "${CMAKE_CURRENT_BINARY_DIR}/plasmaExport/plasmaTargets.cmake" NAMESPACE plasma::)
+export( EXPORT plasmaTargets
+        FILE "${CMAKE_CURRENT_BINARY_DIR}/plasmaExport/plasmaTargets.cmake"
+        NAMESPACE plasma:: )
 
-configure_file( ${PROJECT_SOURCE_DIR}/share/cmake/plasma.cmakein "${CMAKE_CURRENT_BINARY_DIR}/plasmaExport/plasmaConfig.cmake" @ONLY )
-install( EXPORT plasmaTargets FILE plasmaTargets.cmake NAMESPACE plasma:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/plasma NAMESPACE plasma:: CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel )
+configure_file(
+    ${PROJECT_SOURCE_DIR}/share/cmake/plasma.cmakein
+    "${CMAKE_CURRENT_BINARY_DIR}/plasmaExport/plasmaConfig.cmake"
+    @ONLY )
 
-install( FILES "${CMAKE_CURRENT_BINARY_DIR}/plasmaExport/plasmaConfig.cmake" "${CMAKE_CURRENT_BINARY_DIR}/plasmaExport/plasmaConfigVersion.cmake" DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/plasma )
+install(
+    EXPORT plasmaTargets FILE plasmaTargets.cmake
+    NAMESPACE plasma::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/plasma
+    NAMESPACE plasma::
+    CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel )
+
+install(
+    FILES       "${CMAKE_CURRENT_BINARY_DIR}/plasmaExport/plasmaConfig.cmake"
+                "${CMAKE_CURRENT_BINARY_DIR}/plasmaExport/plasmaConfigVersion.cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/plasma )
 
 # generate pkg-config .pc file from a template
-string(TOLOWER ${PROJECT_NAME} lproj)
-string(REPLACE ";" "\ " plasma_libs_spaced "${PLASMA_LIBRARIES}")
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/share/pkgconfig/${lproj}.pcin ${CMAKE_CURRENT_BINARY_DIR}/${lproj}.pc @ONLY NEWLINE_STYLE LF )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${lproj}.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+string( TOLOWER ${PROJECT_NAME} lproj )
+string( REPLACE ";" "\ " plasma_libs_spaced "${PLASMA_LIBRARIES}" )
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/share/pkgconfig/${lproj}.pcin
+                ${CMAKE_CURRENT_BINARY_DIR}/${lproj}.pc
+                @ONLY NEWLINE_STYLE LF )
+
+install(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/${lproj}.pc
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig )
 
 # Copy run_tests script to build directory.
 add_custom_command(
     TARGET plasmatest POST_BUILD
     COMMAND
         cp ${CMAKE_CURRENT_SOURCE_DIR}/test/run_tests.py
-           ${CMAKE_CURRENT_BINARY_DIR}/run_tests.py
+            ${CMAKE_CURRENT_BINARY_DIR}/run_tests.py
 )

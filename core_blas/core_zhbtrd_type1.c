@@ -145,7 +145,13 @@ void plasma_core_zhbtrd_type1(
 
     ldx = lda - 1;
     len = last - first + 1;
+
     *V( vpos ) = 1.;
+
+if (0) {
+int task2 = ((first - 1 - sweep) / nb);
+*V( vpos ) = sweep + 1 + (task2 + 1)/1000.;  //1.;
+}
 
     assert( len > 0 );
 

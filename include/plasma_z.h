@@ -717,6 +717,15 @@ void plasma_omp_zunmqr(
     plasma_desc_t C, plasma_workspace_t work,
     plasma_sequence_t *sequence, plasma_request_t *request);
 
+//==============================================================================
+// utilities
+//==============================================================================
+void plasma_zprint_matrix(
+    const char* label, int m, int n, plasma_complex64_t* A, int lda );
+
+void plasma_zprint_vector(
+    const char* label, int n, plasma_complex64_t* x, int incx );
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

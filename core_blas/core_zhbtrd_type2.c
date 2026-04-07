@@ -174,6 +174,10 @@ void plasma_core_zhbtrd_type2(
 
         // Eliminate the first column of the created bulge.
         *V( vpos ) = 1.;
+if (0) {
+int task2 = ((first - 1 - sweep) / nb) + 1;
+*V( vpos ) = sweep + 1 + (task2 + 1)/1000.;
+}
 
         memcpy( V( vpos+1 ), A( J1+1, first ), (lem-1)*sizeof(plasma_complex64_t) );
         memset( A( J1+1, first ), 0,           (lem-1)*sizeof(plasma_complex64_t) );

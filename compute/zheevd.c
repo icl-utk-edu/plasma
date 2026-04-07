@@ -381,8 +381,10 @@ void plasma_omp_zheevd(
         wantz = 2;
 
     Vblksiz = nb/4;
+//printf( "n %d, nb %d, Vblksiz %d\n", n, nb, Vblksiz );
     ldt     = Vblksiz;
     if (job == PlasmaVec) {
+        printf( "%s findVTsiz\n", __func__ );
         findVTsiz(n, nb, Vblksiz, &blkcnt, &ldv);
         TAU2 = (plasma_complex64_t *)
             calloc((size_t)blkcnt*Vblksiz, sizeof(plasma_complex64_t));
@@ -425,6 +427,8 @@ void plasma_omp_zheevd(
     stop = omp_get_wtime();
     time = stop - start;
     //printf("2-stage timing = %lf\t", time);
+
+//plasma_zprint_matrix( "V", ldv, blkcnt*Vblksiz, V2, ldv );
 
     //=======================================
     // Tridiagonal eigensolver

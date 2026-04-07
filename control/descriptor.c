@@ -12,6 +12,8 @@
 #include "plasma_descriptor.h"
 #include "plasma_internal.h"
 
+int s_blkcnt = 0;
+
 /******************************************************************************/
 int plasma_desc_general_create(plasma_enum_t precision, int mb, int nb,
                                int lm, int ln, int i, int j, int m, int n,
