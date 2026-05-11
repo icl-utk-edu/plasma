@@ -65,7 +65,7 @@ implementations provided the functionality required by PLASMA in multiple
 library files. OpenBLAS provides all of its functionality in a single
 library. This difference is handled automatically during installation.
 
-The main supported method of installing PLASMA is through CMake and mos
+The main supported method of installing PLASMA is through CMake and most
 package managers, such as Spack, or module systems, such as Tcl Modules
 or Lmod, provide enough information to CMake making the installation a
 three-step process:
