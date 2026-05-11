@@ -62,6 +62,7 @@ plasma_tuning_init(plasma_context_t *plasma)
         lua_close(L);
         return;
     }
+    plasma->L = L;
 }
 
 /******************************************************************************/
