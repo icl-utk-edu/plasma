@@ -17,7 +17,7 @@
 
 /*******************************************************************************
  *
- * @ingroup core_plasma_complex64_t
+ * @ingroup core_lacpy
  *
  *  plasma_core_zlacpy copies a sub-block A of a band matrix stored in LAPACK's band format
  *  to a corresponding sub-block B of a band matrix in PLASMA's band format
@@ -128,7 +128,7 @@ void plasma_core_omp_zlacpy_lapack2tile_band(plasma_enum_t uplo,
 
 /*******************************************************************************
  *
- * @ingroup core_plasma_complex64_t
+ * @ingroup core_lacpy
  *
  *  plasma_core_zlacpy copies all or part of a two-dimensional matrix A to another
  *  matrix B

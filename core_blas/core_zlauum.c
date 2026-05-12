@@ -26,14 +26,12 @@
  *  overwriting the factor U in A.
  *  If uplo = 'L' or 'l' then the lower triangle of the result is stored,
  *  overwriting the factor L in A.
-
  *
  *******************************************************************************
  *
  * @param[in] uplo
  *          = PlasmaUpper: Upper triangle of A is stored;
  *          = PlasmaLower: Lower triangle of A is stored.
- *
  *
  * @param[in] n
  *          The order of the matrix A. n >= 0.
@@ -44,14 +42,12 @@
  *          overwritten with the upper triangle of the product U * U^H;
  *          if uplo = 'L', the lower triangle of A is overwritten with
  *          the lower triangle of the product L^H * L.
-
  *
  * @param[in] lda
  *          The leading dimension of the array A. lda >= max(1,n).
  *
- * @param[out] info
- *          - 0 on successful exit
- *          - < 0 if -i, the i-th argument had an illegal value
+ * @retval  0 on successful exit
+ * @retval  < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
 __attribute__((weak))

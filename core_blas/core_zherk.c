@@ -19,11 +19,13 @@
  * @ingroup core_herk
  *
  *  Performs one of the Hermitian rank k operations
- *
- *    \f[ C = \alpha A \times A^H + \beta C, \f]
- *    or
- *    \f[ C = \alpha A^H \times A + \beta C, \f]
- *
+ *  \[
+ *      C = \alpha A A^H + \beta C,
+ *  \]
+ *  or
+ *  \[
+ *      C = \alpha A^H A + \beta C,
+ *  \]
  *  where alpha and beta are real scalars, C is an n-by-n Hermitian
  *  matrix, and A is an n-by-k matrix in the first case and a k-by-n
  *  matrix in the second case.
@@ -35,8 +37,8 @@
  *          - PlasmaLower: Lower triangle of C is stored.
  *
  * @param[in] trans
- *          - PlasmaNoTrans:   \f[ C = \alpha A \times A^H + \beta C; \f]
- *          - PlasmaConjTrans: \f[ C = \alpha A^H \times A + \beta C. \f]
+ *          - PlasmaNoTrans:   \[ C = \alpha A A^H + \beta C; \]
+ *          - PlasmaConjTrans: \[ C = \alpha A^H A + \beta C. \]
  *
  * @param[in] n
  *          The order of the matrix C. n >= 0.

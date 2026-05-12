@@ -23,22 +23,22 @@
  *
  *  Computes the LQ factorization of an m-by-n tile A:
  *  The factorization has the form
- *    \f[
- *        A = L \times Q
- *    \f]
+ *  \[
+ *        A = L Q
+ *  \]
  *  The tile Q is represented as a product of elementary reflectors
- *    \f[
+ *  \[
  *        Q = H(k)^H . . . H(2)^H H(1)^H,
- *    \f]
- *  where \f$ k = min(m,n) \f$.
+ *  \]
+ *  where $k = min(m,n)$.
  *
- *  Each \f$ H(i) \f$ has the form
- *    \f[
- *        H(i) = I - \tau \times v \times v^H
- *    \f]
- *  where \f$ tau \f$ is a scalar, and \f$ v \f$ is a vector with
+ *  Each $H(i)$ has the form
+ *  \[
+ *        H(i) = I - \tau v v^H
+ *  \]
+ *  where $tau$ is a scalar, and $v$ is a vector with
  *  v(1:i-1) = 0 and v(i) = 1; v(i+1:n)^H is stored on exit in A(i,i+1:n),
- *  and \f$ tau \f$ in tau(i).
+ *  and $\tau$ in tau(i).
  *
  *******************************************************************************
  *
@@ -75,9 +75,6 @@
  *
  * @param work
  *         Auxiliary workspace array of length ib*m.
- *
- * @param[in] lwork
- *         Size of the array work. Should be at least ib*m.
  *
  *******************************************************************************
  *

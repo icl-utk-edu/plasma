@@ -25,16 +25,16 @@
  *
  *  Performs an addition of two trapezoidal matrices similarly to the
  *  pztradd() function from the PBLAS library:
- *
- *    \f[ B = \alpha * op( A ) + \beta * B, \f]
- *
+ *  \[
+ *      B = \alpha * op( A ) + \beta * B,
+ *  \]
  *  where op( X ) is one of:
- *    \f[ op( X ) = X,   \f]
- *    \f[ op( X ) = X^T, \f]
- *    \f[ op( X ) = X^H, \f]
+ *    \[ op( X ) = X,   \]
+ *    \[ op( X ) = X^T, \]
+ *    \[ op( X ) = X^H, \]
  *
- *  alpha and beta are scalars and A, B are matrices with op( A ) an m-by-n or
- *  n-by-m matrix depending on the value of transa and B an m-by-n matrix.
+ *  alpha and beta are scalars and $A$, $B$ are matrices with $op( A )$ an $m$-by-$n$ or
+ *  $n$-by-$m$ matrix depending on the value of transa and $B$ an $m$-by-$n$ matrix.
  *
  *******************************************************************************
  *
@@ -61,7 +61,7 @@
  * @param[in] alpha
  *          Scalar factor of A.
  *
- * @param[in] A
+ * @param[in] pA
  *          Matrix of size lda-by-k, where k is n when transa == PlasmaNoTrans
  *          and m otherwise.
  *
@@ -72,7 +72,7 @@
  * @param[in] beta
  *          Scalar factor of B.
  *
- * @param[in,out] B
+ * @param[in,out] pB
  *          Matrix of size ldb-by-n.
  *          On exit, B = alpha * op( A ) + beta * B
  *
@@ -265,7 +265,6 @@ int plasma_ztradd(plasma_enum_t uplo, plasma_enum_t transa,
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
- * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values. The sequence->status and
  *          request->status should never be set to PlasmaSuccess (the

@@ -24,11 +24,13 @@
  * @ingroup plasma_her2k
  *
  *  Performs one of the Hermitian rank 2k operations
- *
- *    \f[ C = \alpha A \times B^H + conjg( \alpha ) B \times A^H + \beta C, \f]
+ *  \[
+ *      C = \alpha A B^H + conj( \alpha ) B A^H + \beta C,
+ *  \]
  *    or
- *    \f[ C = \alpha A^H \times B + conjg( \alpha ) B^H \times A + \beta C, \f]
- *
+ *  \[
+ *      C = \alpha A^H B + conj( \alpha ) B^H A + \beta C,
+ *  \]
  *  where alpha is a complex scalar, beta is a real scalar,
  *  C is an n-by-n Hermitian matrix, and A and B are n-by-k matrices
  *  in the first case and k-by-n matrices in the second case.
@@ -41,11 +43,11 @@
  *
  * @param[in] trans
  *          - PlasmaNoTrans:
- *            \f[ C = \alpha A \times B^H
- *                  + conjg( \alpha ) B \times A^H + \beta C; \f]
+ *            \[ C = \alpha A B^H
+ *                 + conj( \alpha ) B A^H + \beta C; \]
  *          - PlasmaConjTrans:
- *            \f[ C = \alpha A^H \times B
- *                  + conjg( \alpha ) B^H \times A + \beta C. \f]
+ *            \[ C = \alpha A^H B
+ *                 + conj( \alpha ) B^H A + \beta C. \]
  *
  * @param[in] n
  *          The order of the matrix C. n >= zero.
@@ -256,11 +258,11 @@ int plasma_zher2k(plasma_enum_t uplo, plasma_enum_t trans,
  *
  * @param[in] trans
  *          - PlasmaNoTrans:
- *            \f[ C = \alpha A \times B^H
- *                  + conjg( \alpha ) B \times A^H + \beta C; \f]
+ *            \[ C = \alpha A B^H
+ *                  + conj( \alpha ) B A^H + \beta C; \]
  *          - PlasmaConjTrans:
- *            \f[ C = \alpha A^H \times B
- *                  + conjg( \alpha ) B^H \times A + \beta C. \f]
+ *            \[ C = \alpha A^H B
+ *                  + conj( \alpha ) B^H A + \beta C. \]
  *
  * @param[in] alpha
  *          The scalar alpha.
@@ -285,7 +287,6 @@ int plasma_zher2k(plasma_enum_t uplo, plasma_enum_t trans,
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
- * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
  *          request->status should never be set to PlasmaSuccess (the

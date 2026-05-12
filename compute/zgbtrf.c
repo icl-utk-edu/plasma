@@ -40,7 +40,7 @@
  * @param[in] ku
  *          The number of superdiagonals within the band of A. ku >= 0.
  *
- * @param[in,out] AB
+ * @param[in,out] pAB
  *          Details of the LU factorization of the band matrix A, as
  *          computed by plasma_zgbtrf.
  *
@@ -175,7 +175,6 @@ int plasma_zgbtrf(int m, int n, int kl, int ku,
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
- * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
  *          request->status should never be set to PlasmaSuccess (the

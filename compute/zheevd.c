@@ -241,11 +241,14 @@ int plasma_zheevd(
  *          On exit, auxiliary factorization data, required by QR factorization
  *          auxiliary kernels to apply Q.
  *
- * @param[out] Q
+ * @param[out] pQ
  *          On exit, if job = PlasmaVec and info = 0, the eigenvectors.
  *
  * @param[in] ldq
  *          The leading dimention of the eigenvectors matrix Q. ldq >= max(1,n).
+ *
+ * @param[out] work
+ *          Workspace.
  *
  * @param[in] sequence
  *          Identifies the sequence of function calls that this call belongs to

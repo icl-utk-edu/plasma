@@ -19,10 +19,14 @@
  * @ingroup core_trmm
  *
  *  Performs a triangular matrix-matrix multiply of the form
- *
- *          \f[B = \alpha [op(A) \times B] \f], if side = PlasmaLeft  or
- *          \f[B = \alpha [B \times op(A)] \f], if side = PlasmaRight
- *
+ *  \[
+ *      B = \alpha op(A) B
+ *  \]
+ *  if side = PlasmaLeft, or
+ *  \[
+ *      B = \alpha B op(A)
+ *  \]
+ *  if side = PlasmaRight,
  *  where op( X ) is one of:
  *
  *          - op(A) = A   or

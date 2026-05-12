@@ -27,6 +27,12 @@
  *
  *******************************************************************************
  *
+ * @param[in] rank
+ *          Thread ID.
+ *
+ * @param[in] num_threads
+ *          Number of threads.
+ *
  * @param[in] uplo
  *          - PlasmaGeneral: entire A,
  *          - PlasmaUpper:   upper triangle,
@@ -51,6 +57,9 @@
  * @param[in] incx
  *          The increment between successive values of IPIV.  If IPIV
  *          is negative, the pivots are applied in reverse order.
+ *
+ * @param[in,out] barrier
+ *          Object for threads to use for synchronizing.
  *
  ******************************************************************************/
 __attribute__((weak))

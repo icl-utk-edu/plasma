@@ -24,14 +24,17 @@
  * @ingroup plasma_trsm
  *
  *  Solves one of the matrix equations
- *
- *    \f[ op( A ) \times X = \alpha B, \f] or
- *    \f[ X \times op( A ) = \alpha B, \f]
- *
+ *  \[
+ *      op( A ) X = \alpha B,
+ *  \]
+ *  or
+ *  \[
+ *      X op( A ) = \alpha B,
+ *  \]
  *  where op( A ) is one of:
- *    \f[ op( A ) = A,   \f]
- *    \f[ op( A ) = A^T, \f]
- *    \f[ op( A ) = A^H, \f]
+ *    \[ op( A ) = A,    \]
+ *    \[ op( A ) = A^T,  \]
+ *    \[ op( A ) = A^H,  \]
  *
  *  alpha is a scalar, X and B are m-by-n matrices, and
  *  A is a unit or non-unit, upper or lower triangular matrix.
@@ -272,7 +275,6 @@ int plasma_ztrsm(plasma_enum_t side, plasma_enum_t uplo,
  * @param[out] request
  *          Identifies this function call (for exception handling purposes).
  *
- * @retval void
  *          Errors are returned by setting sequence->status and
  *          request->status to error values.  The sequence->status and
  *          request->status should never be set to PlasmaSuccess (the

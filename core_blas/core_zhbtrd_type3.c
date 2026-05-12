@@ -86,11 +86,6 @@
  * @param[in] work
  *          Workspace of size nb.
  *
- *******************************************************************************
- *
- * @retval PLASMA_SUCCESS successful exit
- * @retval < 0 if -i, the i-th argument had an illegal value
- *
  ******************************************************************************/
 void plasma_core_zhbtrd_type3(
     int n, int nb,

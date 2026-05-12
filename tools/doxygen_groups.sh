@@ -9,9 +9,9 @@
 # Usage, from top level plasma directory:
 #     ./tools/doxygen_groups.sh
 #
-# On MacOS, uses opendiff; otherwise uses diff.
+# Uses meld if available, else diff.
 
-egrep -h '@ingroup' */*.{h,c} | \
+git grep -h '@ingroup' | \
 	perl -pe 's/^ *\*//;  s@^ *///@@;  s/^ +//;  s/\@ingroup/\@group/;' | \
 	sort --unique > ingroup
 
@@ -20,9 +20,9 @@ egrep -h '^ *@defgroup' docs/doxygen/groups.dox | \
     perl -pe 's/^ *\@defgroup +(\w+).*/\@group $1/;' | \
     sort > defgroup
 
-which opendiff > /dev/null
+which meld > /dev/null
 if [ $? == 0 ]; then
-    opendiff ingroup defgroup
+    meld ingroup defgroup
 else
     diff ingroup defgroup
 fi
